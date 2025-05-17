@@ -8,7 +8,7 @@ const topic = b4a.from(topic_hex, 'hex')
 start();
 
 async function start() {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(2)
   const name_index = args.indexOf('--name')
   const peer_name = name_index !== -1 ? args[name_index + 1] : 'anonymous'
 
