@@ -19,24 +19,24 @@ async function start() {
   console.log(`Joined swarm as ${peer_name}, Listening for peers...`);
 
   swarm.on('connection', (socket, info) => {
-    socket.write(peer_name + '\n'); 
+  socket.write(peer_name + '\n'); 
 
-    let remote_name = 'unknown';
+  let remote_name = 'unknown';
 
-    socket.once('data', (data) => {
-      remote_name = data.toString().trim();
-      console.log(`${remote_name} joined`);
+  socket.once('data', (data) => {
+  remote_name = data.toString().trim();
+  console.log(`${remote_name} joined`);
     });
 
-    console.log(`Connected to new peer. Total: ${swarm.connections.size}`);
+  console.log(`Connected to new peer. Total: ${swarm.connections.size}`);
 
-    socket.on('close', () => {
-      console.log(`${remote_name} disconnected`);
-      console.log(`Remaining connections: ${swarm.connections.size}`);
+  socket.on('close', () => {
+    console.log(`${remote_name} disconnected`);
+    console.log(`Remaining connections: ${swarm.connections.size}`);
     });
 
-    socket.on('error', (err) => {
-      console.log('Socket error:', err.message);
+  socket.on('error', (err) => {
+    console.log('Socket error:', err.message);
     });
   });
 }
