@@ -30,18 +30,19 @@ async function start() {
 
   conn.once('data', (data) => {
   remote_name = b4a.toString(data).trim()
+
   console.log(`${remote_name} joined`)
-      })
+  })
 
   console.log(`Connected to a new peer`)
 
   conn.on('close', () => {
-        console.log(`${remote_name} disconnected`)
-      })
+  console.log(`${remote_name} disconnected`)
+  })
 
   conn.on('error', (err) => {
-     console.log('Socket error:', err.message)
-      })
-    })
+  console.log('Socket error:', err.message)
   })
+})
+})
 }
