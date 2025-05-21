@@ -2,21 +2,31 @@
   "name": "p2p-news-app",
   "description": "A peer-to-peer news app using Hypercore and Hyperswarm.",
   "scripts": {
-    "web": "budo web/index.js:bundle.js --live --open",
-    "build": "browserify web/index.js > bundle.js"
+    "web": "npm run build && budo web/test.js:bundle.js --live --open",
+    "build": "browserify web/test.js > bundle.js",
+    "start": "node server.js",
+    "peer": "bare peer.js"
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
     "b4a": "^1.6.7",
-    "bare-process": "*",
-    "hyperdht": "^6.20.1",
-    "hyperswarm": "4.10.1",
-    "p2p-news-app": "file:",
+    "bare-process": "4.2.1",
+    "compact-encoding": "^2.16.0",
+    "corestore": "^6.18.4",
+    "crypto": "^1.0.1",
+    "hyper-webrtc": "^1.0.0",
+    "hypercore": "^10.0.0",
+    "hypercore-crypto": "^3.4.2",
+    "hyperdht": "^6.19.0",
+    "hyperswarm": "^4.8.4",
+    "protomux": "^3.10.1",
+    "random-access-memory": "^6.2.1",
     "sodium-javascript": "0.8.0",
     "ws": "^8.18.1"
   },
   "devDependencies": {
     "browserify": "^17.0.0",
-    "budo": "^11.6.4"
+    "budo": "^11.8.4",
+    "standard": "^17.1.2"
   }
 }
