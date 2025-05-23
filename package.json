@@ -2,8 +2,8 @@
   "name": "p2p-news-app",
   "description": "A peer-to-peer news app using Hypercore and Hyperswarm.",
   "scripts": {
-    "web": "npm run build && budo web/test.js:bundle.js --live --open",
-    "build": "browserify web/test.js > bundle.js",
+    "web": "npm run build && budo web/index.js:bundle.js --live --open",
+    "build": "browserify web/index.js > bundle.js",
     "start": "node server.js",
     "peer": "bare peer.js"
   },
