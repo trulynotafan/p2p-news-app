@@ -5,6 +5,8 @@ const sodium = require('sodium-universal')
 const crypto = require("hypercore-crypto")
 const process = require("bare-process")
 const fs = require('bare-fs').promises
+const protomux = require('protomux') 
+const c = require('compact-encoding') 
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 
@@ -47,42 +49,57 @@ async function start(flag) {
   async function onconnection(socket, info) {
     console.log("New Peer Joined, Their Public Key is: ", info.publicKey.toString('hex'))
     socket.on('error', onerror)
-    console.log("Sending our core key to peer")
-    socket.write(core.key.toString('hex'))
 
-  
+    const mux = new protomux(socket)
+    
+    const channel = mux.createChannel({
+      protocol: 'feed exchnage',
+      onopen: () => {
+        console.log("Channel opened, setting up message handlers")
+        
+        const string_msg = channel.addMessage({
+          encoding: c.string,
+          onmessage: (message) => {
+            try {
+              const received_key = message.trim()
+              console.log("Received core key from peer:", received_key)
+              
+              const clonedCore = store.get(b4a.from(received_key, 'hex'))
+              clonedCore.on('append', onappend)
+              clonedCore.ready().then(async () => {
+                console.log("Cloned core ready:", clonedCore.key.toString('hex'))
+                
+                const unavailable = []
+                if (clonedCore.length) {
+                  for (var i = 0, L = clonedCore.length; i < L; i++) {
+                    const raw = await clonedCore.get(i, { wait: false })
+                    if (raw) console.log(label, 'local:', { i, message: raw.toString('utf-8') })
+                    else unavailable.push(i)
+                  }
+                }
+
+                // Download any missing data
+                for (var i = 0, L = unavailable.sort().length; i < L; i++) {
+                  const raw = await clonedCore.get(i)
+                  console.log(label, 'download:', { i, message: raw.toString('utf-8') })
+                }
+              })
+            } catch (err) {
+              console.error('Error handling message:', err)
+            }
+          }
+        })
+
+        console.log("Sending our core key to peer")
+        string_msg.send(core.key.toString('hex'))
+      }
+    })
+
+    channel.open()
+
     store.replicate(socket)
 
-  
     iid = setInterval(append_more, 1000)
-
-    socket.once('data', (data) => {
-      const received_key = b4a.toString(data).trim()
-      console.log("Received core key from peer:", received_key)
-      
-     
-      const clonedCore = store.get(b4a.from(received_key, 'hex'))
-      clonedCore.on('append', onappend)
-      clonedCore.ready().then(async () => {
-        console.log("Cloned core ready:", clonedCore.key.toString('hex'))
-        
-      
-        const unavailable = []
-        if (clonedCore.length) {
-          for (var i = 0, L = clonedCore.length; i < L; i++) {
-            const raw = await clonedCore.get(i, { wait: false })
-            if (raw) console.log(label, 'local:', { i, message: raw.toString('utf-8') })
-            else unavailable.push(i)
-          }
-        }
-
-        
-        for (var i = 0, L = unavailable.sort().length; i < L; i++) {
-          const raw = await clonedCore.get(i)
-          console.log(label, 'download:', { i, message: raw.toString('utf-8') })
-        }
-      })
-    })
   }
 
   function onerror(err) {
