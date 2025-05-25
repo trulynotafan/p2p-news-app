@@ -16,9 +16,9 @@ start()
   START
 ******************************************************************************/
 async function start(flag) { 
-  const parsedArgs = parse(process.argv.slice(2))
-  const validatedArgs = validate(parsedArgs)
-  const name = validatedArgs['--name']
+  const parsed_args = parse(process.argv.slice(2))
+  const validated_args = validate(parsed_args)
+  const name = validated_args['--name']
   const label = `\x1b[${process.pid % 2 ? 31 : 34}m[peer-${name}]\x1b[0m`
   
   console.log(label, 'start')
@@ -28,9 +28,9 @@ async function start(flag) {
    seed: crypto.randomBytes(32),
    name: 'noise'
   }
-  const { publicKey, secretKey } = create_noise_keypair (opts)
+  const { publicKey, secretKey } = create_noise_keypair(opts)
   console.log(label, { peerkey: publicKey.toString('hex')})
-  const keyPair = { publicKey, secretKey }
+  const key_pair = { publicKey, secretKey }
   const store = new Corestore(`./storage-${name}`)
   const core = store.get({ name: 'test-core' })
   await core.ready()
@@ -38,7 +38,7 @@ async function start(flag) {
   console.log(label, { corekey: core.key.toString('hex') })
   await core.append('Hello, peer!')
   const bootstrap = JSON.parse(await fs.readFile('bootstrap.json', 'utf-8'))
-  const swarm = new Hyperswarm({ keyPair, bootstrap })
+  const swarm = new Hyperswarm({ keyPair: key_pair, bootstrap })
   swarm.on('connection', onconnection)
   console.log(label, 'Joining swarm')
   swarm.join(topic, {server: true, client: true})
@@ -64,7 +64,7 @@ async function start(flag) {
               console.log(`Peer ${message.name} is ${message.data}`)
               identity_channel.close()
               
-              createFeedChannel()
+              create_feed_channel()
             } catch (err) {
               console.error('Error handling identity message:', err)
             }
@@ -82,8 +82,7 @@ async function start(flag) {
 
     identity_channel.open()
 
-  
-    function createFeedChannel() {
+    function create_feed_channel() {
       const channel = mux.createChannel({
         protocol: 'feed exchange',
         onopen: () => {
@@ -96,22 +95,22 @@ async function start(flag) {
                 const received_key = message.trim()
                 console.log("Received core key from peer:", received_key)
                 
-                const clonedCore = store.get(b4a.from(received_key, 'hex'))
-                clonedCore.on('append', onappend)
-                clonedCore.ready().then(async () => {
-                  console.log("Cloned core ready:", clonedCore.key.toString('hex'))
+                const cloned_core = store.get(b4a.from(received_key, 'hex'))
+                cloned_core.on('append', onappend)
+                cloned_core.ready().then(async () => {
+                  console.log("Cloned core ready:", cloned_core.key.toString('hex'))
                   
                   const unavailable = []
-                  if (clonedCore.length) {
-                    for (var i = 0, L = clonedCore.length; i < L; i++) {
-                      const raw = await clonedCore.get(i, { wait: false })
+                  if (cloned_core.length) {
+                    for (var i = 0, L = cloned_core.length; i < L; i++) {
+                      const raw = await cloned_core.get(i, { wait: false })
                       if (raw) console.log(label, 'local:', { i, message: raw.toString('utf-8') })
                       else unavailable.push(i)
                     }
                   }
 
                   for (var i = 0, L = unavailable.sort().length; i < L; i++) {
-                    const raw = await clonedCore.get(i)
+                    const raw = await cloned_core.get(i)
                     console.log(label, 'download:', { i, message: raw.toString('utf-8') })
                   }
                 })
@@ -127,10 +126,8 @@ async function start(flag) {
       })
 
       channel.open()
-
       store.replicate(socket)
-
-      iid = setInterval(append_more, 1000) 
+      iid = setInterval(append_more, 1000)
     }
   }
 
@@ -164,22 +161,21 @@ async function start(flag) {
   HELPER
 ******************************************************************************/
 
-
 function create_noise_keypair ({ namespace, seed, name }) {
-  const noiseSeed = derive_seed(namespace, seed, name)
-  const publicKey = b4a.alloc(32)
-  const secretKey = b4a.alloc(64)
-  if (noiseSeed) sodium.crypto_sign_seed_keypair(publicKey, secretKey, noiseSeed)
-  else sodium.crypto_sign_keypair(publicKey, secretKey)
-  return { publicKey, secretKey }
+  const noise_seed = derive_seed(namespace, seed, name)
+  const public_key = b4a.alloc(32)
+  const secret_key = b4a.alloc(64)
+  if (noise_seed) sodium.crypto_sign_seed_keypair(public_key, secret_key, noise_seed)
+  else sodium.crypto_sign_keypair(public_key, secret_key)
+  return { publicKey: public_key, secretKey: secret_key }
 }
 
-function derive_seed (primaryKey, namespace, name) {
+function derive_seed (primary_key, namespace, name) {
   if (!b4a.isBuffer(namespace)) namespace = b4a.from(namespace) 
   if (!b4a.isBuffer(name)) name = b4a.from(name)
-  if (!b4a.isBuffer(primaryKey)) primaryKey = b4a.from(primaryKey)
+  if (!b4a.isBuffer(primary_key)) primary_key = b4a.from(primary_key)
   const out = b4a.alloc(32)
-  sodium.crypto_generichash_batch(out, [namespace, name, primaryKey])
+  sodium.crypto_generichash_batch(out, [namespace, name, primary_key])
   return out
 }
 
