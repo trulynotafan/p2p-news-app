@@ -1,192 +1,215 @@
 const b4a = require('b4a')
-const crypto = require('crypto')
+const Corestore = require('corestore')
 const Hyperswarm = require('hyperswarm')
 const DHT = require('@hyperswarm/dht-relay')
 const Stream = require('@hyperswarm/dht-relay/ws')
 const HyperWebRTC = require('hyper-webrtc')
-const Protomux = require('protomux')
-const Corestore = require('corestore')
-const RAM = require('random-access-memory')
+const protomux = require('protomux')
 const c = require('compact-encoding')
+const RAM = require('random-access-memory')
+const sodium = require('sodium-universal')
+const crypto = require("hypercore-crypto")
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
-const store = new Corestore(RAM.reusable())
-const feeds = new Map()
 
 start()
 
-async function start() {
-  // initialize core and append test data
-  await store.ready()
-  const name = b4a.toString(crypto.randomBytes(32))
-  const core = store.get({ name })
-  await core.ready()
-  await core.append('Hello from browser core!')
+/******************************************************************************
+  START
+******************************************************************************/
+async function start(flag) {
+  const label = 'browser'
+  console.log(label, 'start')
 
-  console.log('Core key:', core.key.toString('hex'))
-  console.log('Core discovery key:', core.discoveryKey.toString('hex'))
+  const opts = {
+    namespace: 'noisekeys',
+    seed: crypto.randomBytes(32),
+    name: 'noise'
+  }
+  const { publicKey, secretKey } = create_noise_keypair(opts)
+  console.log(label, { peerkey: publicKey.toString('hex')})
+  const keyPair = { publicKey, secretKey }
+
+  const store = new Corestore(RAM.reusable())
+  const core = store.get({ name: 'test-core' })
+  await core.ready()
+  console.log(label, `✅ Successfully created a new core with the key`)
+  console.log(label, { corekey: core.key.toString('hex') })
+  await core.append('Hello, browser!')
 
   // setup websocket connection to relay
   const socket = new WebSocket('ws://localhost:8080')
   socket.addEventListener('open', () => {
-    console.log('Connected to DHT relay')
+    console.log(label, 'Connected to DHT relay')
     const dht = new DHT(new Stream(true, socket))
-    const swarm = new Hyperswarm({ dht })
-
-    // join swarm and dont miss any connections (for now)
-    const join = () => swarm.join(topic, { server: true, client: true }).flushed()
-    join().then(() => console.log('Joined swarm'))
-    setInterval(join, 5000)
-
-    // handle new connections
-    swarm.on('connection', (relay, details) => {
-      console.log('New connection established')
-      let remote_type = null
-      let local_type = 'browser'
-      let type_resolved = false
-      let remote_name = 'unknown'
-
-      // send our name first
-      relay.write(local_type + '\n')
-
-      // get remote name
-      relay.once('data', (data) => {
-        remote_name = b4a.toString(data).trim()
-        console.log(`${remote_name} joined`)
-
-        // setup protomux for protocol messages
-        const mux = new Protomux(relay)
-        
-        // create protocol channel for peer type exchange
-        const protocol_channel = mux.createChannel({ protocol: 'protocol' })
-        const protocol_msg = protocol_channel.addMessage({
-          encoding: c.json,
-          onmessage: (msg) => {
-            if (type_resolved) return
-            if (!msg || !msg.type || !msg.data) return
-
-            console.log('Received protocol message:', msg)
-            
-            // handle webrtc protocol upgrade
-            if (msg.type === 'protocol' && msg.data === 'webrtc') {
-              remote_type = 'browser'
-              type_resolved = true
-              console.log(`Peer type resolved: local=${local_type}, remote=${remote_type}`)
-
-              // only upgrade if both peers are browsers
-              if (local_type === 'browser' && remote_type === 'browser') {
-                console.log('Both peers are browsers, starting WebRTC upgrade')
-                
-                // create webrtc stream
-                const stream = HyperWebRTC.from(relay)
-                console.log('Created WebRTC stream')
-
-                // handle webrtc stream events
-                stream.on('open', () => {
-                  console.log('WebRTC stream opened')
-                  
-                  // setup feed channel for data exchange
-                  const mux = new Protomux(stream)
-                  const channel = mux.createChannel({ protocol: 'feed-exchange' })
-                  const feed_msg = channel.addMessage({
-                    encoding: c.json,
-                    onmessage: async (msg) => {
-                      // handle feed key exchange
-                      if (msg.type === 'feedkey') {
-                        const feed_key = b4a.from(msg.feedkey, 'hex')
-                        console.log(`Received feed key from ${remote_type}:`, feed_key.toString('hex'))
-                        
-                        // setup feed replication
-                        const feed = store.get(feed_key)
-                        await feed.ready()
-                        feed.replicate(stream)
-                        feeds.set(remote_type, feed)
-                        
-                        // log new blocks
-                        feed.createReadStream({ live: true }).on('data', d => {
-                          console.log(`[${remote_type}] New block:`, d.toString())
-                        })
-                      }
-                    }
-                  })
-                  
-                  // start feed exchange
-                  channel.open()
-                  console.log('Sending feed key:', core.key.toString('hex'))
-                  feed_msg.send({ type: 'feedkey', feedkey: core.key.toString('hex') })
-                  core.replicate(stream)
-                })
-
-                stream.on('close', () => {
-                  console.log('WebRTC stream closed')
-                })
-
-                stream.on('error', (err) => {
-                  console.error('WebRTC stream error:', err)
-                })
-              } else {
-                console.log('Not upgrading to WebRTC - one or both peers are not browsers')
-              }
-            } else if (msg.type === 'protocol' && msg.data === 'native') {
-              remote_type = 'native'
-              type_resolved = true
-              console.log(`Peer type resolved: local=${local_type}, remote=${remote_type}`)
-              console.log('Using raw socket connection for native peer')
-
-              // setup feed channel for data exchange over raw socket
-              const mux = new Protomux(relay)
-              const channel = mux.createChannel({ protocol: 'feed-exchange' })
-              const feed_msg = channel.addMessage({
-                encoding: c.json,
-                onmessage: async (msg) => {
-                  // handle feed key exchange
-                  if (msg.type === 'feedkey') {
-                    const feed_key = b4a.from(msg.feedkey, 'hex')
-                    console.log(`Received feed key from ${remote_type}:`, feed_key.toString('hex'))
-                    
-                    // setup feed replication
-                    const feed = store.get(feed_key)
-                    await feed.ready()
-                    feed.replicate(relay)
-                    feeds.set(remote_type, feed)
-                    
-                    // log new blocks
-                    feed.createReadStream({ live: true }).on('data', d => {
-                      console.log(`[${remote_type}] New block:`, d.toString())
-                    })
-                  }
-                }
-              })
-              
-              // start feed exchange
-              channel.open()
-              console.log('Sending feed key:', core.key.toString('hex'))
-              feed_msg.send({ type: 'feedkey', feedkey: core.key.toString('hex') })
-              core.replicate(relay)
-            } else {
-              console.log('Using raw socket connection - not a WebRTC peer')
-            }
-          }
-        })
-
-        // send initial protocol message
-        protocol_channel.open()
-        console.log('Sending protocol message:', { type: 'protocol', data: 'webrtc' })
-        protocol_msg.send({ type: 'protocol', data: 'webrtc' })
-
-        // handle relay connection events
-        relay.on('close', () => {
-          console.log('Connection closed')
-        })
-
-        relay.on('error', (err) => {
-          console.error('Relay error:', err)
-        })
-      })
-    })
+    const swarm = new Hyperswarm({ dht, keyPair })
+    swarm.on('connection', onconnection)
+    console.log(label, 'Joining swarm')
+    swarm.join(topic, {server: true, client: true})
+    swarm.flush()
+    console.log(label, "Swarm Joined, looking for peers")
   })
 
   // handle websocket events
   socket.addEventListener('error', console.error)
-  socket.addEventListener('close', () => console.log('WebSocket closed'))
+  socket.addEventListener('close', () => console.log(label, 'WebSocket closed'))
+
+  async function onconnection(socket, info) {
+    console.log(label, "New Peer Joined, Their Public Key is: ", info.publicKey.toString('hex'))
+    socket.on('error', onerror)
+
+    const mux = new protomux(socket)
+    
+    // First channel for identity exchange
+    const identity_channel = mux.createChannel({
+      protocol: 'identity-exchange',
+      onopen: () => {
+        console.log(label, "Identity channel opened")
+        
+        const protocol_msg = identity_channel.addMessage({
+          encoding: c.json,  // Using JSON encoding for structured messages
+          onmessage: (message) => {
+            try {
+              console.log(label, `Peer ${message.name} is ${message.data}`)
+              
+              // If peer is browser, upgrade to WebRTC
+              if (message.data === 'browser') {
+                console.log(label, 'Upgrading to WebRTC connection')
+                const stream = HyperWebRTC.from(socket, { initiator: socket.isInitiator })
+                console.log(label, 'Created WebRTC stream')
+
+                stream.on('open', () => {
+                  console.log(label, 'WebRTC stream opened')
+                })
+
+                stream.on('close', () => {
+                  console.log(label, 'WebRTC stream closed')
+                })
+
+                stream.on('error', (err) => {
+                  console.error(label, 'WebRTC stream error:', err)
+                })
+              } else {
+                console.log(label, 'Using raw socket connection - not a WebRTC peer')
+              }
+
+              // Close identity channel after receiving the message
+              identity_channel.close()
+              
+              // Now create feed exchange channel
+              createFeedChannel()
+            } catch (err) {
+              console.error('Error handling identity message:', err)
+            }
+          }
+        })
+
+        // Send our identity
+        console.log(label, "Sending our identity")
+        protocol_msg.send({ 
+          type: 'protocol', 
+          name: 'browser',
+          data: 'browser' 
+        })
+      }
+    })
+
+    identity_channel.open()
+
+    // Function to create feed exchange channel after identity exchange
+    function createFeedChannel() {
+      const channel = mux.createChannel({
+        protocol: 'feed exchange',
+        onopen: () => {
+          console.log(label, "Channel opened, setting up message handlers")
+          
+          const string_msg = channel.addMessage({
+            encoding: c.string,
+            onmessage: (message) => {
+              try {
+                const received_key = message.trim()
+                console.log(label, "Received core key from peer:", received_key)
+                
+                const clonedCore = store.get(b4a.from(received_key, 'hex'))
+                clonedCore.on('append', onappend)
+                clonedCore.ready().then(async () => {
+                  console.log(label, "Cloned core ready:", clonedCore.key.toString('hex'))
+                  
+                  const unavailable = []
+                  if (clonedCore.length) {
+                    for (var i = 0, L = clonedCore.length; i < L; i++) {
+                      const raw = await clonedCore.get(i, { wait: false })
+                      if (raw) console.log(label, 'local:', { i, message: raw.toString('utf-8') })
+                      else unavailable.push(i)
+                    }
+                  }
+
+                  for (var i = 0, L = unavailable.sort().length; i < L; i++) {
+                    const raw = await clonedCore.get(i)
+                    console.log(label, 'download:', { i, message: raw.toString('utf-8') })
+                  }
+                })
+              } catch (err) {
+                console.error('Error handling message:', err)
+              }
+            }
+          })
+
+          console.log(label, "Sending our core key to peer")
+          string_msg.send(core.key.toString('hex'))
+        }
+      })
+
+      channel.open()
+      store.replicate(socket)
+      iid = setInterval(append_more, 1000)
+    }
+  }
+
+  function onerror(err) {
+    clearInterval(iid)
+    console.log(label, 'socket error', err)
+  }
+
+  function append_more() {
+    const time = Math.floor(process.uptime())
+    const stamp = `${time/60/60|0}h:${time/60|0}m:${time%60}s`
+    core.append(`uptime: ${stamp}`)
+  }
+
+  async function onappend() {
+    const L = core.length
+    if (!flag) {
+      flag = true
+      for (var i = 0; i < L; i++) {
+        const raw = await core.get(i)
+        console.log(label, 'download old:', { i, message: raw.toString('utf-8') })
+      }
+    }
+    console.log(label, "notification: 📥 New data available", L)
+    const raw = await core.get(L)
+    console.log(label, { i: L, message: raw.toString('utf-8') })
+  }
+}
+
+/******************************************************************************
+  HELPER
+******************************************************************************/
+
+function create_noise_keypair ({ namespace, seed, name }) {
+  const noiseSeed = derive_seed(namespace, seed, name)
+  const publicKey = b4a.alloc(32)
+  const secretKey = b4a.alloc(64)
+  if (noiseSeed) sodium.crypto_sign_seed_keypair(publicKey, secretKey, noiseSeed)
+  else sodium.crypto_sign_keypair(publicKey, secretKey)
+  return { publicKey, secretKey }
+}
+
+function derive_seed (primaryKey, namespace, name) {
+  if (!b4a.isBuffer(namespace)) namespace = b4a.from(namespace) 
+  if (!b4a.isBuffer(name)) name = b4a.from(name)
+  if (!b4a.isBuffer(primaryKey)) primaryKey = b4a.from(primaryKey)
+  const out = b4a.alloc(32)
+  sodium.crypto_generichash_batch(out, [namespace, name, primaryKey])
+  return out
 }
