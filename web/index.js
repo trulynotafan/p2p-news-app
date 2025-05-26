@@ -18,16 +18,16 @@ start()
 async function start() {
   const socket = new WebSocket('ws://localhost:8080')
   socket.addEventListener('open', () => {
-    console.log('🔗 Connected to DHT relay')
+    console.log('Connected to DHT relay')
     const dht = new DHT(new Stream(true, socket))
     const swarm = new Hyperswarm({ dht })
 
     const join = () => swarm.join(topic, { server: true, client: true }).flushed()
-    join().then(() => console.log('🌐 Joined swarm'))
+    join().then(() => console.log('Joined swarm'))
     setInterval(join, 5000)
 
     swarm.on('connection', (relay, details) => {
-      console.log('👋 New peer connected')
+      console.log('New peer connected')
       
       if (!relay.userData) relay.userData = null
 
@@ -42,14 +42,14 @@ async function start() {
             onmessage: (message) => {
               try {
                 if (message.type === 'protocol') {
-                  console.log(`📱 Peer type: ${message.data}`)
+                  console.log(`Peer type: ${message.data}`)
                   
                   if (message.data === 'browser') {
                     const stream = HyperWebRTC.from(relay, { initiator: relay.isInitiator })
-                    console.log('🔄 Upgrading to WebRTC...')
+                    console.log('Upgrading to WebRTC...')
 
                     stream.on('open', () => {
-                      console.log('✅ WebRTC connection established')
+                      console.log('WebRTC connection established')
                       protocol_msg.send({
                         type: 'feedkey',
                         feedkey: core.key.toString('hex')
@@ -57,8 +57,8 @@ async function start() {
                       store.replicate(stream)
                     })
 
-                    stream.on('close', () => console.log('❌ WebRTC connection closed'))
-                    stream.on('error', (err) => console.error('⚠️ WebRTC error:', err))
+                    stream.on('close', () => console.log('WebRTC connection closed'))
+                    stream.on('error', (err) => console.error('WebRTC error:', err))
                   }
                 } else if (message.type === 'feedkey' && !hasReceivedFeedkey) {
                   hasReceivedFeedkey = true
@@ -75,35 +75,16 @@ async function start() {
                   }
                   
                   if (keyBuffer.length !== 32) {
-                    console.error('❌ Invalid key length:', keyBuffer.length)
+                    console.error('Invalid key length:', keyBuffer.length)
                     return
                   }
                   
                   const hexKey = Array.from(keyBuffer).map(b => b.toString(16).padStart(2, '0')).join('')
-                  console.log('🔑 Received peer key:', hexKey.substring(0, 16) + '...')
-                  
-                  const cloned_core = store.get(keyBuffer)
-                  cloned_core.on('append', onappend)
-                  cloned_core.ready().then(async () => {
-                    console.log('📦 Peer core ready, syncing data...')
-                    
-                    const unavailable = []
-                    if (cloned_core.length) {
-                      for (var i = 0, L = cloned_core.length; i < L; i++) {
-                        const raw = await cloned_core.get(i, { wait: false })
-                        if (raw) console.log('📄 Local:', raw.toString('utf-8'))
-                        else unavailable.push(i)
-                      }
-                    }
-
-                    for (var i = 0, L = unavailable.sort().length; i < L; i++) {
-                      const raw = await cloned_core.get(unavailable[i])
-                      console.log('⬇️ Downloaded:', raw.toString('utf-8'))
-                    }
-                  }).catch(err => console.error('❌ Core setup error:', err))
+                  console.log('Received peer key:', hexKey.substring(0, 16) + '...')
+        
                 }
               } catch (err) {
-                console.error('❌ Message handling error:', err)
+                console.error('Message handling error:', err)
               }
             }
           })
@@ -117,18 +98,12 @@ async function start() {
       })
 
       identity_channel.open()
-      relay.on('close', () => console.log('👋 Peer disconnected'))
-      relay.on('error', (err) => console.error('⚠️ Relay error:', err))
+      relay.on('close', () => console.log('Peer disconnected'))
+      relay.on('error', (err) => console.error('Relay error:', err))
     })
   })
 
   socket.addEventListener('error', console.error)
-  socket.addEventListener('close', () => console.log('❌ WebSocket closed'))
+  socket.addEventListener('close', () => console.log('WebSocket closed'))
 }
 
-async function onappend() {
-  const L = core.length
-  console.log("📥 New data available")
-  const raw = await core.get(L - 1)
-  console.log('📄 New message:', raw.toString('utf-8'))
-}
