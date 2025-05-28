@@ -1,31 +1,53 @@
 {
   "name": "p2p-news-app",
-  "description": "A peer-to-peer news app using Hypercore and Hyperswarm.",
+  "version": "0.0.1",
+  "description": "A p2p-news-app worked via hypercore/hyperswarms stack",
   "scripts": {
-    "web": "npm run build && budo web/index.js:bundle.js --live --open",
-    "build": "browserify web/index.js > bundle.js",
-    "start": "node server.js",
-    "peer": "bare peer.js"
+    "web": "budo web/page.js:bundle.js --live --open",
+    "build": "browserify web/page.js > bundle.js",
+    "test": "npm run testbuild && budo src/node_modules/web-peer/test.js:bundle.js --live --open",
+    "testbuild": "browserify src/node_modules/web-peer/test.js > bundle.js",
+    "relay": "node src/node_modules/relay/index.js",
+    "resetcli": "rm -rf ./storage*",
+    "peer": "bare src/node_modules/bare-peer/index.js",
+    "lint": "standardx",
+    "lint:fix": "standardx --fix"
+  },
+  "bin": {
+    "native-peer": "./bin/cli.js"
+  },
+  "standardx": {
+    "parser": "@babel/eslint-parser",
+    "parserOptions": {
+      "requireConfigFile": false,       
+      "babelOptions": {                 
+        "plugins": ["@babel/plugin-syntax-top-level-await"] 
+      }
+    },
+    "rules": {
+      "camelcase": "off"
+    }
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
+    "@hyperswarm/testnet": "^3.1.4",
     "b4a": "^1.6.7",
-    "bare-process": "4.2.1",
-    "compact-encoding": "^2.16.0",
+    "bare-fs": "^4.1.5",
+    "bare-process": "^4.2.1",
     "corestore": "^6.18.4",
-    "crypto": "^1.0.1",
-    "hyper-webrtc": "^1.0.0",
-    "hypercore": "^10.0.0",
-    "hypercore-crypto": "^3.4.2",
-    "hyperdht": "^6.19.0",
-    "hyperswarm": "^4.8.4",
-    "protomux": "^3.10.1",
+    "graceful-goodbye": "^1.3.3",
+    "hypercore-crypto": "^3.5.0",
+    "hyperswarm": "^4.10.1",
     "random-access-memory": "^6.2.1",
-    "sodium-javascript": "0.8.0",
+    "sodium-javascript": "^0.8.0",
+    "sodium-universal": "^4.0.1",
     "ws": "^8.18.1"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.27.1",
+    "@babel/plugin-syntax-top-level-await": "^7.14.5",
     "browserify": "^17.0.0",
-    "budo": "^11.8.4" 
+    "budo": "^11.8.4",
+    "standardx": "^7.0.0"
   }
 }
