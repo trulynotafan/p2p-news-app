@@ -7,20 +7,30 @@ const Protomux = require('protomux')
 const c = require('compact-encoding')
 const Corestore = require('corestore')
 const RAM = require('random-access-memory')
+const crypto = require('hypercore-crypto')
+const { create_noise_keypair } = require('../helpers/crypto-helpers/index.js')
+const { parseFeedKey } = require('../helpers/parsing-helpers/index.js')
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 
 const store = new Corestore(RAM.reusable())
 const core = store.get({ name: 'test-core' })
 
-start()
-
-async function start() {
+async function startBrowserPeer (args = {}) {
   const socket = new WebSocket('ws://localhost:8080')
   socket.addEventListener('open', () => {
     console.log('Connected to DHT relay')
+
+    const opts = {
+      namespace: 'noisekeys',
+      seed: crypto.randomBytes(32),
+      name: 'noise'
+    }
+    const key_pair = create_noise_keypair(opts)
+    console.log({ peerkey: key_pair.publicKey.toString('hex') })
+
     const dht = new DHT(new Stream(true, socket))
-    const swarm = new Hyperswarm({ dht })
+    const swarm = new Hyperswarm({ dht, key_pair })
 
     const join = () => swarm.join(topic, { server: true, client: true }).flushed()
     join().then(() => console.log('Joined swarm'))
@@ -28,22 +38,22 @@ async function start() {
 
     swarm.on('connection', (relay, details) => {
       console.log('New peer connected')
-      
+
       if (!relay.userData) relay.userData = null
 
       const mux = new Protomux(relay)
       let hasReceivedFeedkey = false
-      
+
       const identity_channel = mux.createChannel({
         protocol: 'identity-exchange',
         onopen: () => {
           const protocol_msg = identity_channel.addMessage({
             encoding: c.json,
-            onmessage: (message) => {
+            onmessage: async (message) => {
               try {
                 if (message.type === 'protocol') {
                   console.log(`Peer type: ${message.data}`)
-                  
+
                   if (message.data === 'browser') {
                     const stream = HyperWebRTC.from(relay, { initiator: relay.isInitiator })
                     console.log('Upgrading to WebRTC...')
@@ -59,29 +69,29 @@ async function start() {
 
                     stream.on('close', () => console.log('WebRTC connection closed'))
                     stream.on('error', (err) => console.error('WebRTC error:', err))
+                  } else if (message.data === 'native') {
+                    console.log('Native peer connected, expecting feedkey...')
+                    store.replicate(relay)
                   }
                 } else if (message.type === 'feedkey' && !hasReceivedFeedkey) {
                   hasReceivedFeedkey = true
-                  
-                  let keyBuffer
-                  if (typeof message.feedkey === 'string' && message.feedkey.includes(',')) {
-                    const numbers = message.feedkey.split(',').map(n => parseInt(n.trim(), 10))
-                    keyBuffer = b4a.allocUnsafe(32)
-                    for (let i = 0; i < 32; i++) keyBuffer[i] = numbers[i]
-                  } else if (typeof message.feedkey === 'string') {
-                    keyBuffer = b4a.from(message.feedkey, 'hex')
-                  } else if (Array.isArray(message.feedkey)) {
-                    keyBuffer = b4a.from(message.feedkey)
-                  }
-                  
-                  if (keyBuffer.length !== 32) {
-                    console.error('Invalid key length:', keyBuffer.length)
-                    return
-                  }
-                  
-                  const hexKey = Array.from(keyBuffer).map(b => b.toString(16).padStart(2, '0')).join('')
+
+                  const keyBuffer = parseFeedKey(message.feedkey)
+
+                  if (!keyBuffer) return
+
+                  const hexKey = keyBuffer.toString('hex')
                   console.log('Received peer key:', hexKey.substring(0, 16) + '...')
-        
+
+                  const cloned_core = store.get(keyBuffer)
+                  cloned_core.on('append', async () => {
+                    console.log('New data appended to cloned core')
+                    const latest = await cloned_core.get(cloned_core.length - 1)
+                    console.log('Received:', latest.toString('utf-8'))
+                  })
+                  cloned_core.ready().then(() => {
+                    console.log('Cloned core ready:', cloned_core.key.toString('hex'))
+                  }).catch(err => console.error('Error with cloned core:', err))
                 }
               } catch (err) {
                 console.error('Message handling error:', err)
@@ -89,9 +99,10 @@ async function start() {
             }
           })
 
-          protocol_msg.send({ 
-            type: 'protocol', 
-            name: 'browser',
+          console.log('Sending our identity')
+          protocol_msg.send({
+            type: 'protocol',
+            name: args.name || 'browser-peer',
             data: 'browser'
           })
         }
@@ -107,3 +118,6 @@ async function start() {
   socket.addEventListener('close', () => console.log('WebSocket closed'))
 }
 
+module.exports = {
+  start: startBrowserPeer
+}
