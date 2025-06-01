@@ -16,18 +16,6 @@
   "bin": {
     "native-peer": "./bin/cli.js"
   },
-  "standardx": {
-    "parser": "@babel/eslint-parser",
-    "parserOptions": {
-      "requireConfigFile": false,       
-      "babelOptions": {                 
-        "plugins": ["@babel/plugin-syntax-top-level-await"] 
-      }
-    },
-    "rules": {
-      "camelcase": "off"
-    }
-  },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
     "@hyperswarm/testnet": "^3.1.4",
@@ -44,8 +32,6 @@
     "ws": "^8.18.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.27.1",
-    "@babel/plugin-syntax-top-level-await": "^7.14.5",
     "browserify": "^17.0.0",
     "budo": "^11.8.4",
     "standardx": "^7.0.0"
