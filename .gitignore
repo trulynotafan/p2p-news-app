@@ -2,3 +2,4 @@
 /package-lock.json
 /.babelrc
 /bundle.js
+/storage*
