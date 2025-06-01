@@ -3,3 +3,4 @@
 /.babelrc
 /bundle.js
 /storage*
+/.eslintrc.json
