@@ -57,7 +57,7 @@ Native peer will also join the same topic and connect to other browser/native pe
 
 
 
-More stuff will be added soom :)
+More stuff will be added soon :)
 
 
 
