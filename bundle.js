@@ -30716,8 +30716,8 @@ const Protomux = require('protomux')
 const Corestore = require('corestore')
 const RAM = require('random-access-memory')
 const crypto = require('hypercore-crypto')
-const { create_noise_keypair } = require('../helpers/crypto-helpers/index.js')
-const { identity_exchange_protocol } = require('../helpers/protocol-helpers/index.js')
+const { create_noise_keypair } = require('helpers/crypto-helpers')
+const { identity_exchange_protocol } = require('helpers/protocol-helpers')
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 
@@ -30725,7 +30725,16 @@ const store = new Corestore(RAM.reusable())
 const core = store.get({ name: 'test-core' })
 
 async function start_browser_peer (options = {}) {
-  const socket = new WebSocket('ws://localhost:8080')
+
+  const isDev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
+
+  const socket = new WebSocket(
+    isDev
+      ? `ws://localhost:8080`
+      : 'wss://p2p-relay-production.up.railway.app'
+  )
+  
+
   socket.addEventListener('open', () => {
     console.log('Connected to DHT relay')
 
@@ -30826,7 +30835,7 @@ async function start_browser_peer (options = {}) {
 module.exports = {
   start: start_browser_peer
 }
-},{"../helpers/crypto-helpers/index.js":278,"../helpers/protocol-helpers/index.js":280,"@hyperswarm/dht-relay":1,"@hyperswarm/dht-relay/ws":21,"b4a":55,"corestore":71,"hyper-webrtc":296,"hypercore-crypto":78,"hyperswarm":156,"protomux":195,"random-access-memory":199}],282:[function(require,module,exports){
+},{"@hyperswarm/dht-relay":1,"@hyperswarm/dht-relay/ws":21,"b4a":55,"corestore":71,"helpers/crypto-helpers":278,"helpers/protocol-helpers":280,"hyper-webrtc":296,"hypercore-crypto":78,"hyperswarm":156,"protomux":195,"random-access-memory":199}],282:[function(require,module,exports){
 const web_peer = require('../src/node_modules/web-peer/index.js')
 
 console.log('Starting web peer from web/page.js...')
