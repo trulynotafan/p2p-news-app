@@ -25,7 +25,7 @@ const validated_args = validate_cli_args(parsed_args)
 
 // Create clean options object instead of passing raw CLI args
 const options = {
-  name: validated_args['--name'] || `native-peer-${process.pid}`
+  name: validated_args['--name'] || `native-peer`
 }
 
 // Pass options object instead of CLI args array

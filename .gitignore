@@ -3,3 +3,4 @@
 /.babelrc
 /storage*
 /.eslintrc
+.*-seedphrase
