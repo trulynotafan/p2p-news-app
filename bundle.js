@@ -64128,35 +64128,35 @@ function derive_seed(primary_key, namespace, name) {
 }
 
 async function mnemonic_to_seed(mnemonic, passphrase = '') {
-  const mnemonicBuffer = b4a.from(mnemonic, 'utf8')
-  const saltBuffer = b4a.from('mnemonic' + passphrase, 'utf8')
-  const seedBuffer = b4a.alloc(64)
+  const mnemonic_buffer = b4a.from(mnemonic, 'utf8')
+  const salt_buffer = b4a.from('mnemonic' + passphrase, 'utf8')
+  const seed_buffer = b4a.alloc(64)
 
   await sodium.extension_pbkdf2_sha512_async(
-    seedBuffer,
-    mnemonicBuffer,
-    saltBuffer,
+    seed_buffer,
+    mnemonic_buffer,
+    salt_buffer,
     2048,
     64
   )
 
-  return seedBuffer
+  return seed_buffer
 }
 
 async function create_mnemonic_keypair(options = {}) {
   const mnemonic = options.mnemonic || bip39.generateMnemonic(128)
   const seed = await mnemonic_to_seed(mnemonic, options.passphrase || '')
-  const masterSeed = seed.subarray(0, 32)
+  const master_seed = seed.subarray(0, 32)
 
   const keypair = create_noise_keypair({
     namespace: options.namespace || 'noisekeys',
-    seed: masterSeed,
+    seed: master_seed,
     name: options.name || 'noise'
   })
 
   return {
     mnemonic,
-    seed: masterSeed,
+    seed: master_seed,
     keypair
   }
 }
@@ -64203,7 +64203,6 @@ function parse_feed_key (feedkey) {
 module.exports = {
   parse_feed_key
 }
-
 },{"b4a":70}],552:[function(require,module,exports){
 const c = require('compact-encoding')
 const { parse_feed_key } = require('../parsing-helpers/index.js')
@@ -64489,10 +64488,10 @@ const core = store.get({ name: 'test-core' })
 async function start_browser_peer (options = {}) {
   const name = options.name || 'browser-peer'
 
-  const isDev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
+  const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
 
   const socket = new WebSocket(
-    isDev
+    is_dev
       ? `ws://localhost:8080`
       : 'wss://p2p-relay-production.up.railway.app'
   )
@@ -64503,29 +64502,29 @@ async function start_browser_peer (options = {}) {
 
     // Try to load existing seedphrase
     let seedphrase = await load(name)
-    let mnemonicData
+    let mnemonic_data
     
     if (seedphrase) {
       console.log('Loaded existing seedphrase')
-      mnemonicData = await create_mnemonic_keypair({
+      mnemonic_data = await create_mnemonic_keypair({
         namespace: 'noisekeys',
         name: 'noise',
         mnemonic: seedphrase
       })
     } else {
-      mnemonicData = await create_mnemonic_keypair({
+      mnemonic_data = await create_mnemonic_keypair({
         namespace: 'noisekeys',
         name: 'noise'
       })
-      await save(mnemonicData.mnemonic, name)
+      await save(mnemonic_data.mnemonic, name)
       console.log('Generated and saved new mnemonic')
     }
     
-    console.log('Generated mnemonic:', mnemonicData.mnemonic)
-    console.log('Peer key:', mnemonicData.keypair.publicKey.toString('hex'))
+    console.log('Generated mnemonic:', mnemonic_data.mnemonic)
+    console.log('Peer key:', mnemonic_data.keypair.publicKey.toString('hex'))
 
     const dht = new DHT(new Stream(true, socket))
-    const swarm = new Hyperswarm({ dht, key_pair: mnemonicData.keypair })
+    const swarm = new Hyperswarm({ dht, key_pair: mnemonic_data.keypair })
 
     const join = () => swarm.join(topic, { server: true, client: true }).flushed()
     join().then(() => console.log('Joined swarm'))
