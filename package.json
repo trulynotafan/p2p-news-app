@@ -2,11 +2,6 @@
   "name": "p2p-news-app",
   "version": "0.0.1",
   "description": "A p2p-news-app worked via hypercore/hyperswarms stack",
-  "eslintConfig": {
-    "rules": {
-      "camelcase": 0
-    }
-  },
   "scripts": {
     "web": "budo web/page.js:bundle.js --live --open",
     "build": "browserify web/page.js > bundle.js",
@@ -16,7 +11,8 @@
     "resetcli": "rm -rf ./storage*",
     "peer": "bare src/node_modules/bare-peer/index.js",
     "lint": "standardx",
-    "lint:fix": "standardx --fix"
+    "lint:fix": "standardx --fix",
+    "postinstall": "patch-package"
   },
   "bin": {
     "native-peer": "./bin/cli.js"
@@ -24,7 +20,9 @@
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
     "@hyperswarm/testnet": "^3.1.4",
+    "autobase": "^7.12.0",
     "b4a": "^1.6.7",
+    "bare-crypto": "^1.4.5",
     "bare-fs": "^4.1.5",
     "bare-process": "^4.2.1",
     "bip39-mnemonic": "^2.4.0",
@@ -32,6 +30,7 @@
     "corestore-old": "npm:corestore@^6.18.4",
     "hypercore-crypto": "^3.5.0",
     "hyperswarm": "^4.10.1",
+    "keet-identity-key": "^3.1.0",
     "random-access-memory": "^6.2.1",
     "sodium-javascript": "^0.8.0",
     "sodium-universal": "^4.0.1",
@@ -40,6 +39,8 @@
   "devDependencies": {
     "browserify": "^17.0.0",
     "budo": "^11.8.4",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "standardx": "^7.0.0"
   },
   "overrides": {
