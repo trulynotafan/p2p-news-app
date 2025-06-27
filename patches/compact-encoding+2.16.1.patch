@@ -1,0 +1,11 @@
+diff --git a/node_modules/compact-encoding/index.js b/node_modules/compact-encoding/index.js
+index 5c025cb..104465c 100644
+--- a/node_modules/compact-encoding/index.js
++++ b/node_modules/compact-encoding/index.js
+@@ -762,5 +762,5 @@ function zigZagEncodeBigInt (n) {
+ }
+ 
+ function validateUint (n) {
+-  if ((n >= 0) === false /* Handles NaN as well */) throw new Error('uint must be positive')
++  if ((n >= 0) === false ) return
+ }

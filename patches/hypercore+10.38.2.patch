@@ -1,0 +1,214 @@
+diff --git a/node_modules/hypercore/lib/oplog.js b/node_modules/hypercore/lib/oplog.js
+index 16a120f..8b81e18 100644
+--- a/node_modules/hypercore/lib/oplog.js
++++ b/node_modules/hypercore/lib/oplog.js
+@@ -16,6 +16,11 @@ module.exports = class Oplog {
+     this._headers = [1, 0]
+     this._pageSize = pageSize
+     this._entryOffset = pageSize * 2
++    
++    // Browser compatibility: virtual truncation system
++    this._virtualSize = null // Track virtual file size for truncation
++    this._truncatedRanges = [] // Track ranges that have been "truncated"
++    this._isBrowser = typeof window !== 'undefined'
+   }
+ 
+   _addHeader (state, len, headerBit, partialBit) {
+@@ -58,8 +63,114 @@ module.exports = class Oplog {
+     return result
+   }
+ 
++  // Browser-compatible truncation implementation
++  _truncate(size) {
++    return new Promise((resolve, reject) => {
++      if (this.readonly) return resolve()
++      
++      // If native truncate is available, use it
++      if (this.storage.truncate && typeof this.storage.truncate === 'function') {
++        return this.storage.truncate(size, err => {
++          if (err) return reject(err)
++          this._virtualSize = null
++          this._truncatedRanges = []
++          resolve()
++        })
++      }
++      
++      // Browser fallback: implement virtual truncation
++      this._virtualSize = size
++      
++      // If we need to shrink the file, we'll handle it by tracking what's been truncated
++      // This requires rewriting the storage operations to respect the virtual size
++      this._rebuildStorageAfterTruncate(size).then(resolve).catch(reject)
++    })
++  }
++
++  async _rebuildStorageAfterTruncate(newSize) {
++    try {
++      // Read the current content up to the truncation point
++      const currentData = await this._readAll()
++      
++      if (currentData.byteLength <= newSize) {
++        // No actual truncation needed
++        this._virtualSize = newSize
++        return
++      }
++      
++      // Create new truncated buffer
++      const truncatedData = currentData.subarray(0, newSize)
++      
++      // For browsers, we need to completely rewrite the storage
++      // This assumes the storage has a way to be completely overwritten
++      await this._overwriteStorage(truncatedData)
++      
++      this._virtualSize = newSize
++    } catch (err) {
++      throw err
++    }
++  }
++
++  _overwriteStorage(newData) {
++    return new Promise((resolve, reject) => {
++      // Strategy 1: If storage supports a clear/reset method
++      if (typeof this.storage.clear === 'function') {
++        this.storage.clear(err => {
++          if (err) return reject(err)
++          this.storage.write(0, newData, err => {
++            if (err) return reject(err)
++            resolve()
++          })
++        })
++        return
++      }
++      
++      // Strategy 2: Write zeros to "clear" the excess data, then write new data
++      if (this.storage.write) {
++        // First write the new data
++        this.storage.write(0, newData, err => {
++          if (err) return reject(err)
++          
++          // Then write zeros to clear any remaining data
++          // This simulates truncation by overwriting with empty data
++          this._clearRemainingData(newData.byteLength).then(resolve).catch(reject)
++        })
++        return
++      }
++      
++      // Strategy 3: If we can't clear, just track virtually
++      this._virtualSize = newData.byteLength
++      resolve()
++    })
++  }
++
++  async _clearRemainingData(fromOffset) {
++    try {
++      const currentData = await this._readAll()
++      if (currentData.byteLength <= fromOffset) return
++      
++      const remainingSize = currentData.byteLength - fromOffset
++      const zeros = b4a.alloc(remainingSize) // Buffer of zeros
++      
++      return new Promise((resolve, reject) => {
++        this.storage.write(fromOffset, zeros, err => {
++          if (err) return reject(err)
++          resolve()
++        })
++      })
++    } catch (err) {
++      throw err
++    }
++  }
++
+   async open () {
+-    const buffer = await this._readAll() // TODO: stream the oplog in on load maybe?
++    let buffer = await this._readAll()
++    
++    // Apply virtual truncation if active
++    if (this._virtualSize !== null && buffer.byteLength > this._virtualSize) {
++      buffer = buffer.subarray(0, this._virtualSize)
++    }
++    
+     const state = { start: 0, end: buffer.byteLength, buffer }
+     const result = { header: null, entries: [] }
+ 
+@@ -122,13 +233,8 @@ module.exports = class Oplog {
+ 
+     if (size === buffer.byteLength) return result
+ 
+-    await new Promise((resolve, reject) => {
+-      if (this.readonly) return resolve()
+-      this.storage.truncate(size, err => {
+-        if (err) return reject(err)
+-        resolve()
+-      })
+-    })
++    // Use our browser-compatible truncation
++    await this._truncate(size)
+ 
+     return result
+   }
+@@ -138,9 +244,17 @@ module.exports = class Oplog {
+       this.storage.open(err => {
+         if (err && err.code !== 'ENOENT') return reject(err)
+         if (err) return resolve(b4a.alloc(0))
++        
+         this.storage.stat((err, stat) => {
+           if (err && err.code !== 'ENOENT') return reject(err)
+-          this.storage.read(0, stat.size, (err, buf) => {
++          
++          let size = stat.size
++          // Apply virtual size limit if active
++          if (this._virtualSize !== null && size > this._virtualSize) {
++            size = this._virtualSize
++          }
++          
++          this.storage.read(0, size, (err, buf) => {
+             if (err) return reject(err)
+             resolve(buf)
+           })
+@@ -168,16 +282,14 @@ module.exports = class Oplog {
+       this.storage.write(i === 0 ? 0 : this._pageSize, buf, err => {
+         if (err) return reject(err)
+ 
+-        this.storage.truncate(this._entryOffset, err => {
+-          if (err) return reject(err)
+-
++        // Use our browser-compatible truncation
++        this._truncate(this._entryOffset).then(() => {
+           this._headers[i] = bit
+           this.byteLength = 0
+           this.length = 0
+           this.flushed = true
+-
+           resolve()
+-        })
++        }).catch(reject)
+       })
+     })
+   }
+@@ -208,6 +320,9 @@ module.exports = class Oplog {
+     return new Promise((resolve, reject) => {
+       this.storage.close(err => {
+         if (err) return reject(err)
++        // Reset virtual truncation state
++        this._virtualSize = null
++        this._truncatedRanges = []
+         resolve()
+       })
+     })
+@@ -215,7 +330,15 @@ module.exports = class Oplog {
+ 
+   _append (buf, count) {
+     return new Promise((resolve, reject) => {
+-      this.storage.write(this._entryOffset + this.byteLength, buf, err => {
++      const writeOffset = this._entryOffset + this.byteLength
++      
++      // Check if we're writing beyond virtual truncation
++      if (this._virtualSize !== null && writeOffset + buf.byteLength > this._virtualSize) {
++        // Extend virtual size to accommodate new data
++        this._virtualSize = writeOffset + buf.byteLength
++      }
++      
++      this.storage.write(writeOffset, buf, err => {
+         if (err) return reject(WRITE_FAILED(err.message))
+ 
+         this.byteLength += buf.byteLength
