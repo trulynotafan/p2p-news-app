@@ -26,6 +26,7 @@
     "bare-process": "^4.2.1",
     "bip39-mnemonic": "^2.4.0",
     "corestore": "^6.18.4",
+    "hyper-webrtc": "^1.0.0",
     "hypercore-crypto": "^3.6.1",
     "hyperdrive": "^11.13.4",
     "hyperswarm": "^4.8.4",
@@ -43,7 +44,6 @@
     "standardx": "^7.0.0"
   },
   "overrides": {
-"hypercore": "10.38.2"
-
+    "hypercore": "10.38.2"
   }
 }
