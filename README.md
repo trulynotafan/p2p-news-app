@@ -55,7 +55,7 @@ Native peer CLI started successfully.
 ```
 The native peer will also join the same topic, and you will see diffrent option to subsribe to other online peers (web or CLI) and append data or replicate.
 
-If you want to see the flow of the code and how everything worked check out the dev diary. 
+If you want to see the flow of the code and how everything was made step by step check out the dev diary and for quick go through, check [code_explanation](https://github.com/trulynotafan/p2p-news-app/blob/main/code_explanation.md)
 
 
 
