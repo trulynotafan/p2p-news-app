@@ -1,28 +1,20 @@
-const { start: start_browser_peer, reset: reset_peer_state } = require('../src/node_modules/web-peer')
+const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
 const b4a = require('b4a')
 
-// basic state
-const state = {
-  username: localStorage.getItem('username') || '',
-  custom_relay: localStorage.getItem('custom_relay'),
-  current_view: null,
-  connection_status: 'disconnected',
-  update_interval: null,
-  store: null,
-  blog_core: null
-}
+let username = localStorage.getItem('username') || ''
+let current_view; let connection_status = 'disconnected'; let store; let blog_core; let update_interval
 
 // basic html structure
 document.body.innerHTML = `
   <div id="app">
-    <div id="login" style="display: ${state.username ? 'none' : 'block'}">
+    <div id="login" style="display: ${username ? 'none' : 'block'}">
       <h3>P2P Blog</h3>
-      <input id="username" value="${state.username}" placeholder="Your Name">
+      <input id="username" value="${username}" placeholder="Your Name">
       <button id="join_btn">Join</button>
     </div>
-    <div id="main" style="display: ${state.username ? 'block' : 'none'}">
-      <div id="status">Status: <span id="connection_status">Disconnected</span></div>
+    <div id="main" style="display: ${username ? 'block' : 'none'}">
+      <div>Status: <span id="connection_status">Disconnected</span></div>
       <nav>
         <button data-view="news">News</button>
         <button data-view="blog">Blog</button>
@@ -38,130 +30,123 @@ document.body.innerHTML = `
 // utility functions
 const format_date = timestamp => new Date(timestamp).toLocaleString()
 
-// update system
-function manage_updates(start = true) {
-  if (state.update_interval) clearInterval(state.update_interval)
-  if (start && ['news', 'explore'].includes(state.current_view)) {
-    state.update_interval = setInterval(() => render_view(state.current_view), 500)
-  }
-}
-
 // core functionality
-async function join_network() {
-  const username = document.getElementById('username').value.trim() || state.username
-  if (!username) return alert('Enter your name')
+async function join_network () {
+  const user = document.getElementById('username').value.trim() || username
+  if (!user) return alert('Enter your name')
   
-  localStorage.setItem('username', username)
-  state.username = username
+  localStorage.setItem('username', user)
+  username = user
   
   document.getElementById('login').style.display = 'none'
   document.getElementById('main').style.display = 'block'
   
   try {
     document.getElementById('connection_status').textContent = 'Connecting...'
-    state.connection_status = 'connecting'
+    connection_status = 'connecting'
     
-    const { store, blog_core } = await start_browser_peer({ name: username, relay: state.custom_relay })
-    state.store = store
-    state.blog_core = blog_core
+    const result = await start_browser_peer({ name: username })
+    store = result.store
+    blog_core = result.blog_core
     await blog_helper.init_blog(store, username)
     
-    state.connection_status = 'connected'
-    document.getElementById('connection_status').textContent = 
-      `Connected as ${username} (${state.custom_relay ? 'Custom Relay' : 'Default Relay'})`
+    connection_status = 'connected'
+    document.getElementById('connection_status').textContent = `Connected as ${username}`
     
-    // event handlers with explicit UI refresh
-    store.on('feed', async (core) => {
+    store.on('core', async (core) => {
       await blog_helper.handle_new_core(core)
-      if (state.current_view === 'explore') {
-        render_view('explore')
-      }
+      if (current_view === 'explore') render_view('explore')
     })
     
     blog_helper.on_update(() => {
-      if (['news', 'explore'].includes(state.current_view)) render_view(state.current_view)
+      if (['news', 'explore'].includes(current_view)) render_view(current_view)
     })
     
-    manage_updates(true)
     show_view('news')
   } catch (err) {
-    state.connection_status = 'error'
+    connection_status = 'error'
     document.getElementById('connection_status').textContent = 'Connection Error'
-    document.getElementById('view').innerHTML = `
-      <div class="error">
-        <p>Connection error</p>
-        <button onclick="location.reload()">Retry</button>
-        ${state.custom_relay ? '<button onclick="reset_relay()">Default Relay</button>' : ''}
-      </div>
-    `
+    document.getElementById('view').innerHTML = '<p>Connection error</p><button onclick="location.reload()">Retry</button>'
   }
 }
 
-// unified view system
-function show_view(name) {
-  // dont allow view changes if not connected yet
-  if (!state.store && state.connection_status !== 'error') {
-    alert("Let him join first man :|")
+// view system
+function show_view (name) {
+  if (!store && connection_status !== 'error') {
+    alert('Please connect first')
     return
   }
 
-  state.current_view = name
+  if (update_interval) {
+    clearInterval(update_interval)
+    update_interval = null
+  }
+
+  current_view = name
   document.querySelectorAll('nav button').forEach(btn => 
     btn.classList.toggle('active', btn.dataset.view === name)
   )
   render_view(name)
-  manage_updates(['news', 'explore'].includes(name))
+  
+  if (name === 'explore') {
+    update_interval = setInterval(() => render_view('explore'), 2000)
+  }
 }
 
-// unified render function
-function render_view(view) {
+// render function
+function render_view (view) {
   const renderers = {
-    news: () => {
-      // get all posts from all sources
+    news: async () => {
+      const my_posts = await blog_helper.get_my_posts()
+      const peer_blogs = await blog_helper.get_peer_blogs()
+      
       const posts = [
-        ...blog_helper.get_my_posts().map(p => ({...p, is_own: true})),
-        ...Array.from(blog_helper.get_peer_blogs().entries()).flatMap(([key, peer]) => 
-          (peer.posts || []).map(p => ({...p, peer_key: key, peer_name: peer.username || 'Unknown'}))
+        ...my_posts.map(p => ({ ...p, is_own: true })),
+        ...Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
+          (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
         )
       ].sort((a, b) => b.created - a.created)
       
       return `
-        <div><h3>News Feed</h3><small>Total Posts: ${posts.length}</small></div>
+        <h3>News Feed (${posts.length} posts)</h3>
         ${posts.map(p => `
           <div>
-            <h3>${p.title}</h3>
+            <h4>${p.title}</h4>
             <small>${p.is_own ? 'You' : p.peer_name} - ${format_date(p.created)}</small>
-            <p>${typeof p.content === 'string' ? p.content : 'Content unavailable'}</p>
+            <p>${p.content}</p>
             <hr>
           </div>
         `).join('') || '<p>No posts yet</p>'}
       `
     },
     
-    blog: () => {
-      const posts = blog_helper.get_my_posts()
+    blog: async () => {
+      const posts = await blog_helper.get_my_posts()
+      const sorted_posts = posts
         .sort((a, b) => b.created - a.created)
         .map(p => `
           <div>
-            <h3>${p.title}</h3>
+            <h4>${p.title}</h4>
             <small>${format_date(p.created)}</small>
-            <p>${typeof p.content === 'string' ? p.content : ''}</p>
+            <p>${p.content}</p>
             <hr>
           </div>
         `).join('')
-      return posts || '<p>No posts yet</p>'
+      return sorted_posts || '<p>No posts yet</p>'
     },
     
-    explore: () => {
+    explore: async () => {
       const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
-      const blogs = Array.from(blog_helper.get_discovered_blogs().entries())
-        .filter(([key, data]) => key !== my_key && data.username && data.title && data.drive_key)
+      const discovered = await blog_helper.get_discovered_blogs()
+      const subscribed = await blog_helper.get_peer_blogs()
+      
+      const blogs = Array.from(discovered.entries())
+        .filter(([key, data]) => key !== my_key)
         .map(([key, data]) => {
-          const is_subscribed = blog_helper.get_peer_blogs().has(key)
-          const peer_type = data.mode === 'native' ? ' (Native)' : ''
+          const is_subscribed = subscribed.has(key)
           return `
             <div>
-              <b>${data.title}</b> ${peer_type}
+              <b>${data.title}</b>
               <button onclick="${is_subscribed ? 'unsub' : 'sub'}('${key}')">
                 ${is_subscribed ? 'Unsubscribe' : 'Subscribe'}
               </button>
@@ -173,65 +158,36 @@ function render_view(view) {
     },
     
     post: () => `
+      <h3>Create Post</h3>
       <input id="post_title" placeholder="Title"><br>
-      <textarea id="post_content" rows="5"></textarea><br>
+      <textarea id="post_content" rows="5" placeholder="Content"></textarea><br>
       <button onclick="publish()">Publish</button>
     `,
     
-    config: () => {
-      const current_relay = state.custom_relay || (location.hostname === 'localhost' ? 
-        'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
-      return `
-        <div>
-          <h3>Connection Status</h3>
-          <p>Status: ${state.connection_status}</p>
-          <p>Current Relay: ${current_relay}</p>
-        </div>
-        <div>
-          <h3>Raw Data Viewer</h3>
-          <button onclick="show_raw_data()">Show Raw Core Data</button>
-          <div id="raw_data"></div>
-        </div>
-        <div>
-          <h3>Relay Server</h3>
-          <input id="relay_input" placeholder="ws://localhost:8080 or wss://your-relay.com">
-          <button onclick="set_relay()">Set Relay</button>
-          ${state.custom_relay ? '<button onclick="reset_relay()">Reset to Default</button>' : ''}
-        </div>
-        <div>
-          <h3>Reset Everything</h3>
-          <p>Warning: This will delete all your data</p>
-          <button onclick="reset_all()">Reset</button>
-        </div>
-      `
-    }
+    config: () => `
+      <h3>Config</h3>
+      <p>Username: ${username}</p>
+      <p>Status: ${connection_status}</p>
+      <hr>
+      <h4>Reset Data</h4>
+      <p>Delete all local data and start fresh</p>
+      <button onclick="reset_all_data()" style="background: red; color: white;">
+        Reset All Data
+      </button>
+    `
   }
   
-  document.getElementById('view').innerHTML = renderers[view]?.() || '<p>View not found</p>'
-}
-
-// raw data viewer function
-window.show_raw_data = async () => {
-  const raw_div = document.getElementById('raw_data')
-  raw_div.innerHTML = '<h4>Loading core data...</h4>'
-  
-  try {
-    if (!state.blog_core) throw new Error('Blog core not initialized')
-
-    const entries = []
-    for (let i = 0; i < state.blog_core.length; i++) {
-      const entry = JSON.parse(b4a.toString(await state.blog_core.get(i)))
-      entries.push(`Entry ${i}: ${JSON.stringify(entry, null, 2)}`)
+  const renderer = renderers[view]
+  if (renderer) {
+    if (renderer.constructor.name === 'AsyncFunction') {
+      renderer().then(html => {
+        document.getElementById('view').innerHTML = html
+      })
+    } else {
+      document.getElementById('view').innerHTML = renderer()
     }
-    
-    raw_div.innerHTML = `
-      <h4>Blog Core Data</h4>
-      <pre style="background: #f0f0f0; padding: 10px; overflow: auto; max-height: 400px">
-${entries.join('\n\n')}
-      </pre>
-    `
-  } catch (err) {
-    raw_div.innerHTML = `<p style="color: red">Error loading data: ${err.message}</p>`
+  } else {
+    document.getElementById('view').innerHTML = '<p>View not found</p>'
   }
 }
 
@@ -250,33 +206,50 @@ window.publish = async () => {
 }
 
 window.sub = key => blog_helper.subscribe(key).then(() => show_view('explore'))
-window.unsub = key => blog_helper.unsubscribe(key) && show_view('explore')
+window.unsub = key => blog_helper.unsubscribe(key).then(() => show_view('explore'))
 
-window.set_relay = () => {
-  const relay = document.getElementById('relay_input').value.trim()
-  if (!relay) return
-  if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
-    return alert('Relay must start with ws:// or wss://')
-  }
-  localStorage.setItem('custom_relay', relay)
-  location.reload()
-}
-
-window.reset_relay = () => {
-  localStorage.removeItem('custom_relay')
-  location.reload()
-}
-
-window.reset_all = async () => {
-  if (confirm('Reset everything?')) {
-    await reset_peer_state(state.username)
+// Reset all data function
+window.reset_all_data = async () => {
+  if (!confirm('Delete all data?')) return
+  
+  try {
     localStorage.clear()
-    location.reload()
+    
+    const databases = await window.indexedDB.databases()
+    for (const db of databases) {
+      if (db.name && (db.name.includes('blogs-') || db.name.includes('random-access-web'))) {
+        window.indexedDB.deleteDatabase(db.name)
+      }
+    }
+    
+    if (window.requestFileSystem || window.webkitRequestFileSystem) {
+      const requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem
+      await new Promise((resolve, reject) => {
+        requestFileSystem(window.PERSISTENT, 1024 * 1024, fs => {
+          fs.root.createReader().readEntries(entries => {
+            if (!entries.length) return resolve()
+            let completed = 0
+            entries.forEach(entry => {
+              const handler = () => {
+                completed++
+                if (completed === entries.length) resolve()
+              }
+              entry.isFile ? entry.remove(handler, handler) : entry.removeRecursively(handler, handler)
+            })
+          }, reject)
+        }, reject)
+      })
+    }
+    
+    if (store) {
+      try { await store.close() } catch (err) {}
+    }
+    
+    setTimeout(() => window.location.reload(), 1000)
+  } catch (err) {
+    alert('Reset error: ' + err.message)
   }
 }
-
-// cleanup and initialization
-window.addEventListener('beforeunload', () => manage_updates(false))
 
 // event listeners
 document.getElementById('join_btn').addEventListener('click', join_network)
@@ -285,4 +258,4 @@ document.querySelectorAll('nav button').forEach(btn =>
 )
 
 // auto-join if we have a username
-if (state.username) join_network()
+if (username) join_network()

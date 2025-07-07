@@ -2,16 +2,29 @@
   "name": "p2p-news-app",
   "version": "0.0.1",
   "description": "A p2p-news-app worked via hypercore/hyperswarms stack",
+ "eslintConfig": {
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "script"
+  },
+  "rules": {
+    "camelcase": "off",
+    "indent": ["error", 2]
+  }
+  },
   "scripts": {
     "web": "budo web/page.js:bundle.js --live --open",
     "build": "browserify web/page.js > bundle.js",
-    "test": "npm run testbuild && budo src/node_modules/web-peer/test.js:bundle.js --live --open",
-    "testbuild": "browserify src/node_modules/web-peer/test.js > bundle.js",
     "relay": "node src/node_modules/relay/index.js",
     "resetcli": "rm -rf ./storage*",
     "peer": "bare src/node_modules/bare-peer/index.js",
     "lint": "standardx",
-    "lint:fix": "standardx --fix",
+    "lintfix": "standardx --fix",
     "postinstall": "patch-package"
   },
   "bin": {
@@ -22,7 +35,8 @@
     "autobase": "^6.5.13",
     "b4a": "^1.6.7",
     "bare-crypto": "^1.4.5",
-    "bare-fs": "^4.1.5",
+    "bare-fs": "^4.1.6",
+    "bare-path": "^3.0.0",
     "bare-process": "^4.2.1",
     "bip39-mnemonic": "^2.4.0",
     "corestore": "^6.18.4",

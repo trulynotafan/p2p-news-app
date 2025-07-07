@@ -43,29 +43,24 @@ async function show_menu() {
 }
 
 async function show_discovered_peers(peer) {
-  const { blog_helper, discovered_peers } = peer
+  const { blog_helper } = peer
   const peer_list = []
   let i = 1
 
   console.log('\n=== Available Peers ===')
   
-  for (const [peer_id, peer_info] of discovered_peers) {
-    if (peer_info.initialized && peer_info.drive_key && peer_info.username) {
-      const subscribed_blogs = blog_helper.get_peer_blogs()
-      const hex_key = Array.from(blog_helper.get_discovered_blogs().keys())
-        .find(key => {
-          const blog = blog_helper.get_discovered_blogs().get(key)
-          return blog && blog.username === peer_info.username
-        })
-      
-      const is_subscribed = hex_key ? subscribed_blogs.has(hex_key) : false
-      
-      console.log(`${i}. ${peer_info.username} (${peer_info.mode})${is_subscribed ? ' [Subscribed]' : ''}`)
-      console.log(`   Blog: "${peer_info.blog_title}"`)
+  const discovered_blogs = await blog_helper.get_discovered_blogs();
+  const subscribed_blogs = await blog_helper.get_peer_blogs();
+
+  for (const [key, data] of discovered_blogs.entries()) {
+    if (data.username && data.title && data.drive_key) {
+      const is_subscribed = subscribed_blogs.has(key)
+      console.log(`${i}. ${data.username} [${key.slice(0,8)}]${is_subscribed ? ' [Subscribed]' : ''}`)
+      console.log(`   Blog: "${data.title}"`)
       peer_list.push({ 
-        peer_id, 
-        username: peer_info.username, 
-        title: peer_info.blog_title,
+        peer_key: key, 
+        username: data.username, 
+        title: data.title,
         is_subscribed 
       })
       i++
@@ -74,10 +69,6 @@ async function show_discovered_peers(peer) {
   
   if (peer_list.length === 0) {
     console.log('No peers with blogs available')
-    console.log('\nDiscovered peers (may not have blogs yet):')
-    for (const [peer_id, peer_info] of discovered_peers) {
-      console.log(`- ${peer_info.username} (${peer_info.mode}) ${peer_info.initialized ? '[Has Blog]' : '[No Blog Yet]'}`)
-    }
     return null
   }
   
@@ -85,7 +76,7 @@ async function show_discovered_peers(peer) {
 }
 
 async function handle_user_input(input, peer) {
-  const { blog_helper, subscribe_to_peer } = peer
+  const { blog_helper } = peer
   
   switch(input.trim()) {
     case '1':
@@ -150,13 +141,12 @@ async function handle_user_input(input, peer) {
       console.log(`\nSubscribing to ${peer_info.username}...`)
       console.log(`Blog: "${peer_info.title}"`)
       
-      const success = await subscribe_to_peer(peer_info.peer_id)
+      const success = await peer.subscribe(peer_info.peer_key)
       
       if (success) {
         console.log(`\nSuccessfully subscribed to ${peer_info.username}!`)
-        
-        const subscribed_blogs = blog_helper.get_peer_blogs()
-        for (const [key, blog] of subscribed_blogs) {
+        const subscribed_blogs = await blog_helper.get_peer_blogs();
+        for (const [key, blog] of subscribed_blogs.entries()) {
           if (blog.username === peer_info.username) {
             console.log(`Available posts: ${blog.posts?.length || 0}`)
             if (blog.posts && blog.posts.length > 0) {
@@ -175,18 +165,15 @@ async function handle_user_input(input, peer) {
 
     case '5':
       console.log('\n=== Subscribed Blogs ==')
-      const subscribed = blog_helper.get_peer_blogs()
-      
+      const subscribed = await blog_helper.get_peer_blogs();
       if (subscribed.size === 0) {
         console.log('Not subscribed to any blogs')
         break
       }
-      
-      for (const [key, peer_blog] of subscribed) {
+      for (const [key, peer_blog] of subscribed.entries()) {
         console.log(`\n${peer_blog.username}'s Blog`)
         console.log(`   Mode: ${peer_blog.mode || 'unknown'}`)
         console.log(`   Posts: ${peer_blog.posts?.length || 0}`)
-        
         if (peer_blog.posts && peer_blog.posts.length > 0) {
           console.log('   Recent posts:')
           peer_blog.posts.slice(-3).forEach(post => {
