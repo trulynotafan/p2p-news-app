@@ -34,7 +34,7 @@ e.g: `npm run build && npm run web`
 [0003] 2752ms     2.3MB (browserify)
 
 ```
-when two or more peers connect they will send each other the core-key and start core replication 
+Now open the webpage, input your username to join the topic, have your friends join aswell and when two peers connect, you can subsribe to each other and exchange blogs, fully decentralized. 
 
 
 ## Run native peer
@@ -53,11 +53,10 @@ Native peer CLI started successfully.
 
 
 ```
-Native peer will also join the same topic and connect to other browser/native peers.
+The native peer will also join the same topic, and you will see diffrent option to subsribe to other online peers (web or CLI) and append data or replicate.
 
+If you want to see the flow of the code and how everything worked check out the dev diary. 
 
-
-More stuff will be added soon :)
 
 
 
