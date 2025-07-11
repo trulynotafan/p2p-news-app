@@ -45,7 +45,15 @@ async function join_network () {
     document.getElementById('connection_status').textContent = 'Connecting...'
     connection_status = 'connecting'
     
-    const result = await start_browser_peer({ name: username })
+    const custom_relay = localStorage.getItem('custom_relay')
+    
+    // Add timeout for connection
+    const connectionPromise = start_browser_peer({ name: username, relay: custom_relay })
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout - check your relay URL')), 10000)
+    )
+    
+    const result = await Promise.race([connectionPromise, timeoutPromise])
     store = result.store
     blog_core = result.blog_core
     await blog_helper.init_blog(store, username)
@@ -66,7 +74,11 @@ async function join_network () {
   } catch (err) {
     connection_status = 'error'
     document.getElementById('connection_status').textContent = 'Connection Error'
-    document.getElementById('view').innerHTML = '<p>Connection error</p><button onclick="location.reload()">Retry</button>'
+    document.getElementById('view').innerHTML = `
+      <p>Connection error: ${err.message}</p>
+      <button onclick="location.reload()">Retry</button>
+      <button onclick="reset_relay_and_reload()">Reset Relay & Retry</button>
+    `
   }
 }
 
@@ -97,22 +109,18 @@ function show_view (name) {
 function render_view (view) {
   const renderers = {
     news: async () => {
-      const my_posts = await blog_helper.get_my_posts()
       const peer_blogs = await blog_helper.get_peer_blogs()
       
-      const posts = [
-        ...my_posts.map(p => ({ ...p, is_own: true })),
-        ...Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
-          (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
-        )
-      ].sort((a, b) => b.created - a.created)
+      const posts = Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
+        (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
+      ).sort((a, b) => b.created - a.created)
       
       return `
         <h3>News Feed (${posts.length} posts)</h3>
         ${posts.map(p => `
           <div>
             <h4>${p.title}</h4>
-            <small>${p.is_own ? 'You' : p.peer_name} - ${format_date(p.created)}</small>
+            <small>${p.peer_name} - ${format_date(p.created)}</small>
             <p>${p.content}</p>
             <hr>
           </div>
@@ -169,6 +177,12 @@ function render_view (view) {
       <p>Username: ${username}</p>
       <p>Status: ${connection_status}</p>
       <hr>
+      <h4>Relay Settings</h4>
+      <p>Current: ${localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')}</p>
+      <input id="custom_relay" placeholder="Custom relay URL (e.g., ws://localhost:8080)" value="${localStorage.getItem('custom_relay') || ''}">
+      <button onclick="set_custom_relay()">Set Relay</button>
+      <button onclick="reset_relay()">Reset to Default</button>
+      <hr>
       <h4>Reset Data</h4>
       <p>Delete all local data and start fresh</p>
       <button onclick="reset_all_data()" style="background: red; color: white;">
@@ -207,6 +221,34 @@ window.publish = async () => {
 
 window.sub = key => blog_helper.subscribe(key).then(() => show_view('explore'))
 window.unsub = key => blog_helper.unsubscribe(key).then(() => show_view('explore'))
+
+window.set_custom_relay = () => {
+  const relay = document.getElementById('custom_relay').value.trim()
+  if (!relay) {
+    alert('Enter a relay URL')
+    return
+  }
+  
+  // Basic validation
+  if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
+    alert('Relay URL must start with ws:// or wss://')
+    return
+  }
+  
+  localStorage.setItem('custom_relay', relay)
+  alert('Relay set. Reconnect to apply changes.')
+}
+
+window.reset_relay = () => {
+  localStorage.removeItem('custom_relay')
+  document.getElementById('custom_relay').value = ''
+  alert('Relay reset to default. Reconnect to apply changes.')
+}
+
+window.reset_relay_and_reload = () => {
+  localStorage.removeItem('custom_relay')
+  location.reload()
+}
 
 // Reset all data function
 window.reset_all_data = async () => {

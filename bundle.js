@@ -74020,16 +74020,16 @@ const Hyperdrive = require('hyperdrive')
 const event_emitter = require('events')
 
 let store, blog_core, drive, emitter, connected_peers = new Map()
-let subscriptionStore = null;
-function setSubscriptionStore(store) { subscriptionStore = store; }
+let subscription_store = null;
+function set_subscription_store(store) { subscription_store = store; }
 
 // local storage for keeping track of subscribed peers
 function get_local_subscribed_peers() {
-  if (subscriptionStore) return subscriptionStore.get();
+  if (subscription_store) return subscription_store.get();
   try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
 }
 function add_local_subscribed_peer(key) {
-  if (subscriptionStore) return subscriptionStore.add(key);
+  if (subscription_store) return subscription_store.add(key);
   const arr = get_local_subscribed_peers()
   if (!arr.includes(key)) {
     arr.push(key)
@@ -74037,7 +74037,7 @@ function add_local_subscribed_peer(key) {
   }
 }
 function remove_local_subscribed_peer(key) {
-  if (subscriptionStore) return subscriptionStore.remove(key);
+  if (subscription_store) return subscription_store.remove(key);
   localStorage.setItem('subscribed_peers', JSON.stringify(get_local_subscribed_peers().filter(k => k !== key)))
 }
 
@@ -74320,7 +74320,7 @@ module.exports = {
   get_discovered_blogs,
   get_my_core_key,
   on_update,
-  setSubscriptionStore
+  set_subscription_store
 }
 },{"b4a":71,"events":239,"hyperdrive":363}],631:[function(require,module,exports){
 const b4a = require('b4a')
@@ -74551,11 +74551,10 @@ const extend = require('./extension_pbkdf2_sha512_async.js')
 const sodium = require('sodium-javascript')
 Object.assign(sodium, extend)
 module.exports = sodium
-
 },{"./extension_pbkdf2_sha512_async.js":634,"sodium-javascript":535}],634:[function(require,module,exports){
 const b4a = require('b4a')
 
-async function extension_pbkdf2_sha512_async (out, password, salt, iterations, keylen) {
+async function extension_pbkdf2_sha512_async(out, password, salt, iterations, keylen) {
   if (out.length < keylen) throw new Error('Output buffer too small')
   
   // Use Web Crypto API if available (preferred for browsers)
@@ -74623,7 +74622,7 @@ async function extension_pbkdf2_sha512_async (out, password, salt, iterations, k
   return out
 }
 
-async function hmac_sha512 (key, data) {
+async function hmac_sha512(key, data) {
   if (!key || !data) {
     throw new Error('HMAC key and data are required')
   }
@@ -74648,7 +74647,7 @@ async function hmac_sha512 (key, data) {
   
   // Manual HMAC-SHA512 implementation
   const blockSize = 128 // SHA-512 block size
-  const hashSize = 64 // SHA-512 output size
+  const hashSize = 64   // SHA-512 output size
   
   // Process key
   let processedKey = key
@@ -74682,7 +74681,7 @@ async function hmac_sha512 (key, data) {
   return result
 }
 
-async function sha512 (data) {
+async function sha512(data) {
   // Try Web Crypto API first
   if (typeof crypto !== 'undefined' && crypto.subtle) {
     try {
@@ -74729,7 +74728,6 @@ async function sha512 (data) {
 module.exports = {
   extension_pbkdf2_sha512_async
 }
-
 },{"b4a":71,"crypto":198,"sodium-javascript":535}],635:[function(require,module,exports){
 const b4a = require('b4a')
 const Hyperswarm = require('hyperswarm')
@@ -74922,6 +74920,7 @@ document.body.innerHTML = `
     <div id="login" style="display: ${username ? 'none' : 'block'}">
       <h3>P2P Blog</h3>
       <input id="username" value="${username}" placeholder="Your Name">
+      <input id="relay_url" placeholder="Custom Relay URL (optional)" style="width: 300px;">
       <button id="join_btn">Join</button>
     </div>
     <div id="main" style="display: ${username ? 'block' : 'none'}">
@@ -74946,6 +74945,8 @@ async function join_network () {
   const user = document.getElementById('username').value.trim() || username
   if (!user) return alert('Enter your name')
   
+  const custom_relay = document.getElementById('relay_url').value.trim()
+  
   localStorage.setItem('username', user)
   username = user
   
@@ -74956,7 +74957,10 @@ async function join_network () {
     document.getElementById('connection_status').textContent = 'Connecting...'
     connection_status = 'connecting'
     
-    const result = await start_browser_peer({ name: username })
+    const options = { name: username }
+    if (custom_relay) options.relay = custom_relay
+    
+    const result = await start_browser_peer(options)
     store = result.store
     blog_core = result.blog_core
     await blog_helper.init_blog(store, username)
@@ -74977,7 +74981,11 @@ async function join_network () {
   } catch (err) {
     connection_status = 'error'
     document.getElementById('connection_status').textContent = 'Connection Error'
-    document.getElementById('view').innerHTML = '<p>Connection error</p><button onclick="location.reload()">Retry</button>'
+    document.getElementById('view').innerHTML = `
+      <p>Connection error</p>
+      <button onclick="location.reload()">Retry</button>
+      ${custom_relay ? '<button onclick="try_default_relay()">Try Default Relay</button>' : ''}
+    `
   }
 }
 
@@ -75008,22 +75016,18 @@ function show_view (name) {
 function render_view (view) {
   const renderers = {
     news: async () => {
-      const my_posts = await blog_helper.get_my_posts()
       const peer_blogs = await blog_helper.get_peer_blogs()
       
-      const posts = [
-        ...my_posts.map(p => ({ ...p, is_own: true })),
-        ...Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
-          (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
-        )
-      ].sort((a, b) => b.created - a.created)
+      const posts = Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
+        (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
+      ).sort((a, b) => b.created - a.created)
       
       return `
         <h3>News Feed (${posts.length} posts)</h3>
         ${posts.map(p => `
           <div>
             <h4>${p.title}</h4>
-            <small>${p.is_own ? 'You' : p.peer_name} - ${format_date(p.created)}</small>
+            <small>${p.peer_name} - ${format_date(p.created)}</small>
             <p>${p.content}</p>
             <hr>
           </div>
@@ -75119,6 +75123,15 @@ window.publish = async () => {
 window.sub = key => blog_helper.subscribe(key).then(() => show_view('explore'))
 window.unsub = key => blog_helper.unsubscribe(key).then(() => show_view('explore'))
 
+// Try default relay function
+window.try_default_relay = async () => {
+  document.getElementById('relay_url').value = ''
+  document.getElementById('login').style.display = 'block'
+  document.getElementById('main').style.display = 'none'
+  connection_status = 'disconnected'
+  document.getElementById('connection_status').textContent = 'Disconnected'
+}
+
 // Reset all data function
 window.reset_all_data = async () => {
   if (!confirm('Delete all data?')) return
@@ -75170,5 +75183,4 @@ document.querySelectorAll('nav button').forEach(btn =>
 
 // auto-join if we have a username
 if (username) join_network()
-
 },{"../src/node_modules/helpers/blog-helpers":630,"../src/node_modules/web-peer":635,"b4a":71}]},{},[636]);
