@@ -1,5 +1,5 @@
 diff --git a/node_modules/hypercore/lib/oplog.js b/node_modules/hypercore/lib/oplog.js
-index 16a120f..8b81e18 100644
+index 16a120f..5354cc9 100644
 --- a/node_modules/hypercore/lib/oplog.js
 +++ b/node_modules/hypercore/lib/oplog.js
 @@ -16,6 +16,11 @@ module.exports = class Oplog {

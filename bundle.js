@@ -651,8 +651,8 @@ const accept = deny
 const destroy = {
   preencode (state, m) {
     state.end++ // Flags
-    if (m.paired) id.preencode(state, m.alias)
-    else id.preencode(state, m.remoteAlias)
+    if (m.paired) id.preencode(state, isValidUint32(m.alias) ? m.alias : 0)
+    else id.preencode(state, isValidUint32(m.remoteAlias) ? m.remoteAlias : 0)
     if (m.error) string.preencode(state, m.error)
   },
   encode (state, m) {
@@ -661,9 +661,9 @@ const destroy = {
 
     if (m.paired) {
       flags |= 1
-      id.encode(state, m.alias)
+      id.encode(state, isValidUint32(m.alias) ? m.alias : 0)
     } else {
-      id.encode(state, m.remoteAlias)
+      id.encode(state, isValidUint32(m.remoteAlias) ? m.remoteAlias : 0)
     }
 
     if (m.error) {
@@ -685,6 +685,11 @@ const destroy = {
       error: (flags & 2) === 0 ? null : string.decode(state)
     }
   }
+}
+
+// Helper for uint32 validation
+function isValidUint32(n) {
+  return typeof n === 'number' && n >= 0 && Number.isFinite(n) && n <= 0xFFFFFFFF;
 }
 
 const listen = {
@@ -28076,7 +28081,7 @@ function zigZagEncodeBigInt (n) {
 }
 
 function validateUint (n) {
-  if ((n >= 0) === false ) return
+  if ((n >= 0) === false /* Handles NaN as well */) throw new Error('uint must be positive')
 }
 
 },{"./endian":184,"./lexint":186,"./raw":187,"b4a":71}],186:[function(require,module,exports){
@@ -74920,7 +74925,6 @@ document.body.innerHTML = `
     <div id="login" style="display: ${username ? 'none' : 'block'}">
       <h3>P2P Blog</h3>
       <input id="username" value="${username}" placeholder="Your Name">
-      <input id="relay_url" placeholder="Custom Relay URL (optional)" style="width: 300px;">
       <button id="join_btn">Join</button>
     </div>
     <div id="main" style="display: ${username ? 'block' : 'none'}">
@@ -74945,8 +74949,6 @@ async function join_network () {
   const user = document.getElementById('username').value.trim() || username
   if (!user) return alert('Enter your name')
   
-  const custom_relay = document.getElementById('relay_url').value.trim()
-  
   localStorage.setItem('username', user)
   username = user
   
@@ -74957,10 +74959,15 @@ async function join_network () {
     document.getElementById('connection_status').textContent = 'Connecting...'
     connection_status = 'connecting'
     
-    const options = { name: username }
-    if (custom_relay) options.relay = custom_relay
+    const custom_relay = localStorage.getItem('custom_relay')
     
-    const result = await start_browser_peer(options)
+    // Add timeout for connection
+    const connectionPromise = start_browser_peer({ name: username, relay: custom_relay })
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout - check your relay URL')), 10000)
+    )
+    
+    const result = await Promise.race([connectionPromise, timeoutPromise])
     store = result.store
     blog_core = result.blog_core
     await blog_helper.init_blog(store, username)
@@ -74982,9 +74989,9 @@ async function join_network () {
     connection_status = 'error'
     document.getElementById('connection_status').textContent = 'Connection Error'
     document.getElementById('view').innerHTML = `
-      <p>Connection error</p>
+      <p>Connection error: ${err.message}</p>
       <button onclick="location.reload()">Retry</button>
-      ${custom_relay ? '<button onclick="try_default_relay()">Try Default Relay</button>' : ''}
+      <button onclick="reset_relay_and_reload()">Reset Relay & Retry</button>
     `
   }
 }
@@ -75084,6 +75091,12 @@ function render_view (view) {
       <p>Username: ${username}</p>
       <p>Status: ${connection_status}</p>
       <hr>
+      <h4>Relay Settings</h4>
+      <p>Current: ${localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')}</p>
+      <input id="custom_relay" placeholder="Custom relay URL (e.g., ws://localhost:8080)" value="${localStorage.getItem('custom_relay') || ''}">
+      <button onclick="set_custom_relay()">Set Relay</button>
+      <button onclick="reset_relay()">Reset to Default</button>
+      <hr>
       <h4>Reset Data</h4>
       <p>Delete all local data and start fresh</p>
       <button onclick="reset_all_data()" style="background: red; color: white;">
@@ -75123,13 +75136,32 @@ window.publish = async () => {
 window.sub = key => blog_helper.subscribe(key).then(() => show_view('explore'))
 window.unsub = key => blog_helper.unsubscribe(key).then(() => show_view('explore'))
 
-// Try default relay function
-window.try_default_relay = async () => {
-  document.getElementById('relay_url').value = ''
-  document.getElementById('login').style.display = 'block'
-  document.getElementById('main').style.display = 'none'
-  connection_status = 'disconnected'
-  document.getElementById('connection_status').textContent = 'Disconnected'
+window.set_custom_relay = () => {
+  const relay = document.getElementById('custom_relay').value.trim()
+  if (!relay) {
+    alert('Enter a relay URL')
+    return
+  }
+  
+  // Basic validation
+  if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
+    alert('Relay URL must start with ws:// or wss://')
+    return
+  }
+  
+  localStorage.setItem('custom_relay', relay)
+  alert('Relay set. Reconnect to apply changes.')
+}
+
+window.reset_relay = () => {
+  localStorage.removeItem('custom_relay')
+  document.getElementById('custom_relay').value = ''
+  alert('Relay reset to default. Reconnect to apply changes.')
+}
+
+window.reset_relay_and_reload = () => {
+  localStorage.removeItem('custom_relay')
+  location.reload()
 }
 
 // Reset all data function

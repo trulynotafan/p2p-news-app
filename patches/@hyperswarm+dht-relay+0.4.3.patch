@@ -1,0 +1,39 @@
+diff --git a/node_modules/@hyperswarm/dht-relay/lib/messages.js b/node_modules/@hyperswarm/dht-relay/lib/messages.js
+index c848a14..f8f03ec 100644
+--- a/node_modules/@hyperswarm/dht-relay/lib/messages.js
++++ b/node_modules/@hyperswarm/dht-relay/lib/messages.js
+@@ -178,8 +178,8 @@ const accept = deny
+ const destroy = {
+   preencode (state, m) {
+     state.end++ // Flags
+-    if (m.paired) id.preencode(state, m.alias)
+-    else id.preencode(state, m.remoteAlias)
++    if (m.paired) id.preencode(state, isValidUint32(m.alias) ? m.alias : 0)
++    else id.preencode(state, isValidUint32(m.remoteAlias) ? m.remoteAlias : 0)
+     if (m.error) string.preencode(state, m.error)
+   },
+   encode (state, m) {
+@@ -188,9 +188,9 @@ const destroy = {
+ 
+     if (m.paired) {
+       flags |= 1
+-      id.encode(state, m.alias)
++      id.encode(state, isValidUint32(m.alias) ? m.alias : 0)
+     } else {
+-      id.encode(state, m.remoteAlias)
++      id.encode(state, isValidUint32(m.remoteAlias) ? m.remoteAlias : 0)
+     }
+ 
+     if (m.error) {
+@@ -214,6 +214,11 @@ const destroy = {
+   }
+ }
+ 
++// Helper for uint32 validation
++function isValidUint32(n) {
++  return typeof n === 'number' && n >= 0 && Number.isFinite(n) && n <= 0xFFFFFFFF;
++}
++
+ const listen = {
+   preencode (state, m) {
+     state.end++ // Flags
