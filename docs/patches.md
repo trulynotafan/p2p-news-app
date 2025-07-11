@@ -1,4 +1,4 @@
-```md
+
 # Patch 1 (dht-relay)
 
 ## Problem
@@ -77,4 +77,3 @@ this._truncate(size).then(resolve).catch(reject)
 ```
 
 This patch allows `oplog` to run safely in both Node.js and browser environments without relying on unsupported filesystem operations.
-```
