@@ -64,7 +64,7 @@ The native peer will also join the same topic, and you will see diffrent option 
 
 <img width="322" height="151" alt="image" src="https://github.com/user-attachments/assets/ab4b0ce6-f41f-47e2-b63c-59f806552650" />
 
-If you want to see the flow of the code and how everything was made step by step check out the dev diary and for quick go through, check [code_explanation](https://github.com/trulynotafan/p2p-news-app/blob/main/code_explanation.md)
+If you want to see the flow of the code and how everything was made step by step check out the dev diary and for quick go through, check [code_explanation](https://github.com/trulynotafan/p2p-news-app/blob/main/docs/code_explanation.md)
 
 
 
