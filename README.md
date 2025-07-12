@@ -36,6 +36,11 @@ e.g: `npm run build && npm run web`
 ```
 Now open the webpage, input your username to join the topic, have your friends join aswell and when two peers connect, you can subsribe to each other and exchange blogs, fully decentralized. 
 
+**Screenshot**
+
+<img width="623" height="316" alt="image" src="https://github.com/user-attachments/assets/daffc03b-a036-4beb-a3db-6586b151bef2" />
+
+
 
 ## Run native peer
 
@@ -54,6 +59,10 @@ Native peer CLI started successfully.
 
 ```
 The native peer will also join the same topic, and you will see diffrent option to subsribe to other online peers (web or CLI) and append data or replicate.
+
+**Screenshot**
+
+<img width="322" height="151" alt="image" src="https://github.com/user-attachments/assets/ab4b0ce6-f41f-47e2-b63c-59f806552650" />
 
 If you want to see the flow of the code and how everything was made step by step check out the dev diary and for quick go through, check [code_explanation](https://github.com/trulynotafan/p2p-news-app/blob/main/code_explanation.md)
 
