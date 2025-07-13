@@ -13828,6 +13828,19 @@ exports.listenerCount = function listenerCount(emitter, name) {
   return emitter.listenerCount(name)
 }
 
+exports.getMaxListeners = function getMaxListeners(emitter) {
+  return emitter.getMaxListeners()
+}
+
+exports.setMaxListeners = function setMaxListeners(n, ...emitters) {
+  if (emitters.length === 0) exports.defaultMaxListeners = n
+  else {
+    for (const emitter of emitters) {
+      emitter.setMaxListeners(n)
+    }
+  }
+}
+
 },{"./lib/errors":78}],78:[function(require,module,exports){
 module.exports = class EventEmitterError extends Error {
   constructor(msg, code, fn = EventEmitterError, opts) {
@@ -18394,7 +18407,8 @@ module.exports = {
   normalizeMnemonic,
   validateMnemonic,
   mnemonicToEntropy,
-  mnemonicToSeed
+  mnemonicToSeed,
+  entropyToMnemonic
 }
 
 function generateMnemonic ({ entropy = generateEntropy(), language = 'english' } = {}) {
@@ -18410,6 +18424,10 @@ function generateMnemonic ({ entropy = generateEntropy(), language = 'english' }
   const delimiter = language === 'japanese' ? '\u3000' : ' '
 
   return words.join(delimiter).trim()
+}
+
+function entropyToMnemonic (entropy, { language = 'english' } = {}) {
+  return generateMnemonic({ entropy, language })
 }
 
 function mnemonicToEntropy (mnemonic) {
@@ -54189,7 +54207,7 @@ module.exports = class Hyperswarm extends EventEmitter {
   // Called when the PeerQueue indicates a connection should be attempted.
   _attemptClientConnections () {
     // Guard against re-entries - unsure if it still needed but doesn't hurt
-    if (this._drainingQueue) return
+    if (this._drainingQueue || this.suspended) return
     this._drainingQueue = true
 
     for (const peerInfo of this.explicitPeers) {
@@ -54488,8 +54506,10 @@ module.exports = class Hyperswarm extends EventEmitter {
       promises.push(discovery.suspend({ log }))
     }
 
+    const pending = []
     for (const connection of this._allConnections) {
       connection.destroy()
+      pending.push(new Promise(resolve => connection.on('close', resolve)))
     }
 
     this.suspended = true
@@ -54499,6 +54519,16 @@ module.exports = class Hyperswarm extends EventEmitter {
     log('Done, suspending the dht...')
     await this.dht.suspend({ log })
     log('Done, swarm fully suspended')
+
+    await Promise.all(pending)
+
+    // reset queue
+    this._timer.destroy()
+    this._timer = new RetryTimer(this._requeue.bind(this), {
+      backoffs: this._timer.backoffs,
+      jitter: this._timer.jitter
+    })
+    this._queue = spq()
   }
 
   async resume ({ log = noop } = {}) {
@@ -54514,8 +54544,8 @@ module.exports = class Hyperswarm extends EventEmitter {
       discovery.resume()
     }
 
-    this._attemptClientConnections()
     this.suspended = false
+    this._attemptClientConnections()
   }
 
   topics () {
@@ -74772,7 +74802,15 @@ async function start_browser_peer (options = {}) {
 
   return new Promise((resolve, reject) => {
     const socket = new WebSocket(relay_url)
-    socket.addEventListener('error', err => reject(err))
+    socket.addEventListener('error', err => {
+      // If its an invalid url, reject If it's a valid url thats down, resolve offline
+      const errorMessage = err.message || err.toString() || ''
+      if (errorMessage.includes('Invalid URL') || errorMessage.includes('URL scheme') || errorMessage.includes('ERR_INVALID_URL')) {
+        reject(new Error(`Invalid relay URL: ${relay_url}`))
+      } else {
+        resolve({ store, core, blog_core, swarm: null, dht: null, cleanup: () => {} })
+      }
+    })
     socket.addEventListener('close', () => console.log('WebSocket closed'))
 
     socket.addEventListener('open', async () => {
@@ -74801,6 +74839,12 @@ async function start_browser_peer (options = {}) {
         // protocol handlers
         const handlers = {
           on_protocol: async (message, send, current_peer_mode) => {
+            // Store discovered relay
+            if (message.data.relay_url) {
+              if (!window.discovered_relays) window.discovered_relays = new Set()
+              window.discovered_relays.add(message.data.relay_url)
+            }
+            
             if (message.data.mode === 'browser' && current_peer_mode === 'browser') {
               const stream = HyperWebRTC.from(relay, { initiator: relay.isInitiator })
               stream.on('open', () => {
@@ -74876,7 +74920,8 @@ async function start_browser_peer (options = {}) {
             data: {
               name,
               mode: 'browser',
-              device_public_key: b4a.toString(mnemonic_data.keypair.publicKey, 'hex')
+              device_public_key: b4a.toString(mnemonic_data.keypair.publicKey, 'hex'),
+              relay_url: relay_url
             }
           })
         }
@@ -74936,6 +74981,9 @@ document.body.innerHTML = `
         <button data-view="post">Post</button>
         <button data-view="config">Config</button>
       </nav>
+      <style>
+        nav button.active { background-color: #007bff; color: white; }
+      </style>
       <div id="view"></div>
     </div>
   </div>
@@ -74959,12 +75007,12 @@ async function join_network () {
     document.getElementById('connection_status').textContent = 'Connecting...'
     connection_status = 'connecting'
     
-    const custom_relay = localStorage.getItem('custom_relay')
+    const relays = JSON.parse(localStorage.getItem('relays') || '[]')
+    const custom_relay = localStorage.getItem('custom_relay') || (relays.length > 0 ? relays[0] : null)
     
-    // Add timeout for connection
     const connectionPromise = start_browser_peer({ name: username, relay: custom_relay })
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout - check your relay URL')), 10000)
+      setTimeout(() => reject(new Error('Connection timeout')), 10000)
     )
     
     const result = await Promise.race([connectionPromise, timeoutPromise])
@@ -74972,11 +75020,40 @@ async function join_network () {
     blog_core = result.blog_core
     await blog_helper.init_blog(store, username)
     
-    connection_status = 'connected'
-    document.getElementById('connection_status').textContent = `Connected as ${username}`
+    if (result.swarm) {
+      connection_status = 'connected'
+      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      document.getElementById('connection_status').textContent = `🟢 ${username} via ${current_relay}`
+    } else {
+      connection_status = 'error'
+      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      document.getElementById('connection_status').textContent = `🔴 ${username} - Offline Mode (tried: ${current_relay})`
+    }
     
     store.on('core', async (core) => {
-      await blog_helper.handle_new_core(core)
+      const key = b4a.toString(core.key, 'hex')
+      const manual_peers = JSON.parse(localStorage.getItem('manual_subscribed_peers') || '[]')
+      
+      // if its manually saved, subscribe to it
+      if (manual_peers.includes(key)) {
+        // give it some time to fully init before subscribing
+        setTimeout(() => {
+          blog_helper.subscribe(key).then(() => {
+            // remove from manual peers after subsribing so next time reconnection handles it 
+            const updated_manual_peers = manual_peers.filter(p => p !== key)
+            localStorage.setItem('manual_subscribed_peers', JSON.stringify(updated_manual_peers))
+            if (current_view === 'explore') render_view('explore')
+          })
+        }, 2000)
+      } else {
+        // let blog helpers handle normal peer discovery
+        await blog_helper.handle_new_core(core)
+      }
+      
+      if (current_view === 'explore') render_view('explore')
+    })
+    
+    store.on('blog-discovered', async () => {
       if (current_view === 'explore') render_view('explore')
     })
     
@@ -74988,17 +75065,13 @@ async function join_network () {
   } catch (err) {
     connection_status = 'error'
     document.getElementById('connection_status').textContent = 'Connection Error'
-    document.getElementById('view').innerHTML = `
-      <p>Connection error: ${err.message}</p>
-      <button onclick="location.reload()">Retry</button>
-      <button onclick="reset_relay_and_reload()">Reset Relay & Retry</button>
-    `
+    show_view('news')
   }
 }
 
 // view system
 function show_view (name) {
-  if (!store && connection_status !== 'error') {
+  if (!store && connection_status !== 'error' && !['blog', 'post'].includes(name)) {
     alert('Please connect first')
     return
   }
@@ -75015,7 +75088,7 @@ function show_view (name) {
   render_view(name)
   
   if (name === 'explore') {
-    update_interval = setInterval(() => render_view('explore'), 2000)
+    // Only refresh when new peers are discovered no need for timer
   }
 }
 
@@ -75023,26 +75096,48 @@ function show_view (name) {
 function render_view (view) {
   const renderers = {
     news: async () => {
-      const peer_blogs = await blog_helper.get_peer_blogs()
+      if (!blog_core) return '<h3>News Feed</h3><p>No data yet</p>'
       
-      const posts = Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
-        (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
-      ).sort((a, b) => b.created - a.created)
-      
-      return `
-        <h3>News Feed (${posts.length} posts)</h3>
-        ${posts.map(p => `
-          <div>
-            <h4>${p.title}</h4>
-            <small>${p.peer_name} - ${format_date(p.created)}</small>
-            <p>${p.content}</p>
+      try {
+        const peer_blogs = await blog_helper.get_peer_blogs()
+        
+        const posts = Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
+          (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
+        ).sort((a, b) => b.created - a.created)
+        
+        let content = `
+          <h3>News Feed (${posts.length} posts)</h3>
+          ${posts.map(p => `
+            <div>
+              <h4>${p.title}</h4>
+              <small>${p.peer_name} - ${format_date(p.created)}</small>
+              <p>${p.content}</p>
+              <hr>
+            </div>
+          `).join('') || '<p>No posts yet</p>'}
+        `
+        
+        if (connection_status === 'error') {
+          content += `
             <hr>
-          </div>
-        `).join('') || '<p>No posts yet</p>'}
-      `
+            <div style="background: #ffe6e6; padding: 10px; border-radius: 5px; margin-top: 20px;">
+              <p><strong>Connection Error:</strong> Please check your relay connection</p>
+              <button onclick="location.reload()">Retry</button>
+              <button onclick="reset_relay_and_reload()">Reset Relay & Retry</button>
+            </div>
+          `
+        }
+        
+        return content
+      } catch (err) {
+        console.error('Error loading news:', err)
+        return '<h3>News Feed</h3><p>Error loading posts</p>'
+      }
     },
     
     blog: async () => {
+      if (!blog_core) return '<h3>My Blog</h3><p>No data yet</p>'
+      
       const posts = await blog_helper.get_my_posts()
       const sorted_posts = posts
         .sort((a, b) => b.created - a.created)
@@ -75058,9 +75153,12 @@ function render_view (view) {
     },
     
     explore: async () => {
+      if (!blog_core) return '<h3>Explore</h3><p>No data yet</p>'
+      
       const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
       const discovered = await blog_helper.get_discovered_blogs()
       const subscribed = await blog_helper.get_peer_blogs()
+      const discovered_relays = Array.from(window.discovered_relays || []).filter(r => !r.includes('localhost'))
       
       const blogs = Array.from(discovered.entries())
         .filter(([key, data]) => key !== my_key)
@@ -75076,7 +75174,23 @@ function render_view (view) {
             </div>
           `
         }).join('')
-      return blogs || '<p>No blogs discovered</p>'
+      
+      const relay_section = discovered_relays.length > 0 ? 
+        '<h4>Discovered Relays</h4>' + discovered_relays.map(r => 
+          `<div><b>${r}</b><button onclick="add_relay('${r}')">Add Relay</button><hr></div>`
+        ).join('') : ''
+      
+      return `
+        <h3>Explore</h3>
+        <button onclick="show_my_address()">Show My Blog Address</button>
+        <div id="my_address" style="display:none"><b>${my_key}</b></div>
+        <hr>
+        <h4>Manual Subscribe</h4>
+        <input id="manual_key" placeholder="Enter blog address (hex key)">
+        <button onclick="manual_subscribe()">Subscribe</button>
+        <hr>
+        ${blogs + relay_section || '<p>No blogs discovered</p>'}
+      `
     },
     
     post: () => `
@@ -75086,23 +75200,29 @@ function render_view (view) {
       <button onclick="publish()">Publish</button>
     `,
     
-    config: () => `
-      <h3>Config</h3>
-      <p>Username: ${username}</p>
-      <p>Status: ${connection_status}</p>
-      <hr>
-      <h4>Relay Settings</h4>
-      <p>Current: ${localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')}</p>
-      <input id="custom_relay" placeholder="Custom relay URL (e.g., ws://localhost:8080)" value="${localStorage.getItem('custom_relay') || ''}">
-      <button onclick="set_custom_relay()">Set Relay</button>
-      <button onclick="reset_relay()">Reset to Default</button>
-      <hr>
-      <h4>Reset Data</h4>
-      <p>Delete all local data and start fresh</p>
-      <button onclick="reset_all_data()" style="background: red; color: white;">
-        Reset All Data
-      </button>
-    `
+    config: () => {
+      const relays = JSON.parse(localStorage.getItem('relays') || '[]')
+      const current_relay = localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      return `
+        <h3>Config</h3>
+        <p>Username: ${username}</p>
+        <p>Status: ${connection_status}</p>
+        <hr>
+        <h4>Relay Settings</h4>
+        <p>Current: ${current_relay}</p>
+        <p>Saved Relays: ${relays.length}</p>
+        ${relays.map(r => `<div>• ${r} <button onclick="connect_to_relay('${r}')">Connect</button> <button onclick="delete_relay('${r}')">Delete</button></div>`).join('')}
+        <input id="custom_relay" placeholder="Custom relay URL (e.g., ws://localhost:8080)" value="">
+        <button onclick="set_custom_relay()">Add Relay</button>
+        <button onclick="reset_relay()">Reset to Default</button>
+        <hr>
+        <h4>Reset Data</h4>
+        <p>Delete all local data and start fresh</p>
+        <button onclick="reset_all_data()" style="background: red; color: white;">
+          Reset All Data
+        </button>
+      `
+    }
   }
   
   const renderer = renderers[view]
@@ -75143,25 +75263,89 @@ window.set_custom_relay = () => {
     return
   }
   
-  // Basic validation
   if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
     alert('Relay URL must start with ws:// or wss://')
     return
   }
   
-  localStorage.setItem('custom_relay', relay)
-  alert('Relay set. Reconnect to apply changes.')
+  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
+  if (!relays.includes(relay)) {
+    relays.push(relay)
+    localStorage.setItem('relays', JSON.stringify(relays))
+  }
+  document.getElementById('custom_relay').value = ''
+  if (current_view === 'config') render_view('config')
 }
 
 window.reset_relay = () => {
   localStorage.removeItem('custom_relay')
+  localStorage.removeItem('relays')
   document.getElementById('custom_relay').value = ''
   alert('Relay reset to default. Reconnect to apply changes.')
 }
 
 window.reset_relay_and_reload = () => {
   localStorage.removeItem('custom_relay')
+  localStorage.removeItem('relays')
   location.reload()
+}
+
+window.add_relay = (relay) => {
+  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
+  if (!relays.includes(relay)) {
+    relays.push(relay)
+    localStorage.setItem('relays', JSON.stringify(relays))
+    alert('Relay added')
+  }
+}
+
+window.connect_to_relay = (relay) => {
+  localStorage.setItem('custom_relay', relay)
+  location.reload()
+}
+
+window.delete_relay = (relay) => {
+  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
+  const filtered = relays.filter(r => r !== relay)
+  localStorage.setItem('relays', JSON.stringify(filtered))
+  if (current_view === 'config') render_view('config')
+}
+
+window.show_my_address = () => {
+  document.getElementById('my_address').style.display = 'block'
+}
+
+window.manual_subscribe = () => {
+  const key = document.getElementById('manual_key').value.trim()
+  if (!key) return alert('Enter a blog address')
+  
+  const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+  if (key === my_key) {
+    alert('You\'re subscribing to yourself, duh')
+    return
+  }
+  
+  // save to localStorage even if peer is offline
+  const manual_peers = JSON.parse(localStorage.getItem('manual_subscribed_peers') || '[]')
+  if (!manual_peers.includes(key)) {
+    manual_peers.push(key)
+    localStorage.setItem('manual_subscribed_peers', JSON.stringify(manual_peers))
+  }
+  
+  blog_helper.subscribe(key).then((success) => {
+    document.getElementById('manual_key').value = ''
+    const message = `Blog address ${key} added to local storage. You will subscribe to this peer when it comes online.`
+    console.log(message)
+    alert(message)
+    show_view('explore')
+  }).catch(() => {
+    // even if subscribe fails (peer offline), we still saved the key so next time it comes online it will subscribe
+    document.getElementById('manual_key').value = ''
+    const message = `Blog address ${key} added to local storage. You will subscribe to this peer when it comes online.`
+    console.log(message)
+    alert(message)
+    show_view('explore')
+  })
 }
 
 // Reset all data function
