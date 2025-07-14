@@ -96698,7 +96698,7 @@ const PEERS_STORAGE_KEY = 'discovered_peers'
 async function start_browser_peer (options = {}) {
   const name = options.name || 'browser-peer'
   const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
-  const relay_url = options.relay || (is_dev ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+  const relay_url = options.relay || (is_dev ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
 
   const store = new Corestore(RAW(`blogs-${name}`))
   
@@ -96939,11 +96939,11 @@ async function join_network () {
     
     if (result.swarm) {
       connection_status = 'connected'
-      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
       document.getElementById('connection_status').textContent = `🟢 ${username} via ${current_relay}`
     } else {
       connection_status = 'error'
-      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
       document.getElementById('connection_status').textContent = `🔴 ${username} - Offline Mode (tried: ${current_relay})`
     }
     
@@ -97119,7 +97119,7 @@ function render_view (view) {
     
     config: () => {
       const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-      const current_relay = localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
+      const current_relay = localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
       return `
         <h3>Config</h3>
         <p>Username: ${username}</p>
