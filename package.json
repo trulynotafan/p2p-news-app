@@ -2,20 +2,20 @@
   "name": "p2p-news-app",
   "version": "0.0.1",
   "description": "A p2p-news-app worked via hypercore/hyperswarms stack",
- "eslintConfig": {
-  "env": {
-    "browser": true,
-    "node": true,
-    "es2021": true
-  },
-  "parserOptions": {
-    "ecmaVersion": 12,
-    "sourceType": "script"
-  },
-  "rules": {
-    "camelcase": "off",
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "es2021": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 12,
+      "sourceType": "script"
+    },
+    "rules": {
+      "camelcase": "off",
     "indent": ["error", 2]
-  }
+    }
   },
   "scripts": {
     "web": "budo web/page.js:bundle.js --live --open",
@@ -38,6 +38,7 @@
     "bare-fs": "^4.1.6",
     "bare-path": "^3.0.0",
     "bare-process": "^4.2.1",
+    "bip39": "^3.1.0",
     "bip39-mnemonic": "^2.4.0",
     "corestore": "^6.18.4",
     "hyper-webrtc": "^1.0.0",
