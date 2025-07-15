@@ -9,6 +9,12 @@ Also I have made a demo video which you guys can check that essentially explains
 
 
 # Usage
+
+For Web peers just go to my deployed [github_page](https://trulynotafan.github.io/p2p-news-app/) and the hosted relay would work and let you join.
+
+But if you want to try it manually:
+
+
 Clone the repository:
 ```git clone https://github.com/trulynotafan/p2p-news-app```
 
