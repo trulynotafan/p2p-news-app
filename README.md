@@ -3,6 +3,11 @@ A p2p news app that uses the hypercore/hyperswarm stack to provide independent, 
 
 # Dev Diray
 You can check out the dev-diary [here](https://hackmd.io/@mERxC4akTfWgpejBs9V3VQ/Hk-gF47-lg)
+
+Also I have made a demo video which you guys can check that essentially explains this stack and app.
+[Video](https://www.youtube.com/watch?v=79pv95Yk8qE)
+
+
 # Usage
 Clone the repository:
 ```git clone https://github.com/trulynotafan/p2p-news-app```
