@@ -135,12 +135,10 @@ PS. I would highly recommend easybase for any person who wants to build node/bar
 
 ### Multi-Identity Support
 - Support for multiple identities per device
-- Identity switching for different contexts/groups
-- Cross-identity data sharing policies
+- Identity switching for different rooms
 
 ### Advanced Access Control
-- Fine-grained read/write permissions
-- Time-limited access tokens
+- Fine grained read/write permissions with voting or revoking.
 - Multiple autodrives per identity
 
 
