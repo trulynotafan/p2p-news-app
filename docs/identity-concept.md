@@ -2,8 +2,7 @@
 
 ## Overview
 
-This doc outlines the identity and multi-writer architecture for our P2P news application built on Autodrive (an Autobase + Hyperdrive implementation). The system enables secure multi-writer collaboration where multiple devices can write to the same shared data store while maintaining cryptogrphic security and preventing unauthorized access.
-This identity system is best for secure, multi-writer P2P applications while maintaining usability and browser compatibility. 
+This doc outlines the identity and multi-writer setup for our P2P news app using Autodrive (Autobase + Hyperdrive). It enables secure collaboration across devices, allowing multiple trusted writers to share a data store with cryptographic access control. The identity system balances security, usability, and browser compatibility.
 
 ## Core Architecture
 
@@ -96,6 +95,8 @@ const proof0 = await id.bootstrap(maindevice.publicKey)
 
 To initiate pairing, the second device must have the following things:
 
+## Invite structure
+
 1. The autodrive key of the main device. i.e `drive.base.key` so it could join the drive.
 2. The [secretstream](https://github.com/holepunchto/hyperswarm-secret-stream) public of the main device.
 We can do pass our device keypair publickey for secret stream.
@@ -116,6 +117,8 @@ console.log(maindevice.publicKey.toString('hex') // now this will be used by 2nd
 
 Now we will encode all this stuff into a `base64` hex string so 2nd can copy-paste it. 
 We will be using compact encoding for it. We can probably use a qrcode. using a popular module called `qrcode` for better UX.
+
+## Connecting 
 
 
 Great so now that we know what we need here's how it will go.
@@ -154,6 +157,9 @@ stream.on('data', (data) => {
 ```
 
 Great! We can now privately communicate.. Let's begin the attestation shall we?
+
+
+## Attestation
 
 - First the 2nd device will send:
 - Its public key, created via `crypto.keyPair()` as discussed above.
@@ -201,6 +207,8 @@ stream.write("this is the attestation", attestation)
 
 ```
 
+## Additon as writer
+
 When the 2nd device verifes the attestation, it will send it's writer key (explained below) to be added as writer.
 
 Now writerkey is the key that is required by the author of the autodrive to add people as writers.
@@ -218,42 +226,96 @@ And that's it, both peers can now close the secret stream, write to the same aut
 
 
 ### Data Organization
-```
-/posts/myblogs/posts/    // Own posts from any paired device
-/posts/news/posts/       // Subscribed external peers' posts
-```
 
-### No conflicts
-- Autobase handles ordering of multiple writes
-- Last-writer-wins for same path conflicts
-- File timestamps provide creation order
+The data organization is simple, we have our own drive in which we post.
+And for peers we discover, we create peer drive and download their data. e.g
+
+```javascript
+const peer_drive = create_autodrive(store, b4a.from(init_block.drive_key, 'hex'))
+
+
+```
+The `init_block` contains all the drive_key. If you want to see more on how we manage subscription check out [blog_helpers]()
+
+
+
 
 ### Subscription 
 - Devices can subscribe to external (non-paired) peers
-- External posts stored in `/posts/news/` to separate from own content
 - Subscription state managed in localStorage for persistence
+```javascript 
+function set_subscription_store (s) { subscription_store = s }
 
-## Security Model
+// Local storage for keeping track of subscribed peers
+function get_local_subscribed_peers () {
+  if (subscription_store) return subscription_store.get()
+  try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
+}
+function add_local_subscribed_peer (key) {
+  if (subscription_store) return subscription_store.add(key)
+  const arr = get_local_subscribed_peers()
+  if (!arr.includes(key)) {
+    arr.push(key)
+    localStorage.setItem('subscribed_peers', JSON.stringify(arr))
+  }
+}
 
-### Device Authentication
-- Each device has unique keypair via Keet Identity
-- Device public keys used for writer authorization
-- Mnemonic-based proof system prevents unauthorized access
+```
 
-### Data Integrity
-- All writes signed by device keys
-- Drive content cryptographically verified
 
 ### Access Control
 - **Writers**: Can modify shared drive content
+They are added specifically after paring.
+```javascript
+drive.add_writer(writerkey_of_the_device_to_be_added)
+```
 - **Subscribers**: External peers with read-only access to public posts
+These peers only read/download our blogs.
+
+```javascript
+
+// a snippet of our blog heloer subscibe function
+async function subscribe (key) {
+  if (already_subscribed(key)) return true
+
+  try {
+    const core = get_core(key)
+    await core.ready()
+    core.on('append', emit_update)
+
+    if (core.length === 0) await core.update({ wait: true })
+    if (core.length === 0) throw new Error('empty')
+
+    core.download({ start: 0, end: -1 })
+
+    const init = parse_init(await core.get(0))
+    if (init.type !== 'blog-init') throw new Error('invalid')
+
+    const drive = create_drive(init.drive_key)
+    drive.ready().then(() => drive.download())
+
+    track_drive(key, drive)
+    mark_subscribed(key)
+    emit_update()
+    return true
+  } catch {
+    return false
+  }
+}
+
+```
+
 
 ## Prior Art & References
 
 ### Autobase Resources
+- [A simple but great explanation of autobase](https://hackmd.io/@serapath/rkKXTd1mxe)
 - [Autobase Design Document](https://github.com/holepunchto/autobase/blob/main/DESIGN.md)
 - [Autobase GitHub Repository](https://github.com/holepunchto/autobase)
 - [Easybase](https://github.com/Drache93/easybase/blob/main/package.json)
+- [Autopass](https://github.com/holepunchto/autopass)
+- [Autobase Chat](https://github.com/storytellerjr/autobase-chat)
+  
 
 
 ### Existing Autodrive Implementations
@@ -272,52 +334,13 @@ And that's it, both peers can now close the secret stream, write to the same aut
 PS. I would highly recommend easybase for any person who wants to build node/bare P2P applications.
 
 ### Technical Dependencies
-- `autobase`: Multi-writer coordination
-- `hyperdrive`: File system interface
-- `keet-identity-key`: Cryptographic identity
-- `compact-encoding`: Message serialization
-- `hyperswarm`: P2P networking
+- [`autobase`](https://github.com/holepunchto/autobase/): Multi-writer coordination
+- [`hyperdrive`](https://github.com/holepunchto/hyperdrive): File system interface
+- [`keet-identity-key`](https://github.com/holepunchto/keet-identity-key): Cryptographic identity
+- [`compact-encoding`](https://github.com/holepunchto/compact-encoding): Message serialization
+- [`hyperswarm`](https://github.com/holepunchto/hyperswarm): P2P networking
+- [`@hyperswarm-secretstream`](https://github.com/holepunchto/hyperswarm-secret-stream): Encrypted communication with peers.
 
-## Implementation Details
-
-### Key Exchange Protocol
-1. **Discovery**: Peers discover each other via hyperswarm
-2. **Drive Key Exchange**: Peers announce their drive keys
-3. **Pairing Handshake**: Cryptographic proof exchange for writer access
-4. **Subscription**: Non-paired peers can subscribe for read access
-
-## Future Considerations
-
-### Multi-Identity Support
-- Support for multiple identities per device
-- Identity switching for different rooms
-
-### Advanced Access Control
-- Fine grained read/write permissions with voting or revoking.
-- Multiple autodrives per identity
+To understand more about our stack, check out [stack_docs]()
 
 
-## Usage Example
-
-```javascript
-// Create bootstrap device
-const drive = await create_autodrive(store)
-await drive.ready()
-
-// Create invite for new device
-const invite = await create_wildcard_invite(mnemonic, drive.base.key, device_key)
-
-// New device joins
-const pairDrive = await create_autodrive(store, drive_key)
-await pairDrive.ready()
-
-// Cryptographic pairing
-const proof = await verify_challenge(challenge, new_device_key)
-await drive.pairWithProof(proof, new_device_key)
-
-// Now both devices can write
-await drive.put('/posts/myblogs/posts/hello.txt', 'Hello from device 1')
-await pairDrive.put('/posts/myblogs/posts/world.txt', 'Hello from device 2')
-```
-
-This identity system is best for secure, multi-writer P2P applications while maintaining usability and browser compatibility. 
