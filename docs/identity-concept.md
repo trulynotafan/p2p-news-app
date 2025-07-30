@@ -111,7 +111,7 @@ console.log(maindevice.publicKey.toString('hex') // now this will be used by 2nd
 
 ```
 3. The identity public key of the device.. That will be use for verification of the attestation. (explained above)
-4. Some kind of challenge so others dont make invite by their own. And we have extra security. e.g crypto.randombytes(32). like a nonce.
+4. Some kind of challenge so others dont make invite by their own. And we have extra security. e.g `crypto.randombytes(32)` like a nonce.
 
 
 Now we will encode all this stuff into a `base64` hex string so 2nd can copy-paste it. 
@@ -131,46 +131,91 @@ const drive = createdrive(store, keyitgetsfromtheinvite)
 ```
 
 - Now, the 2nd device will take the secretstream public key from the main invite and will join it.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#### 2. Invite System
 ```javascript
-// Invite structure
-{
-  driveBootstrapKey: "hex_drive_key",    // Shared drive identifier
-  bootstrapDeviceKey: "hex_device_key",  // Bootstrap device's public key
-  challenge: "timestamp_challenge"       // One-time challenge for security
-}
+const stream = new SecretStream(true, null, {
+  remotePublicKey: maindevice.publicKey  // This is the "secret" - only Device 2 knows this
+})
+
+stream.on('connect', () => {
+  console.log('Device 2: Successfully joined the stream!')
+  console.log('Connected to device with public key:', stream.remotePublicKey.toString('hex'))
+
+// now that its joined, we can send or receive data!
+
+
+// we can write via
+stream.write('hey this is some data')
+
+// we can receive via
+stream.on('data', (data) => {
+  console.log('Device 2 received:', data.toString())
+})
+
 ```
 
-#### 3. Pairing Process
-1. **Bootstrap device** creates invite with `create_wildcard_Invite()`
-2. **New device** receives invite code
-3. **New device** joins same drive using `drive-bootstrap_key`
-4. **Cryptographic handshake** occurs:
-   - New device generates proof using `IdentityKey.bootstrap()`
-   - Bootstrap device verifies proof with `verify_challenge()`
-   - If valid, new device is added as writer via `pair_with_proof()`
+Great! We can now privately communicate.. Let's begin the attestation shall we?
 
-#### 4. Writer Management
-- Each device gets writer permissions through cryptographic proof
-- Writers tracked in autobase log: `{ type: 'addWriter', key: 'device_key' }`
-- Only existing writers can add new writers
-- Permissions are replicated across all devices
+- First the 2nd device will send:
+- Its public key, created via `crypto.keyPair()` as discussed above.
+When our main device receives it, we shall begin the attestation:
 
-## Multi-Writer Coordination
+Note: This will happen on main device.
+
+```javascript
+
+/* we will take three things:
+
+1. Proof (we created earlier)
+2. maindevice keypair (we created earlier)
+3. The 2nd device's  publickey. which it sent.
+*/
+
+const publickey = device2.publickey // what we receive
+const keypair = maindevice.keyPair
+
+  const attestation = await identitykey.attestDevice(publicKey, keypair, proof)
+  
+  if (attestation === null) {
+    throw new Error('attestation failed')
+  }
+else
+stream.write("this is the attestation", attestation)
+
+
+  // Now verify the attestation using IdentityKey.verify (this can be used by aux devices to know they have been attested)
+  const info = identitykey.verify(attestation, null, {
+    expectedIdentity: identity,
+    expectedDevice: device2.publicKey
+  })
+
+  if (info === null) {
+    throw new Error('verify failed')
+  } else {
+    console.log('Verification results:', [
+      b4a.equals(info.identityPublicKey, id.identityKeyPair.publicKey),
+      b4a.equals(info.devicePublicKey, device2.publicKey),
+    ]) // [true, true]
+  }
+
+
+
+```
+
+When the 2nd device verifes the attestation, it will send it's writer key (explained below) to be added as writer.
+
+Now writerkey is the key that is required by the author of the autodrive to add people as writers.
+in general you can see you writerkey after creating autodrive, like this `const mywriterkey = drive.base.local.key`
+
+After the main device receives it, it will add the 2nd device as writer to our autodrive :)
+like this:
+
+```javascript
+drive.add_writer(writerkey_of_2nd_device)
+
+```
+
+And that's it, both peers can now close the secret stream, write to the same autodrive, replicate as normal, and other peers can subscribe to one of them and will see all the posts no matter which device posts.
+
 
 ### Data Organization
 ```
