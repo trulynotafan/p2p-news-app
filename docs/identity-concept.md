@@ -22,7 +22,7 @@ Key features of Autodrive:
 const store = new Corestore(`./some_storage`)
 const drive = await create_drive(store)
 await drive.ready
-const key = drive.base.key / <== this is how we can share our key for others to join
+const key = drive.base.key // <== this is how we can share our key for others to join
 
 // joining drive
 const drive = await create_drive(store, key) // <== this key could be of the drive we want to join
@@ -97,7 +97,43 @@ const proof0 = await id.bootstrap(maindevice.publicKey)
 To initiate pairing, the second device must have the following things:
 
 1. The autodrive key of the main device. i.e `drive.base.key` so it could join the drive.
-2. The  public key of the main device. 
+2. The [secretstream](https://github.com/holepunchto/hyperswarm-secret-stream) public of the main device.
+We can do pass our device keypair publickey for secret stream.
+This public key will help the 2nd device find our main device among all of the other people in the swarm and establish and encrypted connection with it.
+This is so that when we exchange data, no one else sees it.
+Heres how secretstream will be created:
+```javascript
+const stream = new SecretStream(false, null, {
+  keyPair: maindevice // the secret stream has option to create stream from our keypairs
+})
+
+console.log(maindevice.publicKey.toString('hex') // now this will be used by 2nd device to join our secretstream
+
+```
+3. The identity public key of the device.. That will be use for verification of the attestation. (explained above)
+4. Some kind of challenge so others dont make invite by their own. And we have extra security. e.g crypto.randombytes(32). like a nonce.
+
+
+Now we will encode all this stuff into a `base64` hex string so 2nd can copy-paste it. 
+We will be using compact encoding for it. We can probably use a qrcode. using a popular module called `qrcode` for better UX.
+
+
+Great so now that we know what we need here's how it will go.
+
+- There will be an option to create an invite from the main device. It will have the stuff discussed above.
+- 2nd device will get this invite either through manual sharing or qrcode url. and decode the invite. 
+
+2nd device will then extract the drivekey to join
+```javascript
+
+const drive = createdrive(store, keyitgetsfromtheinvite)
+
+```
+
+- Now, the 2nd device will take the secretstream public key from the main invite and will join it.
+
+
+
 
 
 
