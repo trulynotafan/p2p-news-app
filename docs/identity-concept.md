@@ -3,37 +3,111 @@
 ## Overview
 
 This doc outlines the identity and multi-writer architecture for our P2P news application built on Autodrive (an Autobase + Hyperdrive implementation). The system enables secure multi-writer collaboration where multiple devices can write to the same shared data store while maintaining cryptogrphic security and preventing unauthorized access.
+This identity system is best for secure, multi-writer P2P applications while maintaining usability and browser compatibility. 
 
 ## Core Architecture
 
 ### Autodrive Implementation
 
-Our custom Autodrive implementation (`/src/autodrive/index.js`) uses:
-- **Autobase**: Multi-writer append-only log for coordination
-- **Hyperdrive**: File system interface for content storage
-- **Keet Identity Key**: Cryptographic identity management for device authentication
+Our custom [Autodrive](https://github.com/trulynotafan/p2p-news-app/tree/main/src/node_modules/autodrive) implementation uses:
+- **[Autobase](https://github.com/holepunchto/autobase/)**: Multi-writer append-only log for coordination
+- **[Hyperdrive](https://github.com/holepunchto/hyperdrive)**: File system interface for content storage
+- **[Keet Identity Key](https://github.com/holepunchto/keet-identity-key)**: Cryptographic identity management for device authentication
 
-Key features:
+If you want to learn more about our stack, see [stack_docs]()
+
+Key features of Autodrive:
 ```javascript
-// Core API surface
-{
-  put(path, content),     // Write data
-  get(path),              // Read data
-  list(folder),           // List directory
-  download(folder),       // Download/sync data
-  addWriter(key),         // Add writer permissions
-  removeWriter(key),      // Remove writer permissions
-  pairWithProof(proof, deviceKey), // Add device via cryptographic proof
-  replicate(stream)       // P2P replication
-}
+// creating drive
+const store = new Corestore(`./some_storage`)
+const drive = await create_drive(store)
+await drive.ready
+const key = drive.base.key / <== this is how we can share our key for others to join
+
+// joining drive
+const drive = await create_drive(store, key) // <== this key could be of the drive we want to join
+
+// adding/removing writers
+
+drive.add_writer(key) // <== this the local key aka the writer key of the person whom we want to add as writer 
+drive.remove_writer(key) // to remove some writers.
+
 ```
+For all APIs and docs of autodrive check out [Autodrive]()
+
+
 
 ### Identity & Pairing Flow
 
 #### 1. Bootstrap Device (First Device)
-- Creates new Autodrive with unique drive key
-- Generates mnemonic for identity management
-- Can create invite codes for other devices to join
+- First device would first create the main identity. (By just clicking join)
+- The main device will be shown a 12-24 word seedphrase (which the would save for restoration of identity).
+- The mnemonic itself will be deleted. Because we shall only be needing the 
+- It would be something like this:
+```javascript
+const identitykey = require('keet-identity-key)
+const mnemonic = identitykey.generateMnemonic()
+
+alert("This is you menemonic, Please save it! " + mnemonic)
+
+```
+
+- Now we will create an identity keypair (a determinstic keypair that we will use later for creating proofs and attestation) from the mnemonic (luckily keet-identity-key provides us all of apis)
+```javascript
+const id = identitykey.from({mnemonic})
+
+console.log(id)
+// {
+//   keychain: { ... },
+//   identityKeyPair: { publicKey: ..., secretKey: ... },
+//   discoveryKeyPair: { ... }
+// }
+
+
+
+```
+- Now we will also create a random crypto keypair (this will be the device keypair)
+```javascript
+const maindevice = crypto.keyPair()
+
+// this keypair is what we will bootstrap with the identity keypair
+
+```
+- Now we will bootstrap the device keypair with the idenity keypair
+```javascript
+const proof0 = await id.bootstrap(maindevice.publicKey)
+```
+- This proof means ideneitykeypair belongs to the device publickey. (we can now use the proof for attestation)
+- So Now we have all the stuff we need for identity verification i.e
+- maindevice keypair `maindevice`
+- identity keypair publickey `id.identityKeyPair.publicKey `
+- proof for attestaion `proof`
+- REMEMBER: The mnemonic is not stored anywhere. That means no one can derive the same identity UNLESS user saved it when we showed it.
+
+#### 2. Auxiliary Device (The devices who want to pair with us)
+
+- In general pairing means:
+- Our 2nd device has the same identity as our main device
+- Our main device knows whom it attested and if it was actually our device
+- The device writes into our autodrive (Meaning our book, to learn more about autobase/autodrive/corestore please check our code examples)
+- Others preceive us as one logical identity (so if they see our data, they dont differ between devices and trust both)
+
+**Now how does pairing and attestation happens? Lets see below:**
+
+To initiate pairing, the second device must have the following things:
+
+1. The autodrive key of the main device. i.e `drive.base.key` so it could join the drive.
+2. The  public key of the main device. 
+
+
+
+
+
+
+
+
+
+
 
 #### 2. Invite System
 ```javascript
