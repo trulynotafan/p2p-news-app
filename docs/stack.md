@@ -10,7 +10,7 @@ These are the main tools we use to make the app work without any central servers
 
 ### 1. Bare Runtime
 
-Imagine you have a super-fast racing car. You take out everything you don't need—like the radio and back seats—to make it lighter and faster. **Bare** is like that for computer programs. It's a minimal environment, like a stripped-down Node.js, that gives us just enough tools (like handling files and network connections) to run our P2P app. This makes our app lightweight and speedy, perfect for running on different devices, even phones. It also works on android! 
+Imagine you have a super-fast racing car. You take out everything you don't need like the radio and back seats to make it lighter and faster. **Bare** is like that for computer programs. It's a minimal environment, like a stripped-down Node.js, that gives us just enough tools (like handling files and network connections) to run our P2P app. This makes our app lightweight and speedy, perfect for running on different devices, even phones. It also works on android! 
 
 * [Bare GitHub](https://github.com/holepunchto/bare)
 * [Bare Docs](https://bare.pears.com)
