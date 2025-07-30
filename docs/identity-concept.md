@@ -13,7 +13,7 @@ Our custom [Autodrive](https://github.com/trulynotafan/p2p-news-app/tree/main/sr
 - **[Hyperdrive](https://github.com/holepunchto/hyperdrive)**: File system interface for content storage
 - **[Keet Identity Key](https://github.com/holepunchto/keet-identity-key)**: Cryptographic identity management for device authentication
 
-If you want to learn more about our stack, see [stack_docs]()
+If you want to learn more about our stack, see [stack_docs](https://github.com/trulynotafan/p2p-news-app/blob/main/docs/stack.md)
 
 Key features of Autodrive:
 ```javascript
@@ -32,7 +32,7 @@ drive.add_writer(key) // <== this the local key aka the writer key of the person
 drive.remove_writer(key) // to remove some writers.
 
 ```
-For all APIs and docs of autodrive check out [Autodrive]()
+For all APIs and docs of autodrive check out [Autodrive](https://github.com/trulynotafan/p2p-news-app/tree/main/src/node_modules/autodrive)
 
 
 
@@ -341,6 +341,6 @@ PS. I would highly recommend easybase for any person who wants to build node/bar
 - [`hyperswarm`](https://github.com/holepunchto/hyperswarm): P2P networking
 - [`@hyperswarm-secretstream`](https://github.com/holepunchto/hyperswarm-secret-stream): Encrypted communication with peers.
 
-To understand more about our stack, check out [stack_docs]()
+To understand more about our stack, check out [stack_docs](https://github.com/trulynotafan/p2p-news-app/blob/main/docs/stack.md)
 
 
