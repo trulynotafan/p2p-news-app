@@ -310,7 +310,7 @@ console.log(cenc.string.decode(state)); // 'hi'
 
 ### 5. sodium-universal
 
-Security is super important. **Sodium** is a famous, highly-trusted library for all things cryptography—like encrypting messages, creating digital signatures, and hashing data. We use `sodium-universal`, a version that works the same way in both Node.js and web browsers, so our security is consistent everywhere.
+Security is super important. **Sodium** is a famous, library for all things cryptography, like encrypting messages, creating digital signatures, and hashing data. We use `sodium-universal`, a version that works the same way in both Node.js and web browsers, so our security is consistent everywhere.
 
 * [sodium-universal GitHub](https://github.com/holepunchto/sodium-universal)
 
