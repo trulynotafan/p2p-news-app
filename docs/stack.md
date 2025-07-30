@@ -119,7 +119,7 @@ for (let i = 0; i < local.view.length; i++) {
 
 It's a merge of hyperdrive and autobase. It's like a shared folder that multiple people can access and that updates in real-time. We can use it to have two people write to one hyperdrive at the same time, and they will both see the same view of the data. Can be very useful if one person has different devices. 
 
-* [Autodrive (our implementation)](https://github.com/holepunchto/autobase)
+* [Autodrive (our implementation)](https://github.com/trulynotafan/p2p-news-app/tree/main/src/node_modules/autodrive)
 * [Autodrive by OzymandiasTheGreat](https://github.com/OzymandiasTheGreat/autodrive/tree/main)
 
 **Example Usage:**
