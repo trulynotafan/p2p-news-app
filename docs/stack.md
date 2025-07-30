@@ -15,6 +15,7 @@ Imagine you have a super-fast racing car. You take out everything you don't need
 * [Bare GitHub](https://github.com/holepunchto/bare)
 * [Bare Docs](https://bare.pears.com)
 
+
 ### 2. Corestore + Hypercore
 
 Think of a **Hypercore** as a notebook where you can only add new pages at the end; you can't go back and change old ones. This makes it a secure, append-only log. Every user in our app gets their own magic notebook to write their blog posts.
@@ -23,11 +24,44 @@ A **Corestore** is like a big library that holds all these notebooks (Hypercores
 
 * [Hypercore Docs](https://docs.pears.com/building-blocks/hypercore)
 
+**Example Usage:**
+
+```javascript
+const Hypercore = require('hypercore');
+const core = new Hypercore('./directory');
+await core.append(Buffer.from('I am a block of data'));
+const block = await core.get(0);
+```
+
+**Replication Example:**
+
+```javascript
+const swarm = new Hyperswarm();
+swarm.on('connection', conn => {
+  core.replicate(conn);
+});
+```
+
 ### 3. Hyperswarm
 
 How do you find your friends in a big club? You might all agree to meet at the big round table? **Hyperswarm** is like that meeting spot for our app. When you open the app, you join a "topic" (our virtual table). Hyperswarm then uses some P2P magic (a Distributed Hash Table, or DHT) to help you find and connect directly to other users who are in the same topic. There's no central operator telling everyone where to go; it's just peers finding peers.
 
 * [Hyperswarm Docs](https://docs.pears.com/building-blocks/hyperswarm)
+
+**Example Usage:**
+
+```javascript
+const Hyperswarm = require('hyperswarm');
+const swarm = new Hyperswarm();
+swarm.join('some-topic', (err, discovery) => {
+  if (err) throw err;
+  console.log('joined topic');
+  swarm.on('connection', (socket, info) => {
+    console.log('connection from', info.host);
+    // Handle socket
+  });
+});
+```
 
 ### 4. Hyperdrive
 
@@ -35,6 +69,26 @@ A **Hyperdrive** is like a shared folder that everyone can access and that updat
 
 * [hyperdrive GitHub](https://github.com/holepunchto/hyperdrive)
 
+**Example Usage:**
+
+```javascript
+const Hyperdrive = require('hyperdrive');
+const store = new Corestore('./some-dir');
+const drive = new Hyperdrive(store);
+await drive.ready();
+await drive.put('/example.txt', Buffer.from('Hello, World!'));
+const data = await drive.get('/example.txt');
+```
+
+**Replication Example:**
+
+```javascript
+const swarm = new Hyperswarm();
+const done = drive.findingPeers();
+swarm.on('connection', (socket) => drive.replicate(socket));
+swarm.join(drive.discoveryKey);
+swarm.flush().then(done, done);
+```
 
 ### 5. Autobase
 
@@ -46,7 +100,20 @@ Imagine a group of people writing a story together. Each person has their own no
 * [Autobase GitHub](https://github.com/holepunchto/autobase)
 * [Great explanation and links to learn more](https://hackmd.io/@serapath/rkKXTd1mxe)
 
+**Example Usage:**
 
+```javascript
+const Corestore = require('corestore');
+const Autobase = require('autobase');
+const store = new Corestore('./some-dir');
+const local = new Autobase(store, remote.key, { apply, open });
+await local.ready();
+await local.append('local 0');
+await local.update();
+for (let i = 0; i < local.view.length; i++) {
+  console.log(await local.view.get(i));
+}
+```
 
 ### 6. Autodrive
 
@@ -55,7 +122,19 @@ It's a merge of hyperdrive and autobase. It's like a shared folder that multiple
 * [Autodrive (our implementation)](https://github.com/holepunchto/autobase)
 * [Autodrive by OzymandiasTheGreat](https://github.com/OzymandiasTheGreat/autodrive/tree/main)
 
+**Example Usage:**
 
+```javascript
+import Autodrive from "autodrive";
+import b4a from "b4a";
+import Corestore from "corestore";
+const driveA = new Autodrive(new Corestore("./storageA"));
+await driveA.ready();
+const driveB = new Autodrive(new Corestore("./storageB"), driveA.key);
+await driveB.ready();
+await driveA.put("/example.txt", b4a.from("Hello, World!"));
+const data = await driveB.get("/example.txt");
+```
 
 ### 7. Protomux
 
@@ -63,12 +142,49 @@ When you and a friend connect, you need a way to have different conversations at
 
 * [Protomux GitHub](https://github.com/holepunchto/protomux)
 
+**Example Usage:**
+
+```javascript
+const Protomux = require('protomux');
+const c = require('compact-encoding');
+const mux = new Protomux(aStreamThatFrames);
+const cool = mux.createChannel({
+  protocol: 'cool-protocol',
+  id: Buffer.from('optional binary id'),
+  onopen () {
+    console.log('the other side opened this protocol!');
+  },
+  onclose () {
+    console.log('either side closed the protocol');
+  }
+});
+const one = cool.addMessage({
+  encoding: c.string,
+  onmessage (m) {
+    console.log('recv message (1)', m);
+  }
+});
+cool.open();
+one.send('a string');
+```
 
 ### 8. Hyperswarm Secret Stream
 
 When you're with your friends but you want to tell a secret to only one friend.. Well you can do that with Hyperswarm-secretstream. It establishes a secure connetion between peers and they can send data that no one else can decrypt.
 
 * [Secret Stream GitHub](https://github.com/holepunchto/hyperswarm-secret-stream)
+
+**Example Usage:**
+
+```javascript
+const SecretStream = require('@hyperswarm/secret-stream');
+const a = new SecretStream(true, tcpClientStream);
+const b = new SecretStream(false, tcpServerStream);
+a.write(Buffer.from('hello encrypted!'));
+b.on('data', function (data) {
+  console.log(data); // <Buffer hello encrypted!>
+});
+```
 
 ---
 
@@ -82,11 +198,37 @@ A web browser can't directly talk to the main P2P network (the Hyperswarm DHT) l
 
 * [Hyperswarm DHT Relay GitHub](https://github.com/holepunchto/hyperswarm-dht-relay)
 
+**Example Usage:**
+
+**Relaying side:**
+
+```javascript
+import DHT from 'hyperdht';
+import { relay } from '@hyperswarm/dht-relay';
+relay(new DHT(), stream);
+```
+
+**Relayed side:**
+
+```javascript
+import DHT from '@hyperswarm/dht-relay';
+const dht = new DHT(stream);
+```
+
 ### 2. Hyper WebRTC
 
 While the relay helps browser peers find each other, their data still has to pass through it. To make a true peer-to-peer connection, we use **Hyper WebRTC**. Once two browser peers discover each other via the relay, they can use WebRTC to create a direct, private link between them. This way, they can exchange blog posts and other data directly, without relying on the relay server. Meaning less traffic on relay!
 
 * [Hyper WebRTC GitHub](https://github.com/LuKks/hyper-webrtc)
+
+**Example Usage:**
+
+```javascript
+swarm.on('connection', function (relay) {
+  const stream = HyperWebRTC.from(relay);
+  core.replicate(stream);
+});
+```
 
 ---
 
@@ -100,11 +242,36 @@ Remember those secret recovery phrases you get for a crypto wallet (like "apple 
 
 * [bip39 GitHub](https://github.com/holepunchto/bip39-mnemonic)
 
+**Example Usage:**
+
+```javascript
+const { generateMnemonic, mnemonicToSeed } = require('bip39-mnemonic');
+const mnemonic = generateMnemonic();
+const seed = mnemonicToSeed(mnemonic);
+```
+
 ### 2. keet-identity-key
 
 This tool helps you use the same identity across multiple devices, like your phone and your laptop. Using a secret phrase (from bip39), **keet-identity-key** can create secure keys and generate a proof that a new device belongs to you. This way, you can "pair" your devices so they all share the same blog and subscriptions.
 
 * [keet-identity-key GitHub](https://github.com/holepunchto/keet-identity-key)
+
+**Example Usage:**
+
+```javascript
+const IdentityKey = require('keet-identity-key');
+const mnemonic = IdentityKey.generateMnemonic();
+const id = await IdentityKey.from({ mnemonic });
+const proof0 = id.bootstrap(mainDevice.publicKey);
+const proof = IdentityKey.attest(auxillaryDevice.publicKey, mainDevice, proof0);
+const info = IdentityKey.verify(proof);
+if (info === null) {
+  // verification failed
+} else {
+  console.log(b4a.equals(info.identityPublicKey, id.identityPublicKey)); // true
+  console.log(b4a.equals(info.publicKey, auxillaryDevice.publicKey)); // true
+}
+```
 
 ### 3. b4a (Buffer for Array)
 
@@ -112,15 +279,46 @@ Computers handle data in a format called "buffers." Node.js and web browsers han
 
 * [b4a GitHub](https://github.com/holepunchto/b4a)
 
+**Example Usage:**
+
+```javascript
+const b4a = require('b4a');
+const buffer = b4a.from('Hello, World!');
+console.log(b4a.toString(buffer)); // Hello, World!
+```
+
 ### 4. compact-encoding
 
 When sending data over a network, you want it to be as small and fast as possible. **compact-encoding** is a library that helps us encode and decode our data into a very compact binary format. This is especially useful for the messages we send with Protomux, as it keeps our communication efficient.
 
 * [Compact Encoding GitHub](https://github.com/holepunchto/compact-encoding)
 
+**Example Usage:**
+
+```javascript
+const cenc = require('compact-encoding');
+const state = cenc.state();
+cenc.uint.preencode(state, 42);
+cenc.string.preencode(state, 'hi');
+state.buffer = Buffer.allocUnsafe(state.end);
+cenc.uint.encode(state, 42);
+cenc.string.encode(state, 'hi');
+state.start = 0;
+console.log(cenc.uint.decode(state)); // 42
+console.log(cenc.string.decode(state)); // 'hi'
+```
 
 ### 5. sodium-universal
 
 Security is super important. **Sodium** is a famous, highly-trusted library for all things cryptography—like encrypting messages, creating digital signatures, and hashing data. We use `sodium-universal`, a version that works the same way in both Node.js and web browsers, so our security is consistent everywhere.
 
 * [sodium-universal GitHub](https://github.com/holepunchto/sodium-universal)
+
+**Example Usage:**
+
+```javascript
+var sodium = require('sodium-universal');
+var rnd = Buffer.allocUnsafe(12);
+sodium.randombytes_buf(rnd);
+console.log(rnd.toString('hex'));
+```
