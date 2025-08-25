@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { create_autodrive } = require('./autodrive')
 const corestore = require('corestore')
 const b4a = require('b4a')
@@ -6,39 +8,56 @@ const crypto = require('hypercore-crypto')
 const readline = require('readline')
 const ram = require('random-access-memory')
 const identity_key = require('keet-identity-key')
-const { MemberRequest, CandidateRequest, createInvite: make_invite } = require('blind-pairing-core')
-const Protomux = require('protomux')
-const c = require('compact-encoding')
+const BlindPairing = require('blind-pairing')
 const fs = require('fs').promises
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// GLOBAL STATE & SETUP
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = prompt => new Promise(resolve => rl.question(prompt, resolve))
 
-// Global state
-let drive, swarm, identity, device_keypair, proof, candidate
-let subscriptions = new Map(), invites = new Map(), pairing_channels = new Map()
+let drive, swarm, identity, device_keypair, proof, blindPairing, currentMember, currentCandidate
+let subscriptions = new Map()
 const topic = crypto.hash(b4a.from('p2p-news-app-topic'))
 
-// Create a new protomux stream if not exists, if does use it.
-// This function attaches one protocol manager per peer connection to prevent communication errors.
-function get_muxer(stream) {
-  if (stream.userData) return stream.userData
-  const protocol = Protomux.from(stream)
-  stream.setKeepAlive(5000)
-  return stream.userData = protocol
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// MAIN ENTRY POINT
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function main() {
+  console.log('P2P News App\n1. Make Identity  2. Join Identity')
+  const choice = await question('Choice: ')
+  
+  if (choice === '1') await create_identity()
+  else if (choice === '2') await join_identity()
+  else process.exit(1)
+  
+  await menu()
 }
 
-// Creates a new identity with mnemonic phrase
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  await cleanup()
+  process.exit(0)
+})
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// IDENTITY MANAGEMENT
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Create a new identity with mnemonic phrase
 async function create_identity() {
   const mnemonic = identity_key.generateMnemonic()
-  console.log(`\nSave this mnemonic: ${mnemonic}`)
+  console.log(`Save this mnemonic: ${mnemonic}`)
   
   // Generate identity and device keys
   identity = await identity_key.from({ mnemonic })
   device_keypair = crypto.keyPair()
   proof = await identity.bootstrap(device_keypair.publicKey)
   
-  // Create our personal drive for storing posts
+  // Create personal drive for storing posts
   drive = create_autodrive(new corestore(ram))
   await drive.ready()
   
@@ -46,259 +65,213 @@ async function create_identity() {
   await setup_network()
 }
 
-// Join existing identity using invite code , to add existing device to user
+// Join existing identity using invite code
 async function join_identity() {
-  // Decode the base64 invite code that contains connection info and keys
-  const invite_buffer = b4a.from(await question('Enter invite code: '), 'base64')
-  // Generate new keypair for this specific device (each device has unique keys)
+  const invite_code = await question('Enter invite code: ')
+  const invite_buffer = b4a.from(invite_code, 'base64')
+  
+  // Generate new device keypair for this device
   device_keypair = crypto.keyPair()
-  // Create a candidate request to join the inviter's identity
-  // This includes our device's public key so the inviter can verify us
-  candidate = new CandidateRequest(invite_buffer, device_keypair.publicKey)
   
-  let writer_key_sent = false
-  
-  // When the inviter accepts our pairing request
-  candidate.on('accepted', async (auth) => {
-    // Create the shared drive using the key from inviter
-    drive = create_autodrive(new corestore(ram), auth.key)
-    await drive.ready()
-    
-    // Start replicating (syncing) the drive with all connected peers
-    if (swarm) for (const conn of swarm.connections) drive.replicate(conn)
-    console.log('Paired successfully!')
-    
-    // Send our writer key so we can post to the shared drive
-    const send_writer_key = () => {
-      const channel = pairing_channels.get(candidate.discoveryKey.toString('hex'))
-      if (channel && !writer_key_sent) channel.messages[2].send(drive.base.local.key)
-    }
-    
-    // Wait 2 seconds for pairing channels to be established, then try sending
-    setTimeout(send_writer_key, 2000)
-  })
-  
+  const store = new corestore(ram)
   await setup_network()
-}
-
-// Set up swarm connection
-async function setup_network() {
- 
-  // using bootstrap for faster discovery (for testing)
-  let bootstrap
-  try { bootstrap = JSON.parse(await fs.readFile('bootstrap.json', 'utf-8')) } catch (e) {}
-  // passing our device keypair to swarm, is this correct?
-  swarm = new Hyperswarm({ keyPair: device_keypair, bootstrap })
-
-  swarm.on('connection', (conn) => {
-    console.log('Peer connected')
-    if (drive) drive.replicate(conn) // start replication
-    
-    const mux = get_muxer(conn)
-    mux.pair({ protocol: 'blind-pairing' }, () => {})
-    
-    // Set up pairing channels for invites
-    for (const [channel_id, invite_info] of invites.entries()) {
-      pairing_channel(mux, Buffer.from(channel_id, 'hex'), invite_info)
-    }
-    
-    // If we are trying to join someone, set up candidate channel (only if not already exists)
-    // so we dont create a new channel for every peer that connects.
-    if (candidate) {
-      const channel_id = candidate.discoveryKey.toString('hex')
-      if (!pairing_channels.has(channel_id)) {
-        console.log('Attaching candidate channel for discovery key:', channel_id)
-        pairing_channel(mux, candidate.discoveryKey, { isCandidate: true })
-      }
-    }
-    
-    // Share subscribed drives with the peer
-    // so if the author is offline other peers can share data of author if they have it. 
-    for (let sub_drive of subscriptions.values()) sub_drive.replicate(conn)
-  })
   
-  await swarm.join(topic).flushed()
-  console.log('Connected to network')
-}
-
-// Creating the protomux pairing channel 
-function pairing_channel(mux, discoveryKey, info) {
-  const channel_id = b4a.toString(discoveryKey, 'hex')
+  // Get our writer key for the shared drive
+  const { getLocalCore } = require('./autodrive')
+  const core = getLocalCore(store)
+  await core.ready()
+  const myWriterKey = core.key
+  await core.close()
   
-  // Create channel with 4 different message types (explained below)
-  const ch = mux.createChannel({
-    protocol: 'blind-pairing',
-    id: discoveryKey, // using discoverykey (form the invite) to make sure only inviter/invitee communicate.
-    messages: [
-      // message 0: Initial pairing request from candidate to inviter
-      { encoding: c.buffer, onmessage: (payload) => handle_pairing_request(payload, channel_id, ch) },
-      // message 1: Response from inviter back to candidate (accept/deny)
-      { encoding: c.buffer, onmessage: (payload) => candidate?.handleResponse(payload) },
-      // message 2: Writer key from candidate to inviter (so candidate can post)
-      { encoding: c.buffer, onmessage: handle_writer_key },
-      // Message 3: Identity attestation from inviter to candidate (proves identity)
-      { encoding: c.buffer, onmessage: handle_attestation }
-    ],
-    onopen: () => {
-      pairing_channels.set(channel_id, ch) // Track this channel for later use (to send writer key)
-    },
-    onclose: () => {
-      pairing_channels.delete(channel_id) // Clean up when done
-    }
-  })
-  
-  if (!ch) {
-    return
-  }
-  
-  ch.open() // open channel
-  
-  // Set up protocol: "blind-pairing" pairing , to make sure both sides use the same protocol
-  mux.pair({ protocol: 'blind-pairing', id: discoveryKey }, () => 
-    pairing_channel(mux, discoveryKey, info))
-  
-  if (info.isCandidate && candidate) {
-    ch.messages[0].send(candidate.encode()) // Send our pairing request as message type 0
-  }
-}
-
-// Handle incoming pairing requests from devices trying to join our identity
-async function handle_pairing_request(payload, channel_id, pairing_channel) {
-  if (!drive) return
-  
-  console.log(`Received pairing request on channel ${channel_id}`)
-  
-  // Look the public key we stored when creating this invite
-  // This key is needed to decrypt and verify the pairing request
-  const public_key = invites.get(channel_id)
-  if (!public_key) {
-    console.log(`No public key found for channel ${channel_id}`)
-    return
-  }
-  
-  // Parse the pairing request from the candidate
-  const request = MemberRequest.from(payload)
-  request.discoveryKey = Buffer.from(channel_id, 'hex')
-  
-  try {
-    // decrypt the request using our private key
-    // to make sure the candidate has the correct invite code
-    if (request.open(public_key)) {
-      console.log('Pairing request opened successfully')
-      invites.delete(channel_id) // Remove invite since its used
+  // Create candidate to join using the invite
+  currentCandidate = blindPairing.addCandidate({
+    invite: invite_buffer,
+    userData: device_keypair.publicKey, // Send our device public key for attestation
+    onAttestation: async (attestation, channel) => {
+      if (attestation.type !== 'identity_attestation') return
       
-      // create cryptographic proof that we are the legitimate identity owner
-      // This attestation links the candidates device to our master identity
-      const attestation = await identity_key.attestDevice(request.userData, device_keypair, proof)
-      
-      if (attestation) {
-        // accept the pairing and give them access to our drive
-        request.confirm({ key: drive.base.key })
-        console.log('Device paired successfully')
+      try {
+        // Verify the inviter's attestation that our device belongs to their identity
+        const proofBuffer = Buffer.from(attestation.proof, 'base64')
+        const info = identity_key.verify(proofBuffer, null, { 
+          expectedDevice: device_keypair.publicKey // Verify this proof is for OUR device
+        })
         
-        // Send the attestation so they can verify our identity
-        // This proves we are who we claim to be
-        pairing_channel.messages[3].send(attestation)
-        console.log('Attestation sent to invitee')
-        
-        // Send our response confirming the pairing
-        if (request.response) {
-          pairing_channel.messages[1].send(request.response)
-          console.log('Pairing response sent')
+        if (info) {
+          console.log('Identity attestation verified - we now belong to identity:', info.identityPublicKey.toString('hex'))
+          
+          // Store our identity proof for future use
+          proof = proofBuffer
+          identity = { identityPublicKey: info.identityPublicKey }
+          
+          // Send back our writer key so we can write to the shared drive
+          currentCandidate.sendAttestation({
+            type: 'attestation_ack',
+            writerKey: myWriterKey.toString('hex')
+          }, channel)
+        } else {
+          console.log('Identity attestation verification failed')
         }
-        console.log('Waiting for writer key from paired device...')
-      } else {
-        // Reject the pairing if identity verification fails
-        request.deny()
-        console.log('Device verification failed')
-        if (request.response) pairing_channel.messages[1].send(request.response)
+      } catch (error) {
+        console.log('Attestation error:', error.message)
+        currentCandidate.sendAttestation({ type: 'attestation_error', message: error.message }, channel)
       }
-    }
-  } catch (e) {
-    console.log('Pairing request failed:', e.message)
-  }
-}
-
-// final step: receive writer key from newly paired device so they can post to our shared drive
-async function handle_writer_key(payload) {
-  console.log('Received writer key from paired device')
-  
-  if (drive) {
-    try {
-      // add the device's writer key to our drive's authorized writers list
-      await drive.add_writer(payload)
-      console.log('Added new writer successfully')
-    } catch (error) {
-      console.log('Failed to add writer:', error.message)
-    }
-  }
-}
-
-// Verify identity attestation from the inviter (
-async function handle_attestation(payload) {
-  // Only verify attestation if we don't have our own identity yet (we're joining)
-  if (!identity) {
-    console.log('Received attestation, verifying inviter identity...')
-    
-    try {
-      const info = identity_key.verify(payload, null, {
-        expectedDevice: device_keypair.publicKey
-      })
+    },
+    onadd: async (result) => {
+      console.log('Pairing successful!')
+      // Connect to the shared drive
+      drive = create_autodrive(store, result.key)
+      await drive.ready()
       
-      if (info) {
-        console.log('Inviter identity verified successfully!')
-        // double-check that the attestation was made for our specific device
-        console.log('Identity match:', b4a.equals(info.devicePublicKey, device_keypair.publicKey))
-      } else {
-        console.log('Inviter identity verification failed')
+      // Start replicating with all peers
+      for (const conn of swarm.connections) {
+        drive.replicate(conn)
       }
-    } catch (error) {
-      console.log('Attestation verification error:', error.message)
+      
+      console.log('Connected to shared drive!')
     }
-  }
-}
-
-// Post a message to our drive
-async function post_message() {
-  const message = await question('Message: ')
-  const content = JSON.stringify({
-    message,
-    timestamp: new Date().toISOString(),
-    author: drive.base.key.toString('hex').slice(0, 8)
   })
   
-  await drive.put(`/post_${Date.now()}.txt`, Buffer.from(content))
-  console.log('Posted!')
+  await currentCandidate.ready()
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// NETWORK SETUP
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Set up swarm connection and blind pairing
+async function setup_network() {
+  // Load bootstrap nodes if available
+  let bootstrap
+  try { 
+    bootstrap = JSON.parse(await fs.readFile('bootstrap.json', 'utf-8')) 
+  } catch (e) {}
+  
+  // Create swarm with our device keypair
+  swarm = new Hyperswarm({ keyPair: device_keypair, bootstrap })
+  blindPairing = new BlindPairing(swarm)
+  
+  // Handle new peer connections
+  swarm.on('connection', (conn, info) => {
+    console.log(`Peer connected: ${info?.publicKey?.toString('hex')?.slice(0, 8) || 'unknown'}`)
+    if (!conn.userData) conn.userData = { protocols: new Map() }
+    
+    // Replicate our drive and subscriptions
+    if (drive) drive.replicate(conn)
+    for (let sub_drive of subscriptions.values()) {
+      sub_drive.replicate(conn)
+    }
+  })
+  
+  await blindPairing.ready()
+  await swarm.join(topic).flushed()
+  console.log('Joined swarm network')
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// INVITE SYSTEM
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Generate invite code for others to join our network
 async function create_invite() {
   if (!drive) return console.log('Create identity first')
   
-  // create the invite using our drive key 
-  const { invite, publicKey } = make_invite(drive.base.key)
+  const invite = BlindPairing.createInvite(drive.base.key)
+  const invite_code = b4a.toString(invite.invite, 'base64')
+  console.log(`Invite created: ${invite_code}`)
   
-  // decode the invite to extract the discovery key (used for finding each other on network)
-  const decoded = c.decode(require('blind-pairing-core/lib/messages').Invite, invite)
-  const channel_id = b4a.toString(decoded.discoveryKey, 'hex')
+  // Clean up previous member if exists
+  if (currentMember) await currentMember.close()
   
-  // store the public key so we can verify pairing requests for this invite
-  invites.set(channel_id, publicKey)
-  
-  // show the base64 encoded invite code to share with others
-  console.log(`\nInvite: ${b4a.toString(invite, 'base64')}`)
-  console.log(`Channel ID: ${channel_id}`)
-  
-  // set up pairing channels on all existing connections
-
-  if (swarm) {
-    for (const conn of swarm.connections) {
-      pairing_channel(get_muxer(conn), decoded.discoveryKey, { isInviter: true })
+  // Set up member to handle incoming pairing requests
+  currentMember = blindPairing.addMember({
+    discoveryKey: drive.base.discoveryKey,
+    onAttestation: async (attestation) => {
+      // Handle response from candidate
+      if (attestation.type === 'attestation_ack' && attestation.writerKey) {
+        const writerKeyBuffer = Buffer.from(attestation.writerKey, 'hex')
+        await drive.add_writer(writerKeyBuffer)
+        console.log('Writer key added - peer can now post!')
+      }
+    },
+    onadd: async (request) => {
+      console.log('Received pairing request')
+      try {
+        // Verify the pairing request
+        await request.open(invite.publicKey)
+        console.log('Pairing request verified')
+        
+        // Create attestation that the requesting device belongs to our identity
+        const attestationData = identity_key.attestDevice(request.userData, device_keypair, proof)
+        
+        // Confirm pairing and give access to our drive
+        request.confirm({ 
+          key: drive.base.key,
+          encryptionKey: drive.base.encryptionKey || null
+        })
+        
+        console.log('Pairing confirmed - sending attestation')
+        
+        // Send identity attestation
+        const attestation = {
+          type: 'identity_attestation',
+          proof: attestationData.toString('base64'),
+          timestamp: new Date().toISOString()
+        }
+        
+        // Send through all available channels
+        for (const ch of currentMember.ref.channels) {
+          if (ch.messages[2]) {
+            ch.messages[2].send(Buffer.from(JSON.stringify(attestation)))
+          }
+        }
+        
+      } catch (error) {
+        console.log('Pairing failed:', error.message)
+        request.deny()
+      }
     }
+  })
+  
+  await currentMember.ready()
+  currentMember.announce()
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// MESSAGING SYSTEM
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Post a message to our drive with cryptographic signature
+async function post_message() {
+  if (!drive) return console.log('No drive available')
+  if (!identity || !device_keypair || !proof) return console.log('No identity available')
+  
+  const message = await question('Message: ')
+  const postData = {
+    message,
+    timestamp: new Date().toISOString(),
+    author: identity.identityPublicKey.toString('hex').slice(0, 8), // Use identity, not drive key
+    identityKey: identity.identityPublicKey.toString('hex')
+  }
+  
+  // Sign the post with our attested device
+  const postBuffer = Buffer.from(JSON.stringify(postData))
+  const signature = identity_key.attestData(postBuffer, device_keypair, proof)
+  
+  const signedPost = {
+    data: postData,
+    signature: signature.toString('base64')
+  }
+  
+  try {
+    await drive.put(`/post_${Date.now()}.json`, Buffer.from(JSON.stringify(signedPost)))
+    console.log('Message posted with cryptographic signature!')
+  } catch (error) {
+    console.log('Failed to post:', error.message)
   }
 }
 
-// Subscribe to another user drive to see their posts
+// Subscribe to another user's drive to see their posts
 async function subscribe() {
   const name = await question('Subscription name: ')
   const key = await question('Drive key: ')
@@ -308,14 +281,18 @@ async function subscribe() {
     await sub_drive.ready()
     subscriptions.set(name, sub_drive)
     
-    if (swarm) for (const conn of swarm.connections) sub_drive.replicate(conn)
+    // Replicate with existing connections
+    for (const conn of swarm.connections) {
+      sub_drive.replicate(conn)
+    }
+    
     console.log(`Subscribed to ${name}`)
   } catch (error) {
     console.log('Subscribe failed:', error.message)
   }
 }
 
-// Display all posts from our drive and subscribed drives
+// Display all posts from our drive and subscribed drives with signature verification
 async function list_posts() {
   console.log('\nPosts:')
   
@@ -326,8 +303,27 @@ async function list_posts() {
       for await (const file of files) {
         if (file.startsWith('/post_')) {
           const content = await drive_obj.get(file)
-          const post = JSON.parse(content.toString())
-          console.log(`[${post.timestamp}] ${post.author}: ${post.message}`)
+          
+          try {
+            const signedPost = JSON.parse(content.toString())
+            
+            // Verify signature
+            const postBuffer = Buffer.from(JSON.stringify(signedPost.data))
+            const signatureBuffer = Buffer.from(signedPost.signature, 'base64')
+            const verification = identity_key.verify(signatureBuffer, postBuffer)
+            
+            const verifyIcon = verification ? '[VERIFIED]' : '[INVALID]'
+            const post = signedPost.data
+            console.log(`${verifyIcon} [${post.timestamp}] ${post.author}: ${post.message}`)
+            
+            if (verification) {
+              console.log(`    Identity: ${verification.identityPublicKey.toString('hex').slice(0, 16)}...`)
+            } else {
+              console.log(`    WARNING: Signature verification failed!`)
+            }
+          } catch (parseError) {
+            console.log(`ERROR: Failed to parse post: ${file}`)
+          }
         }
       }
     } catch (e) {
@@ -335,16 +331,24 @@ async function list_posts() {
     }
   }
   
-  await show_posts(drive)
-  for (let [name, sub_drive] of subscriptions) await show_posts(sub_drive, name)
+  // Show posts from main drive
+  if (drive) await show_posts(drive)
+  else console.log('No main drive available')
+  
+  // Show posts from subscribed drives
+  for (let [name, sub_drive] of subscriptions) {
+    await show_posts(sub_drive, name)
+  }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// USER INTERFACE
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Main menu loop
 async function menu() {
   while (true) {
-    console.log('\nMenu:')
-    console.log('1. Post  2. Invite  3. Subscribe  4. List Posts  5. Info  6. Exit')
-    
+    console.log('\nMenu: 1. Post  2. Invite  3. Subscribe  4. List Posts  5. Info  6. Exit')
     const choice = await question('Choice: ')
     
     switch (choice) {
@@ -353,16 +357,21 @@ async function menu() {
       case '3': await subscribe(); break
       case '4': await list_posts(); break
       case '5': 
-        console.log(`Drive: ${drive.base.key.toString('hex')}`)
-        console.log(`Device: ${b4a.toString(device_keypair.publicKey, 'hex')}`)
-        console.log('Active pairing channels:', pairing_channels.size)
-        console.log('Active connections:', swarm?.connections.size || 0)
-        for (const [id, ch] of pairing_channels.entries()) {
-          console.log(`  Channel ${id}: closed=${ch.closed}, destroyed=${ch.destroyed}`)
+        // Show system info
+        if (drive) {
+          console.log(`Drive: ${drive.base.key.toString('hex')}`)
+          console.log(`Writable: ${drive.base.writable}`)
         }
+        if (identity) {
+          console.log(`Identity: ${identity.identityPublicKey.toString('hex')}`)
+        }
+        if (device_keypair) {
+          console.log(`Device: ${device_keypair.publicKey.toString('hex')}`)
+        }
+        console.log(`Connections: ${swarm?.connections.size || 0}`)
         break
       case '6':
-        if (swarm) await swarm.destroy()
+        await cleanup()
         rl.close()
         process.exit(0)
       default: console.log('Invalid choice')
@@ -370,20 +379,20 @@ async function menu() {
   }
 }
 
-async function main() {
-  console.log('P2P News App')
-  console.log('1. Make Identity  2. Join Identity')
-  
-  const choice = await question('Choice: ')
-  
-  if (choice === '1') await create_identity()
-  else if (choice === '2') await join_identity()
-  else {
-    console.log('Invalid choice')
-    process.exit(1)
-  }
-  
-  await menu()
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// CLEANUP
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Clean shutdown of all resources
+async function cleanup() {
+  if (currentMember) await currentMember.close()
+  if (currentCandidate) await currentCandidate.close()
+  if (blindPairing) await blindPairing.close()
+  if (swarm) await swarm.destroy()
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// START APPLICATION
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 main().catch(console.error)
