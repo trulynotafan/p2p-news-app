@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { create_autodrive } = require('./autodrive') // custom (autobase + hyperdrive) implementation
+const { create_autodrive } = require('./autodrive')
 const corestore = require('corestore')
 const b4a = require('b4a')
 const Hyperswarm = require('hyperswarm')
@@ -78,15 +78,18 @@ async function join_identity() {
   
   // Get our writer key for the shared drive
   const { getLocalCore } = require('./autodrive')
-  const core = getLocalCore(store) // i think it can be simpler??
+  const core = getLocalCore(store)
   await core.ready()
   const my_writer_key = core.key
   await core.close()
   
+  // Send both device public key and writer key together
+  const user_data = Buffer.concat([device_keypair.publicKey, my_writer_key])
+  
   // Create candidate to join using the invite
   current_candidate = blind_pairing.addCandidate({
     invite: invite_buffer,
-    userData: device_keypair.publicKey, // Send our device public key for attestation
+    userData: user_data,
     onAttestation: async (attestation, channel) => {
       if (attestation.type !== 'identity_attestation') return
       
@@ -98,27 +101,24 @@ async function join_identity() {
         })
         
         if (info) {
-          console.log('Identity attestation verified - we now belong to identity:', info.identityPublicKey.toString('hex'))
+          console.log('Identity verified - joined successfully!')
           
-          // Store our identity proof for future use
+          // Store our complete proof and identity info for future attestations
           proof = proof_buffer
-          identity = { identityPublicKey: info.identityPublicKey }
+          identity = { 
+            identityPublicKey: info.identityPublicKey,
+            // Store minimal identity info needed for verification
+          }
           
-          // Send back our writer key so we can write to the shared drive
-          current_candidate.sendAttestation({
-            type: 'attestation_ack',
-            writerKey: my_writer_key.toString('hex')
-          }, channel)
         } else {
-          console.log('Identity attestation verification failed')
+          console.log('Identity verification failed')
         }
       } catch (error) {
         console.log('Attestation error:', error.message)
-        current_candidate.sendAttestation({ type: 'attestation_error', message: error.message }, channel)
       }
     },
     onadd: async (result) => {
-      console.log('Pairing successful!')
+      console.log('Connected to shared drive!')
       // Connect to the shared drive
       drive = create_autodrive(store, result.key)
       await drive.ready()
@@ -127,8 +127,6 @@ async function join_identity() {
       for (const conn of swarm.connections) {
         drive.replicate(conn)
       }
-      
-      console.log('Connected to shared drive!')
     }
   })
   
@@ -153,7 +151,6 @@ async function setup_network() {
   
   // Handle new peer connections
   swarm.on('connection', (conn, info) => {
-    console.log(`Peer connected: ${info?.publicKey?.toString('hex')?.slice(0, 8) || 'unknown'}`)
     if (!conn.userData) conn.userData = { protocols: new Map() }
     
     // Replicate our drive and subscriptions
@@ -169,7 +166,7 @@ async function setup_network() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// INVITE SYSTEM
+// INVITE SYSTEM - UPDATED FOR MULTI-DEVICE ATTESTATION
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Generate invite code for others to join our network
@@ -186,23 +183,26 @@ async function create_invite() {
   // Set up member to handle incoming pairing requests
   current_member = blind_pairing.addMember({
     discoveryKey: drive.base.discoveryKey,
-    onAttestation: async (attestation) => {
-      // Handle response from candidate
-      if (attestation.type === 'attestation_ack' && attestation.writerKey) {
-        const writer_key_buffer = Buffer.from(attestation.writerKey, 'hex')
-        await drive.add_writer(writer_key_buffer)
-        console.log('Writer key added - peer can now post!')
-      }
-    },
     onadd: async (request) => {
-      console.log('Received pairing request')
       try {
         // Verify the pairing request
         await request.open(invite.publicKey)
-        console.log('Pairing request verified')
+        console.log('New device joined!')
         
-        // Create attestation that the requesting device belongs to our identity
-        const attestation_data = identity_key.attestDevice(request.userData, device_keypair, proof)
+        // Parse the user data to get both device key and writer key
+        const device_public_key = request.userData.slice(0, 32) // First 32 bytes
+        const writer_key_buffer = request.userData.slice(32)     // Rest is writer key
+        
+        // Add the writer key to our drive so they can post
+        await drive.add_writer(writer_key_buffer)
+        
+        // keet identity example: Use attestDevice to create proof that the new device belongs to our identity
+        // This creates a chain: Identity -> Our Device -> New Device
+        const attestation_data = identity_key.attestDevice(
+          device_public_key,  // New device's public key
+          device_keypair,     // Our device's keypair (the attesting device)
+          proof              // Our device's proof (proves we belong to the identity)
+        )
         
         // Confirm pairing and give access to our drive
         request.confirm({ 
@@ -210,16 +210,16 @@ async function create_invite() {
           encryptionKey: drive.base.encryptionKey || null
         })
         
-        console.log('Pairing confirmed - sending attestation')
-        
-        // Send identity attestation
+        // Send identity attestation that proves the new device belongs to our identity
         const attestation = {
           type: 'identity_attestation',
           proof: attestation_data.toString('base64'),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          attested_by: device_keypair.publicKey.toString('hex').slice(0, 8),
+          identity: identity.identityPublicKey.toString('hex').slice(0, 8)
         }
         
-        // Send through all available channels (I'm basically using the blind-pairing protomux channel to send attestation)
+        // Send through all available channels
         for (const ch of current_member.ref.channels) {
           if (ch.messages[2]) {
             ch.messages[2].send(Buffer.from(JSON.stringify(attestation)))
@@ -227,8 +227,7 @@ async function create_invite() {
         }
         
       } catch (error) {
-        console.log('Pairing failed:', error.message)
-        request.deny()
+        // Request not for this device, ignore silently
       }
     }
   })
@@ -250,11 +249,12 @@ async function post_message() {
   const post_data = {
     message,
     timestamp: new Date().toISOString(),
-    author: identity.identityPublicKey.toString('hex').slice(0, 8), // Use identity
-    identityKey: identity.identityPublicKey.toString('hex') // full key
+    author: identity.identityPublicKey.toString('hex').slice(0, 8), // Use identity, not drive key
+    identityKey: identity.identityPublicKey.toString('hex'),
+    device: device_keypair.publicKey.toString('hex').slice(0, 8)
   }
   
-  // Sign the post with our attested device (I hope this is the correct approach)
+  // Sign the post with our attested device
   const post_buffer = Buffer.from(JSON.stringify(post_data))
   const signature = identity_key.attestData(post_buffer, device_keypair, proof)
   
@@ -307,7 +307,7 @@ async function list_posts() {
           try {
             const signed_post = JSON.parse(content.toString())
             
-            // Verify signature
+            // Verify signature - this traces back to the root identity
             const post_buffer = Buffer.from(JSON.stringify(signed_post.data))
             const signature_buffer = Buffer.from(signed_post.signature, 'base64')
             const verification = identity_key.verify(signature_buffer, post_buffer)
@@ -318,6 +318,7 @@ async function list_posts() {
             
             if (verification) {
               console.log(`    Identity: ${verification.identityPublicKey.toString('hex').slice(0, 16)}...`)
+              console.log(`    Device: ${post.device}`)
             } else {
               console.log(`    WARNING: Signature verification failed!`)
             }
@@ -342,13 +343,13 @@ async function list_posts() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// USER INTERFACE
+// USER INTERFACE - UPDATED TO SHOW ATTESTATION STATUS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Main menu loop
 async function menu() {
   while (true) {
-    console.log('\nMenu: 1. Post  2. Invite  3. Subscribe  4. List Posts  5. Info  6. Exit')
+    console.log(`\nMenu: 1. Post  2. Invite  3. Subscribe  4. List Posts  5. Info  6. Exit`)
     const choice = await question('Choice: ')
     
     switch (choice) {
@@ -358,6 +359,7 @@ async function menu() {
       case '4': await list_posts(); break
       case '5': 
         // Show system info
+        console.log('\n=== System Info ===')
         if (drive) {
           console.log(`Drive: ${drive.base.key.toString('hex')}`)
           console.log(`Writable: ${drive.base.writable}`)
@@ -369,6 +371,15 @@ async function menu() {
           console.log(`Device: ${device_keypair.publicKey.toString('hex')}`)
         }
         console.log(`Connections: ${swarm?.connections.size || 0}`)
+        
+        if (proof) {
+          // Try to verify our own proof to show the chain
+          const our_verification = identity_key.verify(proof, null)
+          if (our_verification) {
+            console.log(`Proof Valid: YES`)
+            console.log(`Traces to Identity: ${our_verification.identityPublicKey.toString('hex').slice(0, 16)}...`)
+          }
+        }
         break
       case '6':
         await cleanup()
