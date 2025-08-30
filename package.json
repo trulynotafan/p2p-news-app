@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@hyperswarm/dht-relay": "^0.4.3",
+    "@geut/sodium-javascript-plus": "^0.0.6",
     "autobase": "^6.5.13",
     "b4a": "^1.6.7",
     "bare-crypto": "^1.4.5",
