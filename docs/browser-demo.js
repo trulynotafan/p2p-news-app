@@ -126,11 +126,6 @@ async function device2_join_identity() {
   // Get invite from device1
   const invite_code = window.shared_invite
   
-  // Validate invite code before processing
-  if (!invite_code || invite_code.length === 0) {
-    throw new Error('Invalid invite code')
-  }
-  
   const invite_buffer = b4a.from(invite_code, 'base64')
   
   // Create local store and get writer key
@@ -141,11 +136,6 @@ async function device2_join_identity() {
   await core.ready()
   const my_writer_key = core.key
   await core.close()
-  
-  // Validate writer key
-  if (!my_writer_key || my_writer_key.length !== 32) {
-    throw new Error('Invalid writer key')
-  }
   
   // Send only the writer key
   const user_data = my_writer_key
