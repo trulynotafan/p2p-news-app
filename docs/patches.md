@@ -76,4 +76,75 @@ this.storage.truncate(size, err => {
 this._truncate(size).then(resolve).catch(reject)
 ```
 
+
+
+
 This patch allows `oplog` to run safely in both Node.js and browser environments without relying on unsupported filesystem operations.
+
+
+# Patch 3 (blind-pairing)
+
+## Problem
+
+The problem is that blind-pairing uses RTT value from the rawstream and uses it find the closest channel. THe rawstream object does provide the object in nodejs when using RAWUDP streams but this RTT value isn't available in the Browser Websocket. This is proven via logging this objetc and using checks to identity. The problem is that when this conditional check is ran:
+```javascript
+
+       // In browser rtt is undefined
+
+        const { rtt } = ch._mux.stream.rawStream
+        if (rtt < closest) channel = ch
+
+```
+, `undefined` would always return false. This means it will never choose any channel and would silently fail.
+
+## Root Cause
+
+The root cause appears to be because of browsers using dht-relay and Websockets. Which don't have this `rtt` value property. This doc will be updated after more researching.
+
+
+## Solution
+
+- Added a condition in blind-pairing so that if the `rtt` object is undefined we will just 0 as the closest value.
+
+## Code Change Summary
+
+- This codition has been added before the rtt-value assignment: `const fixed_rtt = (rtt !== undefined && rtt !== null) ? rtt : 0`
+
+## Example Before
+
+```js
+        const { rtt } = ch._mux.stream.rawStream
+
+        if (rtt < closest) channel = ch
+```
+
+## Example After
+
+```js
+        try {
+          const { rtt } = ch._mux.stream.rawStream
+          console.log({rtt})
+          // Handle undefined RTT in browser environment - use 0 as fallback
+          const fixed_rtt = (rtt !== undefined && rtt !== null) ? rtt : 0
+          if ( fixed_rtt < closest) {
+            closest = fixed_rtt
+            channel = ch
+          }
+        } catch (error) {
+          // If RTT access fails completely, (haven't but still) still use the channel with fallback RTT of 0
+          if (0 < closest) {
+            closest = 0
+            channel = ch
+          }
+        }
+```
+Find the whole code [here](https://www.diffchecker.com/IHbjbx0M/) (This link will be updated with github link once we finalize and add it into patch-package)
+
+
+
+This patch allows `blind-pairing` to be successfully completed along both browser and node/bare environments.
+
+
+
+
+
