@@ -30,3 +30,4 @@ npm run browser-demo
 
 ```
 this will run the browser-demo without any patch. You can then apply the patch and see if it works.. And if it's necessary.
+btw, the patch [link](https://www.diffchecker.com/IHbjbx0M/)
