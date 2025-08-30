@@ -42,16 +42,18 @@
     "bip39": "^3.1.0",
     "bip39-mnemonic": "^2.4.0",
     "corestore": "^6.18.4",
+    "blind-pairing": "^2.3.1",
+    "blind-pairing-core": "^2.9.0",
     "hyper-webrtc": "^1.0.0",
     "hypercore-crypto": "^3.6.1",
     "hyperdrive": "^11.13.4",
     "hyperswarm": "^4.8.4",
     "keet-identity-key": "^3.1.0",
     "random-access-web": "^2.0.3",
+    "random-access-memory": "^6.2.1",
     "sodium-javascript": "^0.8.0",
-    "sodium-universal": "^4.0.1",
-    "ws": "^8.18.1",
-    "blind-pairing": "^2.3.1"
+    "sodium-universal": "^5.0.1",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "browserify": "^17.0.0",
