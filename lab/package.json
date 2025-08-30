@@ -1,0 +1,9 @@
+{
+  "name": "lab",
+  "version": "0.0.1",
+  "description": "For testing modules and compatibility",
+  "scripts": {
+    "browser-demo": "browserify browser-demo.js > bundle.js && budo browser-demo.js:bundle.js --live --open",
+    "relay": "node ../src/node_modules/relay"
+  }
+}
