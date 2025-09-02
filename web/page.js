@@ -2,24 +2,30 @@ const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
 const b4a = require('b4a')
 
+let store
 let username = localStorage.getItem('username') || ''
-let current_view; let connection_status = 'disconnected'; let store; let blog_core; let update_interval
+let current_view
+let is_ready = false
+let is_joining = false
+let swarm = null
 
-// basic html structure
+// Basic HTML structure
 document.body.innerHTML = `
   <div id="app">
     <div id="login" style="display: ${username ? 'none' : 'block'}">
-      <h3>P2P Blog</h3>
+      <h3>P2P News App</h3>
       <input id="username" value="${username}" placeholder="Your Name">
-      <button id="join_btn">Join</button>
+      <div>
+        <button id="make_btn">Start</button>
+      </div>
     </div>
     <div id="main" style="display: ${username ? 'block' : 'none'}">
       <div>Status: <span id="connection_status">Disconnected</span></div>
       <nav>
         <button data-view="news">News</button>
-        <button data-view="blog">Blog</button>
+        <button data-view="blog">My Blog</button>
         <button data-view="explore">Explore</button>
-        <button data-view="post">Post</button>
+        <button data-view="post">New Post</button>
         <button data-view="config">Config</button>
       </nav>
       <style>
@@ -30,363 +36,261 @@ document.body.innerHTML = `
   </div>
 `
 
-// utility functions
+// Utility functions
 const format_date = timestamp => new Date(timestamp).toLocaleString()
+const escape_html = str => str ? str.replace(/[&<>"']/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag])) : ''
 
-// core functionality
-async function join_network () {
+// Core functionality
+async function make_network() {
   const user = document.getElementById('username').value.trim() || username
-  if (!user) return alert('Enter your name')
-  
+  if (!user) return alert('Please enter your name to make.')
+
   localStorage.setItem('username', user)
   username = user
-  
+
   document.getElementById('login').style.display = 'none'
   document.getElementById('main').style.display = 'block'
-  
+
   try {
-    document.getElementById('connection_status').textContent = 'Connecting...'
-    connection_status = 'connecting'
-    
-    const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-    const custom_relay = localStorage.getItem('custom_relay') || (relays.length > 0 ? relays[0] : null)
-    
-    const connectionPromise = start_browser_peer({ name: username, relay: custom_relay })
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout')), 10000)
-    )
-    
-    const result = await Promise.race([connectionPromise, timeoutPromise])
-    store = result.store
-    blog_core = result.blog_core
-    await blog_helper.init_blog(store, username)
-    
-    if (result.swarm) {
-      connection_status = 'connected'
-      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
-      document.getElementById('connection_status').textContent = `🟢 ${username} via ${current_relay}`
-    } else {
-      connection_status = 'error'
-      const current_relay = custom_relay || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
-      document.getElementById('connection_status').textContent = `🔴 ${username} - Offline Mode (tried: ${current_relay})`
-    }
-    
-    store.on('core', async (core) => {
-      const key = b4a.toString(core.key, 'hex')
-      const manual_peers = JSON.parse(localStorage.getItem('manual_subscribed_peers') || '[]')
-      
-      // if its manually saved, subscribe to it
-      if (manual_peers.includes(key)) {
-        // give it some time to fully init before subscribing
-        setTimeout(() => {
-          blog_helper.subscribe(key).then(() => {
-            // remove from manual peers after subsribing so next time reconnection handles it 
-            const updated_manual_peers = manual_peers.filter(p => p !== key)
-            localStorage.setItem('manual_subscribed_peers', JSON.stringify(updated_manual_peers))
-            if (current_view === 'explore') render_view('explore')
-          })
-        }, 2000)
-      } else {
-        // let blog helpers handle normal peer discovery
-        await blog_helper.handle_new_core(core)
-      }
-      
-      if (current_view === 'explore') render_view('explore')
-    })
-    
-    store.on('blog-discovered', async () => {
-      if (current_view === 'explore') render_view('explore')
-    })
-    
+    document.getElementById('connection_status').textContent = 'Connecting to relay...'
+    is_joining = true
+
+    const { store: _store, swarm: _swarm } = await start_browser_peer({ name: username })
+    store = _store
+    swarm = _swarm
+
     blog_helper.on_update(() => {
-      if (['news', 'explore'].includes(current_view)) render_view(current_view)
+      // Just re-render the current view when updates happen
+      if (current_view) render_view(current_view)
     })
+
+    if (swarm) {
+      document.getElementById('connection_status').textContent = '🟡 Please wait, joining the swarm...'
+      
+      swarm.on('connection', () => {
+        is_joining = false
+        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+        if (current_view) render_view(current_view)
+      })
+      swarm.on('disconnection', () => {
+        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      })
+      
+      setTimeout(() => {
+        is_joining = false
+        if (swarm.connections.size > 0) {
+          document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+        } else {
+          document.getElementById('connection_status').textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
+        }
+        if (current_view) render_view(current_view)
+      }, 2000)
+    } else {
+      is_joining = false
+      document.getElementById('connection_status').textContent = '🟠 Offline mode (relay not available)'
+    }
+
+    await blog_helper.init_blog(store, username)
+    drive = blog_helper.get_drive()
     
+    // Set ready immediately after blog init, don't wait for first update
+    is_ready = true
+    is_joining = false
+
     show_view('news')
   } catch (err) {
-    connection_status = 'error'
-    document.getElementById('connection_status').textContent = 'Connection Error'
-    show_view('news')
+    document.getElementById('connection_status').textContent = `🔴 Error: ${err.message}`
   }
 }
 
-// view system
+// View system
 function show_view (name) {
-  if (!store && connection_status !== 'error' && !['blog', 'post'].includes(name)) {
-    alert('Please connect first')
-    return
-  }
-
-  if (update_interval) {
-    clearInterval(update_interval)
-    update_interval = null
-  }
-
   current_view = name
-  document.querySelectorAll('nav button').forEach(btn => 
+  document.querySelectorAll('nav button').forEach(btn =>
     btn.classList.toggle('active', btn.dataset.view === name)
   )
   render_view(name)
-  
-  if (name === 'explore') {
-    // Only refresh when new peers are discovered no need for timer
-  }
 }
 
-// render function
-function render_view (view) {
+// Render function
+async function render_view (view, ...args) {
+  const view_el = document.getElementById('view')
+  
+  if (is_joining) {
+    view_el.innerHTML = '<p>Joining, please wait...</p>'
+    return
+  }
+  
+  if (!is_ready && view !== 'explore') return;
+  view_el.innerHTML = 'Loading...'
+
   const renderers = {
     news: async () => {
-      if (!blog_core) return '<h3>News Feed</h3><p>No data yet</p>'
-      
-      try {
-        const peer_blogs = await blog_helper.get_peer_blogs()
-        
-        const posts = Array.from(peer_blogs.entries()).flatMap(([key, peer]) => 
-          (peer.posts || []).map(p => ({ ...p, peer_key: key, peer_name: peer.username || 'Unknown' }))
-        ).sort((a, b) => b.created - a.created)
-        
-        let content = `
-          <h3>News Feed (${posts.length} posts)</h3>
-          ${posts.map(p => `
-            <div>
-              <h4>${p.title}</h4>
-              <small>${p.peer_name} - ${format_date(p.created)}</small>
-              <p>${p.content}</p>
-              <hr>
-            </div>
-          `).join('') || '<p>No posts yet</p>'}
-        `
-        
-        if (connection_status === 'error') {
-          content += `
-            <hr>
-            <div style="background: #ffe6e6; padding: 10px; border-radius: 5px; margin-top: 20px;">
-              <p><strong>Connection Error:</strong> Please check your relay connection</p>
-              <button onclick="location.reload()">Retry</button>
-              <button onclick="reset_relay_and_reload()">Reset Relay & Retry</button>
-            </div>
-          `
+      const peer_blogs = await blog_helper.get_peer_blogs();
+
+      if (peer_blogs.size === 0) {
+        view_el.innerHTML = '<p>No posts from subscribed peers yet. Go to the explore tab to find peers.</p>';
+        return;
+      }
+
+      let html = '';
+      for (const [, blog] of peer_blogs) {
+        html += `<h2>${escape_html(blog.title)}</h2>`;
+        if (blog.posts.length === 0) {
+          html += '<p>No posts from this peer yet.</p>';
+        } else {
+          for (const post of blog.posts) {
+            html += `
+              <div class="post">
+                <h3>${escape_html(post.title)}</h3>
+                <p>${escape_html(post.content)}</p>
+                <span>Posted on: ${new Date(post.created).toLocaleString()}</span>
+              </div>
+            `;
+          }
         }
-        
-        return content
-      } catch (err) {
-        console.error('Error loading news:', err)
-        return '<h3>News Feed</h3><p>Error loading posts</p>'
+      }
+      view_el.innerHTML = html;
+    },
+
+    blog: async () => {
+      view_el.innerHTML = '<h3>My Blog</h3>'
+      const posts = await blog_helper.get_my_posts()
+      if (posts.length === 0) return view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
+      for (const post of posts) {
+        view_el.innerHTML += `
+          <div class="post">
+            <h4>${escape_html(post.title)}</h4>
+            <p>${escape_html(post.content)}</p>
+            <small>Posted on: ${format_date(post.created)}</small>
+          </div>
+        `
       }
     },
-    
-    blog: async () => {
-      if (!blog_core) return '<h3>My Blog</h3><p>No data yet</p>'
-      
-      const posts = await blog_helper.get_my_posts()
-      const sorted_posts = posts
-        .sort((a, b) => b.created - a.created)
-        .map(p => `
-          <div>
-            <h4>${p.title}</h4>
-            <small>${format_date(p.created)}</small>
-            <p>${p.content}</p>
-            <hr>
-          </div>
-        `).join('')
-      return sorted_posts || '<p>No posts yet</p>'
-    },
-    
+
     explore: async () => {
-      if (!blog_core) return '<h3>Explore</h3><p>No data yet</p>'
-      
+      view_el.innerHTML = '<h3>Explore Peers</h3>'
+      const discovered = blog_helper.get_discovered_blogs()
+      const subscribed_blogs = await blog_helper.get_peer_blogs()
+      const subscribed_keys = Array.from(subscribed_blogs.keys())
       const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
-      const discovered = await blog_helper.get_discovered_blogs()
-      const subscribed = await blog_helper.get_peer_blogs()
-      const discovered_relays = Array.from(window.discovered_relays || []).filter(r => !r.includes('localhost'))
-      
-      const blogs = Array.from(discovered.entries())
-        .filter(([key, data]) => key !== my_key)
-        .map(([key, data]) => {
-          const is_subscribed = subscribed.has(key)
-          return `
+
+      // Show discovered peers (not yet subscribed)
+      if (discovered.size > 0) {
+        view_el.innerHTML += '<h4>Discovered Peers</h4>'
+        for (const [key, peer] of discovered) {
+          if (key === my_key) continue
+          view_el.innerHTML += `
             <div>
-              <b>${data.title}</b>
-              <button onclick="${is_subscribed ? 'unsub' : 'sub'}('${key}')">
-                ${is_subscribed ? 'Unsubscribe' : 'Subscribe'}
-              </button>
-              <hr>
+              <h5>${escape_html(peer.username)}'s Blog (${escape_html(peer.title)})</h5>
+              <p><code>${key}</code></p>
+              <button onclick="window.sub('${key}')">Subscribe</button>
             </div>
+            <hr>
           `
-        }).join('')
-      
-      const relay_section = discovered_relays.length > 0 ? 
-        '<h4>Discovered Relays</h4>' + discovered_relays.map(r => 
-          `<div><b>${r}</b><button onclick="add_relay('${r}')">Add Relay</button><hr></div>`
-        ).join('') : ''
-      
-      return `
-        <h3>Explore</h3>
-        <button onclick="show_my_address()">Show My Blog Address</button>
-        <div id="my_address" style="display:none"><b>${my_key}</b></div>
-        <hr>
-        <h4>Manual Subscribe</h4>
-        <input id="manual_key" placeholder="Enter blog address (hex key)">
-        <button onclick="manual_subscribe()">Subscribe</button>
-        <hr>
-        ${blogs + relay_section || '<p>No blogs discovered</p>'}
-      `
+        }
+      }
+
+      // Show subscribed peers
+      if (subscribed_blogs.size > 0) {
+        view_el.innerHTML += '<h4>Subscribed Peers</h4>'
+        for (const [key, blog] of subscribed_blogs) {
+          if (key === my_key) continue
+          view_el.innerHTML += `
+            <div>
+              <h5>${escape_html(blog.username)}'s Blog (${escape_html(blog.title)})</h5>
+              <p><code>${key}</code></p>
+              <button onclick="window.unsub('${key}')">Unsubscribe</button>
+            </div>
+            <hr>
+          `
+        }
+      }
+
+      // Show message if no peers at all
+      if (discovered.size === 0 && subscribed_blogs.size === 0) {
+        view_el.innerHTML += '<p>No peers found yet. Wait for peers to be discovered.</p>'
+      }
     },
-    
-    post: () => `
-      <h3>Create Post</h3>
-      <input id="post_title" placeholder="Title"><br>
-      <textarea id="post_content" rows="5" placeholder="Content"></textarea><br>
-      <button onclick="publish()">Publish</button>
-    `,
-    
+
+    post: () => {
+      view_el.innerHTML = `
+        <h3>Create New Post</h3>
+        <input id="post_title" placeholder="Title">
+        <textarea id="post_content" placeholder="Content"></textarea>
+        <button id="publish_btn">Publish</button>
+      `
+      document.getElementById('publish_btn').addEventListener('click', window.publish)
+    },
+
     config: () => {
-      const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-      const current_relay = localStorage.getItem('custom_relay') || (location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.') ? 'ws://localhost:8080' : 'wss://p2p-relay-production.up.railway.app')
-      return `
-        <h3>Config</h3>
-        <p>Username: ${username}</p>
-        <p>Status: ${connection_status}</p>
+      const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      view_el.innerHTML = `
+        <h3>Configuration</h3>
+        <div>
+          <h4>My Blog Address</h4>
+          <p>Share this address with others so they can subscribe to your blog.</p>
+          <input readonly value="${my_key}" size="70">
+          <button onclick="navigator.clipboard.writeText('${my_key}')">Copy</button>
+        </div>
         <hr>
-        <h4>Relay Settings</h4>
-        <p>Current: ${current_relay}</p>
-        <p>Saved Relays: ${relays.length}</p>
-        ${relays.map(r => `<div>• ${r} <button onclick="connect_to_relay('${r}')">Connect</button> <button onclick="delete_relay('${r}')">Delete</button></div>`).join('')}
-        <input id="custom_relay" placeholder="Custom relay URL (e.g., ws://localhost:8080)" value="">
-        <button onclick="set_custom_relay()">Add Relay</button>
-        <button onclick="reset_relay()">Reset to Default</button>
+        <div>
+          <h4>Manual Subscribe</h4>
+          <p>Subscribe to a blog by its address.</p>
+          <input id="manual_key" placeholder="Blog Address" size="70">
+          <button onclick="window.manual_subscribe()">Subscribe</button>
+        </div>
         <hr>
-        <h4>Reset Data</h4>
-        <p>Delete all local data and start fresh</p>
-        <button onclick="reset_all_data()" style="background: red; color: white;">
-          Reset All Data
-        </button>
+        <div>
+          <h4>Reset</h4>
+          <button onclick="window.reset_all_data()">Delete All My Data</button>
+        </div>
       `
     }
   }
-  
-  const renderer = renderers[view]
-  if (renderer) {
-    if (renderer.constructor.name === 'AsyncFunction') {
-      renderer().then(html => {
-        document.getElementById('view').innerHTML = html
-      })
-    } else {
-      document.getElementById('view').innerHTML = renderer()
-    }
-  } else {
-    document.getElementById('view').innerHTML = '<p>View not found</p>'
-  }
+
+  if (renderers[view]) await renderers[view]()
+  else view_el.innerHTML = `View '${view}' not found.`
 }
 
-// action handlers
+// Action handlers
 window.publish = async () => {
-  const title = document.getElementById('post_title').value.trim()
-  const content = document.getElementById('post_content').value.trim()
-  
-  if (!title || !content) return alert('Enter title and content')
-  
-  if (await blog_helper.create_post(title, content)) {
-    document.getElementById('post_title').value = ''
-    document.getElementById('post_content').value = ''
+  const title = document.getElementById('post_title').value
+  const content = document.getElementById('post_content').value
+  if (!title || !content) return alert('Title and content are required.')
+
+  try {
+    await blog_helper.create_post(title, content)
     show_view('blog')
+  } catch (err) {
+    alert('Publish error: ' + err.message)
   }
 }
 
-window.sub = key => blog_helper.subscribe(key).then(() => show_view('explore'))
-window.unsub = key => blog_helper.unsubscribe(key).then(() => show_view('explore'))
-
-window.set_custom_relay = () => {
-  const relay = document.getElementById('custom_relay').value.trim()
-  if (!relay) {
-    alert('Enter a relay URL')
-    return
-  }
-  
-  if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
-    alert('Relay URL must start with ws:// or wss://')
-    return
-  }
-  
-  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-  if (!relays.includes(relay)) {
-    relays.push(relay)
-    localStorage.setItem('relays', JSON.stringify(relays))
-  }
-  document.getElementById('custom_relay').value = ''
-  if (current_view === 'config') render_view('config')
+window.sub = async (key) => {
+  await blog_helper.subscribe(key)
+  show_view('explore')
 }
 
-window.reset_relay = () => {
-  localStorage.removeItem('custom_relay')
-  localStorage.removeItem('relays')
-  document.getElementById('custom_relay').value = ''
-  alert('Relay reset to default. Reconnect to apply changes.')
+window.unsub = async (key) => {
+  await blog_helper.unsubscribe(key)
+  show_view('explore')
 }
 
-window.reset_relay_and_reload = () => {
-  localStorage.removeItem('custom_relay')
-  localStorage.removeItem('relays')
-  location.reload()
-}
-
-window.add_relay = (relay) => {
-  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-  if (!relays.includes(relay)) {
-    relays.push(relay)
-    localStorage.setItem('relays', JSON.stringify(relays))
-    alert('Relay added')
-  }
-}
-
-window.connect_to_relay = (relay) => {
-  localStorage.setItem('custom_relay', relay)
-  location.reload()
-}
-
-window.delete_relay = (relay) => {
-  const relays = JSON.parse(localStorage.getItem('relays') || '[]')
-  const filtered = relays.filter(r => r !== relay)
-  localStorage.setItem('relays', JSON.stringify(filtered))
-  if (current_view === 'config') render_view('config')
-}
-
-window.show_my_address = () => {
-  document.getElementById('my_address').style.display = 'block'
-}
-
-window.manual_subscribe = () => {
+window.manual_subscribe = async () => {
   const key = document.getElementById('manual_key').value.trim()
-  if (!key) return alert('Enter a blog address')
-  
+  if (!key) return alert('Please enter a blog address.')
+
   const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
-  if (key === my_key) {
-    alert('You\'re subscribing to yourself, duh')
-    return
+  if (key === my_key) return alert("You can't subscribe to yourself.")
+
+  const success = await blog_helper.subscribe(key)
+  if (success) {
+    alert('Successfully subscribed!')
+    show_view('news')
+  } else {
+    alert('Failed to subscribe. The key may be invalid or the peer is offline.')
   }
-  
-  // save to localStorage even if peer is offline
-  const manual_peers = JSON.parse(localStorage.getItem('manual_subscribed_peers') || '[]')
-  if (!manual_peers.includes(key)) {
-    manual_peers.push(key)
-    localStorage.setItem('manual_subscribed_peers', JSON.stringify(manual_peers))
-  }
-  
-  blog_helper.subscribe(key).then((success) => {
-    document.getElementById('manual_key').value = ''
-    const message = `Blog address ${key} added to local storage. You will subscribe to this peer when it comes online.`
-    console.log(message)
-    alert(message)
-    show_view('explore')
-  }).catch(() => {
-    // even if subscribe fails (peer offline), we still saved the key so next time it comes online it will subscribe
-    document.getElementById('manual_key').value = ''
-    const message = `Blog address ${key} added to local storage. You will subscribe to this peer when it comes online.`
-    console.log(message)
-    alert(message)
-    show_view('explore')
-  })
 }
 
 // Reset all data function
@@ -432,11 +336,11 @@ window.reset_all_data = async () => {
   }
 }
 
-// event listeners
-document.getElementById('join_btn').addEventListener('click', join_network)
-document.querySelectorAll('nav button').forEach(btn => 
+// Event listeners
+document.getElementById('make_btn').addEventListener('click', make_network)
+document.querySelectorAll('nav button').forEach(btn =>
   btn.addEventListener('click', () => show_view(btn.dataset.view))
 )
 
 // auto-join if we have a username
-if (username) join_network()
+if (username) make_network()
