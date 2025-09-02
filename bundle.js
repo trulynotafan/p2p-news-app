@@ -104892,7 +104892,7 @@ const format_date = timestamp => new Date(timestamp).toLocaleString()
 const escape_html = str => str ? str.replace(/[&<>"']/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag])) : ''
 
 // Core functionality
-async function make_network() {
+async function make_network(relay_override) {
   const user = document.getElementById('username').value.trim() || username
   if (!user) return alert('Please enter your name to make.')
 
@@ -104906,7 +104906,10 @@ async function make_network() {
     document.getElementById('connection_status').textContent = 'Connecting to relay...'
     is_joining = true
 
-    const { store: _store, swarm: _swarm } = await start_browser_peer({ name: username })
+    const options = { name: username }
+    if (relay_override) options.relay = relay_override
+    else if (localStorage.getItem('default_relay')) options.relay = localStorage.getItem('default_relay')
+    const { store: _store, swarm: _swarm } = await start_browser_peer(options)
     store = _store
     swarm = _swarm
 
@@ -105076,6 +105079,20 @@ async function render_view (view, ...args) {
 
     config: () => {
       const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      const relays = JSON.parse(localStorage.getItem('custom_relays') || '[]')
+      const default_relay = localStorage.getItem('default_relay')
+      
+      let relay_html = ''
+      relays.forEach(relay => {
+        relay_html += `
+          <div>
+            <code>${relay}</code>
+            <button onclick="window.connect_relay('${relay}')">Connect</button>
+            <button onclick="window.remove_relay('${relay}')">Remove</button>
+          </div>
+        `
+      })
+      
       view_el.innerHTML = `
         <h3>Configuration</h3>
         <div>
@@ -105083,6 +105100,15 @@ async function render_view (view, ...args) {
           <p>Share this address with others so they can subscribe to your blog.</p>
           <input readonly value="${my_key}" size="70">
           <button onclick="navigator.clipboard.writeText('${my_key}')">Copy</button>
+        </div>
+        <hr>
+        <div>
+          <h4>Relay Management</h4>
+          <p>Current: ${default_relay || 'Default'}</p>
+          <input id="relay_input" placeholder="wss://your-relay.com or ws://localhost:8080" size="50">
+          <button onclick="window.add_relay()">Add Relay</button>
+          <button onclick="window.reset_default_relay()">Use Default</button>
+          ${relay_html}
         </div>
         <hr>
         <div>
@@ -105144,6 +105170,37 @@ window.manual_subscribe = async () => {
   }
 }
 
+// Relay management functions
+window.add_relay = () => {
+  const relay = document.getElementById('relay_input').value.trim()
+  if (!relay) return alert('Enter relay URL')
+  if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) return alert('URL must start with ws:// or wss://')
+  
+  const relays = JSON.parse(localStorage.getItem('custom_relays') || '[]')
+  if (!relays.includes(relay)) {
+    relays.push(relay)
+    localStorage.setItem('custom_relays', JSON.stringify(relays))
+  }
+  show_view('config')
+}
+
+window.connect_relay = (relay) => {
+  localStorage.setItem('default_relay', relay)
+  window.location.reload()
+}
+
+window.remove_relay = (relay) => {
+  const relays = JSON.parse(localStorage.getItem('custom_relays') || '[]').filter(r => r !== relay)
+  localStorage.setItem('custom_relays', JSON.stringify(relays))
+  if (localStorage.getItem('default_relay') === relay) localStorage.removeItem('default_relay')
+  show_view('config')
+}
+
+window.reset_default_relay = () => {
+  localStorage.removeItem('default_relay')
+  window.location.reload()
+}
+
 // Reset all data function
 window.reset_all_data = async () => {
   if (!confirm('Delete all data?')) return
@@ -105194,5 +105251,5 @@ document.querySelectorAll('nav button').forEach(btn =>
 )
 
 // auto-join if we have a username
-if (username) join_network()
+if (username) make_network()
 },{"../src/node_modules/helpers/blog-helpers":633,"../src/node_modules/web-peer":638,"b4a":97}]},{},[639]);
