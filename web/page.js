@@ -1,6 +1,5 @@
 const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
-const b4a = require('b4a')
 
 let store
 let username = localStorage.getItem('username') || ''
@@ -16,7 +15,12 @@ document.body.innerHTML = `
       <h3>P2P News App</h3>
       <input id="username" value="${username}" placeholder="Your Name">
       <div>
-        <button id="make_btn">Start</button>
+        <button id="make_btn">Make</button>
+        <button id="join_btn">Join</button>
+      </div>
+      <div id="join_form" style="display: none; margin-top: 10px;">
+        <input id="invite_code" placeholder="Paste invite code here" style="width: 300px;">
+        <button id="join_with_invite_btn">Join with Invite</button>
       </div>
     </div>
     <div id="main" style="display: ${username ? 'block' : 'none'}">
@@ -40,6 +44,35 @@ document.body.innerHTML = `
 const format_date = timestamp => new Date(timestamp).toLocaleString()
 const escape_html = str => str ? str.replace(/[&<>"']/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag])) : ''
 
+// Setup connection status UI
+function setup_connection_status(swarm) {
+  if (swarm) {
+    document.getElementById('connection_status').textContent = '🟡 Please wait, joining the swarm...'
+    
+    swarm.on('connection', () => {
+      is_joining = false
+      document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      if (current_view) render_view(current_view)
+    })
+    swarm.on('disconnection', () => {
+      document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+    })
+    
+    setTimeout(() => {
+      is_joining = false
+      if (swarm.connections.size > 0) {
+        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      } else {
+        document.getElementById('connection_status').textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
+      }
+      if (current_view) render_view(current_view)
+    }, 2000)
+  } else {
+    is_joining = false
+    document.getElementById('connection_status').textContent = '🟠 Offline mode (relay not available)'
+  }
+}
+
 // Core functionality
 async function make_network() {
   const user = document.getElementById('username').value.trim() || username
@@ -55,40 +88,21 @@ async function make_network() {
     document.getElementById('connection_status').textContent = 'Connecting to relay...'
     is_joining = true
 
-    const { store: _store, swarm: _swarm } = await start_browser_peer({ name: username })
+    const { store: _store, swarm: _swarm } = await start_browser_peer({ 
+      name: username,
+      get_blog_key: () => blog_helper.get_autobase_key(),
+      get_blog_autobase: () => blog_helper.get_autobase(),
+      get_metadata_store: () => blog_helper.get_metadata_store(),
+      get_drive_store: () => blog_helper.get_drive_store()
+    })
     store = _store
     swarm = _swarm
 
     blog_helper.on_update(() => {
-      // Just re-render the current view when updates happen
       if (current_view) render_view(current_view)
     })
 
-    if (swarm) {
-      document.getElementById('connection_status').textContent = '🟡 Please wait, joining the swarm...'
-      
-      swarm.on('connection', () => {
-        is_joining = false
-        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-        if (current_view) render_view(current_view)
-      })
-      swarm.on('disconnection', () => {
-        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-      })
-      
-      setTimeout(() => {
-        is_joining = false
-        if (swarm.connections.size > 0) {
-          document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-        } else {
-          document.getElementById('connection_status').textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
-        }
-        if (current_view) render_view(current_view)
-      }, 2000)
-    } else {
-      is_joining = false
-      document.getElementById('connection_status').textContent = '🟠 Offline mode (relay not available)'
-    }
+    setup_connection_status(swarm)
 
     await blog_helper.init_blog(store, username)
     drive = blog_helper.get_drive()
@@ -100,6 +114,51 @@ async function make_network() {
     show_view('news')
   } catch (err) {
     document.getElementById('connection_status').textContent = `🔴 Error: ${err.message}`
+  }
+}
+
+// Join existing network with invite
+async function join_network() {
+  const user = document.getElementById('username').value.trim() || username
+  const invite_code = document.getElementById('invite_code').value.trim()
+  
+  if (!user) return alert('Please enter your name to join.')
+  if (!invite_code) return alert('Please enter an invite code.')
+
+  localStorage.setItem('username', user)
+  username = user
+
+  document.getElementById('login').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  try {
+    document.getElementById('connection_status').textContent = 'Connecting to relay...'
+    is_joining = true
+
+    const { store: _store, swarm: _swarm } = await start_browser_peer({ 
+      name: username,
+      invite_code: invite_code,
+      get_blog_key: () => blog_helper.get_autobase_key(),
+      get_blog_autobase: () => blog_helper.get_autobase(),
+      get_metadata_store: () => blog_helper.get_metadata_store(),
+      get_drive_store: () => blog_helper.get_drive_store()
+    })
+    store = _store
+    swarm = _swarm
+
+    blog_helper.on_update(() => {
+      if (current_view) render_view(current_view)
+    })
+
+    setup_connection_status(swarm)
+    
+    is_ready = true
+    is_joining = false
+    show_view('news')
+    
+  } catch (err) {
+    document.getElementById('connection_status').textContent = `🔴 Error: ${err.message}`
+    console.error('Join error:', err)
   }
 }
 
@@ -173,7 +232,7 @@ async function render_view (view, ...args) {
       const discovered = blog_helper.get_discovered_blogs()
       const subscribed_blogs = await blog_helper.get_peer_blogs()
       const subscribed_keys = Array.from(subscribed_blogs.keys())
-      const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      const my_key = blog_helper.get_autobase_key()
 
       // Show discovered peers (not yet subscribed)
       if (discovered.size > 0) {
@@ -224,7 +283,7 @@ async function render_view (view, ...args) {
     },
 
     config: () => {
-      const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      const my_key = blog_helper.get_autobase_key()
       view_el.innerHTML = `
         <h3>Configuration</h3>
         <div>
@@ -232,6 +291,13 @@ async function render_view (view, ...args) {
           <p>Share this address with others so they can subscribe to your blog.</p>
           <input readonly value="${my_key}" size="70">
           <button onclick="navigator.clipboard.writeText('${my_key}')">Copy</button>
+        </div>
+        <hr>
+        <div>
+          <h4>Create Invite</h4>
+          <p>Create an invite to share write access to your blog.</p>
+          <button onclick="window.create_invite()">Create Invite</button>
+          <div id="invite_result" style="margin-top: 10px;"></div>
         </div>
         <hr>
         <div>
@@ -277,11 +343,26 @@ window.unsub = async (key) => {
   show_view('explore')
 }
 
+window.create_invite = async () => {
+  try {
+    const invite_code = await blog_helper.create_invite(swarm)
+    
+    document.getElementById('invite_result').innerHTML = `
+      <p>Invite created! Share this code:</p>
+      <input readonly value="${invite_code}" style="width: 400px;">
+      <button onclick="navigator.clipboard.writeText('${invite_code}')">Copy</button>
+      <p><small>Keep this page open while others join.</small></p>
+    `
+  } catch (err) {
+    alert('Error creating invite: ' + err.message)
+  }
+}
+
 window.manual_subscribe = async () => {
   const key = document.getElementById('manual_key').value.trim()
   if (!key) return alert('Please enter a blog address.')
 
-  const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+  const my_key = blog_helper.get_autobase_key()
   if (key === my_key) return alert("You can't subscribe to yourself.")
 
   const success = await blog_helper.subscribe(key)
@@ -338,6 +419,11 @@ window.reset_all_data = async () => {
 
 // Event listeners
 document.getElementById('make_btn').addEventListener('click', make_network)
+document.getElementById('join_btn').addEventListener('click', () => {
+  document.getElementById('join_form').style.display = 'block'
+})
+document.getElementById('join_with_invite_btn').addEventListener('click', join_network)
+
 document.querySelectorAll('nav button').forEach(btn =>
   btn.addEventListener('click', () => show_view(btn.dataset.view))
 )

@@ -1,4 +1,544 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABYgxgAAF/YAJ/fwF/YAAAYAJ/fwBgCH9/f35/fn9/AGACf34AYAl/f39/fn9+f38Bf2AJf39/fn9+f39/AX9gA39/fgF/YAZ/f35/f38Bf2AIf39+f39+f38Bf2AEf35/fwF/ApMCCQNlbnYiY3J5cHRvX29uZXRpbWVhdXRoX3BvbHkxMzA1X3VwZGF0ZQAIA2Vudg5zb2RpdW1fbWVtemVybwADA2VudiJjcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGZfeG9yX2ljAAkDZW52G2NyeXB0b19zdHJlYW1fY2hhY2hhMjBfaWV0ZgALA2VudiFjcnlwdG9fb25ldGltZWF1dGhfcG9seTEzMDVfZmluYWwAAQNlbnYgY3J5cHRvX29uZXRpbWVhdXRoX3BvbHkxMzA1X2luaXQAAQNlbnYQY3J5cHRvX3ZlcmlmeV8xNgABA2Vudg1zb2RpdW1fbWlzdXNlAAIDZW52Bm1lbW9yeQIAgAIDDAsFAgAAAAAGCgcEAwYJAX8BQbCYgAILB5YCByljcnlwdG9fYWVhZF9jaGFjaGEyMHBvbHkxMzA1X2lldGZfZW5jcnlwdAAQKWNyeXB0b19hZWFkX2NoYWNoYTIwcG9seTEzMDVfaWV0Zl9kZWNyeXB0AA4qY3J5cHRvX2FlYWRfY2hhY2hhMjBwb2x5MTMwNV9pZXRmX2tleWJ5dGVzAA0rY3J5cHRvX2FlYWRfY2hhY2hhMjBwb2x5MTMwNV9pZXRmX25wdWJieXRlcwAMK2NyeXB0b19hZWFkX2NoYWNoYTIwcG9seTEzMDVfaWV0Zl9uc2VjYnl0ZXMACyhjcnlwdG9fYWVhZF9jaGFjaGEyMHBvbHkxMzA1X2lldGZfYWJ5dGVzAAoGX3N0YXJ0AAkK3gcLCQAgACABNwAACwMAAQsEAEEQCwQAQQALBABBDAsEAEEgC0IAQX8hAiAEQhBaBEAgACADIARCcHwgAyAEp2pBcGogBSAGIAcgCBAPIQILIAEEQCABQgAgBEJwfCACGzcDAAsgAguIAgEBfyMAQeACayIIJAAgCEEgakLAACAGIAcQAxogCEHgAGogCEEgahAFGiAIQSBqQcAAEAEgCEHgAGogBCAFEAAaIAhB4ABqQaCUwAFCACAFfUIPgxAAGiAIQeAAaiABIAIQABogCEHgAGpBoJTAAUIAIAJ9Qg+DEAAaIAhBGGogBRAIIAhB4ABqIAhBGGpCCBAAGiAIQRhqIAIQCCAIQeAAaiAIQRhqQggQABogCEHgAGogCBAEGiAIQeAAakGAAhABIAggAxAGIQMgCEEQEAECQCAARQ0AIAMEQCAAIAKnEBJBfyEDDAELIAAgASACIAZBASAHEAIaQQAhAwsgCEHgAmokACADCzkAIANC8P///w9UBEAgACAAIAOnaiACIAMgBCAFIAcgCBARIAEEQCABIANCEHw3AwALQQAPCxAHAAvaAQEBfyMAQdACayIIJAAgCEEQakLAACAGIAcQAxogCEHQAGogCEEQahAFGiAIQRBqQcAAEAEgCEHQAGogBCAFEAAaIAhB0ABqQaCUwAFCACAFfUIPgxAAGiAAIAIgAyAGQQEgBxACGiAIQdAAaiAAIAMQABogCEHQAGpBoJTAAUIAIAN9Qg+DEAAaIAhBCGogBRAIIAhB0ABqIAhBCGpCCBAAGiAIQQhqIAMQCCAIQdAAaiAIQQhqQggQABogCEHQAGogARAEGiAIQdAAakGAAhABIAhB0AJqJAAL1gIBAX8CQCABRQ0AIAAgAWoiAkF/akEAOgAAIABBADoAACABQQNJDQAgAkF+akEAOgAAIABBADoAASACQX1qQQA6AAAgAEEAOgACIAFBB0kNACACQXxqQQA6AAAgAEEAOgADIAFBCUkNACAAQQAgAGtBA3EiAmoiAEEANgIAIAAgASACa0F8cSICaiIBQXxqQQA2AgAgAkEJSQ0AIABBADYCCCAAQQA2AgQgAUF4akEANgIAIAFBdGpBADYCACACQRlJDQAgAEEANgIYIABBADYCFCAAQQA2AhAgAEEANgIMIAFBcGpBADYCACABQWxqQQA2AgAgAUFoakEANgIAIAFBZGpBADYCACACIABBBHFBGHIiAmsiAUEgSQ0AIAAgAmohAANAIABCADcDGCAAQgA3AxAgAEIANwMIIABCADcDACAAQSBqIQAgAUFgaiIBQR9LDQALCwsLDAEAQbCYwAELA9AMQA=='
+},{}],2:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABag1gAAF/YAJ/fwF/YAAAYAJ/fwBgCH9/f35/fn9/AGAIf39+f39+f38Bf2ACf34AYAR/f39/AX9gCX9/f39+f35/fwF/YAl/f39+f35/f38Bf2ADf39+AX9gBn9/fn9/fwF/YAR/fn9/AX8CtwIKA2VudiJjcnlwdG9fb25ldGltZWF1dGhfcG9seTEzMDVfdXBkYXRlAAoDZW52DnNvZGl1bV9tZW16ZXJvAAMDZW52IWNyeXB0b19vbmV0aW1lYXV0aF9wb2x5MTMwNV9maW5hbAABA2VudiZjcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGZfZXh0X3hvcl9pYwALA2VudiBjcnlwdG9fb25ldGltZWF1dGhfcG9seTEzMDVfaW5pdAABA2Vudh9jcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGZfZXh0AAwDZW52FWNyeXB0b19jb3JlX2hjaGFjaGEyMAAHA2VudhBjcnlwdG9fdmVyaWZ5XzE2AAEDZW52DXNvZGl1bV9taXN1c2UAAgNlbnYGbWVtb3J5AgCAAgMODQYCAAAIBQUJBAMAAAQGCQF/AUHAnMACCwecAgcqY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9lbmNyeXB0ABAqY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9kZWNyeXB0AA0rY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9rZXlieXRlcwAMLGNyeXB0b19hZWFkX3hjaGFjaGEyMHBvbHkxMzA1X2lldGZfbnB1YmJ5dGVzAAssY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9uc2VjYnl0ZXMAFCljcnlwdG9fYWVhZF94Y2hhY2hhMjBwb2x5MTMwNV9pZXRmX2FieXRlcwATBl9zdGFydAAKCogJDQkAIAAgATcAAAsDAAELBABBGAsEAEEgC0IAQX8hAiAEQhBaBEAgACADIARCcHwgAyAEp2pBcGogBSAGIAcgCBAPIQILIAEEQCABQgAgBEJwfCACGzcDAAsgAguIAgEBfyMAQeACayIIJAAgCEEgakLAACAGIAcQBRogCEHgAGogCEEgahAEGiAIQSBqQcAAEAEgCEHgAGogBCAFEAAaIAhB4ABqQbCYgAJCACAFfUIPgxAAGiAIQeAAaiABIAIQABogCEHgAGpBsJiAAkIAIAJ9Qg+DEAAaIAhBGGogBRAJIAhB4ABqIAhBGGpCCBAAGiAIQRhqIAIQCSAIQeAAaiAIQRhqQggQABogCEHgAGogCBACGiAIQeAAakGAAhABIAggAxAHIQMgCEEQEAECQCAARQ0AIAMEQCAAIAKnEBJBfyEDDAELIAAgASACIAZBASAHEAMaQQAhAwsgCEHgAmokACADC1QBAX8jAEEwayIIJAAgCEEANgIEIAhBEGogBiAHQQAQBhogCCAGKQAQNwIIIAAgASACIAMgBCAFIAhBBGogCEEQahAOIAhBEGpBIBABIAhBMGokAAs5ACADQvD///8PVARAIAAgACADp2ogAiADIAQgBSAHIAgQFSABBEAgASADQhB8NwMAC0EADwsQCAAL2gEBAX8jAEHQAmsiCCQAIAhBEGpCwAAgBiAHEAUaIAhB0ABqIAhBEGoQBBogCEEQakHAABABIAhB0ABqIAQgBRAAGiAIQdAAakGwmIACQgAgBX1CD4MQABogACACIAMgBkEBIAcQAxogCEHQAGogACADEAAaIAhB0ABqQbCYgAJCACADfUIPgxAAGiAIQQhqIAUQCSAIQdAAaiAIQQhqQggQABogCEEIaiADEAkgCEHQAGogCEEIakIIEAAaIAhB0ABqIAEQAhogCEHQAGpBgAIQASAIQdACaiQAC9YCAQF/AkAgAUUNACAAIAFqIgJBf2pBADoAACAAQQA6AAAgAUEDSQ0AIAJBfmpBADoAACAAQQA6AAEgAkF9akEAOgAAIABBADoAAiABQQdJDQAgAkF8akEAOgAAIABBADoAAyABQQlJDQAgAEEAIABrQQNxIgJqIgBBADYCACAAIAEgAmtBfHEiAmoiAUF8akEANgIAIAJBCUkNACAAQQA2AgggAEEANgIEIAFBeGpBADYCACABQXRqQQA2AgAgAkEZSQ0AIABBADYCGCAAQQA2AhQgAEEANgIQIABBADYCDCABQXBqQQA2AgAgAUFsakEANgIAIAFBaGpBADYCACABQWRqQQA2AgAgAiAAQQRxQRhyIgJrIgFBIEkNACAAIAJqIQADQCAAQgA3AxggAEIANwMQIABCADcDCCAAQgA3AwAgAEEgaiEAIAFBYGoiAUEfSw0ACwsLBABBEAsEAEEAC1QBAX8jAEEwayIIJAAgCEEANgIEIAhBEGogBiAHQQAQBhogCCAGKQAQNwIIIAAgASACIAMgBCAFIAhBBGogCEEQahARIAhBEGpBIBABIAhBMGokAAsLDAEAQcCcgAILA+AOUA=='
+},{}],3:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABVwxgAX8AYAl/f39/f39/f38Bf2ACf38AYAN/f38AYAF/AX9gAn9/AX9gCX9/f39+f35/fwF/YAl/f39+f35/f38Bf2AAAGAEf39/fwBgAAF/YAN/f38BfwLxAQYDZW52BWFib3J0AAkIc29kaXVtLWMpY3J5cHRvX2FlYWRfY2hhY2hhMjBwb2x5MTMwNV9pZXRmX2VuY3J5cHQABwhzb2RpdW0tYyljcnlwdG9fYWVhZF9jaGFjaGEyMHBvbHkxMzA1X2lldGZfZGVjcnlwdAAGCHNvZGl1bS1jKmNyeXB0b19hZWFkX3hjaGFjaGEyMHBvbHkxMzA1X2lldGZfZW5jcnlwdAAHCHNvZGl1bS1jKmNyeXB0b19hZWFkX3hjaGFjaGEyMHBvbHkxMzA1X2lldGZfZGVjcnlwdAAGA2VudgZtZW1vcnkCAFEDFRQCAgMKBAUCAwsFAAQAAQEBAQgAAAYTA38BQQALfwFBAAt/AEHQncACCwf3AQoGbWVtb3J5AgAHX19hbGxvYwAOCF9fcmV0YWluABAJX19yZWxlYXNlABEJX19jb2xsZWN0ABYLX19ydHRpX2Jhc2UDAiljcnlwdG9fYWVhZF9jaGFjaGEyMHBvbHkxMzA1X2lldGZfZW5jcnlwdAASKWNyeXB0b19hZWFkX2NoYWNoYTIwcG9seTEzMDVfaWV0Zl9kZWNyeXB0ABMqY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9lbmNyeXB0ABQqY3J5cHRvX2FlYWRfeGNoYWNoYTIwcG9seTEzMDVfaWV0Zl9kZWNyeXB0ABUKvBIUqQIBBH8gASgCACIDQQFxRQRAQQBBwJzAAkGVAkENEAAACyADQXxxIgJBEE8EfyACQfD///8DSQVBAAtFBEBBAEHAnMACQZcCQQ0QAAALIAJBgAJJBH8gAkEEdiECQQAFIAJBHyACZ2siA0EEa3ZBEHMhAiADQQdrCyIDQRdJBH8gAkEQSQVBAAtFBEBBAEHAnMACQaQCQQ0QAAALIAEoAhQhBCABKAIQIgUEQCAFIAQ2AhQLIAQEQCAEIAU2AhALIAEgACACIANBBHRqQQJ0aigCYEYEQCAAIAIgA0EEdGpBAnRqIAQ2AmAgBEUEQCAAIANBAnRqIAAgA0ECdGooAgRBASACdEF/c3EiATYCBCABRQRAIAAgACgCAEEBIAN0QX9zcTYCAAsLCwuPBAEGfyABRQRAQQBBwJzAAkHNAUENEAAACyABKAIAIgNBAXFFBEBBAEHAnMACQc8BQQ0QAAALIAFBEGogASgCAEF8cWoiBCgCACIFQQFxBEAgA0F8cUEQaiAFQXxxaiICQfD///8DSQRAIAAgBBAFIAEgAiADQQNxciIDNgIAIAFBEGogASgCAEF8cWoiBCgCACEFCwsgA0ECcQRAIAFBBGsoAgAiAigCACIGQQFxRQRAQQBBwJzAAkHkAUEPEAAACyAGQXxxQRBqIANBfHFqIgdB8P///wNJBEACfyAAIAIQBSACIAcgBkEDcXIiAzYCACACCyEBCwsgBCAFQQJyNgIAIANBfHEiAkEQTwR/IAJB8P///wNJBUEAC0UEQEEAQcCcwAJB8wFBDRAAAAsgAiABQRBqaiAERwRAQQBBwJzAAkH0AUENEAAACyAEQQRrIAE2AgAgAkGAAkkEfyACQQR2IQRBAAUgAkEfIAJnayICQQRrdkEQcyEEIAJBB2sLIgNBF0kEfyAEQRBJBUEAC0UEQEEAQcCcwAJBhAJBDRAAAAsgACAEIANBBHRqQQJ0aigCYCECIAFBADYCECABIAI2AhQgAgRAIAIgATYCEAsgACAEIANBBHRqQQJ0aiABNgJgIAAgACgCAEEBIAN0cjYCACAAIANBAnRqIAAgA0ECdGooAgRBASAEdHI2AgQL1AEBAn8gAkEPcUVBACABQQ9xRUEAIAEgAk0bG0UEQEEAQcCcwAJBggNBBBAAAAsgACgCoAwiAwRAIAEgA0EQakkEQEEAQcCcwAJBjANBDxAAAAsgAyABQRBrRgRAIAMoAgAhBCABQRBrIQELBSABIABBpAxqSQRAQQBBwJzAAkGYA0EEEAAACwsgAiABayICQTBJBEAPCyABIARBAnEgAkEga0EBcnI2AgAgAUEANgIQIAFBADYCFCABIAJqQRBrIgJBAjYCACAAIAI2AqAMIAAgARAGC6sBAQN/IwAiAEUEQEHRAD8AIgBKBH9B0QAgAGtAAEEASAVBAAsEQAALQfCdwAIiAEEANgIAQZCqwAJBADYCAANAIAFBF0kEQCABQQJ0QfCdwAJqQQA2AgRBACECA0AgAkEQSQRAIAFBBHQgAmpBAnRB8J3AAmpBADYCYCACQQFqIQIMAQsLIAFBAWohAQwBCwtB8J3AAkGgqsACPwBBEHQQB0HwncACJAALIAALMgAgAEHw////A08EQEHwnMACQcCcwAJByQNBHRAAAAsgAEEPakFwcSIAQRAgAEEQSxsL4wEBAX8gAUGAAkkEfyABQQR2IQFBAAUgAUH4////AUkEQCABQQFBGyABZ2t0akEBayEBCyABQR8gAWdrIgJBBGt2QRBzIQEgAkEHawsiAkEXSQR/IAFBEEkFQQALRQRAQQBBwJzAAkHSAkENEAAACyAAIAJBAnRqKAIEQX8gAXRxIgEEfyAAIAFoIAJBBHRqQQJ0aigCYAUgACgCAEF/IAJBAWp0cSIBBH8gACABaCIBQQJ0aigCBCICRQRAQQBBwJzAAkHfAkEREAAACyAAIAJoIAFBBHRqQQJ0aigCYAVBAAsLC2wBAX8/ACICQRAgACgCoAwgAkEQdEEQa0d0IAFBAUEbIAFna3RBAWtqIAEgAUH4////AUkbakH//wNqQYCAfHFBEHYiASACIAFKG0AAQQBIBEAgAUAAQQBIBEAACwsgACACQRB0PwBBEHQQBwuKAQECfyABKAIAIQMgAkEPcQRAQQBBwJzAAkHtAkENEAAACyADQXxxIAJrIgRBIE8EQCABIAIgA0ECcXI2AgAgAiABQRBqaiIBIARBEGtBAXI2AgAgACABEAYFIAEgA0F+cTYCACABQRBqIAEoAgBBfHFqIAFBEGogASgCAEF8cWooAgBBfXE2AgALC58BAQJ/IwEEQEEAQcCcwAJB6gNBDRAAAAsgACABEAkiBBAKIgNFBEBBASQBQQAkASAAIAQQCiIDRQRAIAAgBBALIAAgBBAKIgNFBEBBAEHAnMACQfYDQRMQAAALCwsgAygCAEF8cSAESQRAQQBBwJzAAkH+A0ENEAAACyADQQA2AgQgAyACNgIIIAMgATYCDCAAIAMQBSAAIAMgBBAMIAMLDQAQCCAAIAEQDUEQagtVAQF/IAAoAgQiAUGAgICAf3EgAUEBakGAgICAf3FHBEBBAEGwncACQe0AQQIQAAALIAAgAUEBajYCBCAAKAIAQQFxBEBBAEGwncACQfAAQQ0QAAALCxYAIABB7J3AAksEQCAAQRBrEA8LIAALFAAgAEHsncACSwRAIABBEGsQFwsLGAAgACABIAIgA60gBCAFrSAGIAcgCBABCxgAIAAgASACIAMgBK0gBSAGrSAHIAgQAgsYACAAIAEgAiADrSAEIAWtIAYgByAIEAMLGAAgACABIAIgAyAErSAFIAatIAcgCBAECwMAAQuXAQECfyAAKAIEIgJB/////wBxIQEgACgCAEEBcQRAQQBBsJ3AAkH6AEENEAAACyABQQFGBEAgAEEQahAYIAJBgICAgHhxBEBBAEGwncACQf4AQREQAAALIAAgACgCAEEBcjYCACMAIAAQBgUgAUEATQRAQQBBsJ3AAkGIAUEPEAAACyAAIAFBAWsgAkGAgICAf3FyNgIECws4AAJAAkACQCAAQQhrKAIADgMAAAECCw8LIAAoAgAiAARAIABB7J3AAk8EQCAAQRBrEBcLCw8LAAsLxwEEAEGwnMACCy0eAAAAAQAAAAEAAAAeAAAAfgBsAGkAYgAvAHIAdAAvAHQAbABzAGYALgB0AHMAQeCcwAILNygAAAABAAAAAQAAACgAAABhAGwAbABvAGMAYQB0AGkAbwBuACAAdABvAG8AIABsAGEAcgBnAGUAQaCdwAILLR4AAAABAAAAAQAAAB4AAAB+AGwAaQBiAC8AcgB0AC8AcAB1AHIAZQAuAHQAcwBB0J3AAgsVAwAAABAAAAAAAAAAEAAAAAAAAAAQ'
+},{}],4:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABIwRgA39/fwF/YAZ/f39/f38Bf2AGf39/fn9/AX9gA39/fgF/AkYCCXNvZGl1bS1qcxJjcnlwdG9fZ2VuZXJpY2hhc2gAAQlzb2RpdW0tanMZY3J5cHRvX2dlbmVyaWNoYXNoX3VwZGF0ZQAAAwMCAgMFAwEAAAc7AwZtZW1vcnkCABJjcnlwdG9fZ2VuZXJpY2hhc2gAAhljcnlwdG9fZ2VuZXJpY2hhc2hfdXBkYXRlAAMKHwIRACAAIAEgAiADpyAEIAUQAAsLACAAIAEgAqcQAQs='
+},{}],5:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABFwRgAABgAn9/AGACf38Bf2AEf39/fwF/AhABA2VudgZtZW1vcnkCAIACAwUEAgEAAwciAhVjcnlwdG9fY29yZV9oY2hhY2hhMjAAAwZfc3RhcnQAAgrsBQQHACAAIAF3CwkAIAAgATYAAAsDAAEL0wUBEX8CfyADRQRAQbLaiMsHIQRB7siBmQMhCkHl8MGLBiELQfTKgdkGDAELIAMoAAAhCyADKAAEIQogAygACCEEIAMoAAwLIQUgAigAACEDIAIoAAQhByACKAAIIQYgAigADCEIIAIoABAhDCACKAAUIQ0gAigAGCEPIAIoABwhESABKAAAIQIgASgABCEOIAEoAAghCSABKAAMIQEDQCADIAwgAiADIAtqIgtzQRAQACIQaiIMc0EMEAAhAiACIAwgECACIAtqIgtzQQgQACIQaiIMc0EHEAAhAyAHIA4gByAKaiIKc0EQEAAiDiANaiINc0EMEAAhAiACIA4gAiAKaiIKc0EIEAAiDiANaiINc0EHEAAhAiAGIAkgBCAGaiIHc0EQEAAiCSAPaiIPc0EMEAAhBCAEIAkgBCAHaiISc0EIEAAiCSAPaiIHc0EHEAAhBCAIIAEgBSAIaiIFc0EQEAAiBiARaiIPc0EMEAAhASABIAYgASAFaiITc0EIEAAiBiAPaiIIc0EHEAAhBSACIAcgBiACIAtqIgFzQRAQACIGaiIHc0EMEAAhAiACIAcgBiABIAJqIgtzQQgQACIBaiIPc0EHEAAhByAEIAggECAEIApqIgJzQRAQACIGaiIIc0EMEAAhBCAEIAggBiACIARqIgpzQQgQACICaiIRc0EHEAAhBiAFIA4gBSASaiIEc0EQEAAiCCAMaiIMc0EMEAAhBSAFIAwgCCAEIAVqIgRzQQgQACIOaiIMc0EHEAAhCCADIAkgAyATaiIFc0EQEAAiCSANaiINc0EMEAAhAyADIAkgAyAFaiIFc0EIEAAiCSANaiINc0EHEAAhAyAUQQFqIhRBCkcNAAsgACALEAEgAEEEaiAKEAEgAEEIaiAEEAEgAEEMaiAFEAEgAEEQaiACEAEgAEEUaiAOEAEgAEEYaiAJEAEgAEEcaiABEAFBAAsLDAEAQZCQwAALA7AIIA=='
+},{}],6:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABPAlgA39/fwF/YAAAYAJ/fwBgAn9/AX9gBX9/f39/AX9gAAF/YAR/f39/AX9gBn9/f35/fwF/YAN/f34BfwL6AQoDZW52DnNvZGl1bV9tZW16ZXJvAAIDZW52GWNyeXB0b19nZW5lcmljaGFzaF91cGRhdGUACANlbnYNc29kaXVtX21pc3VzZQABA2VudhhjcnlwdG9fZ2VuZXJpY2hhc2hfZmluYWwAAANlbnYXY3J5cHRvX2dlbmVyaWNoYXNoX2luaXQABgNlbnYRY3J5cHRvX3NjYWxhcm11bHQAAANlbnYWY3J5cHRvX3NjYWxhcm11bHRfYmFzZQADA2Vudg9yYW5kb21ieXRlc19idWYAAgNlbnYSY3J5cHRvX2dlbmVyaWNoYXNoAAcDZW52Bm1lbW9yeQIAgAIDBwYFAQQEAwAGCQF/AUHAoIADCwffAQkWY3J5cHRvX2t4X3NlZWRfa2V5cGFpcgAOEWNyeXB0b19reF9rZXlwYWlyAA0dY3J5cHRvX2t4X2NsaWVudF9zZXNzaW9uX2tleXMADB1jcnlwdG9fa3hfc2VydmVyX3Nlc3Npb25fa2V5cwALGGNyeXB0b19reF9wdWJsaWNrZXlieXRlcwAJGGNyeXB0b19reF9zZWNyZXRrZXlieXRlcwAJE2NyeXB0b19reF9zZWVkYnl0ZXMACRljcnlwdG9fa3hfc2Vzc2lvbmtleWJ5dGVzAAkGX3N0YXJ0AAoKkQQGBABBIAsDAAEL7gEBA38jACIFIQcgBUGABGtBQHEiBSQAIAAgASAAGyIGBEBBfyEAIAVB4ABqIAMgBBAFRQRAIAEgBiABGyEBQQAhACAFQYABakEAQQBBwAAQBBogBUGAAWogBUHgAGpCIBABGiAFQeAAakEgEAAgBUGAAWogBEIgEAEaIAVBgAFqIAJCIBABGiAFQYABaiAFQSBqQcAAEAMaIAVBgAFqQYADEAADQCAAIAFqIAVBIGogAGoiAi0AADoAACAAIAZqIAItACA6AAAgAEEBaiIAQSBHDQALIAVBIGpBwAAQAEEAIQALIAckACAADwsQAgAL7gEBA38jACIFIQcgBUGABGtBQHEiBSQAIAAgASAAGyIGBEBBfyEAIAVB4ABqIAMgBBAFRQRAIAEgBiABGyEBQQAhACAFQYABakEAQQBBwAAQBBogBUGAAWogBUHgAGpCIBABGiAFQeAAakEgEAAgBUGAAWogAkIgEAEaIAVBgAFqIARCIBABGiAFQYABaiAFQSBqQcAAEAMaIAVBgAFqQYADEAADQCAAIAZqIAVBIGogAGoiAi0AADoAACAAIAFqIAItACA6AAAgAEEBaiIAQSBHDQALIAVBIGpBwAAQAEEAIQALIAckACAADwsQAgALDgAgAUEgEAcgACABEAYLFwAgAUEgIAJCIEEAQQAQCBogACABEAYLCwwBAEHAoMACCwPgEGA='
+},{}],7:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABJAZgAn9/AX9gAn9/AGADf39+AX9gA39/fgBgBH9/fn8Bf2AAAAI8AwNlbnYOc29kaXVtX21lbXplcm8AAQNlbnYQY3J5cHRvX3ZlcmlmeV8xNgAAA2VudgZtZW1vcnkCAIACAxAPAQMFAQMBBAAEAAIBAAIABAUBcAEHBwYJAX8BQZCMwAALB3YEIGNyeXB0b19vbmV0aW1lYXV0aF9wb2x5MTMwNV9pbml0ABAiY3J5cHRvX29uZXRpbWVhdXRoX3BvbHkxMzA1X3VwZGF0ZQAMIWNyeXB0b19vbmV0aW1lYXV0aF9wb2x5MTMwNV9maW5hbAALBl9zdGFydAAECQwBAEEBCwYICgkPDgQKiw8PCQAgACABNgAAC6YEAgp/Dn4gACgCJCEEIAAoAiAhBSAAKAIcIQYgACgCGCEHIAAoAhQhAyACQhBaBEAgAC0AUEVBGHQhCCAAKAIEIglBBWytIRkgACgCCCIKQQVsrSEXIAAoAgwiC0EFbK0hFSAAKAIQIgxBBWytIRMgDK0hGiALrSEYIAqtIRYgCa0hFCAANQIAIRIDQCABKAADQQJ2Qf///x9xIAdqrSINIBh+IAEoAABB////H3EgA2qtIg4gGn58IAEoAAZBBHZB////H3EgBmqtIg8gFn58IAEoAAlBBnYgBWqtIhAgFH58IAEoAAxBCHYgCHIgBGqtIhEgEn58IA0gFn4gDiAYfnwgDyAUfnwgECASfnwgESATfnwgDSAUfiAOIBZ+fCAPIBJ+fCAQIBN+fCARIBV+fCANIBJ+IA4gFH58IA8gE358IBAgFX58IBEgF358IA0gE34gDiASfnwgDyAVfnwgECAXfnwgESAZfnwiDUIaiEL/////D4N8Ig5CGohC/////w+DfCIPQhqIQv////8Pg3wiEEIaiEL/////D4N8IhFCGoinQQVsIA2nQf///x9xaiIDQRp2IA6nQf///x9xaiEHIA+nQf///x9xIQYgEKdB////H3EhBSARp0H///8fcSEEIANB////H3EhAyABQRBqIQEgAkJwfCICQg9WDQALCyAAIAM2AhQgACAENgIkIAAgBTYCICAAIAY2AhwgACAHNgIYCwMAAQuoAwIMfwR+IAApAzgiDlBFBEAgACAOpyIDaiICQUBrQQE6AAAgDkIBfEIPWARAIAJBwQBqQQ8gA2sQDQsgAEEBOgBQIAAgAEFAa0IQEAMLIAA1AjQhDiAANQIwIQ8gADUCLCEQIAEgADUCKCAAKAIkIAAoAiAgACgCHCAAKAIYIgNBGnZqIgJBGnZqIgRBGnZqIghBgICAYHIgBEH///8fcSIJIAJB////H3EiBSAAKAIUIAhBGnZBBWxqIgJB////H3EiBkEFaiIHQRp2IANB////H3EgAkEadmoiCmoiC0EadmoiDEEadmoiDUEadmoiBEEfdSIDIAZxIAcgBEEfdkF/aiIGQf///x9xIgJxciADIApxIAIgC3FyIgdBGnRyrXwiEacQAiABQQRqIBAgAyAFcSACIAxxciIFQRR0IAdBBnZyrXwgEUIgiHwiEKcQAiABQQhqIA8gAyAJcSACIA1xciICQQ50IAVBDHZyrXwgEEIgiHwiD6cQAiABQQxqIA4gBCAGcSADIAhxckEIdCACQRJ2cq18IA9CIIh8pxACIABB2AAQAAvzAQEDfgJAIAApAzgiBFBFBEAgAkIQIAR9IgMgAyACVhsiBVBFBEBCACEDA0AgACADIAR8p2pBQGsgASADp2otAAA6AAAgACkDOCEEIANCAXwiAyAFUg0ACwsgACAEIAV8IgM3AzggA0IQVA0BIAAgAEFAa0IQEAMgAEIANwM4IAIgBX0hAiABIAWnaiEBCyACQhBaBEAgACABIAJCcIMiAxADIAJCD4MhAiABIAOnaiEBCyACUA0AQgAhAwNAIAAgACkDOCADfKdqQUBrIAEgA6dqLQAAOgAAIANCAXwiAyACUg0ACyAAIAApAzggAnw3AzgLC7IBAQF/IAAgASgAAEH///8fcTYCACAAIAEoAANBAnZBg/7/H3E2AgQgACABKAAGQQR2Qf+B/x9xNgIIIAAgASgACUEGdkH//8AfcTYCDCABKAAMIQIgAEIANwIUIABCADcCHCAAQQA2AiQgACACQQh2Qf//P3E2AhAgACABKAAQNgIoIAAgASgAFDYCLCAAIAEoABg2AjAgASgAHCEBIABBADoAUCAAQgA3AzggACABNgI0Cy0BAn8jACIFQYABa0FAcSIEJAAgBCADEAcgBCABIAIQBiAEIAAQBSAFJABBAAsKACAAIAEQB0EACyUBAX8jAEEQayIEJAAgBCABIAIgAxAIGiAAIAQQASAEQRBqJAALDwAgACABQZAIKAIAEQAACxEAIAAgASACQYwIKAIAEQIAC9YCAQF/AkAgAUUNACAAIAFqIgJBf2pBADoAACAAQQA6AAAgAUEDSQ0AIAJBfmpBADoAACAAQQA6AAEgAkF9akEAOgAAIABBADoAAiABQQdJDQAgAkF8akEAOgAAIABBADoAAyABQQlJDQAgAEEAIABrQQNxIgJqIgBBADYCACAAIAEgAmtBfHEiAmoiAUF8akEANgIAIAJBCUkNACAAQQA2AgggAEEANgIEIAFBeGpBADYCACABQXRqQQA2AgAgAkEZSQ0AIABBADYCGCAAQQA2AhQgAEEANgIQIABBADYCDCABQXBqQQA2AgAgAUFsakEANgIAIAFBaGpBADYCACABQWRqQQA2AgAgAiAAQQRxQRhyIgJrIgFBIEkNACAAIAJqIQADQCAAQgA3AxggAEIANwMQIABCADcDCCAAQgA3AwAgAEEgaiEAIAFBYGoiAUEfSw0ACwsLCgAgACABEAVBAAsMACAAIAEgAhAGQQALDwAgACABQYgIKAIAEQAACwshAgBBgAgLEQEAAAACAAAAAwAAAAQAAAAFAEGQDAsDsAYQ'
+},{}],8:[function(require,module,exports){
+module.exports = 'AGFzbQEAAAABOAhgBH9+f38Bf2AGf39+f39/AX9gAn9/AGAAAGADf39/AGACf38Bf2AEf39/fgBgBn9/fn9+fwF/AjkDA2Vudg5zb2RpdW1fbWVtemVybwACA2Vudg1zb2RpdW1fbWlzdXNlAAMDZW52Bm1lbW9yeQIAgAIDERAFAgYCBQMEAQQAAAABAAEHBAUBcAEGBgYJAX8BQaCUwAELB5gBBR9jcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGZfZXh0AAsmY3J5cHRvX3N0cmVhbV9jaGFjaGEyMF9pZXRmX2V4dF94b3JfaWMACRtjcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGYADyJjcnlwdG9fc3RyZWFtX2NoYWNoYTIwX2lldGZfeG9yX2ljAA4GX3N0YXJ0AAcJCwEAQQELBQ0MERAHCoISEAcAIAAgAXcLCQAgACABNgAAC9QJATF/IwBBQGoiHCQAIANQRQRAIAAoAjwhHSAAKAI4IR4gACgCNCESIAAoAjAhEyAAKAIsIR8gACgCKCEgIAAoAiQhISAAKAIgISIgACgCHCEjIAAoAhghJCAAKAIUISUgACgCECEmIAAoAgwhJyAAKAIIISggACgCBCEpIAAoAgAhKgNAAkAgA0I/VgRAIAIhBAwBC0EAIQYgHEHAABAGIQQDQCAEIAZqIAEgBmotAAA6AAAgAyAGQQFqIgatVg0ACyAEIQEgAiErC0EUIRcgKiENICkhFCAoIRAgJyEOICYhBiAlIQggJCECICMhDyAiIQwgISEJICAhFSAdIREgHiEKIBIhByATIQUgHyELA0AgBiAMIAYgDWoiDSAFc0EQEAIiFmoiBXNBDBACIQwgDCAWIAwgDWoiDXNBCBACIhogBWoiG3NBBxACIRggCSAIIBRqIgwgB3NBEBACIgdqIgUgCHNBDBACIQkgCSAHIAkgDGoiFHNBCBACIgwgBWoiFnNBBxACIQggAiAVIAogAiAQaiIVc0EQEAIiB2oiBXNBDBACIQIgAiAHIAIgFWoiCXNBCBACIgYgBWoiCnNBBxACIRkgCyAOIA9qIgUgEXNBEBACIgJqIgsgD3NBDBACIREgESALIAIgBSARaiIOc0EIEAIiAmoiB3NBBxACIRAgCCACIAggDWoiBXNBEBACIgsgCmoiAnNBDBACIQogCiALIAUgCmoiDXNBCBACIhEgAmoiFXNBBxACIQggGSAaIBQgGWoiBXNBEBACIgsgB2oiAnNBDBACIQcgByALIAUgB2oiFHNBCBACIgUgAmoiC3NBBxACIQIgECAMIAkgEGoiCXNBEBACIgcgG2oiCnNBDBACIQ8gDyAKIAcgCSAPaiIQc0EIEAIiB2oiDHNBBxACIQ8gGCAGIA4gGGoiDnNBEBACIgogFmoiCXNBDBACIQYgBiAJIAogBiAOaiIOc0EIEAIiCmoiCXNBBxACIQYgF0F+aiIXDQALIAEoAAQhLCABKAAIIS0gASgADCEuIAEoABAhLyABKAAUITAgASgAGCExIAEoABwhMiABKAAgITMgASgAJCE0IAEoACghFyABKAAsIRggASgAMCEZIAEoADQhGiABKAA4IRsgASgAPCEWIAQgASgAACANICpqcxADIARBBGogLCAUIClqcxADIARBCGogLSAQIChqcxADIARBDGogLiAOICdqcxADIARBEGogLyAGICZqcxADIARBFGogMCAIICVqcxADIARBGGogMSACICRqcxADIARBHGogMiAPICNqcxADIARBIGogMyAMICJqcxADIARBJGogNCAJICFqcxADIARBKGogFyAVICBqcxADIARBLGogGCALIB9qcxADIARBMGogGSAFIBNqcxADIARBNGogGiAHIBJqcxADIARBOGogGyAKIB5qcxADIARBPGogFiARIB1qcxADIBIgE0EBaiILIBNJaiESIANCwABYBEACQCADQj9WDQAgA6ciAUUNAEEAIQgDQCAIICtqIAQgCGotAAA6AAAgCEEBaiIIIAFHDQALCyAAIBI2AjQgACALNgIwBSABQUBrIQEgBEFAayECIANCQHwhAyALIRMMAQsLCyAcQUBrJAALcQAgAELl8MGL5o2ZkDM3AgAgAEKy2ojLx66ZkOsANwIIIAAgASgAADYCECAAIAEoAAQ2AhQgACABKAAINgIYIAAgASgADDYCHCAAIAEoABA2AiAgACABKAAUNgIkIAAgASgAGDYCKCAAIAEoABw2AiwL2AIBAn8CQCABRQ0AIAAgAWoiAkF/akEAOgAAIABBADoAACABQQNJDQAgAkF+akEAOgAAIABBADoAASACQX1qQQA6AAAgAEEAOgACIAFBB0kNACACQXxqQQA6AAAgAEEAOgADIAFBCUkNACAAQQAgAGtBA3EiA2oiAkEANgIAIAIgASADa0F8cSIDaiIBQXxqQQA2AgAgA0EJSQ0AIAJBADYCCCACQQA2AgQgAUF4akEANgIAIAFBdGpBADYCACADQRlJDQAgAkEANgIYIAJBADYCFCACQQA2AhAgAkEANgIMIAFBcGpBADYCACABQWxqQQA2AgAgAUFoakEANgIAIAFBZGpBADYCACADIAJBBHFBGHIiA2siAUEgSQ0AIAIgA2ohAgNAIAJCADcDGCACQgA3AxAgAkIANwMIIAJCADcDACACQSBqIQIgAUFgaiIBQR9LDQALCyAACwMAAQs9ACAAAn8gAgRAIAAgAigAADYCMCACKAAEDAELIABBADYCMEEACzYCNCAAIAEoAAA2AjggACABKAAENgI8CygAIAJCgICAgBBaBEAQAQALIAAgASACIAMgBCAFQZyQgAEoAgARAQALMgAgACACBH8gAigAAAVBAAs2AjAgACABKAAANgI0IAAgASgABDYCOCAAIAEoAAg2AjwLJAAgAUKAgICAEFoEQBABAAsgACABIAIgA0GUkIABKAIAEQAAC0MBAX8jAEFAaiIEJAAgAVBFBEAgBCADEAUgBCACQQAQCiAEIAAgAacQBiIAIAAgARAEIARBwAAQAAsgBEFAayQAQQALQwEBfyMAQUBqIgQkACABUEUEQCAEIAMQBSAEIAJBABAIIAQgACABpxAGIgAgACABEAQgBEHAABAACyAEQUBrJABBAAspAEKAgICAECACQj98QgaIfSAErVQEQBABAAsgACABIAIgAyAEIAUQCQsbACABQoCAgIAQWgRAEAEACyAAIAEgAiADEAsLVgEBfyMAQdAAayIGJAAgAlBFBEAgBkEMaiAEEAMgBkEQaiAFEAUgBkEQaiADIAZBDGoQCiAGQRBqIAEgACACEAQgBkEQakHAABAACyAGQdAAaiQAQQALZAEBfyMAQdAAayIGJAAgAlBFBEAgBkEIaiAEpxADIAZBDGogBEIgiKcQAyAGQRBqIAUQBSAGQRBqIAMgBkEIahAIIAZBEGogASAAIAIQBCAGQRBqQcAAEAALIAZB0ABqJABBAAsLIQIAQZCQgAELDQEAAAACAAAAAwAAAAQAQaCUgAELA8AKMA=='
+},{}],9:[function(require,module,exports){
+const Heap = require('./lib/heap')
+const loadSodiumWasm = require('./lib/load-sodium-wasm')
+
+module.exports = (sodiumJS) => {
+  const heap = new Heap()
+
+  const sodiumWasm = loadSodiumWasm(sodiumJS, heap)
+
+  sodiumJS.crypto_aead_chacha20poly1305_ietf_encrypt = function (out, m, ad, nsec, nonce, key) {
+    const cipherLength = m.length + sodiumJS.crypto_aead_chacha20poly1305_ietf_ABYTES
+    const _out = heap.alloc(cipherLength)
+
+    sodiumWasm.crypto_aead_chacha20poly1305_ietf_encrypt(
+      _out,
+      null,
+      heap.set(m),
+      m.length,
+      ad ? heap.set(ad) : null,
+      ad ? ad.length : null,
+      nsec ? heap.set(nsec) : null,
+      heap.set(nonce),
+      heap.set(key)
+    )
+
+    heap.copy(out, _out, cipherLength)
+    heap.release()
+    return cipherLength
+  }
+
+  sodiumJS.crypto_aead_chacha20poly1305_ietf_decrypt = function (out, nsec, c, ad, nonce, key) {
+    const messageLength = c.length - sodiumJS.crypto_aead_chacha20poly1305_ietf_ABYTES
+    const _out = heap.alloc(messageLength)
+
+    sodiumWasm.crypto_aead_chacha20poly1305_ietf_decrypt(
+      _out,
+      null,
+      nsec ? heap.set(nsec) : null,
+      heap.set(c),
+      c.length,
+      ad ? heap.set(ad) : null,
+      ad ? ad.length : null,
+      heap.set(nonce),
+      heap.set(key)
+    )
+
+    heap.copy(out, _out, messageLength)
+    heap.release()
+    return messageLength
+  }
+
+  sodiumJS.crypto_aead_xchacha20poly1305_ietf_encrypt = function (out, m, ad, nsec, nonce, key) {
+    const cipherLength = m.length + sodiumJS.crypto_aead_xchacha20poly1305_ietf_ABYTES
+    const _out = heap.alloc(cipherLength)
+
+    sodiumWasm.crypto_aead_xchacha20poly1305_ietf_encrypt(
+      _out,
+      null,
+      heap.set(m),
+      m.length,
+      ad ? heap.set(ad) : null,
+      ad ? ad.length : null,
+      nsec ? heap.set(nsec) : null,
+      heap.set(nonce),
+      heap.set(key)
+    )
+
+    heap.copy(out, _out, cipherLength)
+    heap.release()
+    return cipherLength
+  }
+
+  sodiumJS.crypto_aead_xchacha20poly1305_ietf_decrypt = function (out, nsec, c, ad, nonce, key) {
+    const messageLength = c.length - sodiumJS.crypto_aead_xchacha20poly1305_ietf_ABYTES
+    const _out = heap.alloc(messageLength)
+
+    sodiumWasm.crypto_aead_xchacha20poly1305_ietf_decrypt(
+      _out,
+      null,
+      nsec ? heap.set(nsec) : null,
+      heap.set(c),
+      c.length,
+      ad ? heap.set(ad) : null,
+      ad ? ad.length : null,
+      heap.set(nonce),
+      heap.set(key)
+    )
+
+    heap.copy(out, _out, messageLength)
+    heap.release()
+    return messageLength
+  }
+
+  sodiumJS.crypto_kx_keypair = function (pk, sk) {
+    const _pk = heap.alloc(pk.length)
+    const _sk = heap.alloc(pk.length)
+
+    sodiumWasm.crypto_kx_keypair(
+      _pk,
+      _sk
+    )
+
+    heap.copy(pk, _pk, pk.length)
+    heap.copy(sk, _sk, sk.length)
+    heap.release()
+  }
+
+  sodiumJS.crypto_kx_seed_keypair = function (pk, sk, seed) {
+    const _pk = heap.alloc(pk.length)
+    const _sk = heap.alloc(pk.length)
+
+    sodiumWasm.crypto_kx_seed_keypair(
+      _pk,
+      _sk,
+      heap.set(seed)
+    )
+
+    heap.copy(pk, _pk, pk.length)
+    heap.copy(sk, _sk, sk.length)
+    heap.release()
+  }
+
+  sodiumJS.crypto_kx_client_session_keys = function (clientRx, clientTx, clientPk, clientSk, serverPk) {
+    const _clientRx = heap.alloc(clientRx.length)
+    const _clientTx = heap.alloc(clientTx.length)
+
+    sodiumWasm.crypto_kx_client_session_keys(
+      _clientRx,
+      _clientTx,
+      heap.set(clientPk),
+      heap.set(clientSk),
+      heap.set(serverPk)
+    )
+
+    heap.copy(clientRx, _clientRx, clientRx.length)
+    heap.copy(clientTx, _clientTx, clientTx.length)
+    heap.release()
+  }
+
+  sodiumJS.crypto_kx_server_session_keys = function (serverRx, serverTx, serverPk, serverSk, clientPk) {
+    const _serverRx = heap.alloc(serverRx.length)
+    const _serverTx = heap.alloc(serverTx.length)
+
+    sodiumWasm.crypto_kx_server_session_keys(
+      _serverRx,
+      _serverTx,
+      heap.set(serverPk),
+      heap.set(serverSk),
+      heap.set(clientPk)
+    )
+
+    heap.copy(serverRx, _serverRx, serverRx.length)
+    heap.copy(serverTx, _serverTx, serverTx.length)
+    heap.release()
+  }
+
+  return sodiumJS
+}
+
+},{"./lib/heap":11,"./lib/load-sodium-wasm":12}],10:[function(require,module,exports){
+(function (process,Buffer){(function (){
+const loadSync = require('./load-sync')
+
+module.exports = (sodiumJS, heap) => {
+  const blakeStates = new Map()
+
+  const bindingJS = loadSync(Buffer.from(require('../build/binding-js'), 'base64'), {
+    'sodium-js': {
+      crypto_generichash (out, outlen, inn, innlen, key, keylen) {
+        let keyBuffer
+        if (keylen !== 0) {
+          keyBuffer = heap.slice(key, keylen)
+        }
+        sodiumJS.crypto_generichash(
+          heap.slice(out, outlen),
+          heap.slice(inn, innlen),
+          keyBuffer
+        )
+        return 0
+      },
+      crypto_generichash_update (state, key, keylen) {
+        blakeStates.get(state).update(heap.slice(key, keylen))
+        return 0
+      }
+    }
+  })
+
+  return {
+    env: {
+      memory: heap.memory,
+      crypto_verify_16 (x, y) {
+        const n = 16
+        const buf = heap.buffer
+        let i; let d = 0
+        for (i = 0; i < n; i++) d |= buf[x + i] ^ buf[y + i]
+        return (1 & ((d - 1) >>> 8)) - 1
+      },
+      sodium_misuse () {
+        console.error('sodium_misuse')
+      },
+      sodium_memzero (address, length) {
+        const buffer = heap.slice(address, length)
+        for (let i = 0; i < buffer.length; i++) {
+          buffer[i] = 0
+        }
+      },
+      randombytes_buf (address, length) {
+        const buffer = heap.slice(address, length)
+        sodiumJS.randombytes_buf(buffer)
+      },
+      crypto_scalarmult (q, n, p) {
+        return sodiumJS.crypto_scalarmult(
+          heap.slice(q, sodiumJS.crypto_scalarmult_BYTES),
+          heap.slice(n, sodiumJS.crypto_scalarmult_SCALARBYTES),
+          heap.slice(p, sodiumJS.crypto_scalarmult_BYTES)
+        )
+      },
+      crypto_scalarmult_base (q, n) {
+        return sodiumJS.crypto_scalarmult_base(
+          heap.slice(q, sodiumJS.crypto_scalarmult_BYTES),
+          heap.slice(n, sodiumJS.crypto_scalarmult_SCALARBYTES)
+        )
+      },
+      crypto_generichash_init (state, key, keylen, outlen) {
+        let keyBuffer
+        if (keylen !== 0) {
+          keyBuffer = heap.slice(key, keylen)
+        }
+        blakeStates.set(state, sodiumJS.crypto_generichash_instance(keyBuffer, outlen))
+        return 0
+      },
+      crypto_generichash_final (state, out, outlen) {
+        blakeStates.get(state).final(heap.slice(out, outlen))
+        blakeStates.delete(state)
+        return 0
+      },
+
+      // BINDING-JS for i64 types
+      // the @assemblyscript/loader override the original methods (we don't want to use those here)
+      crypto_generichash: bindingJS.crypto_generichash,
+      crypto_generichash_update: bindingJS.crypto_generichash_update
+    },
+    wasi_snapshot_preview1: {
+      proc_exit (code) {
+        process.exit(code)
+      }
+    }
+  }
+}
+
+}).call(this)}).call(this,require('_process'),require("buffer").Buffer)
+},{"../build/binding-js":4,"./load-sync":13,"_process":483,"buffer":203}],11:[function(require,module,exports){
+(function (Buffer){(function (){
+const INITIAL_INITIAL_MEMORY = 16777216
+const WASM_PAGE_SIZE = 65536
+const TOTAL_MEMORY = INITIAL_INITIAL_MEMORY / WASM_PAGE_SIZE
+
+module.exports = class Heap {
+  constructor () {
+    this.memory = new WebAssembly.Memory({
+      initial: TOTAL_MEMORY
+    })
+    this._toRelease = []
+    this._buffer = Buffer.from(this.memory.buffer)
+  }
+
+  get buffer () {
+    if (this._buffer.length === 0) {
+      this._buffer = Buffer.from(this.memory.buffer)
+    }
+    return this._buffer
+  }
+
+  setRuntime (runtime) {
+    this._runtime = runtime
+  }
+
+  alloc (length) {
+    const address = this._runtime.__retain(this._runtime.__alloc(length))
+    this._toRelease.push(address)
+    return address
+  }
+
+  set (bytes) {
+    const address = this.alloc(bytes.length)
+    this.buffer.set(bytes, address)
+    return address
+  }
+
+  slice (start, end) {
+    return this.buffer.slice(start, start + end)
+  }
+
+  release () {
+    const toRelease = this._toRelease
+    const len = toRelease.length
+    for (let i = 0; i < len; i++) {
+      this._runtime.__release(toRelease[i])
+    }
+    this._toRelease = []
+  }
+
+  copy (to, address, len) {
+    for (let i = 0; i < len; i++) {
+      to[i] = this.buffer[address + i]
+    }
+  }
+}
+
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"buffer":203}],12:[function(require,module,exports){
+(function (Buffer){(function (){
+const modules = require('../sodium-modules')
+const createImport = require('./create-import')
+const loadSync = require('./load-sync')
+
+const binaries = {
+  core_hchacha20: Buffer.from(require('../build/core_hchacha20'), 'base64'),
+  stream_chacha20: Buffer.from(require('../build/stream_chacha20'), 'base64'),
+  onetimeauth_poly1305: Buffer.from(require('../build/onetimeauth_poly1305'), 'base64'),
+  aead_chacha20poly1305: Buffer.from(require('../build/aead_chacha20poly1305'), 'base64'),
+  aead_xchacha20poly1305: Buffer.from(require('../build/aead_xchacha20poly1305'), 'base64'),
+  crypto_kx: Buffer.from(require('../build/crypto_kx'), 'base64')
+}
+
+function loadSodiumWasm (sodiumJS, heap) {
+  const sodium = {
+    _original: {}
+  }
+
+  const importObj = createImport(sodiumJS, heap)
+  const { env } = importObj
+
+  modules.forEach(({ name, functions = [], constants = {} }) => {
+    try {
+      const binary = binaries[name]
+      // const binary = require('fs').readFileSync(`${__dirname}/../build/${name}.wasm`)
+      const wasmModule = loadSync(binary, importObj)
+
+      functions.forEach(fn => {
+        sodium[fn] = wasmModule[fn]
+        env[fn] = wasmModule[fn]
+        sodium._original[fn] = wasmModule[fn]
+      })
+
+      Object.keys(constants).forEach(constant => {
+        sodium[constants[constant]] = wasmModule[constant]()
+        sodiumJS[constants[constant]] = wasmModule[constant]()
+        env[constant] = wasmModule[constant]
+      })
+    } catch (err) {
+      throw new Error(`Error loading: ${name} - ${err.message}`)
+    }
+  })
+
+  sodiumJS.sodium_memzero = (buffer) => {
+    if (!(buffer instanceof Uint8Array)) {
+      throw new Error('Only Uint8Array instances accepted')
+    }
+    for (let i = 0; i < buffer.length; i++) {
+      buffer[i] = 0
+    }
+  }
+
+  sodiumJS.sodium_memcmp = (b1, b2) => {
+    if (!(b1 instanceof Uint8Array && b2 instanceof Uint8Array)) {
+      throw new Error('Only Uint8Array instances can be compared')
+    }
+    if (b1.length !== b2.length) {
+      throw new Error(
+        'Only instances of identical length can be compared'
+      )
+    }
+    for (var d = 0 | 0, i = 0 | 0, j = b1.length; i < j; i++) {
+      d |= b1[i] ^ b2[i]
+    }
+    return d === 0
+  }
+
+  sodiumJS.sodium_is_zero = (buffer) => {
+    if (!(buffer instanceof Uint8Array)) {
+      throw new TypeError('Only Uint8Array instances can be checked')
+    }
+    var d = 0 | 0
+    for (var i = 0 | 0, j = buffer.length; i < j; i++) {
+      d |= buffer[i]
+    }
+    return d === 0
+  }
+
+  sodiumJS.sodium_increment = (buffer) => {
+    if (!(buffer instanceof Uint8Array)) {
+      throw new TypeError('Only Uint8Array instances can be incremented')
+    }
+    var c = 1 << 8
+    for (var i = 0 | 0, j = buffer.length; i < j; i++) {
+      c >>= 8
+      c += buffer[i]
+      buffer[i] = c & 0xff
+    }
+  }
+
+  sodiumJS.sodium_free = () => {} // noop
+  sodiumJS.crypto_stream_xor_STATEBYTES = 136
+
+  // some functions in C expect unsigned long long types (u64 in wasm)
+  // because js cannot understand that type we provide bindings to cast u64 into u32
+  const bindingC = loadSync(Buffer.from(require('../build/binding-c'), 'base64'), {
+    env: {
+      memory: heap.memory,
+      abort: (msg, file, line, colm) => {
+        throw new Error(`bindingC abort line=${line} colm=${colm}`)
+      }
+    },
+    'sodium-c': sodium._original
+  })
+
+  heap.setRuntime(bindingC)
+
+  sodium.crypto_aead_chacha20poly1305_ietf_encrypt = bindingC.crypto_aead_chacha20poly1305_ietf_encrypt
+  sodium.crypto_aead_chacha20poly1305_ietf_decrypt = bindingC.crypto_aead_chacha20poly1305_ietf_decrypt
+  sodium.crypto_aead_xchacha20poly1305_ietf_encrypt = bindingC.crypto_aead_xchacha20poly1305_ietf_encrypt
+  sodium.crypto_aead_xchacha20poly1305_ietf_decrypt = bindingC.crypto_aead_xchacha20poly1305_ietf_decrypt
+
+  return sodium
+}
+
+module.exports = loadSodiumWasm
+
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"../build/aead_chacha20poly1305":1,"../build/aead_xchacha20poly1305":2,"../build/binding-c":3,"../build/core_hchacha20":5,"../build/crypto_kx":6,"../build/onetimeauth_poly1305":7,"../build/stream_chacha20":8,"../sodium-modules":14,"./create-import":10,"./load-sync":13,"buffer":203}],13:[function(require,module,exports){
+module.exports = function loadSync (binary, importObj) {
+  const instance = new WebAssembly.Instance(new WebAssembly.Module(binary), importObj)
+  return instance.exports
+}
+
+},{}],14:[function(require,module,exports){
+module.exports=[
+  {
+    "lib": [
+      "crypto_onetimeauth/poly1305/libsodium_la-onetimeauth_poly1305.o",
+      "crypto_onetimeauth/poly1305/donna/libsodium_la-poly1305_donna.o"
+    ],
+    "name": "onetimeauth_poly1305",
+    "functions": [
+      "crypto_onetimeauth_poly1305_final",
+      "crypto_onetimeauth_poly1305_init",
+      "crypto_onetimeauth_poly1305_update"
+    ]
+  },
+  {
+    "lib": [
+      "crypto_core/hchacha20/libsodium_la-core_hchacha20.o"
+    ],
+    "name": "core_hchacha20",
+    "functions": [
+      "crypto_core_hchacha20"
+    ]
+  },
+  {
+    "lib": [
+      "crypto_stream/chacha20/libsodium_la-stream_chacha20.o",
+      "crypto_stream/chacha20/ref/libsodium_la-chacha20_ref.o"
+    ],
+    "name": "stream_chacha20",
+    "functions": [
+      "crypto_stream_chacha20_ietf",
+      "crypto_stream_chacha20_ietf_ext",
+      "crypto_stream_chacha20_ietf_ext_xor_ic",
+      "crypto_stream_chacha20_ietf_xor_ic"
+    ]
+  },
+  {
+    "lib": [
+      "crypto_aead/chacha20poly1305/sodium/libsodium_la-aead_chacha20poly1305.o"
+    ],
+    "name": "aead_chacha20poly1305",
+    "functions": [
+      "crypto_aead_chacha20poly1305_ietf_decrypt",
+      "crypto_aead_chacha20poly1305_ietf_encrypt"
+    ],
+    "constants": {
+      "crypto_aead_chacha20poly1305_ietf_keybytes": "crypto_aead_chacha20poly1305_ietf_KEYBYTES",
+      "crypto_aead_chacha20poly1305_ietf_npubbytes": "crypto_aead_chacha20poly1305_ietf_NPUBBYTES",
+      "crypto_aead_chacha20poly1305_ietf_nsecbytes": "crypto_aead_chacha20poly1305_ietf_NSECBYTES",
+      "crypto_aead_chacha20poly1305_ietf_abytes": "crypto_aead_chacha20poly1305_ietf_ABYTES"
+    }
+  },
+  {
+    "lib": [
+      "crypto_aead/xchacha20poly1305/sodium/libsodium_la-aead_xchacha20poly1305.o"
+    ],
+    "name": "aead_xchacha20poly1305",
+    "functions": [
+      "crypto_aead_xchacha20poly1305_ietf_decrypt",
+      "crypto_aead_xchacha20poly1305_ietf_encrypt"
+    ],
+    "constants": {
+      "crypto_aead_xchacha20poly1305_ietf_keybytes": "crypto_aead_xchacha20poly1305_ietf_KEYBYTES",
+      "crypto_aead_xchacha20poly1305_ietf_npubbytes": "crypto_aead_xchacha20poly1305_ietf_NPUBBYTES",
+      "crypto_aead_xchacha20poly1305_ietf_nsecbytes": "crypto_aead_xchacha20poly1305_ietf_NSECBYTES",
+      "crypto_aead_xchacha20poly1305_ietf_abytes": "crypto_aead_xchacha20poly1305_ietf_ABYTES"
+    }
+  },
+  {
+    "lib": [
+      "crypto_kx/libsodium_la-crypto_kx.o"
+    ],
+    "name": "crypto_kx",
+    "functions": [
+      "crypto_kx_keypair",
+      "crypto_kx_seed_keypair",
+      "crypto_kx_client_session_keys",
+      "crypto_kx_server_session_keys"
+    ],
+    "constants": {
+      "crypto_kx_sessionkeybytes": "crypto_kx_SESSIONKEYBYTES",
+      "crypto_kx_publickeybytes": "crypto_kx_PUBLICKEYBYTES",
+      "crypto_kx_secretkeybytes": "crypto_kx_SECRETKEYBYTES",
+      "crypto_kx_seedbytes": "crypto_kx_SEEDBYTES"
+   }
+  }
+]
+
+},{}],15:[function(require,module,exports){
 const { Protocol } = require('./lib/protocol')
 const { Node } = require('./lib/node')
 const { NodeProxy } = require('./lib/node-proxy')
@@ -24,7 +564,7 @@ module.exports.relay = function relay (dht, stream) {
   })
 }
 
-},{"./lib/node":11,"./lib/node-proxy":10,"./lib/protocol":12}],2:[function(require,module,exports){
+},{"./lib/node":25,"./lib/node-proxy":24,"./lib/protocol":26}],16:[function(require,module,exports){
 const { fixed32, fixed64, uint32, buffer: nullableBuffer, array } = require('compact-encoding')
 const { ipv4Address } = require('compact-encoding-net')
 const { alloc } = require('b4a')
@@ -128,7 +668,7 @@ module.exports = {
   announcers
 }
 
-},{"b4a":97,"compact-encoding":199,"compact-encoding-net":197}],3:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"compact-encoding-net":215}],17:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const buffer = require('b4a')
 
@@ -153,7 +693,7 @@ module.exports = {
   hash
 }
 
-},{"b4a":97,"sodium-universal":39}],4:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":53}],18:[function(require,module,exports){
 const { noisePayload } = require('hyperdht/lib/messages')
 const { encode } = require('compact-encoding')
 
@@ -211,7 +751,7 @@ function onAccept (message) {
   if (resolve) resolve(false)
 }
 
-},{"./id":8,"compact-encoding":199,"hyperdht/lib/messages":379}],5:[function(require,module,exports){
+},{"./id":22,"compact-encoding":217,"hyperdht/lib/messages":397}],19:[function(require,module,exports){
 const { noisePayload } = require('hyperdht/lib/messages')
 const { decode } = require('compact-encoding')
 const safetyCatch = require('safety-catch')
@@ -244,7 +784,7 @@ async function onIncoming (message) {
   else this._protocol.accept.send({ id: message.id })
 }
 
-},{"compact-encoding":199,"hyperdht/lib/messages":379,"safety-catch":512}],6:[function(require,module,exports){
+},{"compact-encoding":217,"hyperdht/lib/messages":397,"safety-catch":530}],20:[function(require,module,exports){
 const { noisePayload } = require('hyperdht/lib/messages')
 const { encode, decode } = require('compact-encoding')
 
@@ -343,7 +883,7 @@ function onNoiseReceiveReply (resolve, reject, message) {
   }
 }
 
-},{"compact-encoding":199,"hyperdht/lib/messages":379}],7:[function(require,module,exports){
+},{"compact-encoding":217,"hyperdht/lib/messages":397}],21:[function(require,module,exports){
 const buffer = require('b4a')
 const NoiseHandshake = require('noise-handshake')
 const SecretStream = require('@hyperswarm/secret-stream')
@@ -454,7 +994,7 @@ function onNoiseReceive (message) {
   this._onNoise(this._handshake.recv(message.payload))
 }
 
-},{"@hyperswarm/secret-stream":46,"b4a":97,"compact-encoding":199,"hyperdht/lib/constants":377,"hyperdht/lib/messages":379,"noise-curve-ed":416,"noise-handshake":445,"safety-catch":512,"sodium-universal":39}],8:[function(require,module,exports){
+},{"@hyperswarm/secret-stream":60,"b4a":111,"compact-encoding":217,"hyperdht/lib/constants":395,"hyperdht/lib/messages":397,"noise-curve-ed":434,"noise-handshake":463,"safety-catch":530,"sodium-universal":53}],22:[function(require,module,exports){
 function idFactory (start, step = 1, limit = 2 ** 32) {
   let id = start
 
@@ -470,7 +1010,7 @@ module.exports = {
   nextId: idFactory(1)
 }
 
-},{}],9:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 const { fixed32, fixed64, none, string } = require('compact-encoding')
 const { ipv4Address } = require('compact-encoding-net')
 
@@ -1122,7 +1662,7 @@ module.exports = {
   noiseReply
 }
 
-},{"./codecs":2,"compact-encoding":199,"compact-encoding-net":197}],10:[function(require,module,exports){
+},{"./codecs":16,"compact-encoding":217,"compact-encoding-net":215}],24:[function(require,module,exports){
 const { encode } = require('compact-encoding')
 
 const { HandshakeProxy } = require('./handshake-proxy')
@@ -1477,7 +2017,7 @@ function createSecretStream (alias, remoteAlias, isInitiator, rawStream, options
   )
 }
 
-},{"./codecs":2,"./handshake-proxy":6,"./id":8,"./server-proxy":14,"./signee-proxy":16,"./stream-proxy":18,"compact-encoding":199}],11:[function(require,module,exports){
+},{"./codecs":16,"./handshake-proxy":20,"./id":22,"./server-proxy":28,"./signee-proxy":30,"./stream-proxy":32,"compact-encoding":217}],25:[function(require,module,exports){
 const EventEmitter = require('events')
 const SecretStream = require('@hyperswarm/secret-stream')
 
@@ -1911,7 +2451,7 @@ function onNoiseReceive (message) {
   }
 }
 
-},{"./codecs":2,"./crypto":3,"./handshake":7,"./id":8,"./protocol":12,"./query":13,"./server":15,"./signee":17,"./stream":19,"@hyperswarm/secret-stream":46,"events":278}],12:[function(require,module,exports){
+},{"./codecs":16,"./crypto":17,"./handshake":21,"./id":22,"./protocol":26,"./query":27,"./server":29,"./signee":31,"./stream":33,"@hyperswarm/secret-stream":60,"events":296}],26:[function(require,module,exports){
 const EventEmitter = require('events')
 const Protomux = require('protomux')
 
@@ -2129,7 +2669,7 @@ function onStreamClose () {
   if (this._failsafe) clearTimeout(this._failsafe)
 }
 
-},{"./messages":9,"events":278,"protomux":467}],13:[function(require,module,exports){
+},{"./messages":23,"events":296,"protomux":485}],27:[function(require,module,exports){
 const { Readable } = require('streamx')
 
 const { nextId } = require('./id')
@@ -2195,7 +2735,7 @@ function onFinished () {
   this.push(null)
 }
 
-},{"./id":8,"streamx":607}],14:[function(require,module,exports){
+},{"./id":22,"streamx":625}],28:[function(require,module,exports){
 const { FirewallProxy } = require('./firewall-proxy')
 const { HandshakeProxy } = require('./handshake-proxy')
 const { SigneeProxy } = require('./signee-proxy')
@@ -2359,7 +2899,7 @@ function createSecretStream (isInitiator, rawStream, options) {
   )
 }
 
-},{"./crypto":3,"./firewall-proxy":4,"./handshake-proxy":6,"./id":8,"./signee-proxy":16,"./stream-proxy":18}],15:[function(require,module,exports){
+},{"./crypto":17,"./firewall-proxy":18,"./handshake-proxy":20,"./id":22,"./signee-proxy":30,"./stream-proxy":32}],29:[function(require,module,exports){
 const EventEmitter = require('events')
 const SecretStream = require('@hyperswarm/secret-stream')
 
@@ -2539,7 +3079,7 @@ function allowAll () {
   return false
 }
 
-},{"./crypto":3,"./firewall":5,"./id":8,"./signee":17,"./stream":19,"@hyperswarm/secret-stream":46,"events":278}],16:[function(require,module,exports){
+},{"./crypto":17,"./firewall":19,"./id":22,"./signee":31,"./stream":33,"@hyperswarm/secret-stream":60,"events":296}],30:[function(require,module,exports){
 const { nextId } = require('./id')
 
 class SigneeProxy {
@@ -2590,7 +3130,7 @@ function signUnannounce (target, token, peerId, { peer: relayAddresses }) {
   })
 }
 
-},{"./id":8}],17:[function(require,module,exports){
+},{"./id":22}],31:[function(require,module,exports){
 const buffer = require('b4a')
 const sodium = require('sodium-universal')
 const { NS } = require('hyperdht/lib/constants')
@@ -2669,7 +3209,7 @@ function signable (publicKey, target, token, id, relayAddresses, ns) {
   return signable
 }
 
-},{"./codecs":2,"b4a":97,"compact-encoding":199,"hyperdht/lib/constants":377,"sodium-universal":39}],18:[function(require,module,exports){
+},{"./codecs":16,"b4a":111,"compact-encoding":217,"hyperdht/lib/constants":395,"sodium-universal":53}],32:[function(require,module,exports){
 const { Duplex } = require('streamx')
 
 class StreamProxy extends Duplex {
@@ -2806,7 +3346,7 @@ module.exports = {
   StreamProxy
 }
 
-},{"streamx":607}],19:[function(require,module,exports){
+},{"streamx":625}],33:[function(require,module,exports){
 const { Duplex } = require('streamx')
 const buffer = require('b4a')
 const Timeout = require('timeout-refresh')
@@ -3013,7 +3553,7 @@ function toBuffer (data) {
   return typeof data === 'string' ? buffer.from(data) : data
 }
 
-},{"b4a":97,"streamx":607,"timeout-refresh":612}],20:[function(require,module,exports){
+},{"b4a":111,"streamx":625,"timeout-refresh":630}],34:[function(require,module,exports){
 const { Duplex } = require('streamx')
 const buffer = require('b4a')
 
@@ -3092,7 +3632,7 @@ function onMessage (event) {
   this.push(buffer.from(event.data))
 }
 
-},{"b4a":97,"streamx":607}],21:[function(require,module,exports){
+},{"b4a":111,"streamx":625}],35:[function(require,module,exports){
 /* eslint-disable camelcase */
 const { crypto_stream_chacha20_ietf, crypto_stream_chacha20_ietf_xor_ic } = require('./crypto_stream_chacha20')
 const { crypto_verify_16 } = require('./crypto_verify')
@@ -3254,7 +3794,7 @@ module.exports = {
   crypto_aead_chacha20poly1305_ietf_MESSAGEBYTES_MAX
 }
 
-},{"./crypto_stream_chacha20":36,"./crypto_verify":37,"./internal/poly1305":42,"nanoassert":414}],22:[function(require,module,exports){
+},{"./crypto_stream_chacha20":50,"./crypto_verify":51,"./internal/poly1305":56,"nanoassert":432}],36:[function(require,module,exports){
 /* eslint-disable camelcase */
 const { crypto_verify_32 } = require('./crypto_verify')
 const Sha512 = require('sha512-universal')
@@ -3291,7 +3831,7 @@ module.exports = {
   crypto_auth_verify
 }
 
-},{"./crypto_verify":37,"nanoassert":414,"sha512-universal":527}],23:[function(require,module,exports){
+},{"./crypto_verify":51,"nanoassert":432,"sha512-universal":545}],37:[function(require,module,exports){
 /* eslint-disable camelcase */
 const { crypto_hash_sha512 } = require('./crypto_hash')
 const { crypto_scalarmult, crypto_scalarmult_base } = require('./crypto_scalarmult')
@@ -3493,7 +4033,7 @@ function cleanup (arr) {
   for (let i = 0; i < arr.length; i++) arr[i] = 0
 }
 
-},{"./crypto_generichash":24,"./crypto_hash":25,"./crypto_scalarmult":30,"./crypto_secretbox":31,"./crypto_stream":35,"./randombytes":44,"nanoassert":414,"xsalsa20":629}],24:[function(require,module,exports){
+},{"./crypto_generichash":38,"./crypto_hash":39,"./crypto_scalarmult":44,"./crypto_secretbox":45,"./crypto_stream":49,"./randombytes":58,"nanoassert":432,"xsalsa20":647}],38:[function(require,module,exports){
 var blake2b = require('blake2b')
 
 if (new Uint16Array([1])[0] !== 1) throw new Error('Big endian architecture is not supported.')
@@ -3531,7 +4071,7 @@ blake2b.ready(function (_) {
   module.exports.crypto_generichash_WASM_LOADED = blake2b.WASM_LOADED
 })
 
-},{"blake2b":150}],25:[function(require,module,exports){
+},{"blake2b":164}],39:[function(require,module,exports){
 /* eslint-disable camelcase */
 const sha512 = require('sha512-universal')
 const assert = require('nanoassert')
@@ -3559,7 +4099,7 @@ module.exports = {
   crypto_hash_BYTES
 }
 
-},{"nanoassert":414,"sha512-universal":527}],26:[function(require,module,exports){
+},{"nanoassert":432,"sha512-universal":545}],40:[function(require,module,exports){
 /* eslint-disable camelcase */
 const sha256 = require('sha256-universal')
 const assert = require('nanoassert')
@@ -3580,7 +4120,7 @@ module.exports = {
   crypto_hash_sha256_BYTES
 }
 
-},{"nanoassert":414,"sha256-universal":523}],27:[function(require,module,exports){
+},{"nanoassert":432,"sha256-universal":541}],41:[function(require,module,exports){
 /* eslint-disable camelcase */
 const assert = require('nanoassert')
 const randombytes_buf = require('./randombytes').randombytes_buf
@@ -3622,7 +4162,7 @@ module.exports.crypto_kdf_keygen = function crypto_kdf_keygen (out) {
   randombytes_buf(out.subarray(0, module.exports.crypto_kdf_KEYBYTES))
 }
 
-},{"./randombytes":44,"blake2b":150,"nanoassert":414}],28:[function(require,module,exports){
+},{"./randombytes":58,"blake2b":164,"nanoassert":432}],42:[function(require,module,exports){
 /* eslint-disable camelcase */
 const { crypto_scalarmult_base } = require('./crypto_scalarmult')
 const { crypto_generichash } = require('./crypto_generichash')
@@ -3658,7 +4198,7 @@ module.exports = {
   crypto_kx_PUBLICKEYBYTES
 }
 
-},{"./crypto_generichash":24,"./crypto_scalarmult":30,"./randombytes":44,"nanoassert":414}],29:[function(require,module,exports){
+},{"./crypto_generichash":38,"./crypto_scalarmult":44,"./randombytes":58,"nanoassert":432}],43:[function(require,module,exports){
 /* eslint-disable camelcase */
 const assert = require('nanoassert')
 const Poly1305 = require('./internal/poly1305')
@@ -3696,7 +4236,7 @@ function crypto_onetimeauth_verify (mac, msg, key) {
   return crypto_verify_16(mac, 0, tmp, 0)
 }
 
-},{"./crypto_verify":37,"./internal/poly1305":42,"nanoassert":414}],30:[function(require,module,exports){
+},{"./crypto_verify":51,"./internal/poly1305":56,"nanoassert":432}],44:[function(require,module,exports){
 /* eslint-disable camelcase, one-var */
 const { _9, _121665, gf, inv25519, pack25519, unpack25519, sel25519, A, M, Z, S } = require('./internal/ed25519')
 
@@ -3774,7 +4314,7 @@ function check (buf, len) {
   if (!buf || (len && buf.length < len)) throw new Error('Argument must be a buffer' + (len ? ' of length ' + len : ''))
 }
 
-},{"./internal/ed25519":40}],31:[function(require,module,exports){
+},{"./internal/ed25519":54}],45:[function(require,module,exports){
 /* eslint-disable camelcase */
 const assert = require('nanoassert')
 const { crypto_stream, crypto_stream_xor } = require('./crypto_stream')
@@ -3887,7 +4427,7 @@ function crypto_secretbox_open_easy (msg, box, n, k) {
   return true
 }
 
-},{"./crypto_onetimeauth":29,"./crypto_stream":35,"nanoassert":414}],32:[function(require,module,exports){
+},{"./crypto_onetimeauth":43,"./crypto_stream":49,"nanoassert":432}],46:[function(require,module,exports){
 /* eslint-disable camelcase */
 const assert = require('nanoassert')
 const { randombytes_buf } = require('./randombytes')
@@ -4160,7 +4700,7 @@ module.exports = {
   crypto_secretstream_xchacha20poly1305_TAG_FINAL
 }
 
-},{"./crypto_stream_chacha20":36,"./helpers":38,"./internal/hchacha20":41,"./internal/poly1305":42,"./randombytes":44,"nanoassert":414}],33:[function(require,module,exports){
+},{"./crypto_stream_chacha20":50,"./helpers":52,"./internal/hchacha20":55,"./internal/poly1305":56,"./randombytes":58,"nanoassert":432}],47:[function(require,module,exports){
 var siphash = require('siphash24')
 
 if (new Uint16Array([1])[0] !== 1) throw new Error('Big endian architecture is not supported.')
@@ -4176,7 +4716,7 @@ function shorthash (out, data, key, noAssert) {
   siphash(data, key, out, noAssert)
 }
 
-},{"siphash24":537}],34:[function(require,module,exports){
+},{"siphash24":555}],48:[function(require,module,exports){
 /* eslint-disable camelcase, one-var */
 const { crypto_verify_32 } = require('./crypto_verify')
 const { crypto_hash } = require('./crypto_hash')
@@ -4647,7 +5187,7 @@ function check (buf, len, arg = 'Argument') {
   if (!buf || (len && buf.length < len)) throw new Error(arg + ' must be a buffer' + (len ? ' of length ' + len : ''))
 }
 
-},{"./crypto_hash":25,"./crypto_hash.js":25,"./crypto_scalarmult.js":30,"./crypto_verify":37,"./internal/ed25519":40,"./randombytes":44,"nanoassert":414}],35:[function(require,module,exports){
+},{"./crypto_hash":39,"./crypto_hash.js":39,"./crypto_scalarmult.js":44,"./crypto_verify":51,"./internal/ed25519":54,"./randombytes":58,"nanoassert":432}],49:[function(require,module,exports){
 /* eslint-disable camelcase */
 const xsalsa20 = require('xsalsa20')
 
@@ -4687,7 +5227,7 @@ XOR.prototype.final = function () {
   this._instance = null
 }
 
-},{"xsalsa20":629}],36:[function(require,module,exports){
+},{"xsalsa20":647}],50:[function(require,module,exports){
 const assert = require('nanoassert')
 const Chacha20 = require('chacha20-universal')
 
@@ -4773,7 +5313,7 @@ exports.crypto_stream_chacha20_ietf_xor_instance = function (n, k) {
   return new Chacha20(n, k)
 }
 
-},{"chacha20-universal":194,"nanoassert":414}],37:[function(require,module,exports){
+},{"chacha20-universal":212,"nanoassert":432}],51:[function(require,module,exports){
 /* eslint-disable camelcase */
 module.exports = {
   crypto_verify_16,
@@ -4804,7 +5344,7 @@ function crypto_verify_64 (x, xi, y, yi) {
   return vn(x, xi, y, yi, 64) === 0
 }
 
-},{}],38:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 /* eslint-disable camelcase */
 const assert = require('nanoassert')
 const { vn } = require('./crypto_verify')
@@ -4837,7 +5377,7 @@ module.exports = {
   sodium_is_zero
 }
 
-},{"./crypto_verify":37,"nanoassert":414}],39:[function(require,module,exports){
+},{"./crypto_verify":51,"nanoassert":432}],53:[function(require,module,exports){
 'use strict'
 
 // Based on https://github.com/dchest/tweetnacl-js/blob/6dcbcaf5f5cbfd313f2dcfe763db35c828c8ff5b/nacl-fast.js.
@@ -4875,7 +5415,7 @@ function forward (submodule) {
   })
 }
 
-},{"./crypto_aead":21,"./crypto_auth":22,"./crypto_box":23,"./crypto_generichash":24,"./crypto_hash":25,"./crypto_hash_sha256":26,"./crypto_kdf":27,"./crypto_kx":28,"./crypto_onetimeauth":29,"./crypto_scalarmult":30,"./crypto_secretbox":31,"./crypto_secretstream":32,"./crypto_shorthash":33,"./crypto_sign":34,"./crypto_stream":35,"./crypto_stream_chacha20":36,"./crypto_verify":37,"./helpers":38,"./memory":43,"./randombytes":44}],40:[function(require,module,exports){
+},{"./crypto_aead":35,"./crypto_auth":36,"./crypto_box":37,"./crypto_generichash":38,"./crypto_hash":39,"./crypto_hash_sha256":40,"./crypto_kdf":41,"./crypto_kx":42,"./crypto_onetimeauth":43,"./crypto_scalarmult":44,"./crypto_secretbox":45,"./crypto_secretstream":46,"./crypto_shorthash":47,"./crypto_sign":48,"./crypto_stream":49,"./crypto_stream_chacha20":50,"./crypto_verify":51,"./helpers":52,"./memory":57,"./randombytes":58}],54:[function(require,module,exports){
 if (new Uint16Array([1])[0] !== 1) throw new Error('Big endian architecture is not supported.')
 
 var gf = function(init) {
@@ -5360,7 +5900,7 @@ module.exports = {
   I
 }
 
-},{}],41:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 /* eslint-disable camelcase */
 const { sodium_malloc } = require('../memory')
 const assert = require('nanoassert')
@@ -5490,7 +6030,7 @@ module.exports = {
   crypto_core_hchacha20_constbytes
 }
 
-},{"../memory":43,"nanoassert":414}],42:[function(require,module,exports){
+},{"../memory":57,"nanoassert":432}],56:[function(require,module,exports){
 /*
 * Port of Andrew Moon's Poly1305-donna-16. Public domain.
 * https://github.com/floodyberry/poly1305-donna
@@ -5852,7 +6392,7 @@ poly1305.prototype.update = function(m, mpos, bytes) {
 
 module.exports = poly1305
 
-},{}],43:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 /* eslint-disable camelcase */
 
 function sodium_malloc (n) {
@@ -5884,7 +6424,7 @@ module.exports = {
   sodium_memzero
 }
 
-},{}],44:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 var assert = require('nanoassert')
 
 var randombytes = (function () {
@@ -5926,10 +6466,10 @@ module.exports.randombytes_buf = function (out) {
   randombytes(out, out.byteLength)
 }
 
-},{"nanoassert":414}],45:[function(require,module,exports){
+},{"nanoassert":432}],59:[function(require,module,exports){
 module.exports = require('./lib/transport/ws')
 
-},{"./lib/transport/ws":20}],46:[function(require,module,exports){
+},{"./lib/transport/ws":34}],60:[function(require,module,exports){
 const { Pull, Push, HEADERBYTES, KEYBYTES, ABYTES } = require('sodium-secretstream')
 const sodium = require('sodium-universal')
 const crypto = require('hypercore-crypto')
@@ -6563,7 +7103,7 @@ function sendKeepAlive () {
   this.write(empty)
 }
 
-},{"./lib/bridge":47,"./lib/handshake":48,"b4a":97,"hypercore-crypto":325,"sodium-secretstream":566,"sodium-universal":585,"streamx":607,"timeout-refresh":612,"unslab":619}],47:[function(require,module,exports){
+},{"./lib/bridge":61,"./lib/handshake":62,"b4a":111,"hypercore-crypto":343,"sodium-secretstream":584,"sodium-universal":603,"streamx":625,"timeout-refresh":630,"unslab":637}],61:[function(require,module,exports){
 const { Duplex, Writable } = require('streamx')
 
 class ReversePassThrough extends Duplex {
@@ -6641,7 +7181,7 @@ module.exports = class Bridge extends Duplex {
   }
 }
 
-},{"streamx":607}],48:[function(require,module,exports){
+},{"streamx":625}],62:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const curve = require('noise-curve-ed')
 const Noise = require('noise-handshake')
@@ -6721,7 +7261,7 @@ function writeUint24le (n, buf) {
   buf[2] = (n >>> 16) & 255
 }
 
-},{"b4a":97,"noise-curve-ed":416,"noise-handshake":53,"sodium-universal":585}],49:[function(require,module,exports){
+},{"b4a":111,"noise-curve-ed":434,"noise-handshake":67,"sodium-universal":603}],63:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 
@@ -6816,7 +7356,7 @@ function decryptWithAD (key, counter, additionalData, ciphertext) {
   return plaintext
 }
 
-},{"b4a":97,"sodium-universal":585}],50:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":603}],64:[function(require,module,exports){
 /* eslint-disable camelcase */
 const {
   crypto_kx_SEEDBYTES,
@@ -6889,7 +7429,7 @@ function dh (publicKey, { secretKey }) {
   return output
 }
 
-},{"b4a":97,"nanoassert":414,"sodium-universal":585}],51:[function(require,module,exports){
+},{"b4a":111,"nanoassert":432,"sodium-universal":603}],65:[function(require,module,exports){
 const hmacBlake2b = require('./hmac')
 const b4a = require('b4a')
 
@@ -6938,7 +7478,7 @@ function hmacDigest (out, key, input) {
   return out
 }
 
-},{"./hmac":52,"b4a":97}],52:[function(require,module,exports){
+},{"./hmac":66,"b4a":111}],66:[function(require,module,exports){
 /* eslint-disable camelcase */
 const b4a = require('b4a')
 const { sodium_memzero, crypto_generichash, crypto_generichash_batch } = require('sodium-universal')
@@ -6978,7 +7518,7 @@ module.exports = function hmac (out, batch, key) {
 module.exports.BYTES = HASHLEN
 module.exports.KEYBYTES = BLOCKLEN
 
-},{"b4a":97,"sodium-universal":585}],53:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":603}],67:[function(require,module,exports){
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
@@ -7275,7 +7815,7 @@ function hasPskToken (handshake) {
   })
 }
 
-},{"./hkdf":51,"./symmetric-state":54,"b4a":97,"nanoassert":414}],54:[function(require,module,exports){
+},{"./hkdf":65,"./symmetric-state":68,"b4a":111,"nanoassert":432}],68:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const assert = require('nanoassert')
 const b4a = require('b4a')
@@ -7367,7 +7907,7 @@ function accumulateDigest (digest, input) {
   sodium.crypto_generichash(digest, toHash)
 }
 
-},{"./cipher":49,"./dh":50,"./hkdf":51,"b4a":97,"nanoassert":414,"sodium-universal":585}],55:[function(require,module,exports){
+},{"./cipher":63,"./dh":64,"./hkdf":65,"b4a":111,"nanoassert":432,"sodium-universal":603}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SHA512_IV = exports.SHA384_IV = exports.SHA224_IV = exports.SHA256_IV = exports.HashMD = void 0;
@@ -7530,7 +8070,7 @@ exports.SHA512_IV = Uint32Array.from([
     0x510e527f, 0xade682d1, 0x9b05688c, 0x2b3e6c1f, 0x1f83d9ab, 0xfb41bd6b, 0x5be0cd19, 0x137e2179,
 ]);
 
-},{"./utils.js":63}],56:[function(require,module,exports){
+},{"./utils.js":77}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toBig = exports.shrSL = exports.shrSH = exports.rotrSL = exports.rotrSH = exports.rotrBL = exports.rotrBH = exports.rotr32L = exports.rotr32H = exports.rotlSL = exports.rotlSH = exports.rotlBL = exports.rotlBH = exports.add5L = exports.add5H = exports.add4L = exports.add4H = exports.add3L = exports.add3H = void 0;
@@ -7621,13 +8161,13 @@ const u64 = {
 };
 exports.default = u64;
 
-},{}],57:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.crypto = void 0;
 exports.crypto = typeof globalThis === 'object' && 'crypto' in globalThis ? globalThis.crypto : undefined;
 
-},{}],58:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hmac = exports.HMAC = void 0;
@@ -7719,7 +8259,7 @@ const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest(
 exports.hmac = hmac;
 exports.hmac.create = (hash, key) => new HMAC(hash, key);
 
-},{"./utils.js":63}],59:[function(require,module,exports){
+},{"./utils.js":77}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pbkdf2 = pbkdf2;
@@ -7821,7 +8361,7 @@ async function pbkdf2Async(hash, password, salt, opts) {
     return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
 }
 
-},{"./hmac.js":58,"./utils.js":63}],60:[function(require,module,exports){
+},{"./hmac.js":72,"./utils.js":77}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sha512_224 = exports.sha512_256 = exports.sha384 = exports.sha512 = exports.sha224 = exports.sha256 = exports.SHA512_256 = exports.SHA512_224 = exports.SHA384 = exports.SHA512 = exports.SHA224 = exports.SHA256 = void 0;
@@ -8206,7 +8746,7 @@ exports.sha512_256 = (0, utils_ts_1.createHasher)(() => new SHA512_256());
  */
 exports.sha512_224 = (0, utils_ts_1.createHasher)(() => new SHA512_224());
 
-},{"./_md.js":55,"./_u64.js":56,"./utils.js":63}],61:[function(require,module,exports){
+},{"./_md.js":69,"./_u64.js":70,"./utils.js":77}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sha224 = exports.SHA224 = exports.sha256 = exports.SHA256 = void 0;
@@ -8230,7 +8770,7 @@ exports.SHA224 = sha2_ts_1.SHA224;
 /** @deprecated Use import from `noble/hashes/sha2` module */
 exports.sha224 = sha2_ts_1.sha224;
 
-},{"./sha2.js":60}],62:[function(require,module,exports){
+},{"./sha2.js":74}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sha512_256 = exports.SHA512_256 = exports.sha512_224 = exports.SHA512_224 = exports.sha384 = exports.SHA384 = exports.sha512 = exports.SHA512 = void 0;
@@ -8260,7 +8800,7 @@ exports.SHA512_256 = sha2_ts_1.SHA512_256;
 /** @deprecated Use import from `noble/hashes/sha2` module */
 exports.sha512_256 = sha2_ts_1.sha512_256;
 
-},{"./sha2.js":60}],63:[function(require,module,exports){
+},{"./sha2.js":74}],77:[function(require,module,exports){
 "use strict";
 /**
  * Utilities for hex, bytes, CSPRNG.
@@ -8574,7 +9114,7 @@ function randomBytes(bytesLength = 32) {
     throw new Error('crypto.getRandomValues must be defined');
 }
 
-},{"@noble/hashes/crypto":57}],64:[function(require,module,exports){
+},{"@noble/hashes/crypto":71}],78:[function(require,module,exports){
 var asn1 = exports;
 
 asn1.bignum = require('bn.js');
@@ -8585,7 +9125,7 @@ asn1.constants = require('./asn1/constants');
 asn1.decoders = require('./asn1/decoders');
 asn1.encoders = require('./asn1/encoders');
 
-},{"./asn1/api":65,"./asn1/base":67,"./asn1/constants":71,"./asn1/decoders":73,"./asn1/encoders":76,"bn.js":78}],65:[function(require,module,exports){
+},{"./asn1/api":79,"./asn1/base":81,"./asn1/constants":85,"./asn1/decoders":87,"./asn1/encoders":90,"bn.js":92}],79:[function(require,module,exports){
 var asn1 = require('../asn1');
 var inherits = require('inherits');
 
@@ -8648,7 +9188,7 @@ Entity.prototype.encode = function encode(data, enc, /* internal */ reporter) {
   return this._getEncoder(enc).encode(data, reporter);
 };
 
-},{"../asn1":64,"inherits":389,"vm":625}],66:[function(require,module,exports){
+},{"../asn1":78,"inherits":407,"vm":643}],80:[function(require,module,exports){
 var inherits = require('inherits');
 var Reporter = require('../base').Reporter;
 var Buffer = require('buffer').Buffer;
@@ -8766,7 +9306,7 @@ EncoderBuffer.prototype.join = function join(out, offset) {
   return out;
 };
 
-},{"../base":67,"buffer":185,"inherits":389}],67:[function(require,module,exports){
+},{"../base":81,"buffer":203,"inherits":407}],81:[function(require,module,exports){
 var base = exports;
 
 base.Reporter = require('./reporter').Reporter;
@@ -8774,7 +9314,7 @@ base.DecoderBuffer = require('./buffer').DecoderBuffer;
 base.EncoderBuffer = require('./buffer').EncoderBuffer;
 base.Node = require('./node');
 
-},{"./buffer":66,"./node":68,"./reporter":69}],68:[function(require,module,exports){
+},{"./buffer":80,"./node":82,"./reporter":83}],82:[function(require,module,exports){
 var Reporter = require('../base').Reporter;
 var EncoderBuffer = require('../base').EncoderBuffer;
 var DecoderBuffer = require('../base').DecoderBuffer;
@@ -9410,7 +9950,7 @@ Node.prototype._isPrintstr = function isPrintstr(str) {
   return /^[A-Za-z0-9 '\(\)\+,\-\.\/:=\?]*$/.test(str);
 };
 
-},{"../base":67,"minimalistic-assert":409}],69:[function(require,module,exports){
+},{"../base":81,"minimalistic-assert":427}],83:[function(require,module,exports){
 var inherits = require('inherits');
 
 function Reporter(options) {
@@ -9533,7 +10073,7 @@ ReporterError.prototype.rethrow = function rethrow(msg) {
   return this;
 };
 
-},{"inherits":389}],70:[function(require,module,exports){
+},{"inherits":407}],84:[function(require,module,exports){
 var constants = require('../constants');
 
 exports.tagClass = {
@@ -9577,7 +10117,7 @@ exports.tag = {
 };
 exports.tagByName = constants._reverse(exports.tag);
 
-},{"../constants":71}],71:[function(require,module,exports){
+},{"../constants":85}],85:[function(require,module,exports){
 var constants = exports;
 
 // Helper
@@ -9598,7 +10138,7 @@ constants._reverse = function reverse(map) {
 
 constants.der = require('./der');
 
-},{"./der":70}],72:[function(require,module,exports){
+},{"./der":84}],86:[function(require,module,exports){
 var inherits = require('inherits');
 
 var asn1 = require('../../asn1');
@@ -9924,13 +10464,13 @@ function derDecodeLen(buf, primitive, fail) {
   return len;
 }
 
-},{"../../asn1":64,"inherits":389}],73:[function(require,module,exports){
+},{"../../asn1":78,"inherits":407}],87:[function(require,module,exports){
 var decoders = exports;
 
 decoders.der = require('./der');
 decoders.pem = require('./pem');
 
-},{"./der":72,"./pem":74}],74:[function(require,module,exports){
+},{"./der":86,"./pem":88}],88:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -9981,7 +10521,7 @@ PEMDecoder.prototype.decode = function decode(data, options) {
   return DERDecoder.prototype.decode.call(this, input, options);
 };
 
-},{"./der":72,"buffer":185,"inherits":389}],75:[function(require,module,exports){
+},{"./der":86,"buffer":203,"inherits":407}],89:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -10278,13 +10818,13 @@ function encodeTag(tag, primitive, cls, reporter) {
   return res;
 }
 
-},{"../../asn1":64,"buffer":185,"inherits":389}],76:[function(require,module,exports){
+},{"../../asn1":78,"buffer":203,"inherits":407}],90:[function(require,module,exports){
 var encoders = exports;
 
 encoders.der = require('./der');
 encoders.pem = require('./pem');
 
-},{"./der":75,"./pem":77}],77:[function(require,module,exports){
+},{"./der":89,"./pem":91}],91:[function(require,module,exports){
 var inherits = require('inherits');
 
 var DEREncoder = require('./der');
@@ -10307,7 +10847,7 @@ PEMEncoder.prototype.encode = function encode(data, options) {
   return out.join('\n');
 };
 
-},{"./der":75,"inherits":389}],78:[function(require,module,exports){
+},{"./der":89,"inherits":407}],92:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -13756,7 +14296,7 @@ PEMEncoder.prototype.encode = function encode(data, options) {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{"buffer":153}],79:[function(require,module,exports){
+},{"buffer":171}],93:[function(require,module,exports){
 const b4a = require('b4a')
 const ReadyResource = require('ready-resource')
 const debounceify = require('debounceify')
@@ -16199,7 +16739,7 @@ async function closeAll (list) {
   for (const core of list) await core.close()
 }
 
-},{"./lib/active-writers":80,"./lib/core-pool":83,"./lib/extension":85,"./lib/linearizer":86,"./lib/messages":87,"./lib/store":90,"./lib/system":91,"./lib/timer":92,"./lib/wakeup":94,"./lib/writer":95,"b4a":97,"compact-encoding":199,"core-coupler":202,"debounceify":238,"hypercore-id-encoding":327,"mutexify/promise":413,"nanoassert":414,"ready-resource":508,"safety-catch":512,"signal-promise":532}],80:[function(require,module,exports){
+},{"./lib/active-writers":94,"./lib/core-pool":97,"./lib/extension":99,"./lib/linearizer":100,"./lib/messages":101,"./lib/store":104,"./lib/system":105,"./lib/timer":106,"./lib/wakeup":108,"./lib/writer":109,"b4a":111,"compact-encoding":217,"core-coupler":220,"debounceify":256,"hypercore-id-encoding":345,"mutexify/promise":431,"nanoassert":432,"ready-resource":526,"safety-catch":530,"signal-promise":550}],94:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = class ActiveWriters {
@@ -16240,7 +16780,7 @@ module.exports = class ActiveWriters {
   }
 }
 
-},{"b4a":97}],81:[function(require,module,exports){
+},{"b4a":111}],95:[function(require,module,exports){
 const BufferMap = require('tiny-buffer-map')
 
 // This is basically just a Map atm, but leaving it as an abstraction for now
@@ -16283,7 +16823,7 @@ module.exports = class Clock {
   }
 }
 
-},{"tiny-buffer-map":614}],82:[function(require,module,exports){
+},{"tiny-buffer-map":632}],96:[function(require,module,exports){
 const BufferMap = require('tiny-buffer-map')
 
 const Clock = require('./clock')
@@ -16722,7 +17262,7 @@ module.exports = class Consensus {
   }
 }
 
-},{"./clock":81,"tiny-buffer-map":614}],83:[function(require,module,exports){
+},{"./clock":95,"tiny-buffer-map":632}],97:[function(require,module,exports){
 const b4a = require('b4a')
 const safetyCatch = require('safety-catch')
 
@@ -16776,7 +17316,7 @@ function ontimeout (pool, core) {
   pool.pool.delete(hex)
 }
 
-},{"b4a":97,"safety-catch":512}],84:[function(require,module,exports){
+},{"b4a":111,"safety-catch":530}],98:[function(require,module,exports){
 const { EventEmitter } = require('events')
 const ReadyResource = require('ready-resource')
 const safetyCatch = require('safety-catch')
@@ -17688,7 +18228,7 @@ function autocoreOnWait (fn, index, core) {
   if (fn) return fn(index, this)
 }
 
-},{"./extension":85,"./messages":87,"./signer":89,"b4a":97,"compact-encoding":199,"events":278,"hypercore/errors":328,"nanoassert":414,"ready-resource":508,"safety-catch":512}],85:[function(require,module,exports){
+},{"./extension":99,"./messages":101,"./signer":103,"b4a":111,"compact-encoding":217,"events":296,"hypercore/errors":346,"nanoassert":432,"ready-resource":526,"safety-catch":530}],99:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 const { Wakeup } = require('./messages')
@@ -17771,7 +18311,7 @@ module.exports = class WakeupExtension {
   }
 }
 
-},{"./messages":87,"b4a":97,"compact-encoding":199}],86:[function(require,module,exports){
+},{"./messages":101,"b4a":111,"compact-encoding":217}],100:[function(require,module,exports){
 const b4a = require('b4a')
 const assert = require('nanoassert')
 
@@ -18138,7 +18678,7 @@ function sameNode (a, b) {
   return b4a.equals(a.key, b.writer.core.key) && a.length === b.length
 }
 
-},{"./clock":81,"./consensus":82,"./topolist":93,"b4a":97,"nanoassert":414}],87:[function(require,module,exports){
+},{"./clock":95,"./consensus":96,"./topolist":107,"b4a":111,"nanoassert":432}],101:[function(require,module,exports){
 const c = require('compact-encoding')
 const assert = require('nanoassert')
 
@@ -18661,7 +19201,7 @@ module.exports = {
   Member
 }
 
-},{"compact-encoding":199,"nanoassert":414}],88:[function(require,module,exports){
+},{"compact-encoding":217,"nanoassert":432}],102:[function(require,module,exports){
 const DEFAULT_SIZE = 32
 
 module.exports = class NodeBuffer {
@@ -18740,7 +19280,7 @@ module.exports = class NodeBuffer {
   }
 }
 
-},{}],89:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 const b4a = require('b4a')
 const { partialSignature } = require('hypercore/lib/multisig.js')
 
@@ -18896,7 +19436,7 @@ function descendingOrder (a, b) {
   return a > b ? -1 : a < b ? 1 : 0
 }
 
-},{"b4a":97,"hypercore/lib/multisig.js":344}],90:[function(require,module,exports){
+},{"b4a":111,"hypercore/lib/multisig.js":362}],104:[function(require,module,exports){
 const b4a = require('b4a')
 const c = require('compact-encoding')
 const Hypercore = require('hypercore')
@@ -19147,7 +19687,7 @@ function indexersWithManifest (indexers) {
   return indexers
 }
 
-},{"./core":84,"b4a":97,"compact-encoding":199,"hypercore":329,"hypercore-crypto":325}],91:[function(require,module,exports){
+},{"./core":98,"b4a":111,"compact-encoding":217,"hypercore":347,"hypercore-crypto":343}],105:[function(require,module,exports){
 const Hyperbee = require('hyperbee')
 const SubEncoder = require('sub-encoder')
 const ReadyResource = require('ready-resource')
@@ -19567,7 +20107,7 @@ function sameNode (a, b) {
   return b4a.equals(a.key, b.key) && a.length === b.length
 }
 
-},{"./messages":87,"b4a":97,"compact-encoding":199,"hyperbee":314,"ready-resource":508,"sub-encoder":609}],92:[function(require,module,exports){
+},{"./messages":101,"b4a":111,"compact-encoding":217,"hyperbee":332,"ready-resource":526,"sub-encoder":627}],106:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 
 const MAX_WAIT = 2 * 60 * 1000
@@ -19694,7 +20234,7 @@ function random2over1 (n) {
 
 function noop () {}
 
-},{"safety-catch":512}],93:[function(require,module,exports){
+},{"safety-catch":530}],107:[function(require,module,exports){
 const b4a = require('b4a')
 const assert = require('nanoassert')
 
@@ -19809,7 +20349,7 @@ function cmp (a, b) {
   return c === 0 ? a.length < b.length ? -1 : 1 : c
 }
 
-},{"b4a":97,"nanoassert":414}],94:[function(require,module,exports){
+},{"b4a":111,"nanoassert":432}],108:[function(require,module,exports){
 const b4a = require('b4a')
 const c = require('compact-encoding')
 const ReadyResource = require('ready-resource')
@@ -19991,7 +20531,7 @@ function getRootCorestore (store) {
 
 function noop () {}
 
-},{"b4a":97,"compact-encoding":199,"ready-resource":508}],95:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"ready-resource":526}],109:[function(require,module,exports){
 const Linearizer = require('./linearizer')
 const NodeBuffer = require('./node-buffer')
 const c = require('compact-encoding')
@@ -20426,7 +20966,7 @@ function autoRecover (core) {
   return false
 }
 
-},{"./linearizer":86,"./node-buffer":88,"b4a":97,"compact-encoding":199,"nanoassert":414,"ready-resource":508,"safety-catch":512,"signal-promise":532}],96:[function(require,module,exports){
+},{"./linearizer":100,"./node-buffer":102,"b4a":111,"compact-encoding":217,"nanoassert":432,"ready-resource":526,"safety-catch":530,"signal-promise":550}],110:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -20447,7 +20987,7 @@ module.exports = function availableTypedArrays() {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"possible-typed-array-names":463}],97:[function(require,module,exports){
+},{"possible-typed-array-names":481}],111:[function(require,module,exports){
 const ascii = require('./lib/ascii')
 const base64 = require('./lib/base64')
 const hex = require('./lib/hex')
@@ -21025,7 +21565,7 @@ module.exports = exports = {
   readInt32BE
 }
 
-},{"./lib/ascii":98,"./lib/base64":99,"./lib/hex":100,"./lib/utf16le":101,"./lib/utf8":102}],98:[function(require,module,exports){
+},{"./lib/ascii":112,"./lib/base64":113,"./lib/hex":114,"./lib/utf16le":115,"./lib/utf8":116}],112:[function(require,module,exports){
 function byteLength (string) {
   return string.length
 }
@@ -21058,7 +21598,7 @@ module.exports = {
   write
 }
 
-},{}],99:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 const codes = new Uint8Array(256)
@@ -21125,7 +21665,7 @@ module.exports = {
   write
 }
 
-},{}],100:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 function byteLength (string) {
   return string.length >>> 1
 }
@@ -21178,7 +21718,7 @@ function hexValue (char) {
   if (char >= 0x61 && char <= 0x66) return char - 0x61 + 10
 }
 
-},{}],101:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 function byteLength (string) {
   return string.length * 2
 }
@@ -21220,7 +21760,7 @@ module.exports = {
   write
 }
 
-},{}],102:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 function byteLength (string) {
   let length = 0
 
@@ -21367,7 +21907,7 @@ module.exports = {
   write
 }
 
-},{}],103:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 const errors = require('./lib/errors')
 
 class EventListener {
@@ -21724,7 +22264,7 @@ exports.setMaxListeners = function setMaxListeners(n, ...emitters) {
   }
 }
 
-},{"./lib/errors":104}],104:[function(require,module,exports){
+},{"./lib/errors":118}],118:[function(require,module,exports){
 module.exports = class EventEmitterError extends Error {
   constructor(msg, code, fn = EventEmitterError, opts) {
     super(`${code}: ${msg}`, opts)
@@ -21758,10 +22298,10 @@ module.exports = class EventEmitterError extends Error {
   }
 }
 
-},{}],105:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 module.exports = require.addon()
 
-},{}],106:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 (function (Buffer){(function (){
 const EventEmitter = require('bare-events')
 const path = require('bare-path')
@@ -24539,7 +25079,7 @@ function toNamespacedPath(filepath) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./binding":105,"./lib/constants":107,"bare-events":103,"bare-path":112,"bare-stream":117,"buffer":185}],107:[function(require,module,exports){
+},{"./binding":119,"./lib/constants":121,"bare-events":117,"bare-path":126,"bare-stream":131,"buffer":203}],121:[function(require,module,exports){
 const binding = require('../binding')
 
 module.exports = {
@@ -24590,9 +25130,9 @@ module.exports = {
   UV_FS_SYMLINK_JUNCTION: binding.UV_FS_SYMLINK_JUNCTION
 }
 
-},{"../binding":105}],108:[function(require,module,exports){
-arguments[4][105][0].apply(exports,arguments)
-},{"dup":105}],109:[function(require,module,exports){
+},{"../binding":119}],122:[function(require,module,exports){
+arguments[4][119][0].apply(exports,arguments)
+},{"dup":119}],123:[function(require,module,exports){
 const binding = require('./binding')
 const errors = require('./lib/errors')
 const constants = require('./lib/constants')
@@ -24693,7 +25233,7 @@ exports.hasEnv = binding.hasEnv
 exports.setEnv = binding.setEnv
 exports.unsetEnv = binding.unsetEnv
 
-},{"./binding":108,"./lib/constants":110,"./lib/errors":111}],110:[function(require,module,exports){
+},{"./binding":122,"./lib/constants":124,"./lib/errors":125}],124:[function(require,module,exports){
 const binding = require('../binding')
 
 module.exports = {
@@ -24701,7 +25241,7 @@ module.exports = {
   errnos: binding.errnos
 }
 
-},{"../binding":108}],111:[function(require,module,exports){
+},{"../binding":122}],125:[function(require,module,exports){
 module.exports = class OSError extends Error {
   constructor(msg, code, fn = OSError) {
     super(`${code}: ${msg}`)
@@ -24725,7 +25265,7 @@ module.exports = class OSError extends Error {
   }
 }
 
-},{}],112:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 /* global Bare */
 
 // This export SHOULD NOT be shortened in any way as having the full
@@ -24738,7 +25278,7 @@ if (Bare.platform === 'win32') {
   module.exports = require('./lib/posix')
 }
 
-},{"./lib/posix":114,"./lib/win32":116}],113:[function(require,module,exports){
+},{"./lib/posix":128,"./lib/win32":130}],127:[function(require,module,exports){
 module.exports = {
   CHAR_UPPERCASE_A: 0x41,
   CHAR_LOWERCASE_A: 0x61,
@@ -24751,7 +25291,7 @@ module.exports = {
   CHAR_QUESTION_MARK: 0x3f
 }
 
-},{}],114:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 const os = require('bare-os')
 
 const { normalizeString } = require('./shared')
@@ -24995,7 +25535,7 @@ exports.extname = function extname (path) {
   return path.substring(startDot, end)
 }
 
-},{"./constants":113,"./shared":115,"./win32":116,"bare-os":109}],115:[function(require,module,exports){
+},{"./constants":127,"./shared":129,"./win32":130,"bare-os":123}],129:[function(require,module,exports){
 const {
   CHAR_DOT,
   CHAR_FORWARD_SLASH
@@ -25064,7 +25604,7 @@ exports.normalizeString = function normalizeString (path, allowAboveRoot, separa
   return res
 }
 
-},{"./constants":113}],116:[function(require,module,exports){
+},{"./constants":127}],130:[function(require,module,exports){
 const os = require('bare-os')
 
 const { normalizeString } = require('./shared')
@@ -25579,7 +26119,7 @@ exports.extname = function extname (path) {
   return path.substring(startDot, end)
 }
 
-},{"./constants":113,"./posix":114,"./shared":115,"bare-os":109}],117:[function(require,module,exports){
+},{"./constants":127,"./posix":128,"./shared":129,"bare-os":123}],131:[function(require,module,exports){
 (function (Buffer){(function (){
 const stream = require('streamx')
 
@@ -25938,7 +26478,7 @@ function byteLengthWritable(data) {
 function noop() {}
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"streamx":607}],118:[function(require,module,exports){
+},{"buffer":203,"streamx":625}],132:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -26090,7 +26630,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],119:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 const FACTOR = new Uint16Array(8)
 
 function factor4096 (i, n) {
@@ -26216,7 +26756,7 @@ class TinyArray {
   }
 }
 
-},{}],120:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = function (a, b) {
@@ -26319,7 +26859,7 @@ function binaryEquals (a, b, resolve, reject) {
   }
 }
 
-},{"b4a":97}],121:[function(require,module,exports){
+},{"b4a":111}],135:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 const assert = require('nanoassert')
@@ -26537,17 +27077,17 @@ function mask (val, bits) {
   return val % (2 ** bits)
 }
 
-},{"./wordlist":127,"b4a":97,"nanoassert":414,"sodium-universal":585}],122:[function(require,module,exports){
+},{"./wordlist":141,"b4a":111,"nanoassert":432,"sodium-universal":603}],136:[function(require,module,exports){
 module.exports=["的","一","是","在","不","了","有","和","人","这","中","大","为","上","个","国","我","以","要","他","时","来","用","们","生","到","作","地","于","出","就","分","对","成","会","可","主","发","年","动","同","工","也","能","下","过","子","说","产","种","面","而","方","后","多","定","行","学","法","所","民","得","经","十","三","之","进","着","等","部","度","家","电","力","里","如","水","化","高","自","二","理","起","小","物","现","实","加","量","都","两","体","制","机","当","使","点","从","业","本","去","把","性","好","应","开","它","合","还","因","由","其","些","然","前","外","天","政","四","日","那","社","义","事","平","形","相","全","表","间","样","与","关","各","重","新","线","内","数","正","心","反","你","明","看","原","又","么","利","比","或","但","质","气","第","向","道","命","此","变","条","只","没","结","解","问","意","建","月","公","无","系","军","很","情","者","最","立","代","想","已","通","并","提","直","题","党","程","展","五","果","料","象","员","革","位","入","常","文","总","次","品","式","活","设","及","管","特","件","长","求","老","头","基","资","边","流","路","级","少","图","山","统","接","知","较","将","组","见","计","别","她","手","角","期","根","论","运","农","指","几","九","区","强","放","决","西","被","干","做","必","战","先","回","则","任","取","据","处","队","南","给","色","光","门","即","保","治","北","造","百","规","热","领","七","海","口","东","导","器","压","志","世","金","增","争","济","阶","油","思","术","极","交","受","联","什","认","六","共","权","收","证","改","清","美","再","采","转","更","单","风","切","打","白","教","速","花","带","安","场","身","车","例","真","务","具","万","每","目","至","达","走","积","示","议","声","报","斗","完","类","八","离","华","名","确","才","科","张","信","马","节","话","米","整","空","元","况","今","集","温","传","土","许","步","群","广","石","记","需","段","研","界","拉","林","律","叫","且","究","观","越","织","装","影","算","低","持","音","众","书","布","复","容","儿","须","际","商","非","验","连","断","深","难","近","矿","千","周","委","素","技","备","半","办","青","省","列","习","响","约","支","般","史","感","劳","便","团","往","酸","历","市","克","何","除","消","构","府","称","太","准","精","值","号","率","族","维","划","选","标","写","存","候","毛","亲","快","效","斯","院","查","江","型","眼","王","按","格","养","易","置","派","层","片","始","却","专","状","育","厂","京","识","适","属","圆","包","火","住","调","满","县","局","照","参","红","细","引","听","该","铁","价","严","首","底","液","官","德","随","病","苏","失","尔","死","讲","配","女","黄","推","显","谈","罪","神","艺","呢","席","含","企","望","密","批","营","项","防","举","球","英","氧","势","告","李","台","落","木","帮","轮","破","亚","师","围","注","远","字","材","排","供","河","态","封","另","施","减","树","溶","怎","止","案","言","士","均","武","固","叶","鱼","波","视","仅","费","紧","爱","左","章","早","朝","害","续","轻","服","试","食","充","兵","源","判","护","司","足","某","练","差","致","板","田","降","黑","犯","负","击","范","继","兴","似","余","坚","曲","输","修","故","城","夫","够","送","笔","船","占","右","财","吃","富","春","职","觉","汉","画","功","巴","跟","虽","杂","飞","检","吸","助","升","阳","互","初","创","抗","考","投","坏","策","古","径","换","未","跑","留","钢","曾","端","责","站","简","述","钱","副","尽","帝","射","草","冲","承","独","令","限","阿","宣","环","双","请","超","微","让","控","州","良","轴","找","否","纪","益","依","优","顶","础","载","倒","房","突","坐","粉","敌","略","客","袁","冷","胜","绝","析","块","剂","测","丝","协","诉","念","陈","仍","罗","盐","友","洋","错","苦","夜","刑","移","频","逐","靠","混","母","短","皮","终","聚","汽","村","云","哪","既","距","卫","停","烈","央","察","烧","迅","境","若","印","洲","刻","括","激","孔","搞","甚","室","待","核","校","散","侵","吧","甲","游","久","菜","味","旧","模","湖","货","损","预","阻","毫","普","稳","乙","妈","植","息","扩","银","语","挥","酒","守","拿","序","纸","医","缺","雨","吗","针","刘","啊","急","唱","误","训","愿","审","附","获","茶","鲜","粮","斤","孩","脱","硫","肥","善","龙","演","父","渐","血","欢","械","掌","歌","沙","刚","攻","谓","盾","讨","晚","粒","乱","燃","矛","乎","杀","药","宁","鲁","贵","钟","煤","读","班","伯","香","介","迫","句","丰","培","握","兰","担","弦","蛋","沉","假","穿","执","答","乐","谁","顺","烟","缩","征","脸","喜","松","脚","困","异","免","背","星","福","买","染","井","概","慢","怕","磁","倍","祖","皇","促","静","补","评","翻","肉","践","尼","衣","宽","扬","棉","希","伤","操","垂","秋","宜","氢","套","督","振","架","亮","末","宪","庆","编","牛","触","映","雷","销","诗","座","居","抓","裂","胞","呼","娘","景","威","绿","晶","厚","盟","衡","鸡","孙","延","危","胶","屋","乡","临","陆","顾","掉","呀","灯","岁","措","束","耐","剧","玉","赵","跳","哥","季","课","凯","胡","额","款","绍","卷","齐","伟","蒸","殖","永","宗","苗","川","炉","岩","弱","零","杨","奏","沿","露","杆","探","滑","镇","饭","浓","航","怀","赶","库","夺","伊","灵","税","途","灭","赛","归","召","鼓","播","盘","裁","险","康","唯","录","菌","纯","借","糖","盖","横","符","私","努","堂","域","枪","润","幅","哈","竟","熟","虫","泽","脑","壤","碳","欧","遍","侧","寨","敢","彻","虑","斜","薄","庭","纳","弹","饲","伸","折","麦","湿","暗","荷","瓦","塞","床","筑","恶","户","访","塔","奇","透","梁","刀","旋","迹","卡","氯","遇","份","毒","泥","退","洗","摆","灰","彩","卖","耗","夏","择","忙","铜","献","硬","予","繁","圈","雪","函","亦","抽","篇","阵","阴","丁","尺","追","堆","雄","迎","泛","爸","楼","避","谋","吨","野","猪","旗","累","偏","典","馆","索","秦","脂","潮","爷","豆","忽","托","惊","塑","遗","愈","朱","替","纤","粗","倾","尚","痛","楚","谢","奋","购","磨","君","池","旁","碎","骨","监","捕","弟","暴","割","贯","殊","释","词","亡","壁","顿","宝","午","尘","闻","揭","炮","残","冬","桥","妇","警","综","招","吴","付","浮","遭","徐","您","摇","谷","赞","箱","隔","订","男","吹","园","纷","唐","败","宋","玻","巨","耕","坦","荣","闭","湾","键","凡","驻","锅","救","恩","剥","凝","碱","齿","截","炼","麻","纺","禁","废","盛","版","缓","净","睛","昌","婚","涉","筒","嘴","插","岸","朗","庄","街","藏","姑","贸","腐","奴","啦","惯","乘","伙","恢","匀","纱","扎","辩","耳","彪","臣","亿","璃","抵","脉","秀","萨","俄","网","舞","店","喷","纵","寸","汗","挂","洪","贺","闪","柬","爆","烯","津","稻","墙","软","勇","像","滚","厘","蒙","芳","肯","坡","柱","荡","腿","仪","旅","尾","轧","冰","贡","登","黎","削","钻","勒","逃","障","氨","郭","峰","币","港","伏","轨","亩","毕","擦","莫","刺","浪","秘","援","株","健","售","股","岛","甘","泡","睡","童","铸","汤","阀","休","汇","舍","牧","绕","炸","哲","磷","绩","朋","淡","尖","启","陷","柴","呈","徒","颜","泪","稍","忘","泵","蓝","拖","洞","授","镜","辛","壮","锋","贫","虚","弯","摩","泰","幼","廷","尊","窗","纲","弄","隶","疑","氏","宫","姐","震","瑞","怪","尤","琴","循","描","膜","违","夹","腰","缘","珠","穷","森","枝","竹","沟","催","绳","忆","邦","剩","幸","浆","栏","拥","牙","贮","礼","滤","钠","纹","罢","拍","咱","喊","袖","埃","勤","罚","焦","潜","伍","墨","欲","缝","姓","刊","饱","仿","奖","铝","鬼","丽","跨","默","挖","链","扫","喝","袋","炭","污","幕","诸","弧","励","梅","奶","洁","灾","舟","鉴","苯","讼","抱","毁","懂","寒","智","埔","寄","届","跃","渡","挑","丹","艰","贝","碰","拔","爹","戴","码","梦","芽","熔","赤","渔","哭","敬","颗","奔","铅","仲","虎","稀","妹","乏","珍","申","桌","遵","允","隆","螺","仓","魏","锐","晓","氮","兼","隐","碍","赫","拨","忠","肃","缸","牵","抢","博","巧","壳","兄","杜","讯","诚","碧","祥","柯","页","巡","矩","悲","灌","龄","伦","票","寻","桂","铺","圣","恐","恰","郑","趣","抬","荒","腾","贴","柔","滴","猛","阔","辆","妻","填","撤","储","签","闹","扰","紫","砂","递","戏","吊","陶","伐","喂","疗","瓶","婆","抚","臂","摸","忍","虾","蜡","邻","胸","巩","挤","偶","弃","槽","劲","乳","邓","吉","仁","烂","砖","租","乌","舰","伴","瓜","浅","丙","暂","燥","橡","柳","迷","暖","牌","秧","胆","详","簧","踏","瓷","谱","呆","宾","糊","洛","辉","愤","竞","隙","怒","粘","乃","绪","肩","籍","敏","涂","熙","皆","侦","悬","掘","享","纠","醒","狂","锁","淀","恨","牲","霸","爬","赏","逆","玩","陵","祝","秒","浙","貌","役","彼","悉","鸭","趋","凤","晨","畜","辈","秩","卵","署","梯","炎","滩","棋","驱","筛","峡","冒","啥","寿","译","浸","泉","帽","迟","硅","疆","贷","漏","稿","冠","嫩","胁","芯","牢","叛","蚀","奥","鸣","岭","羊","凭","串","塘","绘","酵","融","盆","锡","庙","筹","冻","辅","摄","袭","筋","拒","僚","旱","钾","鸟","漆","沈","眉","疏","添","棒","穗","硝","韩","逼","扭","侨","凉","挺","碗","栽","炒","杯","患","馏","劝","豪","辽","勃","鸿","旦","吏","拜","狗","埋","辊","掩","饮","搬","骂","辞","勾","扣","估","蒋","绒","雾","丈","朵","姆","拟","宇","辑","陕","雕","偿","蓄","崇","剪","倡","厅","咬","驶","薯","刷","斥","番","赋","奉","佛","浇","漫","曼","扇","钙","桃","扶","仔","返","俗","亏","腔","鞋","棱","覆","框","悄","叔","撞","骗","勘","旺","沸","孤","吐","孟","渠","屈","疾","妙","惜","仰","狠","胀","谐","抛","霉","桑","岗","嘛","衰","盗","渗","脏","赖","涌","甜","曹","阅","肌","哩","厉","烃","纬","毅","昨","伪","症","煮","叹","钉","搭","茎","笼","酷","偷","弓","锥","恒","杰","坑","鼻","翼","纶","叙","狱","逮","罐","络","棚","抑","膨","蔬","寺","骤","穆","冶","枯","册","尸","凸","绅","坯","牺","焰","轰","欣","晋","瘦","御","锭","锦","丧","旬","锻","垄","搜","扑","邀","亭","酯","迈","舒","脆","酶","闲","忧","酚","顽","羽","涨","卸","仗","陪","辟","惩","杭","姚","肚","捉","飘","漂","昆","欺","吾","郎","烷","汁","呵","饰","萧","雅","邮","迁","燕","撒","姻","赴","宴","烦","债","帐","斑","铃","旨","醇","董","饼","雏","姿","拌","傅","腹","妥","揉","贤","拆","歪","葡","胺","丢","浩","徽","昂","垫","挡","览","贪","慰","缴","汪","慌","冯","诺","姜","谊","凶","劣","诬","耀","昏","躺","盈","骑","乔","溪","丛","卢","抹","闷","咨","刮","驾","缆","悟","摘","铒","掷","颇","幻","柄","惠","惨","佳","仇","腊","窝","涤","剑","瞧","堡","泼","葱","罩","霍","捞","胎","苍","滨","俩","捅","湘","砍","霞","邵","萄","疯","淮","遂","熊","粪","烘","宿","档","戈","驳","嫂","裕","徙","箭","捐","肠","撑","晒","辨","殿","莲","摊","搅","酱","屏","疫","哀","蔡","堵","沫","皱","畅","叠","阁","莱","敲","辖","钩","痕","坝","巷","饿","祸","丘","玄","溜","曰","逻","彭","尝","卿","妨","艇","吞","韦","怨","矮","歇"]
-},{}],123:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 module.exports=["的","一","是","在","不","了","有","和","人","這","中","大","為","上","個","國","我","以","要","他","時","來","用","們","生","到","作","地","於","出","就","分","對","成","會","可","主","發","年","動","同","工","也","能","下","過","子","說","產","種","面","而","方","後","多","定","行","學","法","所","民","得","經","十","三","之","進","著","等","部","度","家","電","力","裡","如","水","化","高","自","二","理","起","小","物","現","實","加","量","都","兩","體","制","機","當","使","點","從","業","本","去","把","性","好","應","開","它","合","還","因","由","其","些","然","前","外","天","政","四","日","那","社","義","事","平","形","相","全","表","間","樣","與","關","各","重","新","線","內","數","正","心","反","你","明","看","原","又","麼","利","比","或","但","質","氣","第","向","道","命","此","變","條","只","沒","結","解","問","意","建","月","公","無","系","軍","很","情","者","最","立","代","想","已","通","並","提","直","題","黨","程","展","五","果","料","象","員","革","位","入","常","文","總","次","品","式","活","設","及","管","特","件","長","求","老","頭","基","資","邊","流","路","級","少","圖","山","統","接","知","較","將","組","見","計","別","她","手","角","期","根","論","運","農","指","幾","九","區","強","放","決","西","被","幹","做","必","戰","先","回","則","任","取","據","處","隊","南","給","色","光","門","即","保","治","北","造","百","規","熱","領","七","海","口","東","導","器","壓","志","世","金","增","爭","濟","階","油","思","術","極","交","受","聯","什","認","六","共","權","收","證","改","清","美","再","採","轉","更","單","風","切","打","白","教","速","花","帶","安","場","身","車","例","真","務","具","萬","每","目","至","達","走","積","示","議","聲","報","鬥","完","類","八","離","華","名","確","才","科","張","信","馬","節","話","米","整","空","元","況","今","集","溫","傳","土","許","步","群","廣","石","記","需","段","研","界","拉","林","律","叫","且","究","觀","越","織","裝","影","算","低","持","音","眾","書","布","复","容","兒","須","際","商","非","驗","連","斷","深","難","近","礦","千","週","委","素","技","備","半","辦","青","省","列","習","響","約","支","般","史","感","勞","便","團","往","酸","歷","市","克","何","除","消","構","府","稱","太","準","精","值","號","率","族","維","劃","選","標","寫","存","候","毛","親","快","效","斯","院","查","江","型","眼","王","按","格","養","易","置","派","層","片","始","卻","專","狀","育","廠","京","識","適","屬","圓","包","火","住","調","滿","縣","局","照","參","紅","細","引","聽","該","鐵","價","嚴","首","底","液","官","德","隨","病","蘇","失","爾","死","講","配","女","黃","推","顯","談","罪","神","藝","呢","席","含","企","望","密","批","營","項","防","舉","球","英","氧","勢","告","李","台","落","木","幫","輪","破","亞","師","圍","注","遠","字","材","排","供","河","態","封","另","施","減","樹","溶","怎","止","案","言","士","均","武","固","葉","魚","波","視","僅","費","緊","愛","左","章","早","朝","害","續","輕","服","試","食","充","兵","源","判","護","司","足","某","練","差","致","板","田","降","黑","犯","負","擊","范","繼","興","似","餘","堅","曲","輸","修","故","城","夫","夠","送","筆","船","佔","右","財","吃","富","春","職","覺","漢","畫","功","巴","跟","雖","雜","飛","檢","吸","助","昇","陽","互","初","創","抗","考","投","壞","策","古","徑","換","未","跑","留","鋼","曾","端","責","站","簡","述","錢","副","盡","帝","射","草","衝","承","獨","令","限","阿","宣","環","雙","請","超","微","讓","控","州","良","軸","找","否","紀","益","依","優","頂","礎","載","倒","房","突","坐","粉","敵","略","客","袁","冷","勝","絕","析","塊","劑","測","絲","協","訴","念","陳","仍","羅","鹽","友","洋","錯","苦","夜","刑","移","頻","逐","靠","混","母","短","皮","終","聚","汽","村","雲","哪","既","距","衛","停","烈","央","察","燒","迅","境","若","印","洲","刻","括","激","孔","搞","甚","室","待","核","校","散","侵","吧","甲","遊","久","菜","味","舊","模","湖","貨","損","預","阻","毫","普","穩","乙","媽","植","息","擴","銀","語","揮","酒","守","拿","序","紙","醫","缺","雨","嗎","針","劉","啊","急","唱","誤","訓","願","審","附","獲","茶","鮮","糧","斤","孩","脫","硫","肥","善","龍","演","父","漸","血","歡","械","掌","歌","沙","剛","攻","謂","盾","討","晚","粒","亂","燃","矛","乎","殺","藥","寧","魯","貴","鐘","煤","讀","班","伯","香","介","迫","句","豐","培","握","蘭","擔","弦","蛋","沉","假","穿","執","答","樂","誰","順","煙","縮","徵","臉","喜","松","腳","困","異","免","背","星","福","買","染","井","概","慢","怕","磁","倍","祖","皇","促","靜","補","評","翻","肉","踐","尼","衣","寬","揚","棉","希","傷","操","垂","秋","宜","氫","套","督","振","架","亮","末","憲","慶","編","牛","觸","映","雷","銷","詩","座","居","抓","裂","胞","呼","娘","景","威","綠","晶","厚","盟","衡","雞","孫","延","危","膠","屋","鄉","臨","陸","顧","掉","呀","燈","歲","措","束","耐","劇","玉","趙","跳","哥","季","課","凱","胡","額","款","紹","卷","齊","偉","蒸","殖","永","宗","苗","川","爐","岩","弱","零","楊","奏","沿","露","桿","探","滑","鎮","飯","濃","航","懷","趕","庫","奪","伊","靈","稅","途","滅","賽","歸","召","鼓","播","盤","裁","險","康","唯","錄","菌","純","借","糖","蓋","橫","符","私","努","堂","域","槍","潤","幅","哈","竟","熟","蟲","澤","腦","壤","碳","歐","遍","側","寨","敢","徹","慮","斜","薄","庭","納","彈","飼","伸","折","麥","濕","暗","荷","瓦","塞","床","築","惡","戶","訪","塔","奇","透","梁","刀","旋","跡","卡","氯","遇","份","毒","泥","退","洗","擺","灰","彩","賣","耗","夏","擇","忙","銅","獻","硬","予","繁","圈","雪","函","亦","抽","篇","陣","陰","丁","尺","追","堆","雄","迎","泛","爸","樓","避","謀","噸","野","豬","旗","累","偏","典","館","索","秦","脂","潮","爺","豆","忽","托","驚","塑","遺","愈","朱","替","纖","粗","傾","尚","痛","楚","謝","奮","購","磨","君","池","旁","碎","骨","監","捕","弟","暴","割","貫","殊","釋","詞","亡","壁","頓","寶","午","塵","聞","揭","炮","殘","冬","橋","婦","警","綜","招","吳","付","浮","遭","徐","您","搖","谷","贊","箱","隔","訂","男","吹","園","紛","唐","敗","宋","玻","巨","耕","坦","榮","閉","灣","鍵","凡","駐","鍋","救","恩","剝","凝","鹼","齒","截","煉","麻","紡","禁","廢","盛","版","緩","淨","睛","昌","婚","涉","筒","嘴","插","岸","朗","莊","街","藏","姑","貿","腐","奴","啦","慣","乘","夥","恢","勻","紗","扎","辯","耳","彪","臣","億","璃","抵","脈","秀","薩","俄","網","舞","店","噴","縱","寸","汗","掛","洪","賀","閃","柬","爆","烯","津","稻","牆","軟","勇","像","滾","厘","蒙","芳","肯","坡","柱","盪","腿","儀","旅","尾","軋","冰","貢","登","黎","削","鑽","勒","逃","障","氨","郭","峰","幣","港","伏","軌","畝","畢","擦","莫","刺","浪","秘","援","株","健","售","股","島","甘","泡","睡","童","鑄","湯","閥","休","匯","舍","牧","繞","炸","哲","磷","績","朋","淡","尖","啟","陷","柴","呈","徒","顏","淚","稍","忘","泵","藍","拖","洞","授","鏡","辛","壯","鋒","貧","虛","彎","摩","泰","幼","廷","尊","窗","綱","弄","隸","疑","氏","宮","姐","震","瑞","怪","尤","琴","循","描","膜","違","夾","腰","緣","珠","窮","森","枝","竹","溝","催","繩","憶","邦","剩","幸","漿","欄","擁","牙","貯","禮","濾","鈉","紋","罷","拍","咱","喊","袖","埃","勤","罰","焦","潛","伍","墨","欲","縫","姓","刊","飽","仿","獎","鋁","鬼","麗","跨","默","挖","鏈","掃","喝","袋","炭","污","幕","諸","弧","勵","梅","奶","潔","災","舟","鑑","苯","訟","抱","毀","懂","寒","智","埔","寄","屆","躍","渡","挑","丹","艱","貝","碰","拔","爹","戴","碼","夢","芽","熔","赤","漁","哭","敬","顆","奔","鉛","仲","虎","稀","妹","乏","珍","申","桌","遵","允","隆","螺","倉","魏","銳","曉","氮","兼","隱","礙","赫","撥","忠","肅","缸","牽","搶","博","巧","殼","兄","杜","訊","誠","碧","祥","柯","頁","巡","矩","悲","灌","齡","倫","票","尋","桂","鋪","聖","恐","恰","鄭","趣","抬","荒","騰","貼","柔","滴","猛","闊","輛","妻","填","撤","儲","簽","鬧","擾","紫","砂","遞","戲","吊","陶","伐","餵","療","瓶","婆","撫","臂","摸","忍","蝦","蠟","鄰","胸","鞏","擠","偶","棄","槽","勁","乳","鄧","吉","仁","爛","磚","租","烏","艦","伴","瓜","淺","丙","暫","燥","橡","柳","迷","暖","牌","秧","膽","詳","簧","踏","瓷","譜","呆","賓","糊","洛","輝","憤","競","隙","怒","粘","乃","緒","肩","籍","敏","塗","熙","皆","偵","懸","掘","享","糾","醒","狂","鎖","淀","恨","牲","霸","爬","賞","逆","玩","陵","祝","秒","浙","貌","役","彼","悉","鴨","趨","鳳","晨","畜","輩","秩","卵","署","梯","炎","灘","棋","驅","篩","峽","冒","啥","壽","譯","浸","泉","帽","遲","矽","疆","貸","漏","稿","冠","嫩","脅","芯","牢","叛","蝕","奧","鳴","嶺","羊","憑","串","塘","繪","酵","融","盆","錫","廟","籌","凍","輔","攝","襲","筋","拒","僚","旱","鉀","鳥","漆","沈","眉","疏","添","棒","穗","硝","韓","逼","扭","僑","涼","挺","碗","栽","炒","杯","患","餾","勸","豪","遼","勃","鴻","旦","吏","拜","狗","埋","輥","掩","飲","搬","罵","辭","勾","扣","估","蔣","絨","霧","丈","朵","姆","擬","宇","輯","陝","雕","償","蓄","崇","剪","倡","廳","咬","駛","薯","刷","斥","番","賦","奉","佛","澆","漫","曼","扇","鈣","桃","扶","仔","返","俗","虧","腔","鞋","棱","覆","框","悄","叔","撞","騙","勘","旺","沸","孤","吐","孟","渠","屈","疾","妙","惜","仰","狠","脹","諧","拋","黴","桑","崗","嘛","衰","盜","滲","臟","賴","湧","甜","曹","閱","肌","哩","厲","烴","緯","毅","昨","偽","症","煮","嘆","釘","搭","莖","籠","酷","偷","弓","錐","恆","傑","坑","鼻","翼","綸","敘","獄","逮","罐","絡","棚","抑","膨","蔬","寺","驟","穆","冶","枯","冊","屍","凸","紳","坯","犧","焰","轟","欣","晉","瘦","禦","錠","錦","喪","旬","鍛","壟","搜","撲","邀","亭","酯","邁","舒","脆","酶","閒","憂","酚","頑","羽","漲","卸","仗","陪","闢","懲","杭","姚","肚","捉","飄","漂","昆","欺","吾","郎","烷","汁","呵","飾","蕭","雅","郵","遷","燕","撒","姻","赴","宴","煩","債","帳","斑","鈴","旨","醇","董","餅","雛","姿","拌","傅","腹","妥","揉","賢","拆","歪","葡","胺","丟","浩","徽","昂","墊","擋","覽","貪","慰","繳","汪","慌","馮","諾","姜","誼","兇","劣","誣","耀","昏","躺","盈","騎","喬","溪","叢","盧","抹","悶","諮","刮","駕","纜","悟","摘","鉺","擲","頗","幻","柄","惠","慘","佳","仇","臘","窩","滌","劍","瞧","堡","潑","蔥","罩","霍","撈","胎","蒼","濱","倆","捅","湘","砍","霞","邵","萄","瘋","淮","遂","熊","糞","烘","宿","檔","戈","駁","嫂","裕","徙","箭","捐","腸","撐","曬","辨","殿","蓮","攤","攪","醬","屏","疫","哀","蔡","堵","沫","皺","暢","疊","閣","萊","敲","轄","鉤","痕","壩","巷","餓","禍","丘","玄","溜","曰","邏","彭","嘗","卿","妨","艇","吞","韋","怨","矮","歇"]
-},{}],124:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 module.exports=["abdikace","abeceda","adresa","agrese","akce","aktovka","alej","alkohol","amputace","ananas","andulka","anekdota","anketa","antika","anulovat","archa","arogance","asfalt","asistent","aspirace","astma","astronom","atlas","atletika","atol","autobus","azyl","babka","bachor","bacil","baculka","badatel","bageta","bagr","bahno","bakterie","balada","baletka","balkon","balonek","balvan","balza","bambus","bankomat","barbar","baret","barman","baroko","barva","baterka","batoh","bavlna","bazalka","bazilika","bazuka","bedna","beran","beseda","bestie","beton","bezinka","bezmoc","beztak","bicykl","bidlo","biftek","bikiny","bilance","biograf","biolog","bitva","bizon","blahobyt","blatouch","blecha","bledule","blesk","blikat","blizna","blokovat","bloudit","blud","bobek","bobr","bodlina","bodnout","bohatost","bojkot","bojovat","bokorys","bolest","borec","borovice","bota","boubel","bouchat","bouda","boule","bourat","boxer","bradavka","brambora","branka","bratr","brepta","briketa","brko","brloh","bronz","broskev","brunetka","brusinka","brzda","brzy","bublina","bubnovat","buchta","buditel","budka","budova","bufet","bujarost","bukvice","buldok","bulva","bunda","bunkr","burza","butik","buvol","buzola","bydlet","bylina","bytovka","bzukot","capart","carevna","cedr","cedule","cejch","cejn","cela","celer","celkem","celnice","cenina","cennost","cenovka","centrum","cenzor","cestopis","cetka","chalupa","chapadlo","charita","chata","chechtat","chemie","chichot","chirurg","chlad","chleba","chlubit","chmel","chmura","chobot","chochol","chodba","cholera","chomout","chopit","choroba","chov","chrapot","chrlit","chrt","chrup","chtivost","chudina","chutnat","chvat","chvilka","chvost","chyba","chystat","chytit","cibule","cigareta","cihelna","cihla","cinkot","cirkus","cisterna","citace","citrus","cizinec","cizost","clona","cokoliv","couvat","ctitel","ctnost","cudnost","cuketa","cukr","cupot","cvaknout","cval","cvik","cvrkot","cyklista","daleko","dareba","datel","datum","dcera","debata","dechovka","decibel","deficit","deflace","dekl","dekret","demokrat","deprese","derby","deska","detektiv","dikobraz","diktovat","dioda","diplom","disk","displej","divadlo","divoch","dlaha","dlouho","dluhopis","dnes","dobro","dobytek","docent","dochutit","dodnes","dohled","dohoda","dohra","dojem","dojnice","doklad","dokola","doktor","dokument","dolar","doleva","dolina","doma","dominant","domluvit","domov","donutit","dopad","dopis","doplnit","doposud","doprovod","dopustit","dorazit","dorost","dort","dosah","doslov","dostatek","dosud","dosyta","dotaz","dotek","dotknout","doufat","doutnat","dovozce","dozadu","doznat","dozorce","drahota","drak","dramatik","dravec","draze","drdol","drobnost","drogerie","drozd","drsnost","drtit","drzost","duben","duchovno","dudek","duha","duhovka","dusit","dusno","dutost","dvojice","dvorec","dynamit","ekolog","ekonomie","elektron","elipsa","email","emise","emoce","empatie","epizoda","epocha","epopej","epos","esej","esence","eskorta","eskymo","etiketa","euforie","evoluce","exekuce","exkurze","expedice","exploze","export","extrakt","facka","fajfka","fakulta","fanatik","fantazie","farmacie","favorit","fazole","federace","fejeton","fenka","fialka","figurant","filozof","filtr","finance","finta","fixace","fjord","flanel","flirt","flotila","fond","fosfor","fotbal","fotka","foton","frakce","freska","fronta","fukar","funkce","fyzika","galeje","garant","genetika","geolog","gilotina","glazura","glejt","golem","golfista","gotika","graf","gramofon","granule","grep","gril","grog","groteska","guma","hadice","hadr","hala","halenka","hanba","hanopis","harfa","harpuna","havran","hebkost","hejkal","hejno","hejtman","hektar","helma","hematom","herec","herna","heslo","hezky","historik","hladovka","hlasivky","hlava","hledat","hlen","hlodavec","hloh","hloupost","hltat","hlubina","hluchota","hmat","hmota","hmyz","hnis","hnojivo","hnout","hoblina","hoboj","hoch","hodiny","hodlat","hodnota","hodovat","hojnost","hokej","holinka","holka","holub","homole","honitba","honorace","horal","horda","horizont","horko","horlivec","hormon","hornina","horoskop","horstvo","hospoda","hostina","hotovost","houba","houf","houpat","houska","hovor","hradba","hranice","hravost","hrazda","hrbolek","hrdina","hrdlo","hrdost","hrnek","hrobka","hromada","hrot","hrouda","hrozen","hrstka","hrubost","hryzat","hubenost","hubnout","hudba","hukot","humr","husita","hustota","hvozd","hybnost","hydrant","hygiena","hymna","hysterik","idylka","ihned","ikona","iluze","imunita","infekce","inflace","inkaso","inovace","inspekce","internet","invalida","investor","inzerce","ironie","jablko","jachta","jahoda","jakmile","jakost","jalovec","jantar","jarmark","jaro","jasan","jasno","jatka","javor","jazyk","jedinec","jedle","jednatel","jehlan","jekot","jelen","jelito","jemnost","jenom","jepice","jeseter","jevit","jezdec","jezero","jinak","jindy","jinoch","jiskra","jistota","jitrnice","jizva","jmenovat","jogurt","jurta","kabaret","kabel","kabinet","kachna","kadet","kadidlo","kahan","kajak","kajuta","kakao","kaktus","kalamita","kalhoty","kalibr","kalnost","kamera","kamkoliv","kamna","kanibal","kanoe","kantor","kapalina","kapela","kapitola","kapka","kaple","kapota","kapr","kapusta","kapybara","karamel","karotka","karton","kasa","katalog","katedra","kauce","kauza","kavalec","kazajka","kazeta","kazivost","kdekoliv","kdesi","kedluben","kemp","keramika","kino","klacek","kladivo","klam","klapot","klasika","klaun","klec","klenba","klepat","klesnout","klid","klima","klisna","klobouk","klokan","klopa","kloub","klubovna","klusat","kluzkost","kmen","kmitat","kmotr","kniha","knot","koalice","koberec","kobka","kobliha","kobyla","kocour","kohout","kojenec","kokos","koktejl","kolaps","koleda","kolize","kolo","komando","kometa","komik","komnata","komora","kompas","komunita","konat","koncept","kondice","konec","konfese","kongres","konina","konkurs","kontakt","konzerva","kopanec","kopie","kopnout","koprovka","korbel","korektor","kormidlo","koroptev","korpus","koruna","koryto","korzet","kosatec","kostka","kotel","kotleta","kotoul","koukat","koupelna","kousek","kouzlo","kovboj","koza","kozoroh","krabice","krach","krajina","kralovat","krasopis","kravata","kredit","krejcar","kresba","kreveta","kriket","kritik","krize","krkavec","krmelec","krmivo","krocan","krok","kronika","kropit","kroupa","krovka","krtek","kruhadlo","krupice","krutost","krvinka","krychle","krypta","krystal","kryt","kudlanka","kufr","kujnost","kukla","kulajda","kulich","kulka","kulomet","kultura","kuna","kupodivu","kurt","kurzor","kutil","kvalita","kvasinka","kvestor","kynolog","kyselina","kytara","kytice","kytka","kytovec","kyvadlo","labrador","lachtan","ladnost","laik","lakomec","lamela","lampa","lanovka","lasice","laso","lastura","latinka","lavina","lebka","leckdy","leden","lednice","ledovka","ledvina","legenda","legie","legrace","lehce","lehkost","lehnout","lektvar","lenochod","lentilka","lepenka","lepidlo","letadlo","letec","letmo","letokruh","levhart","levitace","levobok","libra","lichotka","lidojed","lidskost","lihovina","lijavec","lilek","limetka","linie","linka","linoleum","listopad","litina","litovat","lobista","lodivod","logika","logoped","lokalita","loket","lomcovat","lopata","lopuch","lord","losos","lotr","loudal","louh","louka","louskat","lovec","lstivost","lucerna","lucifer","lump","lusk","lustrace","lvice","lyra","lyrika","lysina","madam","madlo","magistr","mahagon","majetek","majitel","majorita","makak","makovice","makrela","malba","malina","malovat","malvice","maminka","mandle","manko","marnost","masakr","maskot","masopust","matice","matrika","maturita","mazanec","mazivo","mazlit","mazurka","mdloba","mechanik","meditace","medovina","melasa","meloun","mentolka","metla","metoda","metr","mezera","migrace","mihnout","mihule","mikina","mikrofon","milenec","milimetr","milost","mimika","mincovna","minibar","minomet","minulost","miska","mistr","mixovat","mladost","mlha","mlhovina","mlok","mlsat","mluvit","mnich","mnohem","mobil","mocnost","modelka","modlitba","mohyla","mokro","molekula","momentka","monarcha","monokl","monstrum","montovat","monzun","mosaz","moskyt","most","motivace","motorka","motyka","moucha","moudrost","mozaika","mozek","mozol","mramor","mravenec","mrkev","mrtvola","mrzet","mrzutost","mstitel","mudrc","muflon","mulat","mumie","munice","muset","mutace","muzeum","muzikant","myslivec","mzda","nabourat","nachytat","nadace","nadbytek","nadhoz","nadobro","nadpis","nahlas","nahnat","nahodile","nahradit","naivita","najednou","najisto","najmout","naklonit","nakonec","nakrmit","nalevo","namazat","namluvit","nanometr","naoko","naopak","naostro","napadat","napevno","naplnit","napnout","naposled","naprosto","narodit","naruby","narychlo","nasadit","nasekat","naslepo","nastat","natolik","navenek","navrch","navzdory","nazvat","nebe","nechat","necky","nedaleko","nedbat","neduh","negace","nehet","nehoda","nejen","nejprve","neklid","nelibost","nemilost","nemoc","neochota","neonka","nepokoj","nerost","nerv","nesmysl","nesoulad","netvor","neuron","nevina","nezvykle","nicota","nijak","nikam","nikdy","nikl","nikterak","nitro","nocleh","nohavice","nominace","nora","norek","nositel","nosnost","nouze","noviny","novota","nozdra","nuda","nudle","nuget","nutit","nutnost","nutrie","nymfa","obal","obarvit","obava","obdiv","obec","obehnat","obejmout","obezita","obhajoba","obilnice","objasnit","objekt","obklopit","oblast","oblek","obliba","obloha","obluda","obnos","obohatit","obojek","obout","obrazec","obrna","obruba","obrys","obsah","obsluha","obstarat","obuv","obvaz","obvinit","obvod","obvykle","obyvatel","obzor","ocas","ocel","ocenit","ochladit","ochota","ochrana","ocitnout","odboj","odbyt","odchod","odcizit","odebrat","odeslat","odevzdat","odezva","odhadce","odhodit","odjet","odjinud","odkaz","odkoupit","odliv","odluka","odmlka","odolnost","odpad","odpis","odplout","odpor","odpustit","odpykat","odrazka","odsoudit","odstup","odsun","odtok","odtud","odvaha","odveta","odvolat","odvracet","odznak","ofina","ofsajd","ohlas","ohnisko","ohrada","ohrozit","ohryzek","okap","okenice","oklika","okno","okouzlit","okovy","okrasa","okres","okrsek","okruh","okupant","okurka","okusit","olejnina","olizovat","omak","omeleta","omezit","omladina","omlouvat","omluva","omyl","onehdy","opakovat","opasek","operace","opice","opilost","opisovat","opora","opozice","opravdu","oproti","orbital","orchestr","orgie","orlice","orloj","ortel","osada","oschnout","osika","osivo","oslava","oslepit","oslnit","oslovit","osnova","osoba","osolit","ospalec","osten","ostraha","ostuda","ostych","osvojit","oteplit","otisk","otop","otrhat","otrlost","otrok","otruby","otvor","ovanout","ovar","oves","ovlivnit","ovoce","oxid","ozdoba","pachatel","pacient","padouch","pahorek","pakt","palanda","palec","palivo","paluba","pamflet","pamlsek","panenka","panika","panna","panovat","panstvo","pantofle","paprika","parketa","parodie","parta","paruka","paryba","paseka","pasivita","pastelka","patent","patrona","pavouk","pazneht","pazourek","pecka","pedagog","pejsek","peklo","peloton","penalta","pendrek","penze","periskop","pero","pestrost","petarda","petice","petrolej","pevnina","pexeso","pianista","piha","pijavice","pikle","piknik","pilina","pilnost","pilulka","pinzeta","pipeta","pisatel","pistole","pitevna","pivnice","pivovar","placenta","plakat","plamen","planeta","plastika","platit","plavidlo","plaz","plech","plemeno","plenta","ples","pletivo","plevel","plivat","plnit","plno","plocha","plodina","plomba","plout","pluk","plyn","pobavit","pobyt","pochod","pocit","poctivec","podat","podcenit","podepsat","podhled","podivit","podklad","podmanit","podnik","podoba","podpora","podraz","podstata","podvod","podzim","poezie","pohanka","pohnutka","pohovor","pohroma","pohyb","pointa","pojistka","pojmout","pokazit","pokles","pokoj","pokrok","pokuta","pokyn","poledne","polibek","polknout","poloha","polynom","pomalu","pominout","pomlka","pomoc","pomsta","pomyslet","ponechat","ponorka","ponurost","popadat","popel","popisek","poplach","poprosit","popsat","popud","poradce","porce","porod","porucha","poryv","posadit","posed","posila","poskok","poslanec","posoudit","pospolu","postava","posudek","posyp","potah","potkan","potlesk","potomek","potrava","potupa","potvora","poukaz","pouto","pouzdro","povaha","povidla","povlak","povoz","povrch","povstat","povyk","povzdech","pozdrav","pozemek","poznatek","pozor","pozvat","pracovat","prahory","praktika","prales","praotec","praporek","prase","pravda","princip","prkno","probudit","procento","prodej","profese","prohra","projekt","prolomit","promile","pronikat","propad","prorok","prosba","proton","proutek","provaz","prskavka","prsten","prudkost","prut","prvek","prvohory","psanec","psovod","pstruh","ptactvo","puberta","puch","pudl","pukavec","puklina","pukrle","pult","pumpa","punc","pupen","pusa","pusinka","pustina","putovat","putyka","pyramida","pysk","pytel","racek","rachot","radiace","radnice","radon","raft","ragby","raketa","rakovina","rameno","rampouch","rande","rarach","rarita","rasovna","rastr","ratolest","razance","razidlo","reagovat","reakce","recept","redaktor","referent","reflex","rejnok","reklama","rekord","rekrut","rektor","reputace","revize","revma","revolver","rezerva","riskovat","riziko","robotika","rodokmen","rohovka","rokle","rokoko","romaneto","ropovod","ropucha","rorejs","rosol","rostlina","rotmistr","rotoped","rotunda","roubenka","roucho","roup","roura","rovina","rovnice","rozbor","rozchod","rozdat","rozeznat","rozhodce","rozinka","rozjezd","rozkaz","rozloha","rozmar","rozpad","rozruch","rozsah","roztok","rozum","rozvod","rubrika","ruchadlo","rukavice","rukopis","ryba","rybolov","rychlost","rydlo","rypadlo","rytina","ryzost","sadista","sahat","sako","samec","samizdat","samota","sanitka","sardinka","sasanka","satelit","sazba","sazenice","sbor","schovat","sebranka","secese","sedadlo","sediment","sedlo","sehnat","sejmout","sekera","sekta","sekunda","sekvoje","semeno","seno","servis","sesadit","seshora","seskok","seslat","sestra","sesuv","sesypat","setba","setina","setkat","setnout","setrvat","sever","seznam","shoda","shrnout","sifon","silnice","sirka","sirotek","sirup","situace","skafandr","skalisko","skanzen","skaut","skeptik","skica","skladba","sklenice","sklo","skluz","skoba","skokan","skoro","skripta","skrz","skupina","skvost","skvrna","slabika","sladidlo","slanina","slast","slavnost","sledovat","slepec","sleva","slezina","slib","slina","sliznice","slon","sloupek","slovo","sluch","sluha","slunce","slupka","slza","smaragd","smetana","smilstvo","smlouva","smog","smrad","smrk","smrtka","smutek","smysl","snad","snaha","snob","sobota","socha","sodovka","sokol","sopka","sotva","souboj","soucit","soudce","souhlas","soulad","soumrak","souprava","soused","soutok","souviset","spalovna","spasitel","spis","splav","spodek","spojenec","spolu","sponzor","spornost","spousta","sprcha","spustit","sranda","sraz","srdce","srna","srnec","srovnat","srpen","srst","srub","stanice","starosta","statika","stavba","stehno","stezka","stodola","stolek","stopa","storno","stoupat","strach","stres","strhnout","strom","struna","studna","stupnice","stvol","styk","subjekt","subtropy","suchar","sudost","sukno","sundat","sunout","surikata","surovina","svah","svalstvo","svetr","svatba","svazek","svisle","svitek","svoboda","svodidlo","svorka","svrab","sykavka","sykot","synek","synovec","sypat","sypkost","syrovost","sysel","sytost","tabletka","tabule","tahoun","tajemno","tajfun","tajga","tajit","tajnost","taktika","tamhle","tampon","tancovat","tanec","tanker","tapeta","tavenina","tazatel","technika","tehdy","tekutina","telefon","temnota","tendence","tenista","tenor","teplota","tepna","teprve","terapie","termoska","textil","ticho","tiskopis","titulek","tkadlec","tkanina","tlapka","tleskat","tlukot","tlupa","tmel","toaleta","topinka","topol","torzo","touha","toulec","tradice","traktor","tramp","trasa","traverza","trefit","trest","trezor","trhavina","trhlina","trochu","trojice","troska","trouba","trpce","trpitel","trpkost","trubec","truchlit","truhlice","trus","trvat","tudy","tuhnout","tuhost","tundra","turista","turnaj","tuzemsko","tvaroh","tvorba","tvrdost","tvrz","tygr","tykev","ubohost","uboze","ubrat","ubrousek","ubrus","ubytovna","ucho","uctivost","udivit","uhradit","ujednat","ujistit","ujmout","ukazatel","uklidnit","uklonit","ukotvit","ukrojit","ulice","ulita","ulovit","umyvadlo","unavit","uniforma","uniknout","upadnout","uplatnit","uplynout","upoutat","upravit","uran","urazit","usednout","usilovat","usmrtit","usnadnit","usnout","usoudit","ustlat","ustrnout","utahovat","utkat","utlumit","utonout","utopenec","utrousit","uvalit","uvolnit","uvozovka","uzdravit","uzel","uzenina","uzlina","uznat","vagon","valcha","valoun","vana","vandal","vanilka","varan","varhany","varovat","vcelku","vchod","vdova","vedro","vegetace","vejce","velbloud","veletrh","velitel","velmoc","velryba","venkov","veranda","verze","veselka","veskrze","vesnice","vespodu","vesta","veterina","veverka","vibrace","vichr","videohra","vidina","vidle","vila","vinice","viset","vitalita","vize","vizitka","vjezd","vklad","vkus","vlajka","vlak","vlasec","vlevo","vlhkost","vliv","vlnovka","vloupat","vnucovat","vnuk","voda","vodivost","vodoznak","vodstvo","vojensky","vojna","vojsko","volant","volba","volit","volno","voskovka","vozidlo","vozovna","vpravo","vrabec","vracet","vrah","vrata","vrba","vrcholek","vrhat","vrstva","vrtule","vsadit","vstoupit","vstup","vtip","vybavit","vybrat","vychovat","vydat","vydra","vyfotit","vyhledat","vyhnout","vyhodit","vyhradit","vyhubit","vyjasnit","vyjet","vyjmout","vyklopit","vykonat","vylekat","vymazat","vymezit","vymizet","vymyslet","vynechat","vynikat","vynutit","vypadat","vyplatit","vypravit","vypustit","vyrazit","vyrovnat","vyrvat","vyslovit","vysoko","vystavit","vysunout","vysypat","vytasit","vytesat","vytratit","vyvinout","vyvolat","vyvrhel","vyzdobit","vyznat","vzadu","vzbudit","vzchopit","vzdor","vzduch","vzdychat","vzestup","vzhledem","vzkaz","vzlykat","vznik","vzorek","vzpoura","vztah","vztek","xylofon","zabrat","zabydlet","zachovat","zadarmo","zadusit","zafoukat","zahltit","zahodit","zahrada","zahynout","zajatec","zajet","zajistit","zaklepat","zakoupit","zalepit","zamezit","zamotat","zamyslet","zanechat","zanikat","zaplatit","zapojit","zapsat","zarazit","zastavit","zasunout","zatajit","zatemnit","zatknout","zaujmout","zavalit","zavelet","zavinit","zavolat","zavrtat","zazvonit","zbavit","zbrusu","zbudovat","zbytek","zdaleka","zdarma","zdatnost","zdivo","zdobit","zdroj","zdvih","zdymadlo","zelenina","zeman","zemina","zeptat","zezadu","zezdola","zhatit","zhltnout","zhluboka","zhotovit","zhruba","zima","zimnice","zjemnit","zklamat","zkoumat","zkratka","zkumavka","zlato","zlehka","zloba","zlom","zlost","zlozvyk","zmapovat","zmar","zmatek","zmije","zmizet","zmocnit","zmodrat","zmrzlina","zmutovat","znak","znalost","znamenat","znovu","zobrazit","zotavit","zoubek","zoufale","zplodit","zpomalit","zprava","zprostit","zprudka","zprvu","zrada","zranit","zrcadlo","zrnitost","zrno","zrovna","zrychlit","zrzavost","zticha","ztratit","zubovina","zubr","zvednout","zvenku","zvesela","zvon","zvrat","zvukovod","zvyk"]
-},{}],125:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 module.exports=["abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse","access","accident","account","accuse","achieve","acid","acoustic","acquire","across","act","action","actor","actress","actual","adapt","add","addict","address","adjust","admit","adult","advance","advice","aerobic","affair","afford","afraid","again","age","agent","agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert","alien","all","alley","allow","almost","alone","alpha","already","also","alter","always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger","angle","angry","animal","ankle","announce","annual","another","answer","antenna","antique","anxiety","any","apart","apology","appear","apple","approve","april","arch","arctic","area","arena","argue","arm","armed","armor","army","around","arrange","arrest","arrive","arrow","art","artefact","artist","artwork","ask","aspect","assault","asset","assist","assume","asthma","athlete","atom","attack","attend","attitude","attract","auction","audit","august","aunt","author","auto","autumn","average","avocado","avoid","awake","aware","away","awesome","awful","awkward","axis","baby","bachelor","bacon","badge","bag","balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain","barrel","base","basic","basket","battle","beach","bean","beauty","because","become","beef","before","begin","behave","behind","believe","below","belt","bench","benefit","best","betray","better","between","beyond","bicycle","bid","bike","bind","biology","bird","birth","bitter","black","blade","blame","blanket","blast","bleak","bless","blind","blood","blossom","blouse","blue","blur","blush","board","boat","body","boil","bomb","bone","bonus","book","boost","border","boring","borrow","boss","bottom","bounce","box","boy","bracket","brain","brand","brass","brave","bread","breeze","brick","bridge","brief","bright","bring","brisk","broccoli","broken","bronze","broom","brother","brown","brush","bubble","buddy","budget","buffalo","build","bulb","bulk","bullet","bundle","bunker","burden","burger","burst","bus","business","busy","butter","buyer","buzz","cabbage","cabin","cable","cactus","cage","cake","call","calm","camera","camp","can","canal","cancel","candy","cannon","canoe","canvas","canyon","capable","capital","captain","car","carbon","card","cargo","carpet","carry","cart","case","cash","casino","castle","casual","cat","catalog","catch","category","cattle","caught","cause","caution","cave","ceiling","celery","cement","census","century","cereal","certain","chair","chalk","champion","change","chaos","chapter","charge","chase","chat","cheap","check","cheese","chef","cherry","chest","chicken","chief","child","chimney","choice","choose","chronic","chuckle","chunk","churn","cigar","cinnamon","circle","citizen","city","civil","claim","clap","clarify","claw","clay","clean","clerk","clever","click","client","cliff","climb","clinic","clip","clock","clog","close","cloth","cloud","clown","club","clump","cluster","clutch","coach","coast","coconut","code","coffee","coil","coin","collect","color","column","combine","come","comfort","comic","common","company","concert","conduct","confirm","congress","connect","consider","control","convince","cook","cool","copper","copy","coral","core","corn","correct","cost","cotton","couch","country","couple","course","cousin","cover","coyote","crack","cradle","craft","cram","crane","crash","crater","crawl","crazy","cream","credit","creek","crew","cricket","crime","crisp","critic","crop","cross","crouch","crowd","crucial","cruel","cruise","crumble","crunch","crush","cry","crystal","cube","culture","cup","cupboard","curious","current","curtain","curve","cushion","custom","cute","cycle","dad","damage","damp","dance","danger","daring","dash","daughter","dawn","day","deal","debate","debris","decade","december","decide","decline","decorate","decrease","deer","defense","define","defy","degree","delay","deliver","demand","demise","denial","dentist","deny","depart","depend","deposit","depth","deputy","derive","describe","desert","design","desk","despair","destroy","detail","detect","develop","device","devote","diagram","dial","diamond","diary","dice","diesel","diet","differ","digital","dignity","dilemma","dinner","dinosaur","direct","dirt","disagree","discover","disease","dish","dismiss","disorder","display","distance","divert","divide","divorce","dizzy","doctor","document","dog","doll","dolphin","domain","donate","donkey","donor","door","dose","double","dove","draft","dragon","drama","drastic","draw","dream","dress","drift","drill","drink","drip","drive","drop","drum","dry","duck","dumb","dune","during","dust","dutch","duty","dwarf","dynamic","eager","eagle","early","earn","earth","easily","east","easy","echo","ecology","economy","edge","edit","educate","effort","egg","eight","either","elbow","elder","electric","elegant","element","elephant","elevator","elite","else","embark","embody","embrace","emerge","emotion","employ","empower","empty","enable","enact","end","endless","endorse","enemy","energy","enforce","engage","engine","enhance","enjoy","enlist","enough","enrich","enroll","ensure","enter","entire","entry","envelope","episode","equal","equip","era","erase","erode","erosion","error","erupt","escape","essay","essence","estate","eternal","ethics","evidence","evil","evoke","evolve","exact","example","excess","exchange","excite","exclude","excuse","execute","exercise","exhaust","exhibit","exile","exist","exit","exotic","expand","expect","expire","explain","expose","express","extend","extra","eye","eyebrow","fabric","face","faculty","fade","faint","faith","fall","false","fame","family","famous","fan","fancy","fantasy","farm","fashion","fat","fatal","father","fatigue","fault","favorite","feature","february","federal","fee","feed","feel","female","fence","festival","fetch","fever","few","fiber","fiction","field","figure","file","film","filter","final","find","fine","finger","finish","fire","firm","first","fiscal","fish","fit","fitness","fix","flag","flame","flash","flat","flavor","flee","flight","flip","float","flock","floor","flower","fluid","flush","fly","foam","focus","fog","foil","fold","follow","food","foot","force","forest","forget","fork","fortune","forum","forward","fossil","foster","found","fox","fragile","frame","frequent","fresh","friend","fringe","frog","front","frost","frown","frozen","fruit","fuel","fun","funny","furnace","fury","future","gadget","gain","galaxy","gallery","game","gap","garage","garbage","garden","garlic","garment","gas","gasp","gate","gather","gauge","gaze","general","genius","genre","gentle","genuine","gesture","ghost","giant","gift","giggle","ginger","giraffe","girl","give","glad","glance","glare","glass","glide","glimpse","globe","gloom","glory","glove","glow","glue","goat","goddess","gold","good","goose","gorilla","gospel","gossip","govern","gown","grab","grace","grain","grant","grape","grass","gravity","great","green","grid","grief","grit","grocery","group","grow","grunt","guard","guess","guide","guilt","guitar","gun","gym","habit","hair","half","hammer","hamster","hand","happy","harbor","hard","harsh","harvest","hat","have","hawk","hazard","head","health","heart","heavy","hedgehog","height","hello","helmet","help","hen","hero","hidden","high","hill","hint","hip","hire","history","hobby","hockey","hold","hole","holiday","hollow","home","honey","hood","hope","horn","horror","horse","hospital","host","hotel","hour","hover","hub","huge","human","humble","humor","hundred","hungry","hunt","hurdle","hurry","hurt","husband","hybrid","ice","icon","idea","identify","idle","ignore","ill","illegal","illness","image","imitate","immense","immune","impact","impose","improve","impulse","inch","include","income","increase","index","indicate","indoor","industry","infant","inflict","inform","inhale","inherit","initial","inject","injury","inmate","inner","innocent","input","inquiry","insane","insect","inside","inspire","install","intact","interest","into","invest","invite","involve","iron","island","isolate","issue","item","ivory","jacket","jaguar","jar","jazz","jealous","jeans","jelly","jewel","job","join","joke","journey","joy","judge","juice","jump","jungle","junior","junk","just","kangaroo","keen","keep","ketchup","key","kick","kid","kidney","kind","kingdom","kiss","kit","kitchen","kite","kitten","kiwi","knee","knife","knock","know","lab","label","labor","ladder","lady","lake","lamp","language","laptop","large","later","latin","laugh","laundry","lava","law","lawn","lawsuit","layer","lazy","leader","leaf","learn","leave","lecture","left","leg","legal","legend","leisure","lemon","lend","length","lens","leopard","lesson","letter","level","liar","liberty","library","license","life","lift","light","like","limb","limit","link","lion","liquid","list","little","live","lizard","load","loan","lobster","local","lock","logic","lonely","long","loop","lottery","loud","lounge","love","loyal","lucky","luggage","lumber","lunar","lunch","luxury","lyrics","machine","mad","magic","magnet","maid","mail","main","major","make","mammal","man","manage","mandate","mango","mansion","manual","maple","marble","march","margin","marine","market","marriage","mask","mass","master","match","material","math","matrix","matter","maximum","maze","meadow","mean","measure","meat","mechanic","medal","media","melody","melt","member","memory","mention","menu","mercy","merge","merit","merry","mesh","message","metal","method","middle","midnight","milk","million","mimic","mind","minimum","minor","minute","miracle","mirror","misery","miss","mistake","mix","mixed","mixture","mobile","model","modify","mom","moment","monitor","monkey","monster","month","moon","moral","more","morning","mosquito","mother","motion","motor","mountain","mouse","move","movie","much","muffin","mule","multiply","muscle","museum","mushroom","music","must","mutual","myself","mystery","myth","naive","name","napkin","narrow","nasty","nation","nature","near","neck","need","negative","neglect","neither","nephew","nerve","nest","net","network","neutral","never","news","next","nice","night","noble","noise","nominee","noodle","normal","north","nose","notable","note","nothing","notice","novel","now","nuclear","number","nurse","nut","oak","obey","object","oblige","obscure","observe","obtain","obvious","occur","ocean","october","odor","off","offer","office","often","oil","okay","old","olive","olympic","omit","once","one","onion","online","only","open","opera","opinion","oppose","option","orange","orbit","orchard","order","ordinary","organ","orient","original","orphan","ostrich","other","outdoor","outer","output","outside","oval","oven","over","own","owner","oxygen","oyster","ozone","pact","paddle","page","pair","palace","palm","panda","panel","panic","panther","paper","parade","parent","park","parrot","party","pass","patch","path","patient","patrol","pattern","pause","pave","payment","peace","peanut","pear","peasant","pelican","pen","penalty","pencil","people","pepper","perfect","permit","person","pet","phone","photo","phrase","physical","piano","picnic","picture","piece","pig","pigeon","pill","pilot","pink","pioneer","pipe","pistol","pitch","pizza","place","planet","plastic","plate","play","please","pledge","pluck","plug","plunge","poem","poet","point","polar","pole","police","pond","pony","pool","popular","portion","position","possible","post","potato","pottery","poverty","powder","power","practice","praise","predict","prefer","prepare","present","pretty","prevent","price","pride","primary","print","priority","prison","private","prize","problem","process","produce","profit","program","project","promote","proof","property","prosper","protect","proud","provide","public","pudding","pull","pulp","pulse","pumpkin","punch","pupil","puppy","purchase","purity","purpose","purse","push","put","puzzle","pyramid","quality","quantum","quarter","question","quick","quit","quiz","quote","rabbit","raccoon","race","rack","radar","radio","rail","rain","raise","rally","ramp","ranch","random","range","rapid","rare","rate","rather","raven","raw","razor","ready","real","reason","rebel","rebuild","recall","receive","recipe","record","recycle","reduce","reflect","reform","refuse","region","regret","regular","reject","relax","release","relief","rely","remain","remember","remind","remove","render","renew","rent","reopen","repair","repeat","replace","report","require","rescue","resemble","resist","resource","response","result","retire","retreat","return","reunion","reveal","review","reward","rhythm","rib","ribbon","rice","rich","ride","ridge","rifle","right","rigid","ring","riot","ripple","risk","ritual","rival","river","road","roast","robot","robust","rocket","romance","roof","rookie","room","rose","rotate","rough","round","route","royal","rubber","rude","rug","rule","run","runway","rural","sad","saddle","sadness","safe","sail","salad","salmon","salon","salt","salute","same","sample","sand","satisfy","satoshi","sauce","sausage","save","say","scale","scan","scare","scatter","scene","scheme","school","science","scissors","scorpion","scout","scrap","screen","script","scrub","sea","search","season","seat","second","secret","section","security","seed","seek","segment","select","sell","seminar","senior","sense","sentence","series","service","session","settle","setup","seven","shadow","shaft","shallow","share","shed","shell","sheriff","shield","shift","shine","ship","shiver","shock","shoe","shoot","shop","short","shoulder","shove","shrimp","shrug","shuffle","shy","sibling","sick","side","siege","sight","sign","silent","silk","silly","silver","similar","simple","since","sing","siren","sister","situate","six","size","skate","sketch","ski","skill","skin","skirt","skull","slab","slam","sleep","slender","slice","slide","slight","slim","slogan","slot","slow","slush","small","smart","smile","smoke","smooth","snack","snake","snap","sniff","snow","soap","soccer","social","sock","soda","soft","solar","soldier","solid","solution","solve","someone","song","soon","sorry","sort","soul","sound","soup","source","south","space","spare","spatial","spawn","speak","special","speed","spell","spend","sphere","spice","spider","spike","spin","spirit","split","spoil","sponsor","spoon","sport","spot","spray","spread","spring","spy","square","squeeze","squirrel","stable","stadium","staff","stage","stairs","stamp","stand","start","state","stay","steak","steel","stem","step","stereo","stick","still","sting","stock","stomach","stone","stool","story","stove","strategy","street","strike","strong","struggle","student","stuff","stumble","style","subject","submit","subway","success","such","sudden","suffer","sugar","suggest","suit","summer","sun","sunny","sunset","super","supply","supreme","sure","surface","surge","surprise","surround","survey","suspect","sustain","swallow","swamp","swap","swarm","swear","sweet","swift","swim","swing","switch","sword","symbol","symptom","syrup","system","table","tackle","tag","tail","talent","talk","tank","tape","target","task","taste","tattoo","taxi","teach","team","tell","ten","tenant","tennis","tent","term","test","text","thank","that","theme","then","theory","there","they","thing","this","thought","three","thrive","throw","thumb","thunder","ticket","tide","tiger","tilt","timber","time","tiny","tip","tired","tissue","title","toast","tobacco","today","toddler","toe","together","toilet","token","tomato","tomorrow","tone","tongue","tonight","tool","tooth","top","topic","topple","torch","tornado","tortoise","toss","total","tourist","toward","tower","town","toy","track","trade","traffic","tragic","train","transfer","trap","trash","travel","tray","treat","tree","trend","trial","tribe","trick","trigger","trim","trip","trophy","trouble","truck","true","truly","trumpet","trust","truth","try","tube","tuition","tumble","tuna","tunnel","turkey","turn","turtle","twelve","twenty","twice","twin","twist","two","type","typical","ugly","umbrella","unable","unaware","uncle","uncover","under","undo","unfair","unfold","unhappy","uniform","unique","unit","universe","unknown","unlock","until","unusual","unveil","update","upgrade","uphold","upon","upper","upset","urban","urge","usage","use","used","useful","useless","usual","utility","vacant","vacuum","vague","valid","valley","valve","van","vanish","vapor","various","vast","vault","vehicle","velvet","vendor","venture","venue","verb","verify","version","very","vessel","veteran","viable","vibrant","vicious","victory","video","view","village","vintage","violin","virtual","virus","visa","visit","visual","vital","vivid","vocal","voice","void","volcano","volume","vote","voyage","wage","wagon","wait","walk","wall","walnut","want","warfare","warm","warrior","wash","wasp","waste","water","wave","way","wealth","weapon","wear","weasel","weather","web","wedding","weekend","weird","welcome","west","wet","whale","what","wheat","wheel","when","where","whip","whisper","wide","width","wife","wild","will","win","window","wine","wing","wink","winner","winter","wire","wisdom","wise","wish","witness","wolf","woman","wonder","wood","wool","word","work","world","worry","worth","wrap","wreck","wrestle","wrist","write","wrong","yard","year","yellow","you","young","youth","zebra","zero","zone","zoo"]
-},{}],126:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 module.exports=["abaisser","abandon","abdiquer","abeille","abolir","aborder","aboutir","aboyer","abrasif","abreuver","abriter","abroger","abrupt","absence","absolu","absurde","abusif","abyssal","académie","acajou","acarien","accabler","accepter","acclamer","accolade","accroche","accuser","acerbe","achat","acheter","aciduler","acier","acompte","acquérir","acronyme","acteur","actif","actuel","adepte","adéquat","adhésif","adjectif","adjuger","admettre","admirer","adopter","adorer","adoucir","adresse","adroit","adulte","adverbe","aérer","aéronef","affaire","affecter","affiche","affreux","affubler","agacer","agencer","agile","agiter","agrafer","agréable","agrume","aider","aiguille","ailier","aimable","aisance","ajouter","ajuster","alarmer","alchimie","alerte","algèbre","algue","aliéner","aliment","alléger","alliage","allouer","allumer","alourdir","alpaga","altesse","alvéole","amateur","ambigu","ambre","aménager","amertume","amidon","amiral","amorcer","amour","amovible","amphibie","ampleur","amusant","analyse","anaphore","anarchie","anatomie","ancien","anéantir","angle","angoisse","anguleux","animal","annexer","annonce","annuel","anodin","anomalie","anonyme","anormal","antenne","antidote","anxieux","apaiser","apéritif","aplanir","apologie","appareil","appeler","apporter","appuyer","aquarium","aqueduc","arbitre","arbuste","ardeur","ardoise","argent","arlequin","armature","armement","armoire","armure","arpenter","arracher","arriver","arroser","arsenic","artériel","article","aspect","asphalte","aspirer","assaut","asservir","assiette","associer","assurer","asticot","astre","astuce","atelier","atome","atrium","atroce","attaque","attentif","attirer","attraper","aubaine","auberge","audace","audible","augurer","aurore","automne","autruche","avaler","avancer","avarice","avenir","averse","aveugle","aviateur","avide","avion","aviser","avoine","avouer","avril","axial","axiome","badge","bafouer","bagage","baguette","baignade","balancer","balcon","baleine","balisage","bambin","bancaire","bandage","banlieue","bannière","banquier","barbier","baril","baron","barque","barrage","bassin","bastion","bataille","bateau","batterie","baudrier","bavarder","belette","bélier","belote","bénéfice","berceau","berger","berline","bermuda","besace","besogne","bétail","beurre","biberon","bicycle","bidule","bijou","bilan","bilingue","billard","binaire","biologie","biopsie","biotype","biscuit","bison","bistouri","bitume","bizarre","blafard","blague","blanchir","blessant","blinder","blond","bloquer","blouson","bobard","bobine","boire","boiser","bolide","bonbon","bondir","bonheur","bonifier","bonus","bordure","borne","botte","boucle","boueux","bougie","boulon","bouquin","bourse","boussole","boutique","boxeur","branche","brasier","brave","brebis","brèche","breuvage","bricoler","brigade","brillant","brioche","brique","brochure","broder","bronzer","brousse","broyeur","brume","brusque","brutal","bruyant","buffle","buisson","bulletin","bureau","burin","bustier","butiner","butoir","buvable","buvette","cabanon","cabine","cachette","cadeau","cadre","caféine","caillou","caisson","calculer","calepin","calibre","calmer","calomnie","calvaire","camarade","caméra","camion","campagne","canal","caneton","canon","cantine","canular","capable","caporal","caprice","capsule","capter","capuche","carabine","carbone","caresser","caribou","carnage","carotte","carreau","carton","cascade","casier","casque","cassure","causer","caution","cavalier","caverne","caviar","cédille","ceinture","céleste","cellule","cendrier","censurer","central","cercle","cérébral","cerise","cerner","cerveau","cesser","chagrin","chaise","chaleur","chambre","chance","chapitre","charbon","chasseur","chaton","chausson","chavirer","chemise","chenille","chéquier","chercher","cheval","chien","chiffre","chignon","chimère","chiot","chlorure","chocolat","choisir","chose","chouette","chrome","chute","cigare","cigogne","cimenter","cinéma","cintrer","circuler","cirer","cirque","citerne","citoyen","citron","civil","clairon","clameur","claquer","classe","clavier","client","cligner","climat","clivage","cloche","clonage","cloporte","cobalt","cobra","cocasse","cocotier","coder","codifier","coffre","cogner","cohésion","coiffer","coincer","colère","colibri","colline","colmater","colonel","combat","comédie","commande","compact","concert","conduire","confier","congeler","connoter","consonne","contact","convexe","copain","copie","corail","corbeau","cordage","corniche","corpus","correct","cortège","cosmique","costume","coton","coude","coupure","courage","couteau","couvrir","coyote","crabe","crainte","cravate","crayon","créature","créditer","crémeux","creuser","crevette","cribler","crier","cristal","critère","croire","croquer","crotale","crucial","cruel","crypter","cubique","cueillir","cuillère","cuisine","cuivre","culminer","cultiver","cumuler","cupide","curatif","curseur","cyanure","cycle","cylindre","cynique","daigner","damier","danger","danseur","dauphin","débattre","débiter","déborder","débrider","débutant","décaler","décembre","déchirer","décider","déclarer","décorer","décrire","décupler","dédale","déductif","déesse","défensif","défiler","défrayer","dégager","dégivrer","déglutir","dégrafer","déjeuner","délice","déloger","demander","demeurer","démolir","dénicher","dénouer","dentelle","dénuder","départ","dépenser","déphaser","déplacer","déposer","déranger","dérober","désastre","descente","désert","désigner","désobéir","dessiner","destrier","détacher","détester","détourer","détresse","devancer","devenir","deviner","devoir","diable","dialogue","diamant","dicter","différer","digérer","digital","digne","diluer","dimanche","diminuer","dioxyde","directif","diriger","discuter","disposer","dissiper","distance","divertir","diviser","docile","docteur","dogme","doigt","domaine","domicile","dompter","donateur","donjon","donner","dopamine","dortoir","dorure","dosage","doseur","dossier","dotation","douanier","double","douceur","douter","doyen","dragon","draper","dresser","dribbler","droiture","duperie","duplexe","durable","durcir","dynastie","éblouir","écarter","écharpe","échelle","éclairer","éclipse","éclore","écluse","école","économie","écorce","écouter","écraser","écrémer","écrivain","écrou","écume","écureuil","édifier","éduquer","effacer","effectif","effigie","effort","effrayer","effusion","égaliser","égarer","éjecter","élaborer","élargir","électron","élégant","éléphant","élève","éligible","élitisme","éloge","élucider","éluder","emballer","embellir","embryon","émeraude","émission","emmener","émotion","émouvoir","empereur","employer","emporter","emprise","émulsion","encadrer","enchère","enclave","encoche","endiguer","endosser","endroit","enduire","énergie","enfance","enfermer","enfouir","engager","engin","englober","énigme","enjamber","enjeu","enlever","ennemi","ennuyeux","enrichir","enrobage","enseigne","entasser","entendre","entier","entourer","entraver","énumérer","envahir","enviable","envoyer","enzyme","éolien","épaissir","épargne","épatant","épaule","épicerie","épidémie","épier","épilogue","épine","épisode","épitaphe","époque","épreuve","éprouver","épuisant","équerre","équipe","ériger","érosion","erreur","éruption","escalier","espadon","espèce","espiègle","espoir","esprit","esquiver","essayer","essence","essieu","essorer","estime","estomac","estrade","étagère","étaler","étanche","étatique","éteindre","étendoir","éternel","éthanol","éthique","ethnie","étirer","étoffer","étoile","étonnant","étourdir","étrange","étroit","étude","euphorie","évaluer","évasion","éventail","évidence","éviter","évolutif","évoquer","exact","exagérer","exaucer","exceller","excitant","exclusif","excuse","exécuter","exemple","exercer","exhaler","exhorter","exigence","exiler","exister","exotique","expédier","explorer","exposer","exprimer","exquis","extensif","extraire","exulter","fable","fabuleux","facette","facile","facture","faiblir","falaise","fameux","famille","farceur","farfelu","farine","farouche","fasciner","fatal","fatigue","faucon","fautif","faveur","favori","fébrile","féconder","fédérer","félin","femme","fémur","fendoir","féodal","fermer","féroce","ferveur","festival","feuille","feutre","février","fiasco","ficeler","fictif","fidèle","figure","filature","filetage","filière","filleul","filmer","filou","filtrer","financer","finir","fiole","firme","fissure","fixer","flairer","flamme","flasque","flatteur","fléau","flèche","fleur","flexion","flocon","flore","fluctuer","fluide","fluvial","folie","fonderie","fongible","fontaine","forcer","forgeron","formuler","fortune","fossile","foudre","fougère","fouiller","foulure","fourmi","fragile","fraise","franchir","frapper","frayeur","frégate","freiner","frelon","frémir","frénésie","frère","friable","friction","frisson","frivole","froid","fromage","frontal","frotter","fruit","fugitif","fuite","fureur","furieux","furtif","fusion","futur","gagner","galaxie","galerie","gambader","garantir","gardien","garnir","garrigue","gazelle","gazon","géant","gélatine","gélule","gendarme","général","génie","genou","gentil","géologie","géomètre","géranium","germe","gestuel","geyser","gibier","gicler","girafe","givre","glace","glaive","glisser","globe","gloire","glorieux","golfeur","gomme","gonfler","gorge","gorille","goudron","gouffre","goulot","goupille","gourmand","goutte","graduel","graffiti","graine","grand","grappin","gratuit","gravir","grenat","griffure","griller","grimper","grogner","gronder","grotte","groupe","gruger","grutier","gruyère","guépard","guerrier","guide","guimauve","guitare","gustatif","gymnaste","gyrostat","habitude","hachoir","halte","hameau","hangar","hanneton","haricot","harmonie","harpon","hasard","hélium","hématome","herbe","hérisson","hermine","héron","hésiter","heureux","hiberner","hibou","hilarant","histoire","hiver","homard","hommage","homogène","honneur","honorer","honteux","horde","horizon","horloge","hormone","horrible","houleux","housse","hublot","huileux","humain","humble","humide","humour","hurler","hydromel","hygiène","hymne","hypnose","idylle","ignorer","iguane","illicite","illusion","image","imbiber","imiter","immense","immobile","immuable","impact","impérial","implorer","imposer","imprimer","imputer","incarner","incendie","incident","incliner","incolore","indexer","indice","inductif","inédit","ineptie","inexact","infini","infliger","informer","infusion","ingérer","inhaler","inhiber","injecter","injure","innocent","inoculer","inonder","inscrire","insecte","insigne","insolite","inspirer","instinct","insulter","intact","intense","intime","intrigue","intuitif","inutile","invasion","inventer","inviter","invoquer","ironique","irradier","irréel","irriter","isoler","ivoire","ivresse","jaguar","jaillir","jambe","janvier","jardin","jauger","jaune","javelot","jetable","jeton","jeudi","jeunesse","joindre","joncher","jongler","joueur","jouissif","journal","jovial","joyau","joyeux","jubiler","jugement","junior","jupon","juriste","justice","juteux","juvénile","kayak","kimono","kiosque","label","labial","labourer","lacérer","lactose","lagune","laine","laisser","laitier","lambeau","lamelle","lampe","lanceur","langage","lanterne","lapin","largeur","larme","laurier","lavabo","lavoir","lecture","légal","léger","légume","lessive","lettre","levier","lexique","lézard","liasse","libérer","libre","licence","licorne","liège","lièvre","ligature","ligoter","ligue","limer","limite","limonade","limpide","linéaire","lingot","lionceau","liquide","lisière","lister","lithium","litige","littoral","livreur","logique","lointain","loisir","lombric","loterie","louer","lourd","loutre","louve","loyal","lubie","lucide","lucratif","lueur","lugubre","luisant","lumière","lunaire","lundi","luron","lutter","luxueux","machine","magasin","magenta","magique","maigre","maillon","maintien","mairie","maison","majorer","malaxer","maléfice","malheur","malice","mallette","mammouth","mandater","maniable","manquant","manteau","manuel","marathon","marbre","marchand","mardi","maritime","marqueur","marron","marteler","mascotte","massif","matériel","matière","matraque","maudire","maussade","mauve","maximal","méchant","méconnu","médaille","médecin","méditer","méduse","meilleur","mélange","mélodie","membre","mémoire","menacer","mener","menhir","mensonge","mentor","mercredi","mérite","merle","messager","mesure","métal","météore","méthode","métier","meuble","miauler","microbe","miette","mignon","migrer","milieu","million","mimique","mince","minéral","minimal","minorer","minute","miracle","miroiter","missile","mixte","mobile","moderne","moelleux","mondial","moniteur","monnaie","monotone","monstre","montagne","monument","moqueur","morceau","morsure","mortier","moteur","motif","mouche","moufle","moulin","mousson","mouton","mouvant","multiple","munition","muraille","murène","murmure","muscle","muséum","musicien","mutation","muter","mutuel","myriade","myrtille","mystère","mythique","nageur","nappe","narquois","narrer","natation","nation","nature","naufrage","nautique","navire","nébuleux","nectar","néfaste","négation","négliger","négocier","neige","nerveux","nettoyer","neurone","neutron","neveu","niche","nickel","nitrate","niveau","noble","nocif","nocturne","noirceur","noisette","nomade","nombreux","nommer","normatif","notable","notifier","notoire","nourrir","nouveau","novateur","novembre","novice","nuage","nuancer","nuire","nuisible","numéro","nuptial","nuque","nutritif","obéir","objectif","obliger","obscur","observer","obstacle","obtenir","obturer","occasion","occuper","océan","octobre","octroyer","octupler","oculaire","odeur","odorant","offenser","officier","offrir","ogive","oiseau","oisillon","olfactif","olivier","ombrage","omettre","onctueux","onduler","onéreux","onirique","opale","opaque","opérer","opinion","opportun","opprimer","opter","optique","orageux","orange","orbite","ordonner","oreille","organe","orgueil","orifice","ornement","orque","ortie","osciller","osmose","ossature","otarie","ouragan","ourson","outil","outrager","ouvrage","ovation","oxyde","oxygène","ozone","paisible","palace","palmarès","palourde","palper","panache","panda","pangolin","paniquer","panneau","panorama","pantalon","papaye","papier","papoter","papyrus","paradoxe","parcelle","paresse","parfumer","parler","parole","parrain","parsemer","partager","parure","parvenir","passion","pastèque","paternel","patience","patron","pavillon","pavoiser","payer","paysage","peigne","peintre","pelage","pélican","pelle","pelouse","peluche","pendule","pénétrer","pénible","pensif","pénurie","pépite","péplum","perdrix","perforer","période","permuter","perplexe","persil","perte","peser","pétale","petit","pétrir","peuple","pharaon","phobie","phoque","photon","phrase","physique","piano","pictural","pièce","pierre","pieuvre","pilote","pinceau","pipette","piquer","pirogue","piscine","piston","pivoter","pixel","pizza","placard","plafond","plaisir","planer","plaque","plastron","plateau","pleurer","plexus","pliage","plomb","plonger","pluie","plumage","pochette","poésie","poète","pointe","poirier","poisson","poivre","polaire","policier","pollen","polygone","pommade","pompier","ponctuel","pondérer","poney","portique","position","posséder","posture","potager","poteau","potion","pouce","poulain","poumon","pourpre","poussin","pouvoir","prairie","pratique","précieux","prédire","préfixe","prélude","prénom","présence","prétexte","prévoir","primitif","prince","prison","priver","problème","procéder","prodige","profond","progrès","proie","projeter","prologue","promener","propre","prospère","protéger","prouesse","proverbe","prudence","pruneau","psychose","public","puceron","puiser","pulpe","pulsar","punaise","punitif","pupitre","purifier","puzzle","pyramide","quasar","querelle","question","quiétude","quitter","quotient","racine","raconter","radieux","ragondin","raideur","raisin","ralentir","rallonge","ramasser","rapide","rasage","ratisser","ravager","ravin","rayonner","réactif","réagir","réaliser","réanimer","recevoir","réciter","réclamer","récolter","recruter","reculer","recycler","rédiger","redouter","refaire","réflexe","réformer","refrain","refuge","régalien","région","réglage","régulier","réitérer","rejeter","rejouer","relatif","relever","relief","remarque","remède","remise","remonter","remplir","remuer","renard","renfort","renifler","renoncer","rentrer","renvoi","replier","reporter","reprise","reptile","requin","réserve","résineux","résoudre","respect","rester","résultat","rétablir","retenir","réticule","retomber","retracer","réunion","réussir","revanche","revivre","révolte","révulsif","richesse","rideau","rieur","rigide","rigoler","rincer","riposter","risible","risque","rituel","rival","rivière","rocheux","romance","rompre","ronce","rondin","roseau","rosier","rotatif","rotor","rotule","rouge","rouille","rouleau","routine","royaume","ruban","rubis","ruche","ruelle","rugueux","ruiner","ruisseau","ruser","rustique","rythme","sabler","saboter","sabre","sacoche","safari","sagesse","saisir","salade","salive","salon","saluer","samedi","sanction","sanglier","sarcasme","sardine","saturer","saugrenu","saumon","sauter","sauvage","savant","savonner","scalpel","scandale","scélérat","scénario","sceptre","schéma","science","scinder","score","scrutin","sculpter","séance","sécable","sécher","secouer","sécréter","sédatif","séduire","seigneur","séjour","sélectif","semaine","sembler","semence","séminal","sénateur","sensible","sentence","séparer","séquence","serein","sergent","sérieux","serrure","sérum","service","sésame","sévir","sevrage","sextuple","sidéral","siècle","siéger","siffler","sigle","signal","silence","silicium","simple","sincère","sinistre","siphon","sirop","sismique","situer","skier","social","socle","sodium","soigneux","soldat","soleil","solitude","soluble","sombre","sommeil","somnoler","sonde","songeur","sonnette","sonore","sorcier","sortir","sosie","sottise","soucieux","soudure","souffle","soulever","soupape","source","soutirer","souvenir","spacieux","spatial","spécial","sphère","spiral","stable","station","sternum","stimulus","stipuler","strict","studieux","stupeur","styliste","sublime","substrat","subtil","subvenir","succès","sucre","suffixe","suggérer","suiveur","sulfate","superbe","supplier","surface","suricate","surmener","surprise","sursaut","survie","suspect","syllabe","symbole","symétrie","synapse","syntaxe","système","tabac","tablier","tactile","tailler","talent","talisman","talonner","tambour","tamiser","tangible","tapis","taquiner","tarder","tarif","tartine","tasse","tatami","tatouage","taupe","taureau","taxer","témoin","temporel","tenaille","tendre","teneur","tenir","tension","terminer","terne","terrible","tétine","texte","thème","théorie","thérapie","thorax","tibia","tiède","timide","tirelire","tiroir","tissu","titane","titre","tituber","toboggan","tolérant","tomate","tonique","tonneau","toponyme","torche","tordre","tornade","torpille","torrent","torse","tortue","totem","toucher","tournage","tousser","toxine","traction","trafic","tragique","trahir","train","trancher","travail","trèfle","tremper","trésor","treuil","triage","tribunal","tricoter","trilogie","triomphe","tripler","triturer","trivial","trombone","tronc","tropical","troupeau","tuile","tulipe","tumulte","tunnel","turbine","tuteur","tutoyer","tuyau","tympan","typhon","typique","tyran","ubuesque","ultime","ultrason","unanime","unifier","union","unique","unitaire","univers","uranium","urbain","urticant","usage","usine","usuel","usure","utile","utopie","vacarme","vaccin","vagabond","vague","vaillant","vaincre","vaisseau","valable","valise","vallon","valve","vampire","vanille","vapeur","varier","vaseux","vassal","vaste","vecteur","vedette","végétal","véhicule","veinard","véloce","vendredi","vénérer","venger","venimeux","ventouse","verdure","vérin","vernir","verrou","verser","vertu","veston","vétéran","vétuste","vexant","vexer","viaduc","viande","victoire","vidange","vidéo","vignette","vigueur","vilain","village","vinaigre","violon","vipère","virement","virtuose","virus","visage","viseur","vision","visqueux","visuel","vital","vitesse","viticole","vitrine","vivace","vivipare","vocation","voguer","voile","voisin","voiture","volaille","volcan","voltiger","volume","vorace","vortex","voter","vouloir","voyage","voyelle","wagon","xénon","yacht","zèbre","zénith","zeste","zoologie"]
-},{}],127:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 // note all JSON files in this folder are generated with npm run generate-wordlist
 const lookup = require('./lookup.json')
 
@@ -26596,23 +27136,23 @@ function detectLanguage (words) {
   return candidate[0]
 }
 
-},{"./chinese_simplified.json":122,"./chinese_traditional.json":123,"./czech.json":124,"./english.json":125,"./french.json":126,"./italian.json":128,"./japanese.json":129,"./korean.json":130,"./lookup.json":131,"./portuguese.json":132,"./russian.json":133,"./spanish.json":134,"./turkish.json":135}],128:[function(require,module,exports){
+},{"./chinese_simplified.json":136,"./chinese_traditional.json":137,"./czech.json":138,"./english.json":139,"./french.json":140,"./italian.json":142,"./japanese.json":143,"./korean.json":144,"./lookup.json":145,"./portuguese.json":146,"./russian.json":147,"./spanish.json":148,"./turkish.json":149}],142:[function(require,module,exports){
 module.exports=["abaco","abbaglio","abbinato","abete","abisso","abolire","abrasivo","abrogato","accadere","accenno","accusato","acetone","achille","acido","acqua","acre","acrilico","acrobata","acuto","adagio","addebito","addome","adeguato","aderire","adipe","adottare","adulare","affabile","affetto","affisso","affranto","aforisma","afoso","africano","agave","agente","agevole","aggancio","agire","agitare","agonismo","agricolo","agrumeto","aguzzo","alabarda","alato","albatro","alberato","albo","albume","alce","alcolico","alettone","alfa","algebra","aliante","alibi","alimento","allagato","allegro","allievo","allodola","allusivo","almeno","alogeno","alpaca","alpestre","altalena","alterno","alticcio","altrove","alunno","alveolo","alzare","amalgama","amanita","amarena","ambito","ambrato","ameba","america","ametista","amico","ammasso","ammenda","ammirare","ammonito","amore","ampio","ampliare","amuleto","anacardo","anagrafe","analista","anarchia","anatra","anca","ancella","ancora","andare","andrea","anello","angelo","angolare","angusto","anima","annegare","annidato","anno","annuncio","anonimo","anticipo","anzi","apatico","apertura","apode","apparire","appetito","appoggio","approdo","appunto","aprile","arabica","arachide","aragosta","araldica","arancio","aratura","arazzo","arbitro","archivio","ardito","arenile","argento","argine","arguto","aria","armonia","arnese","arredato","arringa","arrosto","arsenico","arso","artefice","arzillo","asciutto","ascolto","asepsi","asettico","asfalto","asino","asola","aspirato","aspro","assaggio","asse","assoluto","assurdo","asta","astenuto","astice","astratto","atavico","ateismo","atomico","atono","attesa","attivare","attorno","attrito","attuale","ausilio","austria","autista","autonomo","autunno","avanzato","avere","avvenire","avviso","avvolgere","azione","azoto","azzimo","azzurro","babele","baccano","bacino","baco","badessa","badilata","bagnato","baita","balcone","baldo","balena","ballata","balzano","bambino","bandire","baraonda","barbaro","barca","baritono","barlume","barocco","basilico","basso","batosta","battuto","baule","bava","bavosa","becco","beffa","belgio","belva","benda","benevole","benigno","benzina","bere","berlina","beta","bibita","bici","bidone","bifido","biga","bilancia","bimbo","binocolo","biologo","bipede","bipolare","birbante","birra","biscotto","bisesto","bisnonno","bisonte","bisturi","bizzarro","blando","blatta","bollito","bonifico","bordo","bosco","botanico","bottino","bozzolo","braccio","bradipo","brama","branca","bravura","bretella","brevetto","brezza","briglia","brillante","brindare","broccolo","brodo","bronzina","brullo","bruno","bubbone","buca","budino","buffone","buio","bulbo","buono","burlone","burrasca","bussola","busta","cadetto","caduco","calamaro","calcolo","calesse","calibro","calmo","caloria","cambusa","camerata","camicia","cammino","camola","campale","canapa","candela","cane","canino","canotto","cantina","capace","capello","capitolo","capogiro","cappero","capra","capsula","carapace","carcassa","cardo","carisma","carovana","carretto","cartolina","casaccio","cascata","caserma","caso","cassone","castello","casuale","catasta","catena","catrame","cauto","cavillo","cedibile","cedrata","cefalo","celebre","cellulare","cena","cenone","centesimo","ceramica","cercare","certo","cerume","cervello","cesoia","cespo","ceto","chela","chiaro","chicca","chiedere","chimera","china","chirurgo","chitarra","ciao","ciclismo","cifrare","cigno","cilindro","ciottolo","circa","cirrosi","citrico","cittadino","ciuffo","civetta","civile","classico","clinica","cloro","cocco","codardo","codice","coerente","cognome","collare","colmato","colore","colposo","coltivato","colza","coma","cometa","commando","comodo","computer","comune","conciso","condurre","conferma","congelare","coniuge","connesso","conoscere","consumo","continuo","convegno","coperto","copione","coppia","copricapo","corazza","cordata","coricato","cornice","corolla","corpo","corredo","corsia","cortese","cosmico","costante","cottura","covato","cratere","cravatta","creato","credere","cremoso","crescita","creta","criceto","crinale","crisi","critico","croce","cronaca","crostata","cruciale","crusca","cucire","cuculo","cugino","cullato","cupola","curatore","cursore","curvo","cuscino","custode","dado","daino","dalmata","damerino","daniela","dannoso","danzare","datato","davanti","davvero","debutto","decennio","deciso","declino","decollo","decreto","dedicato","definito","deforme","degno","delegare","delfino","delirio","delta","demenza","denotato","dentro","deposito","derapata","derivare","deroga","descritto","deserto","desiderio","desumere","detersivo","devoto","diametro","dicembre","diedro","difeso","diffuso","digerire","digitale","diluvio","dinamico","dinnanzi","dipinto","diploma","dipolo","diradare","dire","dirotto","dirupo","disagio","discreto","disfare","disgelo","disposto","distanza","disumano","dito","divano","divelto","dividere","divorato","doblone","docente","doganale","dogma","dolce","domato","domenica","dominare","dondolo","dono","dormire","dote","dottore","dovuto","dozzina","drago","druido","dubbio","dubitare","ducale","duna","duomo","duplice","duraturo","ebano","eccesso","ecco","eclissi","economia","edera","edicola","edile","editoria","educare","egemonia","egli","egoismo","egregio","elaborato","elargire","elegante","elencato","eletto","elevare","elfico","elica","elmo","elsa","eluso","emanato","emblema","emesso","emiro","emotivo","emozione","empirico","emulo","endemico","enduro","energia","enfasi","enoteca","entrare","enzima","epatite","epilogo","episodio","epocale","eppure","equatore","erario","erba","erboso","erede","eremita","erigere","ermetico","eroe","erosivo","errante","esagono","esame","esanime","esaudire","esca","esempio","esercito","esibito","esigente","esistere","esito","esofago","esortato","esoso","espanso","espresso","essenza","esso","esteso","estimare","estonia","estroso","esultare","etilico","etnico","etrusco","etto","euclideo","europa","evaso","evidenza","evitato","evoluto","evviva","fabbrica","faccenda","fachiro","falco","famiglia","fanale","fanfara","fango","fantasma","fare","farfalla","farinoso","farmaco","fascia","fastoso","fasullo","faticare","fato","favoloso","febbre","fecola","fede","fegato","felpa","feltro","femmina","fendere","fenomeno","fermento","ferro","fertile","fessura","festivo","fetta","feudo","fiaba","fiducia","fifa","figurato","filo","finanza","finestra","finire","fiore","fiscale","fisico","fiume","flacone","flamenco","flebo","flemma","florido","fluente","fluoro","fobico","focaccia","focoso","foderato","foglio","folata","folclore","folgore","fondente","fonetico","fonia","fontana","forbito","forchetta","foresta","formica","fornaio","foro","fortezza","forzare","fosfato","fosso","fracasso","frana","frassino","fratello","freccetta","frenata","fresco","frigo","frollino","fronde","frugale","frutta","fucilata","fucsia","fuggente","fulmine","fulvo","fumante","fumetto","fumoso","fune","funzione","fuoco","furbo","furgone","furore","fuso","futile","gabbiano","gaffe","galateo","gallina","galoppo","gambero","gamma","garanzia","garbo","garofano","garzone","gasdotto","gasolio","gastrico","gatto","gaudio","gazebo","gazzella","geco","gelatina","gelso","gemello","gemmato","gene","genitore","gennaio","genotipo","gergo","ghepardo","ghiaccio","ghisa","giallo","gilda","ginepro","giocare","gioiello","giorno","giove","girato","girone","gittata","giudizio","giurato","giusto","globulo","glutine","gnomo","gobba","golf","gomito","gommone","gonfio","gonna","governo","gracile","grado","grafico","grammo","grande","grattare","gravoso","grazia","greca","gregge","grifone","grigio","grinza","grotta","gruppo","guadagno","guaio","guanto","guardare","gufo","guidare","ibernato","icona","identico","idillio","idolo","idra","idrico","idrogeno","igiene","ignaro","ignorato","ilare","illeso","illogico","illudere","imballo","imbevuto","imbocco","imbuto","immane","immerso","immolato","impacco","impeto","impiego","importo","impronta","inalare","inarcare","inattivo","incanto","incendio","inchino","incisivo","incluso","incontro","incrocio","incubo","indagine","india","indole","inedito","infatti","infilare","inflitto","ingaggio","ingegno","inglese","ingordo","ingrosso","innesco","inodore","inoltrare","inondato","insano","insetto","insieme","insonnia","insulina","intasato","intero","intonaco","intuito","inumidire","invalido","invece","invito","iperbole","ipnotico","ipotesi","ippica","iride","irlanda","ironico","irrigato","irrorare","isolato","isotopo","isterico","istituto","istrice","italia","iterare","labbro","labirinto","lacca","lacerato","lacrima","lacuna","laddove","lago","lampo","lancetta","lanterna","lardoso","larga","laringe","lastra","latenza","latino","lattuga","lavagna","lavoro","legale","leggero","lembo","lentezza","lenza","leone","lepre","lesivo","lessato","lesto","letterale","leva","levigato","libero","lido","lievito","lilla","limatura","limitare","limpido","lineare","lingua","liquido","lira","lirica","lisca","lite","litigio","livrea","locanda","lode","logica","lombare","londra","longevo","loquace","lorenzo","loto","lotteria","luce","lucidato","lumaca","luminoso","lungo","lupo","luppolo","lusinga","lusso","lutto","macabro","macchina","macero","macinato","madama","magico","maglia","magnete","magro","maiolica","malafede","malgrado","malinteso","malsano","malto","malumore","mana","mancia","mandorla","mangiare","manifesto","mannaro","manovra","mansarda","mantide","manubrio","mappa","maratona","marcire","maretta","marmo","marsupio","maschera","massaia","mastino","materasso","matricola","mattone","maturo","mazurca","meandro","meccanico","mecenate","medesimo","meditare","mega","melassa","melis","melodia","meninge","meno","mensola","mercurio","merenda","merlo","meschino","mese","messere","mestolo","metallo","metodo","mettere","miagolare","mica","micelio","michele","microbo","midollo","miele","migliore","milano","milite","mimosa","minerale","mini","minore","mirino","mirtillo","miscela","missiva","misto","misurare","mitezza","mitigare","mitra","mittente","mnemonico","modello","modifica","modulo","mogano","mogio","mole","molosso","monastero","monco","mondina","monetario","monile","monotono","monsone","montato","monviso","mora","mordere","morsicato","mostro","motivato","motosega","motto","movenza","movimento","mozzo","mucca","mucosa","muffa","mughetto","mugnaio","mulatto","mulinello","multiplo","mummia","munto","muovere","murale","musa","muscolo","musica","mutevole","muto","nababbo","nafta","nanometro","narciso","narice","narrato","nascere","nastrare","naturale","nautica","naviglio","nebulosa","necrosi","negativo","negozio","nemmeno","neofita","neretto","nervo","nessuno","nettuno","neutrale","neve","nevrotico","nicchia","ninfa","nitido","nobile","nocivo","nodo","nome","nomina","nordico","normale","norvegese","nostrano","notare","notizia","notturno","novella","nucleo","nulla","numero","nuovo","nutrire","nuvola","nuziale","oasi","obbedire","obbligo","obelisco","oblio","obolo","obsoleto","occasione","occhio","occidente","occorrere","occultare","ocra","oculato","odierno","odorare","offerta","offrire","offuscato","oggetto","oggi","ognuno","olandese","olfatto","oliato","oliva","ologramma","oltre","omaggio","ombelico","ombra","omega","omissione","ondoso","onere","onice","onnivoro","onorevole","onta","operato","opinione","opposto","oracolo","orafo","ordine","orecchino","orefice","orfano","organico","origine","orizzonte","orma","ormeggio","ornativo","orologio","orrendo","orribile","ortensia","ortica","orzata","orzo","osare","oscurare","osmosi","ospedale","ospite","ossa","ossidare","ostacolo","oste","otite","otre","ottagono","ottimo","ottobre","ovale","ovest","ovino","oviparo","ovocito","ovunque","ovviare","ozio","pacchetto","pace","pacifico","padella","padrone","paese","paga","pagina","palazzina","palesare","pallido","palo","palude","pandoro","pannello","paolo","paonazzo","paprica","parabola","parcella","parere","pargolo","pari","parlato","parola","partire","parvenza","parziale","passivo","pasticca","patacca","patologia","pattume","pavone","peccato","pedalare","pedonale","peggio","peloso","penare","pendice","penisola","pennuto","penombra","pensare","pentola","pepe","pepita","perbene","percorso","perdonato","perforare","pergamena","periodo","permesso","perno","perplesso","persuaso","pertugio","pervaso","pesatore","pesista","peso","pestifero","petalo","pettine","petulante","pezzo","piacere","pianta","piattino","piccino","picozza","piega","pietra","piffero","pigiama","pigolio","pigro","pila","pilifero","pillola","pilota","pimpante","pineta","pinna","pinolo","pioggia","piombo","piramide","piretico","pirite","pirolisi","pitone","pizzico","placebo","planare","plasma","platano","plenario","pochezza","poderoso","podismo","poesia","poggiare","polenta","poligono","pollice","polmonite","polpetta","polso","poltrona","polvere","pomice","pomodoro","ponte","popoloso","porfido","poroso","porpora","porre","portata","posa","positivo","possesso","postulato","potassio","potere","pranzo","prassi","pratica","precluso","predica","prefisso","pregiato","prelievo","premere","prenotare","preparato","presenza","pretesto","prevalso","prima","principe","privato","problema","procura","produrre","profumo","progetto","prolunga","promessa","pronome","proposta","proroga","proteso","prova","prudente","prugna","prurito","psiche","pubblico","pudica","pugilato","pugno","pulce","pulito","pulsante","puntare","pupazzo","pupilla","puro","quadro","qualcosa","quasi","querela","quota","raccolto","raddoppio","radicale","radunato","raffica","ragazzo","ragione","ragno","ramarro","ramingo","ramo","randagio","rantolare","rapato","rapina","rappreso","rasatura","raschiato","rasente","rassegna","rastrello","rata","ravveduto","reale","recepire","recinto","recluta","recondito","recupero","reddito","redimere","regalato","registro","regola","regresso","relazione","remare","remoto","renna","replica","reprimere","reputare","resa","residente","responso","restauro","rete","retina","retorica","rettifica","revocato","riassunto","ribadire","ribelle","ribrezzo","ricarica","ricco","ricevere","riciclato","ricordo","ricreduto","ridicolo","ridurre","rifasare","riflesso","riforma","rifugio","rigare","rigettato","righello","rilassato","rilevato","rimanere","rimbalzo","rimedio","rimorchio","rinascita","rincaro","rinforzo","rinnovo","rinomato","rinsavito","rintocco","rinuncia","rinvenire","riparato","ripetuto","ripieno","riportare","ripresa","ripulire","risata","rischio","riserva","risibile","riso","rispetto","ristoro","risultato","risvolto","ritardo","ritegno","ritmico","ritrovo","riunione","riva","riverso","rivincita","rivolto","rizoma","roba","robotico","robusto","roccia","roco","rodaggio","rodere","roditore","rogito","rollio","romantico","rompere","ronzio","rosolare","rospo","rotante","rotondo","rotula","rovescio","rubizzo","rubrica","ruga","rullino","rumine","rumoroso","ruolo","rupe","russare","rustico","sabato","sabbiare","sabotato","sagoma","salasso","saldatura","salgemma","salivare","salmone","salone","saltare","saluto","salvo","sapere","sapido","saporito","saraceno","sarcasmo","sarto","sassoso","satellite","satira","satollo","saturno","savana","savio","saziato","sbadiglio","sbalzo","sbancato","sbarra","sbattere","sbavare","sbendare","sbirciare","sbloccato","sbocciato","sbrinare","sbruffone","sbuffare","scabroso","scadenza","scala","scambiare","scandalo","scapola","scarso","scatenare","scavato","scelto","scenico","scettro","scheda","schiena","sciarpa","scienza","scindere","scippo","sciroppo","scivolo","sclerare","scodella","scolpito","scomparto","sconforto","scoprire","scorta","scossone","scozzese","scriba","scrollare","scrutinio","scuderia","scultore","scuola","scuro","scusare","sdebitare","sdoganare","seccatura","secondo","sedano","seggiola","segnalato","segregato","seguito","selciato","selettivo","sella","selvaggio","semaforo","sembrare","seme","seminato","sempre","senso","sentire","sepolto","sequenza","serata","serbato","sereno","serio","serpente","serraglio","servire","sestina","setola","settimana","sfacelo","sfaldare","sfamato","sfarzoso","sfaticato","sfera","sfida","sfilato","sfinge","sfocato","sfoderare","sfogo","sfoltire","sforzato","sfratto","sfruttato","sfuggito","sfumare","sfuso","sgabello","sgarbato","sgonfiare","sgorbio","sgrassato","sguardo","sibilo","siccome","sierra","sigla","signore","silenzio","sillaba","simbolo","simpatico","simulato","sinfonia","singolo","sinistro","sino","sintesi","sinusoide","sipario","sisma","sistole","situato","slitta","slogatura","sloveno","smarrito","smemorato","smentito","smeraldo","smilzo","smontare","smottato","smussato","snellire","snervato","snodo","sobbalzo","sobrio","soccorso","sociale","sodale","soffitto","sogno","soldato","solenne","solido","sollazzo","solo","solubile","solvente","somatico","somma","sonda","sonetto","sonnifero","sopire","soppeso","sopra","sorgere","sorpasso","sorriso","sorso","sorteggio","sorvolato","sospiro","sosta","sottile","spada","spalla","spargere","spatola","spavento","spazzola","specie","spedire","spegnere","spelatura","speranza","spessore","spettrale","spezzato","spia","spigoloso","spillato","spinoso","spirale","splendido","sportivo","sposo","spranga","sprecare","spronato","spruzzo","spuntino","squillo","sradicare","srotolato","stabile","stacco","staffa","stagnare","stampato","stantio","starnuto","stasera","statuto","stelo","steppa","sterzo","stiletto","stima","stirpe","stivale","stizzoso","stonato","storico","strappo","stregato","stridulo","strozzare","strutto","stuccare","stufo","stupendo","subentro","succoso","sudore","suggerito","sugo","sultano","suonare","superbo","supporto","surgelato","surrogato","sussurro","sutura","svagare","svedese","sveglio","svelare","svenuto","svezia","sviluppo","svista","svizzera","svolta","svuotare","tabacco","tabulato","tacciare","taciturno","tale","talismano","tampone","tannino","tara","tardivo","targato","tariffa","tarpare","tartaruga","tasto","tattico","taverna","tavolata","tazza","teca","tecnico","telefono","temerario","tempo","temuto","tendone","tenero","tensione","tentacolo","teorema","terme","terrazzo","terzetto","tesi","tesserato","testato","tetro","tettoia","tifare","tigella","timbro","tinto","tipico","tipografo","tiraggio","tiro","titanio","titolo","titubante","tizio","tizzone","toccare","tollerare","tolto","tombola","tomo","tonfo","tonsilla","topazio","topologia","toppa","torba","tornare","torrone","tortora","toscano","tossire","tostatura","totano","trabocco","trachea","trafila","tragedia","tralcio","tramonto","transito","trapano","trarre","trasloco","trattato","trave","treccia","tremolio","trespolo","tributo","tricheco","trifoglio","trillo","trincea","trio","tristezza","triturato","trivella","tromba","trono","troppo","trottola","trovare","truccato","tubatura","tuffato","tulipano","tumulto","tunisia","turbare","turchino","tuta","tutela","ubicato","uccello","uccisore","udire","uditivo","uffa","ufficio","uguale","ulisse","ultimato","umano","umile","umorismo","uncinetto","ungere","ungherese","unicorno","unificato","unisono","unitario","unte","uovo","upupa","uragano","urgenza","urlo","usanza","usato","uscito","usignolo","usuraio","utensile","utilizzo","utopia","vacante","vaccinato","vagabondo","vagliato","valanga","valgo","valico","valletta","valoroso","valutare","valvola","vampata","vangare","vanitoso","vano","vantaggio","vanvera","vapore","varano","varcato","variante","vasca","vedetta","vedova","veduto","vegetale","veicolo","velcro","velina","velluto","veloce","venato","vendemmia","vento","verace","verbale","vergogna","verifica","vero","verruca","verticale","vescica","vessillo","vestale","veterano","vetrina","vetusto","viandante","vibrante","vicenda","vichingo","vicinanza","vidimare","vigilia","vigneto","vigore","vile","villano","vimini","vincitore","viola","vipera","virgola","virologo","virulento","viscoso","visione","vispo","vissuto","visura","vita","vitello","vittima","vivanda","vivido","viziare","voce","voga","volatile","volere","volpe","voragine","vulcano","zampogna","zanna","zappato","zattera","zavorra","zefiro","zelante","zelo","zenzero","zerbino","zibetto","zinco","zircone","zitto","zolla","zotico","zucchero","zufolo","zulu","zuppa"]
-},{}],129:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 module.exports=["あいこくしん","あいさつ","あいだ","あおぞら","あかちゃん","あきる","あけがた","あける","あこがれる","あさい","あさひ","あしあと","あじわう","あずかる","あずき","あそぶ","あたえる","あたためる","あたりまえ","あたる","あつい","あつかう","あっしゅく","あつまり","あつめる","あてな","あてはまる","あひる","あぶら","あぶる","あふれる","あまい","あまど","あまやかす","あまり","あみもの","あめりか","あやまる","あゆむ","あらいぐま","あらし","あらすじ","あらためる","あらゆる","あらわす","ありがとう","あわせる","あわてる","あんい","あんがい","あんこ","あんぜん","あんてい","あんない","あんまり","いいだす","いおん","いがい","いがく","いきおい","いきなり","いきもの","いきる","いくじ","いくぶん","いけばな","いけん","いこう","いこく","いこつ","いさましい","いさん","いしき","いじゅう","いじょう","いじわる","いずみ","いずれ","いせい","いせえび","いせかい","いせき","いぜん","いそうろう","いそがしい","いだい","いだく","いたずら","いたみ","いたりあ","いちおう","いちじ","いちど","いちば","いちぶ","いちりゅう","いつか","いっしゅん","いっせい","いっそう","いったん","いっち","いってい","いっぽう","いてざ","いてん","いどう","いとこ","いない","いなか","いねむり","いのち","いのる","いはつ","いばる","いはん","いびき","いひん","いふく","いへん","いほう","いみん","いもうと","いもたれ","いもり","いやがる","いやす","いよかん","いよく","いらい","いらすと","いりぐち","いりょう","いれい","いれもの","いれる","いろえんぴつ","いわい","いわう","いわかん","いわば","いわゆる","いんげんまめ","いんさつ","いんしょう","いんよう","うえき","うえる","うおざ","うがい","うかぶ","うかべる","うきわ","うくらいな","うくれれ","うけたまわる","うけつけ","うけとる","うけもつ","うける","うごかす","うごく","うこん","うさぎ","うしなう","うしろがみ","うすい","うすぎ","うすぐらい","うすめる","うせつ","うちあわせ","うちがわ","うちき","うちゅう","うっかり","うつくしい","うったえる","うつる","うどん","うなぎ","うなじ","うなずく","うなる","うねる","うのう","うぶげ","うぶごえ","うまれる","うめる","うもう","うやまう","うよく","うらがえす","うらぐち","うらない","うりあげ","うりきれ","うるさい","うれしい","うれゆき","うれる","うろこ","うわき","うわさ","うんこう","うんちん","うんてん","うんどう","えいえん","えいが","えいきょう","えいご","えいせい","えいぶん","えいよう","えいわ","えおり","えがお","えがく","えきたい","えくせる","えしゃく","えすて","えつらん","えのぐ","えほうまき","えほん","えまき","えもじ","えもの","えらい","えらぶ","えりあ","えんえん","えんかい","えんぎ","えんげき","えんしゅう","えんぜつ","えんそく","えんちょう","えんとつ","おいかける","おいこす","おいしい","おいつく","おうえん","おうさま","おうじ","おうせつ","おうたい","おうふく","おうべい","おうよう","おえる","おおい","おおう","おおどおり","おおや","おおよそ","おかえり","おかず","おがむ","おかわり","おぎなう","おきる","おくさま","おくじょう","おくりがな","おくる","おくれる","おこす","おこなう","おこる","おさえる","おさない","おさめる","おしいれ","おしえる","おじぎ","おじさん","おしゃれ","おそらく","おそわる","おたがい","おたく","おだやか","おちつく","おっと","おつり","おでかけ","おとしもの","おとなしい","おどり","おどろかす","おばさん","おまいり","おめでとう","おもいで","おもう","おもたい","おもちゃ","おやつ","おやゆび","およぼす","おらんだ","おろす","おんがく","おんけい","おんしゃ","おんせん","おんだん","おんちゅう","おんどけい","かあつ","かいが","がいき","がいけん","がいこう","かいさつ","かいしゃ","かいすいよく","かいぜん","かいぞうど","かいつう","かいてん","かいとう","かいふく","がいへき","かいほう","かいよう","がいらい","かいわ","かえる","かおり","かかえる","かがく","かがし","かがみ","かくご","かくとく","かざる","がぞう","かたい","かたち","がちょう","がっきゅう","がっこう","がっさん","がっしょう","かなざわし","かのう","がはく","かぶか","かほう","かほご","かまう","かまぼこ","かめれおん","かゆい","かようび","からい","かるい","かろう","かわく","かわら","がんか","かんけい","かんこう","かんしゃ","かんそう","かんたん","かんち","がんばる","きあい","きあつ","きいろ","ぎいん","きうい","きうん","きえる","きおう","きおく","きおち","きおん","きかい","きかく","きかんしゃ","ききて","きくばり","きくらげ","きけんせい","きこう","きこえる","きこく","きさい","きさく","きさま","きさらぎ","ぎじかがく","ぎしき","ぎじたいけん","ぎじにってい","ぎじゅつしゃ","きすう","きせい","きせき","きせつ","きそう","きぞく","きぞん","きたえる","きちょう","きつえん","ぎっちり","きつつき","きつね","きてい","きどう","きどく","きない","きなが","きなこ","きぬごし","きねん","きのう","きのした","きはく","きびしい","きひん","きふく","きぶん","きぼう","きほん","きまる","きみつ","きむずかしい","きめる","きもだめし","きもち","きもの","きゃく","きやく","ぎゅうにく","きよう","きょうりゅう","きらい","きらく","きりん","きれい","きれつ","きろく","ぎろん","きわめる","ぎんいろ","きんかくじ","きんじょ","きんようび","ぐあい","くいず","くうかん","くうき","くうぐん","くうこう","ぐうせい","くうそう","ぐうたら","くうふく","くうぼ","くかん","くきょう","くげん","ぐこう","くさい","くさき","くさばな","くさる","くしゃみ","くしょう","くすのき","くすりゆび","くせげ","くせん","ぐたいてき","くださる","くたびれる","くちこみ","くちさき","くつした","ぐっすり","くつろぐ","くとうてん","くどく","くなん","くねくね","くのう","くふう","くみあわせ","くみたてる","くめる","くやくしょ","くらす","くらべる","くるま","くれる","くろう","くわしい","ぐんかん","ぐんしょく","ぐんたい","ぐんて","けあな","けいかく","けいけん","けいこ","けいさつ","げいじゅつ","けいたい","げいのうじん","けいれき","けいろ","けおとす","けおりもの","げきか","げきげん","げきだん","げきちん","げきとつ","げきは","げきやく","げこう","げこくじょう","げざい","けさき","げざん","けしき","けしごむ","けしょう","げすと","けたば","けちゃっぷ","けちらす","けつあつ","けつい","けつえき","けっこん","けつじょ","けっせき","けってい","けつまつ","げつようび","げつれい","けつろん","げどく","けとばす","けとる","けなげ","けなす","けなみ","けぬき","げねつ","けねん","けはい","げひん","けぶかい","げぼく","けまり","けみかる","けむし","けむり","けもの","けらい","けろけろ","けわしい","けんい","けんえつ","けんお","けんか","げんき","けんげん","けんこう","けんさく","けんしゅう","けんすう","げんそう","けんちく","けんてい","けんとう","けんない","けんにん","げんぶつ","けんま","けんみん","けんめい","けんらん","けんり","こあくま","こいぬ","こいびと","ごうい","こうえん","こうおん","こうかん","ごうきゅう","ごうけい","こうこう","こうさい","こうじ","こうすい","ごうせい","こうそく","こうたい","こうちゃ","こうつう","こうてい","こうどう","こうない","こうはい","ごうほう","ごうまん","こうもく","こうりつ","こえる","こおり","ごかい","ごがつ","ごかん","こくご","こくさい","こくとう","こくない","こくはく","こぐま","こけい","こける","ここのか","こころ","こさめ","こしつ","こすう","こせい","こせき","こぜん","こそだて","こたい","こたえる","こたつ","こちょう","こっか","こつこつ","こつばん","こつぶ","こてい","こてん","ことがら","ことし","ことば","ことり","こなごな","こねこね","このまま","このみ","このよ","ごはん","こひつじ","こふう","こふん","こぼれる","ごまあぶら","こまかい","ごますり","こまつな","こまる","こむぎこ","こもじ","こもち","こもの","こもん","こやく","こやま","こゆう","こゆび","こよい","こよう","こりる","これくしょん","ころっけ","こわもて","こわれる","こんいん","こんかい","こんき","こんしゅう","こんすい","こんだて","こんとん","こんなん","こんびに","こんぽん","こんまけ","こんや","こんれい","こんわく","ざいえき","さいかい","さいきん","ざいげん","ざいこ","さいしょ","さいせい","ざいたく","ざいちゅう","さいてき","ざいりょう","さうな","さかいし","さがす","さかな","さかみち","さがる","さぎょう","さくし","さくひん","さくら","さこく","さこつ","さずかる","ざせき","さたん","さつえい","ざつおん","ざっか","ざつがく","さっきょく","ざっし","さつじん","ざっそう","さつたば","さつまいも","さてい","さといも","さとう","さとおや","さとし","さとる","さのう","さばく","さびしい","さべつ","さほう","さほど","さます","さみしい","さみだれ","さむけ","さめる","さやえんどう","さゆう","さよう","さよく","さらだ","ざるそば","さわやか","さわる","さんいん","さんか","さんきゃく","さんこう","さんさい","ざんしょ","さんすう","さんせい","さんそ","さんち","さんま","さんみ","さんらん","しあい","しあげ","しあさって","しあわせ","しいく","しいん","しうち","しえい","しおけ","しかい","しかく","じかん","しごと","しすう","じだい","したうけ","したぎ","したて","したみ","しちょう","しちりん","しっかり","しつじ","しつもん","してい","してき","してつ","じてん","じどう","しなぎれ","しなもの","しなん","しねま","しねん","しのぐ","しのぶ","しはい","しばかり","しはつ","しはらい","しはん","しひょう","しふく","じぶん","しへい","しほう","しほん","しまう","しまる","しみん","しむける","じむしょ","しめい","しめる","しもん","しゃいん","しゃうん","しゃおん","じゃがいも","しやくしょ","しゃくほう","しゃけん","しゃこ","しゃざい","しゃしん","しゃせん","しゃそう","しゃたい","しゃちょう","しゃっきん","じゃま","しゃりん","しゃれい","じゆう","じゅうしょ","しゅくはく","じゅしん","しゅっせき","しゅみ","しゅらば","じゅんばん","しょうかい","しょくたく","しょっけん","しょどう","しょもつ","しらせる","しらべる","しんか","しんこう","じんじゃ","しんせいじ","しんちく","しんりん","すあげ","すあし","すあな","ずあん","すいえい","すいか","すいとう","ずいぶん","すいようび","すうがく","すうじつ","すうせん","すおどり","すきま","すくう","すくない","すける","すごい","すこし","ずさん","すずしい","すすむ","すすめる","すっかり","ずっしり","ずっと","すてき","すてる","すねる","すのこ","すはだ","すばらしい","ずひょう","ずぶぬれ","すぶり","すふれ","すべて","すべる","ずほう","すぼん","すまい","すめし","すもう","すやき","すらすら","するめ","すれちがう","すろっと","すわる","すんぜん","すんぽう","せあぶら","せいかつ","せいげん","せいじ","せいよう","せおう","せかいかん","せきにん","せきむ","せきゆ","せきらんうん","せけん","せこう","せすじ","せたい","せたけ","せっかく","せっきゃく","ぜっく","せっけん","せっこつ","せっさたくま","せつぞく","せつだん","せつでん","せっぱん","せつび","せつぶん","せつめい","せつりつ","せなか","せのび","せはば","せびろ","せぼね","せまい","せまる","せめる","せもたれ","せりふ","ぜんあく","せんい","せんえい","せんか","せんきょ","せんく","せんげん","ぜんご","せんさい","せんしゅ","せんすい","せんせい","せんぞ","せんたく","せんちょう","せんてい","せんとう","せんぬき","せんねん","せんぱい","ぜんぶ","ぜんぽう","せんむ","せんめんじょ","せんもん","せんやく","せんゆう","せんよう","ぜんら","ぜんりゃく","せんれい","せんろ","そあく","そいとげる","そいね","そうがんきょう","そうき","そうご","そうしん","そうだん","そうなん","そうび","そうめん","そうり","そえもの","そえん","そがい","そげき","そこう","そこそこ","そざい","そしな","そせい","そせん","そそぐ","そだてる","そつう","そつえん","そっかん","そつぎょう","そっけつ","そっこう","そっせん","そっと","そとがわ","そとづら","そなえる","そなた","そふぼ","そぼく","そぼろ","そまつ","そまる","そむく","そむりえ","そめる","そもそも","そよかぜ","そらまめ","そろう","そんかい","そんけい","そんざい","そんしつ","そんぞく","そんちょう","ぞんび","ぞんぶん","そんみん","たあい","たいいん","たいうん","たいえき","たいおう","だいがく","たいき","たいぐう","たいけん","たいこ","たいざい","だいじょうぶ","だいすき","たいせつ","たいそう","だいたい","たいちょう","たいてい","だいどころ","たいない","たいねつ","たいのう","たいはん","だいひょう","たいふう","たいへん","たいほ","たいまつばな","たいみんぐ","たいむ","たいめん","たいやき","たいよう","たいら","たいりょく","たいる","たいわん","たうえ","たえる","たおす","たおる","たおれる","たかい","たかね","たきび","たくさん","たこく","たこやき","たさい","たしざん","だじゃれ","たすける","たずさわる","たそがれ","たたかう","たたく","ただしい","たたみ","たちばな","だっかい","だっきゃく","だっこ","だっしゅつ","だったい","たてる","たとえる","たなばた","たにん","たぬき","たのしみ","たはつ","たぶん","たべる","たぼう","たまご","たまる","だむる","ためいき","ためす","ためる","たもつ","たやすい","たよる","たらす","たりきほんがん","たりょう","たりる","たると","たれる","たれんと","たろっと","たわむれる","だんあつ","たんい","たんおん","たんか","たんき","たんけん","たんご","たんさん","たんじょうび","だんせい","たんそく","たんたい","だんち","たんてい","たんとう","だんな","たんにん","だんねつ","たんのう","たんぴん","だんぼう","たんまつ","たんめい","だんれつ","だんろ","だんわ","ちあい","ちあん","ちいき","ちいさい","ちえん","ちかい","ちから","ちきゅう","ちきん","ちけいず","ちけん","ちこく","ちさい","ちしき","ちしりょう","ちせい","ちそう","ちたい","ちたん","ちちおや","ちつじょ","ちてき","ちてん","ちぬき","ちぬり","ちのう","ちひょう","ちへいせん","ちほう","ちまた","ちみつ","ちみどろ","ちめいど","ちゃんこなべ","ちゅうい","ちゆりょく","ちょうし","ちょさくけん","ちらし","ちらみ","ちりがみ","ちりょう","ちるど","ちわわ","ちんたい","ちんもく","ついか","ついたち","つうか","つうじょう","つうはん","つうわ","つかう","つかれる","つくね","つくる","つけね","つける","つごう","つたえる","つづく","つつじ","つつむ","つとめる","つながる","つなみ","つねづね","つのる","つぶす","つまらない","つまる","つみき","つめたい","つもり","つもる","つよい","つるぼ","つるみく","つわもの","つわり","てあし","てあて","てあみ","ていおん","ていか","ていき","ていけい","ていこく","ていさつ","ていし","ていせい","ていたい","ていど","ていねい","ていひょう","ていへん","ていぼう","てうち","ておくれ","てきとう","てくび","でこぼこ","てさぎょう","てさげ","てすり","てそう","てちがい","てちょう","てつがく","てつづき","でっぱ","てつぼう","てつや","でぬかえ","てぬき","てぬぐい","てのひら","てはい","てぶくろ","てふだ","てほどき","てほん","てまえ","てまきずし","てみじか","てみやげ","てらす","てれび","てわけ","てわたし","でんあつ","てんいん","てんかい","てんき","てんぐ","てんけん","てんごく","てんさい","てんし","てんすう","でんち","てんてき","てんとう","てんない","てんぷら","てんぼうだい","てんめつ","てんらんかい","でんりょく","でんわ","どあい","といれ","どうかん","とうきゅう","どうぐ","とうし","とうむぎ","とおい","とおか","とおく","とおす","とおる","とかい","とかす","ときおり","ときどき","とくい","とくしゅう","とくてん","とくに","とくべつ","とけい","とける","とこや","とさか","としょかん","とそう","とたん","とちゅう","とっきゅう","とっくん","とつぜん","とつにゅう","とどける","ととのえる","とない","となえる","となり","とのさま","とばす","どぶがわ","とほう","とまる","とめる","ともだち","ともる","どようび","とらえる","とんかつ","どんぶり","ないかく","ないこう","ないしょ","ないす","ないせん","ないそう","なおす","ながい","なくす","なげる","なこうど","なさけ","なたでここ","なっとう","なつやすみ","ななおし","なにごと","なにもの","なにわ","なのか","なふだ","なまいき","なまえ","なまみ","なみだ","なめらか","なめる","なやむ","ならう","ならび","ならぶ","なれる","なわとび","なわばり","にあう","にいがた","にうけ","におい","にかい","にがて","にきび","にくしみ","にくまん","にげる","にさんかたんそ","にしき","にせもの","にちじょう","にちようび","にっか","にっき","にっけい","にっこう","にっさん","にっしょく","にっすう","にっせき","にってい","になう","にほん","にまめ","にもつ","にやり","にゅういん","にりんしゃ","にわとり","にんい","にんか","にんき","にんげん","にんしき","にんずう","にんそう","にんたい","にんち","にんてい","にんにく","にんぷ","にんまり","にんむ","にんめい","にんよう","ぬいくぎ","ぬかす","ぬぐいとる","ぬぐう","ぬくもり","ぬすむ","ぬまえび","ぬめり","ぬらす","ぬんちゃく","ねあげ","ねいき","ねいる","ねいろ","ねぐせ","ねくたい","ねくら","ねこぜ","ねこむ","ねさげ","ねすごす","ねそべる","ねだん","ねつい","ねっしん","ねつぞう","ねったいぎょ","ねぶそく","ねふだ","ねぼう","ねほりはほり","ねまき","ねまわし","ねみみ","ねむい","ねむたい","ねもと","ねらう","ねわざ","ねんいり","ねんおし","ねんかん","ねんきん","ねんぐ","ねんざ","ねんし","ねんちゃく","ねんど","ねんぴ","ねんぶつ","ねんまつ","ねんりょう","ねんれい","のいず","のおづま","のがす","のきなみ","のこぎり","のこす","のこる","のせる","のぞく","のぞむ","のたまう","のちほど","のっく","のばす","のはら","のべる","のぼる","のみもの","のやま","のらいぬ","のらねこ","のりもの","のりゆき","のれん","のんき","ばあい","はあく","ばあさん","ばいか","ばいく","はいけん","はいご","はいしん","はいすい","はいせん","はいそう","はいち","ばいばい","はいれつ","はえる","はおる","はかい","ばかり","はかる","はくしゅ","はけん","はこぶ","はさみ","はさん","はしご","ばしょ","はしる","はせる","ぱそこん","はそん","はたん","はちみつ","はつおん","はっかく","はづき","はっきり","はっくつ","はっけん","はっこう","はっさん","はっしん","はったつ","はっちゅう","はってん","はっぴょう","はっぽう","はなす","はなび","はにかむ","はぶらし","はみがき","はむかう","はめつ","はやい","はやし","はらう","はろうぃん","はわい","はんい","はんえい","はんおん","はんかく","はんきょう","ばんぐみ","はんこ","はんしゃ","はんすう","はんだん","ぱんち","ぱんつ","はんてい","はんとし","はんのう","はんぱ","はんぶん","はんぺん","はんぼうき","はんめい","はんらん","はんろん","ひいき","ひうん","ひえる","ひかく","ひかり","ひかる","ひかん","ひくい","ひけつ","ひこうき","ひこく","ひさい","ひさしぶり","ひさん","びじゅつかん","ひしょ","ひそか","ひそむ","ひたむき","ひだり","ひたる","ひつぎ","ひっこし","ひっし","ひつじゅひん","ひっす","ひつぜん","ぴったり","ぴっちり","ひつよう","ひてい","ひとごみ","ひなまつり","ひなん","ひねる","ひはん","ひびく","ひひょう","ひほう","ひまわり","ひまん","ひみつ","ひめい","ひめじし","ひやけ","ひやす","ひよう","びょうき","ひらがな","ひらく","ひりつ","ひりょう","ひるま","ひるやすみ","ひれい","ひろい","ひろう","ひろき","ひろゆき","ひんかく","ひんけつ","ひんこん","ひんしゅ","ひんそう","ぴんち","ひんぱん","びんぼう","ふあん","ふいうち","ふうけい","ふうせん","ぷうたろう","ふうとう","ふうふ","ふえる","ふおん","ふかい","ふきん","ふくざつ","ふくぶくろ","ふこう","ふさい","ふしぎ","ふじみ","ふすま","ふせい","ふせぐ","ふそく","ぶたにく","ふたん","ふちょう","ふつう","ふつか","ふっかつ","ふっき","ふっこく","ぶどう","ふとる","ふとん","ふのう","ふはい","ふひょう","ふへん","ふまん","ふみん","ふめつ","ふめん","ふよう","ふりこ","ふりる","ふるい","ふんいき","ぶんがく","ぶんぐ","ふんしつ","ぶんせき","ふんそう","ぶんぽう","へいあん","へいおん","へいがい","へいき","へいげん","へいこう","へいさ","へいしゃ","へいせつ","へいそ","へいたく","へいてん","へいねつ","へいわ","へきが","へこむ","べにいろ","べにしょうが","へらす","へんかん","べんきょう","べんごし","へんさい","へんたい","べんり","ほあん","ほいく","ぼうぎょ","ほうこく","ほうそう","ほうほう","ほうもん","ほうりつ","ほえる","ほおん","ほかん","ほきょう","ぼきん","ほくろ","ほけつ","ほけん","ほこう","ほこる","ほしい","ほしつ","ほしゅ","ほしょう","ほせい","ほそい","ほそく","ほたて","ほたる","ぽちぶくろ","ほっきょく","ほっさ","ほったん","ほとんど","ほめる","ほんい","ほんき","ほんけ","ほんしつ","ほんやく","まいにち","まかい","まかせる","まがる","まける","まこと","まさつ","まじめ","ますく","まぜる","まつり","まとめ","まなぶ","まぬけ","まねく","まほう","まもる","まゆげ","まよう","まろやか","まわす","まわり","まわる","まんが","まんきつ","まんぞく","まんなか","みいら","みうち","みえる","みがく","みかた","みかん","みけん","みこん","みじかい","みすい","みすえる","みせる","みっか","みつかる","みつける","みてい","みとめる","みなと","みなみかさい","みねらる","みのう","みのがす","みほん","みもと","みやげ","みらい","みりょく","みわく","みんか","みんぞく","むいか","むえき","むえん","むかい","むかう","むかえ","むかし","むぎちゃ","むける","むげん","むさぼる","むしあつい","むしば","むじゅん","むしろ","むすう","むすこ","むすぶ","むすめ","むせる","むせん","むちゅう","むなしい","むのう","むやみ","むよう","むらさき","むりょう","むろん","めいあん","めいうん","めいえん","めいかく","めいきょく","めいさい","めいし","めいそう","めいぶつ","めいれい","めいわく","めぐまれる","めざす","めした","めずらしい","めだつ","めまい","めやす","めんきょ","めんせき","めんどう","もうしあげる","もうどうけん","もえる","もくし","もくてき","もくようび","もちろん","もどる","もらう","もんく","もんだい","やおや","やける","やさい","やさしい","やすい","やすたろう","やすみ","やせる","やそう","やたい","やちん","やっと","やっぱり","やぶる","やめる","ややこしい","やよい","やわらかい","ゆうき","ゆうびんきょく","ゆうべ","ゆうめい","ゆけつ","ゆしゅつ","ゆせん","ゆそう","ゆたか","ゆちゃく","ゆでる","ゆにゅう","ゆびわ","ゆらい","ゆれる","ようい","ようか","ようきゅう","ようじ","ようす","ようちえん","よかぜ","よかん","よきん","よくせい","よくぼう","よけい","よごれる","よさん","よしゅう","よそう","よそく","よっか","よてい","よどがわく","よねつ","よやく","よゆう","よろこぶ","よろしい","らいう","らくがき","らくご","らくさつ","らくだ","らしんばん","らせん","らぞく","らたい","らっか","られつ","りえき","りかい","りきさく","りきせつ","りくぐん","りくつ","りけん","りこう","りせい","りそう","りそく","りてん","りねん","りゆう","りゅうがく","りよう","りょうり","りょかん","りょくちゃ","りょこう","りりく","りれき","りろん","りんご","るいけい","るいさい","るいじ","るいせき","るすばん","るりがわら","れいかん","れいぎ","れいせい","れいぞうこ","れいとう","れいぼう","れきし","れきだい","れんあい","れんけい","れんこん","れんさい","れんしゅう","れんぞく","れんらく","ろうか","ろうご","ろうじん","ろうそく","ろくが","ろこつ","ろじうら","ろしゅつ","ろせん","ろてん","ろめん","ろれつ","ろんぎ","ろんぱ","ろんぶん","ろんり","わかす","わかめ","わかやま","わかれる","わしつ","わじまし","わすれもの","わらう","われる"]
-},{}],130:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 module.exports=["가격","가끔","가난","가능","가득","가르침","가뭄","가방","가상","가슴","가운데","가을","가이드","가입","가장","가정","가족","가죽","각오","각자","간격","간부","간섭","간장","간접","간판","갈등","갈비","갈색","갈증","감각","감기","감소","감수성","감자","감정","갑자기","강남","강당","강도","강력히","강변","강북","강사","강수량","강아지","강원도","강의","강제","강조","같이","개구리","개나리","개방","개별","개선","개성","개인","객관적","거실","거액","거울","거짓","거품","걱정","건강","건물","건설","건조","건축","걸음","검사","검토","게시판","게임","겨울","견해","결과","결국","결론","결석","결승","결심","결정","결혼","경계","경고","경기","경력","경복궁","경비","경상도","경영","경우","경쟁","경제","경주","경찰","경치","경향","경험","계곡","계단","계란","계산","계속","계약","계절","계층","계획","고객","고구려","고궁","고급","고등학생","고무신","고민","고양이","고장","고전","고집","고춧가루","고통","고향","곡식","골목","골짜기","골프","공간","공개","공격","공군","공급","공기","공동","공무원","공부","공사","공식","공업","공연","공원","공장","공짜","공책","공통","공포","공항","공휴일","과목","과일","과장","과정","과학","관객","관계","관광","관념","관람","관련","관리","관습","관심","관점","관찰","광경","광고","광장","광주","괴로움","굉장히","교과서","교문","교복","교실","교양","교육","교장","교직","교통","교환","교훈","구경","구름","구멍","구별","구분","구석","구성","구속","구역","구입","구청","구체적","국가","국기","국내","국립","국물","국민","국수","국어","국왕","국적","국제","국회","군대","군사","군인","궁극적","권리","권위","권투","귀국","귀신","규정","규칙","균형","그날","그냥","그늘","그러나","그룹","그릇","그림","그제서야","그토록","극복","극히","근거","근교","근래","근로","근무","근본","근원","근육","근처","글씨","글자","금강산","금고","금년","금메달","금액","금연","금요일","금지","긍정적","기간","기관","기념","기능","기독교","기둥","기록","기름","기법","기본","기분","기쁨","기숙사","기술","기억","기업","기온","기운","기원","기적","기준","기침","기혼","기획","긴급","긴장","길이","김밥","김치","김포공항","깍두기","깜빡","깨달음","깨소금","껍질","꼭대기","꽃잎","나들이","나란히","나머지","나물","나침반","나흘","낙엽","난방","날개","날씨","날짜","남녀","남대문","남매","남산","남자","남편","남학생","낭비","낱말","내년","내용","내일","냄비","냄새","냇물","냉동","냉면","냉방","냉장고","넥타이","넷째","노동","노란색","노력","노인","녹음","녹차","녹화","논리","논문","논쟁","놀이","농구","농담","농민","농부","농업","농장","농촌","높이","눈동자","눈물","눈썹","뉴욕","느낌","늑대","능동적","능력","다방","다양성","다음","다이어트","다행","단계","단골","단독","단맛","단순","단어","단위","단점","단체","단추","단편","단풍","달걀","달러","달력","달리","닭고기","담당","담배","담요","담임","답변","답장","당근","당분간","당연히","당장","대규모","대낮","대단히","대답","대도시","대략","대량","대륙","대문","대부분","대신","대응","대장","대전","대접","대중","대책","대출","대충","대통령","대학","대한민국","대합실","대형","덩어리","데이트","도대체","도덕","도둑","도망","도서관","도심","도움","도입","도자기","도저히","도전","도중","도착","독감","독립","독서","독일","독창적","동화책","뒷모습","뒷산","딸아이","마누라","마늘","마당","마라톤","마련","마무리","마사지","마약","마요네즈","마을","마음","마이크","마중","마지막","마찬가지","마찰","마흔","막걸리","막내","막상","만남","만두","만세","만약","만일","만점","만족","만화","많이","말기","말씀","말투","맘대로","망원경","매년","매달","매력","매번","매스컴","매일","매장","맥주","먹이","먼저","먼지","멀리","메일","며느리","며칠","면담","멸치","명단","명령","명예","명의","명절","명칭","명함","모금","모니터","모델","모든","모범","모습","모양","모임","모조리","모집","모퉁이","목걸이","목록","목사","목소리","목숨","목적","목표","몰래","몸매","몸무게","몸살","몸속","몸짓","몸통","몹시","무관심","무궁화","무더위","무덤","무릎","무슨","무엇","무역","무용","무조건","무지개","무척","문구","문득","문법","문서","문제","문학","문화","물가","물건","물결","물고기","물론","물리학","물음","물질","물체","미국","미디어","미사일","미술","미역","미용실","미움","미인","미팅","미혼","민간","민족","민주","믿음","밀가루","밀리미터","밑바닥","바가지","바구니","바나나","바늘","바닥","바닷가","바람","바이러스","바탕","박물관","박사","박수","반대","반드시","반말","반발","반성","반응","반장","반죽","반지","반찬","받침","발가락","발걸음","발견","발달","발레","발목","발바닥","발생","발음","발자국","발전","발톱","발표","밤하늘","밥그릇","밥맛","밥상","밥솥","방금","방면","방문","방바닥","방법","방송","방식","방안","방울","방지","방학","방해","방향","배경","배꼽","배달","배드민턴","백두산","백색","백성","백인","백제","백화점","버릇","버섯","버튼","번개","번역","번지","번호","벌금","벌레","벌써","범위","범인","범죄","법률","법원","법적","법칙","베이징","벨트","변경","변동","변명","변신","변호사","변화","별도","별명","별일","병실","병아리","병원","보관","보너스","보라색","보람","보름","보상","보안","보자기","보장","보전","보존","보통","보편적","보험","복도","복사","복숭아","복습","볶음","본격적","본래","본부","본사","본성","본인","본질","볼펜","봉사","봉지","봉투","부근","부끄러움","부담","부동산","부문","부분","부산","부상","부엌","부인","부작용","부장","부정","부족","부지런히","부친","부탁","부품","부회장","북부","북한","분노","분량","분리","분명","분석","분야","분위기","분필","분홍색","불고기","불과","불교","불꽃","불만","불법","불빛","불안","불이익","불행","브랜드","비극","비난","비닐","비둘기","비디오","비로소","비만","비명","비밀","비바람","비빔밥","비상","비용","비율","비중","비타민","비판","빌딩","빗물","빗방울","빗줄기","빛깔","빨간색","빨래","빨리","사건","사계절","사나이","사냥","사람","사랑","사립","사모님","사물","사방","사상","사생활","사설","사슴","사실","사업","사용","사월","사장","사전","사진","사촌","사춘기","사탕","사투리","사흘","산길","산부인과","산업","산책","살림","살인","살짝","삼계탕","삼국","삼십","삼월","삼촌","상관","상금","상대","상류","상반기","상상","상식","상업","상인","상자","상점","상처","상추","상태","상표","상품","상황","새벽","색깔","색연필","생각","생명","생물","생방송","생산","생선","생신","생일","생활","서랍","서른","서명","서민","서비스","서양","서울","서적","서점","서쪽","서클","석사","석유","선거","선물","선배","선생","선수","선원","선장","선전","선택","선풍기","설거지","설날","설렁탕","설명","설문","설사","설악산","설치","설탕","섭씨","성공","성당","성명","성별","성인","성장","성적","성질","성함","세금","세미나","세상","세월","세종대왕","세탁","센터","센티미터","셋째","소규모","소극적","소금","소나기","소년","소득","소망","소문","소설","소속","소아과","소용","소원","소음","소중히","소지품","소질","소풍","소형","속담","속도","속옷","손가락","손길","손녀","손님","손등","손목","손뼉","손실","손질","손톱","손해","솔직히","솜씨","송아지","송이","송편","쇠고기","쇼핑","수건","수년","수단","수돗물","수동적","수면","수명","수박","수상","수석","수술","수시로","수업","수염","수영","수입","수준","수집","수출","수컷","수필","수학","수험생","수화기","숙녀","숙소","숙제","순간","순서","순수","순식간","순위","숟가락","술병","술집","숫자","스님","스물","스스로","스승","스웨터","스위치","스케이트","스튜디오","스트레스","스포츠","슬쩍","슬픔","습관","습기","승객","승리","승부","승용차","승진","시각","시간","시골","시금치","시나리오","시댁","시리즈","시멘트","시민","시부모","시선","시설","시스템","시아버지","시어머니","시월","시인","시일","시작","시장","시절","시점","시중","시즌","시집","시청","시합","시험","식구","식기","식당","식량","식료품","식물","식빵","식사","식생활","식초","식탁","식품","신고","신규","신념","신문","신발","신비","신사","신세","신용","신제품","신청","신체","신화","실감","실내","실력","실례","실망","실수","실습","실시","실장","실정","실질적","실천","실체","실컷","실태","실패","실험","실현","심리","심부름","심사","심장","심정","심판","쌍둥이","씨름","씨앗","아가씨","아나운서","아드님","아들","아쉬움","아스팔트","아시아","아울러","아저씨","아줌마","아직","아침","아파트","아프리카","아픔","아홉","아흔","악기","악몽","악수","안개","안경","안과","안내","안녕","안동","안방","안부","안주","알루미늄","알코올","암시","암컷","압력","앞날","앞문","애인","애정","액수","앨범","야간","야단","야옹","약간","약국","약속","약수","약점","약품","약혼녀","양념","양력","양말","양배추","양주","양파","어둠","어려움","어른","어젯밤","어쨌든","어쩌다가","어쩐지","언니","언덕","언론","언어","얼굴","얼른","얼음","얼핏","엄마","업무","업종","업체","엉덩이","엉망","엉터리","엊그제","에너지","에어컨","엔진","여건","여고생","여관","여군","여권","여대생","여덟","여동생","여든","여론","여름","여섯","여성","여왕","여인","여전히","여직원","여학생","여행","역사","역시","역할","연결","연구","연극","연기","연락","연설","연세","연속","연습","연애","연예인","연인","연장","연주","연출","연필","연합","연휴","열기","열매","열쇠","열심히","열정","열차","열흘","염려","엽서","영국","영남","영상","영양","영역","영웅","영원히","영하","영향","영혼","영화","옆구리","옆방","옆집","예감","예금","예방","예산","예상","예선","예술","예습","예식장","예약","예전","예절","예정","예컨대","옛날","오늘","오락","오랫동안","오렌지","오로지","오른발","오븐","오십","오염","오월","오전","오직","오징어","오페라","오피스텔","오히려","옥상","옥수수","온갖","온라인","온몸","온종일","온통","올가을","올림픽","올해","옷차림","와이셔츠","와인","완성","완전","왕비","왕자","왜냐하면","왠지","외갓집","외국","외로움","외삼촌","외출","외침","외할머니","왼발","왼손","왼쪽","요금","요일","요즘","요청","용기","용서","용어","우산","우선","우승","우연히","우정","우체국","우편","운동","운명","운반","운전","운행","울산","울음","움직임","웃어른","웃음","워낙","원고","원래","원서","원숭이","원인","원장","원피스","월급","월드컵","월세","월요일","웨이터","위반","위법","위성","위원","위험","위협","윗사람","유난히","유럽","유명","유물","유산","유적","유치원","유학","유행","유형","육군","육상","육십","육체","은행","음력","음료","음반","음성","음식","음악","음주","의견","의논","의문","의복","의식","의심","의외로","의욕","의원","의학","이것","이곳","이념","이놈","이달","이대로","이동","이렇게","이력서","이론적","이름","이민","이발소","이별","이불","이빨","이상","이성","이슬","이야기","이용","이웃","이월","이윽고","이익","이전","이중","이튿날","이틀","이혼","인간","인격","인공","인구","인근","인기","인도","인류","인물","인생","인쇄","인연","인원","인재","인종","인천","인체","인터넷","인하","인형","일곱","일기","일단","일대","일등","일반","일본","일부","일상","일생","일손","일요일","일월","일정","일종","일주일","일찍","일체","일치","일행","일회용","임금","임무","입대","입력","입맛","입사","입술","입시","입원","입장","입학","자가용","자격","자극","자동","자랑","자부심","자식","자신","자연","자원","자율","자전거","자정","자존심","자판","작가","작년","작성","작업","작용","작은딸","작품","잔디","잔뜩","잔치","잘못","잠깐","잠수함","잠시","잠옷","잠자리","잡지","장관","장군","장기간","장래","장례","장르","장마","장면","장모","장미","장비","장사","장소","장식","장애인","장인","장점","장차","장학금","재능","재빨리","재산","재생","재작년","재정","재채기","재판","재학","재활용","저것","저고리","저곳","저녁","저런","저렇게","저번","저울","저절로","저축","적극","적당히","적성","적용","적응","전개","전공","전기","전달","전라도","전망","전문","전반","전부","전세","전시","전용","전자","전쟁","전주","전철","전체","전통","전혀","전후","절대","절망","절반","절약","절차","점검","점수","점심","점원","점점","점차","접근","접시","접촉","젓가락","정거장","정도","정류장","정리","정말","정면","정문","정반대","정보","정부","정비","정상","정성","정오","정원","정장","정지","정치","정확히","제공","제과점","제대로","제목","제발","제법","제삿날","제안","제일","제작","제주도","제출","제품","제한","조각","조건","조금","조깅","조명","조미료","조상","조선","조용히","조절","조정","조직","존댓말","존재","졸업","졸음","종교","종로","종류","종소리","종업원","종종","종합","좌석","죄인","주관적","주름","주말","주머니","주먹","주문","주민","주방","주변","주식","주인","주일","주장","주전자","주택","준비","줄거리","줄기","줄무늬","중간","중계방송","중국","중년","중단","중독","중반","중부","중세","중소기업","중순","중앙","중요","중학교","즉석","즉시","즐거움","증가","증거","증권","증상","증세","지각","지갑","지경","지극히","지금","지급","지능","지름길","지리산","지방","지붕","지식","지역","지우개","지원","지적","지점","지진","지출","직선","직업","직원","직장","진급","진동","진로","진료","진리","진짜","진찰","진출","진통","진행","질문","질병","질서","짐작","집단","집안","집중","짜증","찌꺼기","차남","차라리","차량","차림","차별","차선","차츰","착각","찬물","찬성","참가","참기름","참새","참석","참여","참외","참조","찻잔","창가","창고","창구","창문","창밖","창작","창조","채널","채점","책가방","책방","책상","책임","챔피언","처벌","처음","천국","천둥","천장","천재","천천히","철도","철저히","철학","첫날","첫째","청년","청바지","청소","청춘","체계","체력","체온","체육","체중","체험","초등학생","초반","초밥","초상화","초순","초여름","초원","초저녁","초점","초청","초콜릿","촛불","총각","총리","총장","촬영","최근","최상","최선","최신","최악","최종","추석","추억","추진","추천","추측","축구","축소","축제","축하","출근","출발","출산","출신","출연","출입","출장","출판","충격","충고","충돌","충분히","충청도","취업","취직","취향","치약","친구","친척","칠십","칠월","칠판","침대","침묵","침실","칫솔","칭찬","카메라","카운터","칼국수","캐릭터","캠퍼스","캠페인","커튼","컨디션","컬러","컴퓨터","코끼리","코미디","콘서트","콜라","콤플렉스","콩나물","쾌감","쿠데타","크림","큰길","큰딸","큰소리","큰아들","큰어머니","큰일","큰절","클래식","클럽","킬로","타입","타자기","탁구","탁자","탄생","태권도","태양","태풍","택시","탤런트","터널","터미널","테니스","테스트","테이블","텔레비전","토론","토마토","토요일","통계","통과","통로","통신","통역","통일","통장","통제","통증","통합","통화","퇴근","퇴원","퇴직금","튀김","트럭","특급","특별","특성","특수","특징","특히","튼튼히","티셔츠","파란색","파일","파출소","판결","판단","판매","판사","팔십","팔월","팝송","패션","팩스","팩시밀리","팬티","퍼센트","페인트","편견","편의","편지","편히","평가","평균","평생","평소","평양","평일","평화","포스터","포인트","포장","포함","표면","표정","표준","표현","품목","품질","풍경","풍속","풍습","프랑스","프린터","플라스틱","피곤","피망","피아노","필름","필수","필요","필자","필통","핑계","하느님","하늘","하드웨어","하룻밤","하반기","하숙집","하순","하여튼","하지만","하천","하품","하필","학과","학교","학급","학기","학년","학력","학번","학부모","학비","학생","학술","학습","학용품","학원","학위","학자","학점","한계","한글","한꺼번에","한낮","한눈","한동안","한때","한라산","한마디","한문","한번","한복","한식","한여름","한쪽","할머니","할아버지","할인","함께","함부로","합격","합리적","항공","항구","항상","항의","해결","해군","해답","해당","해물","해석","해설","해수욕장","해안","핵심","핸드백","햄버거","햇볕","햇살","행동","행복","행사","행운","행위","향기","향상","향수","허락","허용","헬기","현관","현금","현대","현상","현실","현장","현재","현지","혈액","협력","형부","형사","형수","형식","형제","형태","형편","혜택","호기심","호남","호랑이","호박","호텔","호흡","혹시","홀로","홈페이지","홍보","홍수","홍차","화면","화분","화살","화요일","화장","화학","확보","확인","확장","확정","환갑","환경","환영","환율","환자","활기","활동","활발히","활용","활짝","회견","회관","회복","회색","회원","회장","회전","횟수","횡단보도","효율적","후반","후춧가루","훈련","훨씬","휴식","휴일","흉내","흐름","흑백","흑인","흔적","흔히","흥미","흥분","희곡","희망","희생","흰색","힘껏"]
-},{}],131:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 module.exports={"的":["chinese_simplified","chinese_traditional"],"一":["chinese_simplified","chinese_traditional"],"是":["chinese_simplified","chinese_traditional"],"在":["chinese_simplified","chinese_traditional"],"不":["chinese_simplified","chinese_traditional"],"了":["chinese_simplified","chinese_traditional"],"有":["chinese_simplified","chinese_traditional"],"和":["chinese_simplified","chinese_traditional"],"人":["chinese_simplified","chinese_traditional"],"这":["chinese_simplified"],"中":["chinese_simplified","chinese_traditional"],"大":["chinese_simplified","chinese_traditional"],"为":["chinese_simplified"],"上":["chinese_simplified","chinese_traditional"],"个":["chinese_simplified"],"国":["chinese_simplified"],"我":["chinese_simplified","chinese_traditional"],"以":["chinese_simplified","chinese_traditional"],"要":["chinese_simplified","chinese_traditional"],"他":["chinese_simplified","chinese_traditional"],"时":["chinese_simplified"],"来":["chinese_simplified"],"用":["chinese_simplified","chinese_traditional"],"们":["chinese_simplified"],"生":["chinese_simplified","chinese_traditional"],"到":["chinese_simplified","chinese_traditional"],"作":["chinese_simplified","chinese_traditional"],"地":["chinese_simplified","chinese_traditional"],"于":["chinese_simplified"],"出":["chinese_simplified","chinese_traditional"],"就":["chinese_simplified","chinese_traditional"],"分":["chinese_simplified","chinese_traditional"],"对":["chinese_simplified"],"成":["chinese_simplified","chinese_traditional"],"会":["chinese_simplified"],"可":["chinese_simplified","chinese_traditional"],"主":["chinese_simplified","chinese_traditional"],"发":["chinese_simplified"],"年":["chinese_simplified","chinese_traditional"],"动":["chinese_simplified"],"同":["chinese_simplified","chinese_traditional"],"工":["chinese_simplified","chinese_traditional"],"也":["chinese_simplified","chinese_traditional"],"能":["chinese_simplified","chinese_traditional"],"下":["chinese_simplified","chinese_traditional"],"过":["chinese_simplified"],"子":["chinese_simplified","chinese_traditional"],"说":["chinese_simplified"],"产":["chinese_simplified"],"种":["chinese_simplified"],"面":["chinese_simplified","chinese_traditional"],"而":["chinese_simplified","chinese_traditional"],"方":["chinese_simplified","chinese_traditional"],"后":["chinese_simplified"],"多":["chinese_simplified","chinese_traditional"],"定":["chinese_simplified","chinese_traditional"],"行":["chinese_simplified","chinese_traditional"],"学":["chinese_simplified"],"法":["chinese_simplified","chinese_traditional"],"所":["chinese_simplified","chinese_traditional"],"民":["chinese_simplified","chinese_traditional"],"得":["chinese_simplified","chinese_traditional"],"经":["chinese_simplified"],"十":["chinese_simplified","chinese_traditional"],"三":["chinese_simplified","chinese_traditional"],"之":["chinese_simplified","chinese_traditional"],"进":["chinese_simplified"],"着":["chinese_simplified"],"等":["chinese_simplified","chinese_traditional"],"部":["chinese_simplified","chinese_traditional"],"度":["chinese_simplified","chinese_traditional"],"家":["chinese_simplified","chinese_traditional"],"电":["chinese_simplified"],"力":["chinese_simplified","chinese_traditional"],"里":["chinese_simplified"],"如":["chinese_simplified","chinese_traditional"],"水":["chinese_simplified","chinese_traditional"],"化":["chinese_simplified","chinese_traditional"],"高":["chinese_simplified","chinese_traditional"],"自":["chinese_simplified","chinese_traditional"],"二":["chinese_simplified","chinese_traditional"],"理":["chinese_simplified","chinese_traditional"],"起":["chinese_simplified","chinese_traditional"],"小":["chinese_simplified","chinese_traditional"],"物":["chinese_simplified","chinese_traditional"],"现":["chinese_simplified"],"实":["chinese_simplified"],"加":["chinese_simplified","chinese_traditional"],"量":["chinese_simplified","chinese_traditional"],"都":["chinese_simplified","chinese_traditional"],"两":["chinese_simplified"],"体":["chinese_simplified"],"制":["chinese_simplified","chinese_traditional"],"机":["chinese_simplified"],"当":["chinese_simplified"],"使":["chinese_simplified","chinese_traditional"],"点":["chinese_simplified"],"从":["chinese_simplified"],"业":["chinese_simplified"],"本":["chinese_simplified","chinese_traditional"],"去":["chinese_simplified","chinese_traditional"],"把":["chinese_simplified","chinese_traditional"],"性":["chinese_simplified","chinese_traditional"],"好":["chinese_simplified","chinese_traditional"],"应":["chinese_simplified"],"开":["chinese_simplified"],"它":["chinese_simplified","chinese_traditional"],"合":["chinese_simplified","chinese_traditional"],"还":["chinese_simplified"],"因":["chinese_simplified","chinese_traditional"],"由":["chinese_simplified","chinese_traditional"],"其":["chinese_simplified","chinese_traditional"],"些":["chinese_simplified","chinese_traditional"],"然":["chinese_simplified","chinese_traditional"],"前":["chinese_simplified","chinese_traditional"],"外":["chinese_simplified","chinese_traditional"],"天":["chinese_simplified","chinese_traditional"],"政":["chinese_simplified","chinese_traditional"],"四":["chinese_simplified","chinese_traditional"],"日":["chinese_simplified","chinese_traditional"],"那":["chinese_simplified","chinese_traditional"],"社":["chinese_simplified","chinese_traditional"],"义":["chinese_simplified"],"事":["chinese_simplified","chinese_traditional"],"平":["chinese_simplified","chinese_traditional"],"形":["chinese_simplified","chinese_traditional"],"相":["chinese_simplified","chinese_traditional"],"全":["chinese_simplified","chinese_traditional"],"表":["chinese_simplified","chinese_traditional"],"间":["chinese_simplified"],"样":["chinese_simplified"],"与":["chinese_simplified"],"关":["chinese_simplified"],"各":["chinese_simplified","chinese_traditional"],"重":["chinese_simplified","chinese_traditional"],"新":["chinese_simplified","chinese_traditional"],"线":["chinese_simplified"],"内":["chinese_simplified"],"数":["chinese_simplified"],"正":["chinese_simplified","chinese_traditional"],"心":["chinese_simplified","chinese_traditional"],"反":["chinese_simplified","chinese_traditional"],"你":["chinese_simplified","chinese_traditional"],"明":["chinese_simplified","chinese_traditional"],"看":["chinese_simplified","chinese_traditional"],"原":["chinese_simplified","chinese_traditional"],"又":["chinese_simplified","chinese_traditional"],"么":["chinese_simplified"],"利":["chinese_simplified","chinese_traditional"],"比":["chinese_simplified","chinese_traditional"],"或":["chinese_simplified","chinese_traditional"],"但":["chinese_simplified","chinese_traditional"],"质":["chinese_simplified"],"气":["chinese_simplified"],"第":["chinese_simplified","chinese_traditional"],"向":["chinese_simplified","chinese_traditional"],"道":["chinese_simplified","chinese_traditional"],"命":["chinese_simplified","chinese_traditional"],"此":["chinese_simplified","chinese_traditional"],"变":["chinese_simplified"],"条":["chinese_simplified"],"只":["chinese_simplified","chinese_traditional"],"没":["chinese_simplified"],"结":["chinese_simplified"],"解":["chinese_simplified","chinese_traditional"],"问":["chinese_simplified"],"意":["chinese_simplified","chinese_traditional"],"建":["chinese_simplified","chinese_traditional"],"月":["chinese_simplified","chinese_traditional"],"公":["chinese_simplified","chinese_traditional"],"无":["chinese_simplified"],"系":["chinese_simplified","chinese_traditional"],"军":["chinese_simplified"],"很":["chinese_simplified","chinese_traditional"],"情":["chinese_simplified","chinese_traditional"],"者":["chinese_simplified","chinese_traditional"],"最":["chinese_simplified","chinese_traditional"],"立":["chinese_simplified","chinese_traditional"],"代":["chinese_simplified","chinese_traditional"],"想":["chinese_simplified","chinese_traditional"],"已":["chinese_simplified","chinese_traditional"],"通":["chinese_simplified","chinese_traditional"],"并":["chinese_simplified"],"提":["chinese_simplified","chinese_traditional"],"直":["chinese_simplified","chinese_traditional"],"题":["chinese_simplified"],"党":["chinese_simplified"],"程":["chinese_simplified","chinese_traditional"],"展":["chinese_simplified","chinese_traditional"],"五":["chinese_simplified","chinese_traditional"],"果":["chinese_simplified","chinese_traditional"],"料":["chinese_simplified","chinese_traditional"],"象":["chinese_simplified","chinese_traditional"],"员":["chinese_simplified"],"革":["chinese_simplified","chinese_traditional"],"位":["chinese_simplified","chinese_traditional"],"入":["chinese_simplified","chinese_traditional"],"常":["chinese_simplified","chinese_traditional"],"文":["chinese_simplified","chinese_traditional"],"总":["chinese_simplified"],"次":["chinese_simplified","chinese_traditional"],"品":["chinese_simplified","chinese_traditional"],"式":["chinese_simplified","chinese_traditional"],"活":["chinese_simplified","chinese_traditional"],"设":["chinese_simplified"],"及":["chinese_simplified","chinese_traditional"],"管":["chinese_simplified","chinese_traditional"],"特":["chinese_simplified","chinese_traditional"],"件":["chinese_simplified","chinese_traditional"],"长":["chinese_simplified"],"求":["chinese_simplified","chinese_traditional"],"老":["chinese_simplified","chinese_traditional"],"头":["chinese_simplified"],"基":["chinese_simplified","chinese_traditional"],"资":["chinese_simplified"],"边":["chinese_simplified"],"流":["chinese_simplified","chinese_traditional"],"路":["chinese_simplified","chinese_traditional"],"级":["chinese_simplified"],"少":["chinese_simplified","chinese_traditional"],"图":["chinese_simplified"],"山":["chinese_simplified","chinese_traditional"],"统":["chinese_simplified"],"接":["chinese_simplified","chinese_traditional"],"知":["chinese_simplified","chinese_traditional"],"较":["chinese_simplified"],"将":["chinese_simplified"],"组":["chinese_simplified"],"见":["chinese_simplified"],"计":["chinese_simplified"],"别":["chinese_simplified"],"她":["chinese_simplified","chinese_traditional"],"手":["chinese_simplified","chinese_traditional"],"角":["chinese_simplified","chinese_traditional"],"期":["chinese_simplified","chinese_traditional"],"根":["chinese_simplified","chinese_traditional"],"论":["chinese_simplified"],"运":["chinese_simplified"],"农":["chinese_simplified"],"指":["chinese_simplified","chinese_traditional"],"几":["chinese_simplified"],"九":["chinese_simplified","chinese_traditional"],"区":["chinese_simplified"],"强":["chinese_simplified"],"放":["chinese_simplified","chinese_traditional"],"决":["chinese_simplified"],"西":["chinese_simplified","chinese_traditional"],"被":["chinese_simplified","chinese_traditional"],"干":["chinese_simplified"],"做":["chinese_simplified","chinese_traditional"],"必":["chinese_simplified","chinese_traditional"],"战":["chinese_simplified"],"先":["chinese_simplified","chinese_traditional"],"回":["chinese_simplified","chinese_traditional"],"则":["chinese_simplified"],"任":["chinese_simplified","chinese_traditional"],"取":["chinese_simplified","chinese_traditional"],"据":["chinese_simplified"],"处":["chinese_simplified"],"队":["chinese_simplified"],"南":["chinese_simplified","chinese_traditional"],"给":["chinese_simplified"],"色":["chinese_simplified","chinese_traditional"],"光":["chinese_simplified","chinese_traditional"],"门":["chinese_simplified"],"即":["chinese_simplified","chinese_traditional"],"保":["chinese_simplified","chinese_traditional"],"治":["chinese_simplified","chinese_traditional"],"北":["chinese_simplified","chinese_traditional"],"造":["chinese_simplified","chinese_traditional"],"百":["chinese_simplified","chinese_traditional"],"规":["chinese_simplified"],"热":["chinese_simplified"],"领":["chinese_simplified"],"七":["chinese_simplified","chinese_traditional"],"海":["chinese_simplified","chinese_traditional"],"口":["chinese_simplified","chinese_traditional"],"东":["chinese_simplified"],"导":["chinese_simplified"],"器":["chinese_simplified","chinese_traditional"],"压":["chinese_simplified"],"志":["chinese_simplified","chinese_traditional"],"世":["chinese_simplified","chinese_traditional"],"金":["chinese_simplified","chinese_traditional"],"增":["chinese_simplified","chinese_traditional"],"争":["chinese_simplified"],"济":["chinese_simplified"],"阶":["chinese_simplified"],"油":["chinese_simplified","chinese_traditional"],"思":["chinese_simplified","chinese_traditional"],"术":["chinese_simplified"],"极":["chinese_simplified"],"交":["chinese_simplified","chinese_traditional"],"受":["chinese_simplified","chinese_traditional"],"联":["chinese_simplified"],"什":["chinese_simplified","chinese_traditional"],"认":["chinese_simplified"],"六":["chinese_simplified","chinese_traditional"],"共":["chinese_simplified","chinese_traditional"],"权":["chinese_simplified"],"收":["chinese_simplified","chinese_traditional"],"证":["chinese_simplified"],"改":["chinese_simplified","chinese_traditional"],"清":["chinese_simplified","chinese_traditional"],"美":["chinese_simplified","chinese_traditional"],"再":["chinese_simplified","chinese_traditional"],"采":["chinese_simplified"],"转":["chinese_simplified"],"更":["chinese_simplified","chinese_traditional"],"单":["chinese_simplified"],"风":["chinese_simplified"],"切":["chinese_simplified","chinese_traditional"],"打":["chinese_simplified","chinese_traditional"],"白":["chinese_simplified","chinese_traditional"],"教":["chinese_simplified","chinese_traditional"],"速":["chinese_simplified","chinese_traditional"],"花":["chinese_simplified","chinese_traditional"],"带":["chinese_simplified"],"安":["chinese_simplified","chinese_traditional"],"场":["chinese_simplified"],"身":["chinese_simplified","chinese_traditional"],"车":["chinese_simplified"],"例":["chinese_simplified","chinese_traditional"],"真":["chinese_simplified","chinese_traditional"],"务":["chinese_simplified"],"具":["chinese_simplified","chinese_traditional"],"万":["chinese_simplified"],"每":["chinese_simplified","chinese_traditional"],"目":["chinese_simplified","chinese_traditional"],"至":["chinese_simplified","chinese_traditional"],"达":["chinese_simplified"],"走":["chinese_simplified","chinese_traditional"],"积":["chinese_simplified"],"示":["chinese_simplified","chinese_traditional"],"议":["chinese_simplified"],"声":["chinese_simplified"],"报":["chinese_simplified"],"斗":["chinese_simplified"],"完":["chinese_simplified","chinese_traditional"],"类":["chinese_simplified"],"八":["chinese_simplified","chinese_traditional"],"离":["chinese_simplified"],"华":["chinese_simplified"],"名":["chinese_simplified","chinese_traditional"],"确":["chinese_simplified"],"才":["chinese_simplified","chinese_traditional"],"科":["chinese_simplified","chinese_traditional"],"张":["chinese_simplified"],"信":["chinese_simplified","chinese_traditional"],"马":["chinese_simplified"],"节":["chinese_simplified"],"话":["chinese_simplified"],"米":["chinese_simplified","chinese_traditional"],"整":["chinese_simplified","chinese_traditional"],"空":["chinese_simplified","chinese_traditional"],"元":["chinese_simplified","chinese_traditional"],"况":["chinese_simplified"],"今":["chinese_simplified","chinese_traditional"],"集":["chinese_simplified","chinese_traditional"],"温":["chinese_simplified"],"传":["chinese_simplified"],"土":["chinese_simplified","chinese_traditional"],"许":["chinese_simplified"],"步":["chinese_simplified","chinese_traditional"],"群":["chinese_simplified","chinese_traditional"],"广":["chinese_simplified"],"石":["chinese_simplified","chinese_traditional"],"记":["chinese_simplified"],"需":["chinese_simplified","chinese_traditional"],"段":["chinese_simplified","chinese_traditional"],"研":["chinese_simplified","chinese_traditional"],"界":["chinese_simplified","chinese_traditional"],"拉":["chinese_simplified","chinese_traditional"],"林":["chinese_simplified","chinese_traditional"],"律":["chinese_simplified","chinese_traditional"],"叫":["chinese_simplified","chinese_traditional"],"且":["chinese_simplified","chinese_traditional"],"究":["chinese_simplified","chinese_traditional"],"观":["chinese_simplified"],"越":["chinese_simplified","chinese_traditional"],"织":["chinese_simplified"],"装":["chinese_simplified"],"影":["chinese_simplified","chinese_traditional"],"算":["chinese_simplified","chinese_traditional"],"低":["chinese_simplified","chinese_traditional"],"持":["chinese_simplified","chinese_traditional"],"音":["chinese_simplified","chinese_traditional"],"众":["chinese_simplified"],"书":["chinese_simplified"],"布":["chinese_simplified","chinese_traditional"],"复":["chinese_simplified","chinese_traditional"],"容":["chinese_simplified","chinese_traditional"],"儿":["chinese_simplified"],"须":["chinese_simplified"],"际":["chinese_simplified"],"商":["chinese_simplified","chinese_traditional"],"非":["chinese_simplified","chinese_traditional"],"验":["chinese_simplified"],"连":["chinese_simplified"],"断":["chinese_simplified"],"深":["chinese_simplified","chinese_traditional"],"难":["chinese_simplified"],"近":["chinese_simplified","chinese_traditional"],"矿":["chinese_simplified"],"千":["chinese_simplified","chinese_traditional"],"周":["chinese_simplified"],"委":["chinese_simplified","chinese_traditional"],"素":["chinese_simplified","chinese_traditional"],"技":["chinese_simplified","chinese_traditional"],"备":["chinese_simplified"],"半":["chinese_simplified","chinese_traditional"],"办":["chinese_simplified"],"青":["chinese_simplified","chinese_traditional"],"省":["chinese_simplified","chinese_traditional"],"列":["chinese_simplified","chinese_traditional"],"习":["chinese_simplified"],"响":["chinese_simplified"],"约":["chinese_simplified"],"支":["chinese_simplified","chinese_traditional"],"般":["chinese_simplified","chinese_traditional"],"史":["chinese_simplified","chinese_traditional"],"感":["chinese_simplified","chinese_traditional"],"劳":["chinese_simplified"],"便":["chinese_simplified","chinese_traditional"],"团":["chinese_simplified"],"往":["chinese_simplified","chinese_traditional"],"酸":["chinese_simplified","chinese_traditional"],"历":["chinese_simplified"],"市":["chinese_simplified","chinese_traditional"],"克":["chinese_simplified","chinese_traditional"],"何":["chinese_simplified","chinese_traditional"],"除":["chinese_simplified","chinese_traditional"],"消":["chinese_simplified","chinese_traditional"],"构":["chinese_simplified"],"府":["chinese_simplified","chinese_traditional"],"称":["chinese_simplified"],"太":["chinese_simplified","chinese_traditional"],"准":["chinese_simplified"],"精":["chinese_simplified","chinese_traditional"],"值":["chinese_simplified","chinese_traditional"],"号":["chinese_simplified"],"率":["chinese_simplified","chinese_traditional"],"族":["chinese_simplified","chinese_traditional"],"维":["chinese_simplified"],"划":["chinese_simplified"],"选":["chinese_simplified"],"标":["chinese_simplified"],"写":["chinese_simplified"],"存":["chinese_simplified","chinese_traditional"],"候":["chinese_simplified","chinese_traditional"],"毛":["chinese_simplified","chinese_traditional"],"亲":["chinese_simplified"],"快":["chinese_simplified","chinese_traditional"],"效":["chinese_simplified","chinese_traditional"],"斯":["chinese_simplified","chinese_traditional"],"院":["chinese_simplified","chinese_traditional"],"查":["chinese_simplified","chinese_traditional"],"江":["chinese_simplified","chinese_traditional"],"型":["chinese_simplified","chinese_traditional"],"眼":["chinese_simplified","chinese_traditional"],"王":["chinese_simplified","chinese_traditional"],"按":["chinese_simplified","chinese_traditional"],"格":["chinese_simplified","chinese_traditional"],"养":["chinese_simplified"],"易":["chinese_simplified","chinese_traditional"],"置":["chinese_simplified","chinese_traditional"],"派":["chinese_simplified","chinese_traditional"],"层":["chinese_simplified"],"片":["chinese_simplified","chinese_traditional"],"始":["chinese_simplified","chinese_traditional"],"却":["chinese_simplified"],"专":["chinese_simplified"],"状":["chinese_simplified"],"育":["chinese_simplified","chinese_traditional"],"厂":["chinese_simplified"],"京":["chinese_simplified","chinese_traditional"],"识":["chinese_simplified"],"适":["chinese_simplified"],"属":["chinese_simplified"],"圆":["chinese_simplified"],"包":["chinese_simplified","chinese_traditional"],"火":["chinese_simplified","chinese_traditional"],"住":["chinese_simplified","chinese_traditional"],"调":["chinese_simplified"],"满":["chinese_simplified"],"县":["chinese_simplified"],"局":["chinese_simplified","chinese_traditional"],"照":["chinese_simplified","chinese_traditional"],"参":["chinese_simplified"],"红":["chinese_simplified"],"细":["chinese_simplified"],"引":["chinese_simplified","chinese_traditional"],"听":["chinese_simplified"],"该":["chinese_simplified"],"铁":["chinese_simplified"],"价":["chinese_simplified"],"严":["chinese_simplified"],"首":["chinese_simplified","chinese_traditional"],"底":["chinese_simplified","chinese_traditional"],"液":["chinese_simplified","chinese_traditional"],"官":["chinese_simplified","chinese_traditional"],"德":["chinese_simplified","chinese_traditional"],"随":["chinese_simplified"],"病":["chinese_simplified","chinese_traditional"],"苏":["chinese_simplified"],"失":["chinese_simplified","chinese_traditional"],"尔":["chinese_simplified"],"死":["chinese_simplified","chinese_traditional"],"讲":["chinese_simplified"],"配":["chinese_simplified","chinese_traditional"],"女":["chinese_simplified","chinese_traditional"],"黄":["chinese_simplified"],"推":["chinese_simplified","chinese_traditional"],"显":["chinese_simplified"],"谈":["chinese_simplified"],"罪":["chinese_simplified","chinese_traditional"],"神":["chinese_simplified","chinese_traditional"],"艺":["chinese_simplified"],"呢":["chinese_simplified","chinese_traditional"],"席":["chinese_simplified","chinese_traditional"],"含":["chinese_simplified","chinese_traditional"],"企":["chinese_simplified","chinese_traditional"],"望":["chinese_simplified","chinese_traditional"],"密":["chinese_simplified","chinese_traditional"],"批":["chinese_simplified","chinese_traditional"],"营":["chinese_simplified"],"项":["chinese_simplified"],"防":["chinese_simplified","chinese_traditional"],"举":["chinese_simplified"],"球":["chinese_simplified","chinese_traditional"],"英":["chinese_simplified","chinese_traditional"],"氧":["chinese_simplified","chinese_traditional"],"势":["chinese_simplified"],"告":["chinese_simplified","chinese_traditional"],"李":["chinese_simplified","chinese_traditional"],"台":["chinese_simplified","chinese_traditional"],"落":["chinese_simplified","chinese_traditional"],"木":["chinese_simplified","chinese_traditional"],"帮":["chinese_simplified"],"轮":["chinese_simplified"],"破":["chinese_simplified","chinese_traditional"],"亚":["chinese_simplified"],"师":["chinese_simplified"],"围":["chinese_simplified"],"注":["chinese_simplified","chinese_traditional"],"远":["chinese_simplified"],"字":["chinese_simplified","chinese_traditional"],"材":["chinese_simplified","chinese_traditional"],"排":["chinese_simplified","chinese_traditional"],"供":["chinese_simplified","chinese_traditional"],"河":["chinese_simplified","chinese_traditional"],"态":["chinese_simplified"],"封":["chinese_simplified","chinese_traditional"],"另":["chinese_simplified","chinese_traditional"],"施":["chinese_simplified","chinese_traditional"],"减":["chinese_simplified"],"树":["chinese_simplified"],"溶":["chinese_simplified","chinese_traditional"],"怎":["chinese_simplified","chinese_traditional"],"止":["chinese_simplified","chinese_traditional"],"案":["chinese_simplified","chinese_traditional"],"言":["chinese_simplified","chinese_traditional"],"士":["chinese_simplified","chinese_traditional"],"均":["chinese_simplified","chinese_traditional"],"武":["chinese_simplified","chinese_traditional"],"固":["chinese_simplified","chinese_traditional"],"叶":["chinese_simplified"],"鱼":["chinese_simplified"],"波":["chinese_simplified","chinese_traditional"],"视":["chinese_simplified"],"仅":["chinese_simplified"],"费":["chinese_simplified"],"紧":["chinese_simplified"],"爱":["chinese_simplified"],"左":["chinese_simplified","chinese_traditional"],"章":["chinese_simplified","chinese_traditional"],"早":["chinese_simplified","chinese_traditional"],"朝":["chinese_simplified","chinese_traditional"],"害":["chinese_simplified","chinese_traditional"],"续":["chinese_simplified"],"轻":["chinese_simplified"],"服":["chinese_simplified","chinese_traditional"],"试":["chinese_simplified"],"食":["chinese_simplified","chinese_traditional"],"充":["chinese_simplified","chinese_traditional"],"兵":["chinese_simplified","chinese_traditional"],"源":["chinese_simplified","chinese_traditional"],"判":["chinese_simplified","chinese_traditional"],"护":["chinese_simplified"],"司":["chinese_simplified","chinese_traditional"],"足":["chinese_simplified","chinese_traditional"],"某":["chinese_simplified","chinese_traditional"],"练":["chinese_simplified"],"差":["chinese_simplified","chinese_traditional"],"致":["chinese_simplified","chinese_traditional"],"板":["chinese_simplified","chinese_traditional"],"田":["chinese_simplified","chinese_traditional"],"降":["chinese_simplified","chinese_traditional"],"黑":["chinese_simplified","chinese_traditional"],"犯":["chinese_simplified","chinese_traditional"],"负":["chinese_simplified"],"击":["chinese_simplified"],"范":["chinese_simplified","chinese_traditional"],"继":["chinese_simplified"],"兴":["chinese_simplified"],"似":["chinese_simplified","chinese_traditional"],"余":["chinese_simplified"],"坚":["chinese_simplified"],"曲":["chinese_simplified","chinese_traditional"],"输":["chinese_simplified"],"修":["chinese_simplified","chinese_traditional"],"故":["chinese_simplified","chinese_traditional"],"城":["chinese_simplified","chinese_traditional"],"夫":["chinese_simplified","chinese_traditional"],"够":["chinese_simplified"],"送":["chinese_simplified","chinese_traditional"],"笔":["chinese_simplified"],"船":["chinese_simplified","chinese_traditional"],"占":["chinese_simplified"],"右":["chinese_simplified","chinese_traditional"],"财":["chinese_simplified"],"吃":["chinese_simplified","chinese_traditional"],"富":["chinese_simplified","chinese_traditional"],"春":["chinese_simplified","chinese_traditional"],"职":["chinese_simplified"],"觉":["chinese_simplified"],"汉":["chinese_simplified"],"画":["chinese_simplified"],"功":["chinese_simplified","chinese_traditional"],"巴":["chinese_simplified","chinese_traditional"],"跟":["chinese_simplified","chinese_traditional"],"虽":["chinese_simplified"],"杂":["chinese_simplified"],"飞":["chinese_simplified"],"检":["chinese_simplified"],"吸":["chinese_simplified","chinese_traditional"],"助":["chinese_simplified","chinese_traditional"],"升":["chinese_simplified"],"阳":["chinese_simplified"],"互":["chinese_simplified","chinese_traditional"],"初":["chinese_simplified","chinese_traditional"],"创":["chinese_simplified"],"抗":["chinese_simplified","chinese_traditional"],"考":["chinese_simplified","chinese_traditional"],"投":["chinese_simplified","chinese_traditional"],"坏":["chinese_simplified"],"策":["chinese_simplified","chinese_traditional"],"古":["chinese_simplified","chinese_traditional"],"径":["chinese_simplified"],"换":["chinese_simplified"],"未":["chinese_simplified","chinese_traditional"],"跑":["chinese_simplified","chinese_traditional"],"留":["chinese_simplified","chinese_traditional"],"钢":["chinese_simplified"],"曾":["chinese_simplified","chinese_traditional"],"端":["chinese_simplified","chinese_traditional"],"责":["chinese_simplified"],"站":["chinese_simplified","chinese_traditional"],"简":["chinese_simplified"],"述":["chinese_simplified","chinese_traditional"],"钱":["chinese_simplified"],"副":["chinese_simplified","chinese_traditional"],"尽":["chinese_simplified"],"帝":["chinese_simplified","chinese_traditional"],"射":["chinese_simplified","chinese_traditional"],"草":["chinese_simplified","chinese_traditional"],"冲":["chinese_simplified"],"承":["chinese_simplified","chinese_traditional"],"独":["chinese_simplified"],"令":["chinese_simplified","chinese_traditional"],"限":["chinese_simplified","chinese_traditional"],"阿":["chinese_simplified","chinese_traditional"],"宣":["chinese_simplified","chinese_traditional"],"环":["chinese_simplified"],"双":["chinese_simplified"],"请":["chinese_simplified"],"超":["chinese_simplified","chinese_traditional"],"微":["chinese_simplified","chinese_traditional"],"让":["chinese_simplified"],"控":["chinese_simplified","chinese_traditional"],"州":["chinese_simplified","chinese_traditional"],"良":["chinese_simplified","chinese_traditional"],"轴":["chinese_simplified"],"找":["chinese_simplified","chinese_traditional"],"否":["chinese_simplified","chinese_traditional"],"纪":["chinese_simplified"],"益":["chinese_simplified","chinese_traditional"],"依":["chinese_simplified","chinese_traditional"],"优":["chinese_simplified"],"顶":["chinese_simplified"],"础":["chinese_simplified"],"载":["chinese_simplified"],"倒":["chinese_simplified","chinese_traditional"],"房":["chinese_simplified","chinese_traditional"],"突":["chinese_simplified","chinese_traditional"],"坐":["chinese_simplified","chinese_traditional"],"粉":["chinese_simplified","chinese_traditional"],"敌":["chinese_simplified"],"略":["chinese_simplified","chinese_traditional"],"客":["chinese_simplified","chinese_traditional"],"袁":["chinese_simplified","chinese_traditional"],"冷":["chinese_simplified","chinese_traditional"],"胜":["chinese_simplified"],"绝":["chinese_simplified"],"析":["chinese_simplified","chinese_traditional"],"块":["chinese_simplified"],"剂":["chinese_simplified"],"测":["chinese_simplified"],"丝":["chinese_simplified"],"协":["chinese_simplified"],"诉":["chinese_simplified"],"念":["chinese_simplified","chinese_traditional"],"陈":["chinese_simplified"],"仍":["chinese_simplified","chinese_traditional"],"罗":["chinese_simplified"],"盐":["chinese_simplified"],"友":["chinese_simplified","chinese_traditional"],"洋":["chinese_simplified","chinese_traditional"],"错":["chinese_simplified"],"苦":["chinese_simplified","chinese_traditional"],"夜":["chinese_simplified","chinese_traditional"],"刑":["chinese_simplified","chinese_traditional"],"移":["chinese_simplified","chinese_traditional"],"频":["chinese_simplified"],"逐":["chinese_simplified","chinese_traditional"],"靠":["chinese_simplified","chinese_traditional"],"混":["chinese_simplified","chinese_traditional"],"母":["chinese_simplified","chinese_traditional"],"短":["chinese_simplified","chinese_traditional"],"皮":["chinese_simplified","chinese_traditional"],"终":["chinese_simplified"],"聚":["chinese_simplified","chinese_traditional"],"汽":["chinese_simplified","chinese_traditional"],"村":["chinese_simplified","chinese_traditional"],"云":["chinese_simplified"],"哪":["chinese_simplified","chinese_traditional"],"既":["chinese_simplified","chinese_traditional"],"距":["chinese_simplified","chinese_traditional"],"卫":["chinese_simplified"],"停":["chinese_simplified","chinese_traditional"],"烈":["chinese_simplified","chinese_traditional"],"央":["chinese_simplified","chinese_traditional"],"察":["chinese_simplified","chinese_traditional"],"烧":["chinese_simplified"],"迅":["chinese_simplified","chinese_traditional"],"境":["chinese_simplified","chinese_traditional"],"若":["chinese_simplified","chinese_traditional"],"印":["chinese_simplified","chinese_traditional"],"洲":["chinese_simplified","chinese_traditional"],"刻":["chinese_simplified","chinese_traditional"],"括":["chinese_simplified","chinese_traditional"],"激":["chinese_simplified","chinese_traditional"],"孔":["chinese_simplified","chinese_traditional"],"搞":["chinese_simplified","chinese_traditional"],"甚":["chinese_simplified","chinese_traditional"],"室":["chinese_simplified","chinese_traditional"],"待":["chinese_simplified","chinese_traditional"],"核":["chinese_simplified","chinese_traditional"],"校":["chinese_simplified","chinese_traditional"],"散":["chinese_simplified","chinese_traditional"],"侵":["chinese_simplified","chinese_traditional"],"吧":["chinese_simplified","chinese_traditional"],"甲":["chinese_simplified","chinese_traditional"],"游":["chinese_simplified"],"久":["chinese_simplified","chinese_traditional"],"菜":["chinese_simplified","chinese_traditional"],"味":["chinese_simplified","chinese_traditional"],"旧":["chinese_simplified"],"模":["chinese_simplified","chinese_traditional"],"湖":["chinese_simplified","chinese_traditional"],"货":["chinese_simplified"],"损":["chinese_simplified"],"预":["chinese_simplified"],"阻":["chinese_simplified","chinese_traditional"],"毫":["chinese_simplified","chinese_traditional"],"普":["chinese_simplified","chinese_traditional"],"稳":["chinese_simplified"],"乙":["chinese_simplified","chinese_traditional"],"妈":["chinese_simplified"],"植":["chinese_simplified","chinese_traditional"],"息":["chinese_simplified","chinese_traditional"],"扩":["chinese_simplified"],"银":["chinese_simplified"],"语":["chinese_simplified"],"挥":["chinese_simplified"],"酒":["chinese_simplified","chinese_traditional"],"守":["chinese_simplified","chinese_traditional"],"拿":["chinese_simplified","chinese_traditional"],"序":["chinese_simplified","chinese_traditional"],"纸":["chinese_simplified"],"医":["chinese_simplified"],"缺":["chinese_simplified","chinese_traditional"],"雨":["chinese_simplified","chinese_traditional"],"吗":["chinese_simplified"],"针":["chinese_simplified"],"刘":["chinese_simplified"],"啊":["chinese_simplified","chinese_traditional"],"急":["chinese_simplified","chinese_traditional"],"唱":["chinese_simplified","chinese_traditional"],"误":["chinese_simplified"],"训":["chinese_simplified"],"愿":["chinese_simplified"],"审":["chinese_simplified"],"附":["chinese_simplified","chinese_traditional"],"获":["chinese_simplified"],"茶":["chinese_simplified","chinese_traditional"],"鲜":["chinese_simplified"],"粮":["chinese_simplified"],"斤":["chinese_simplified","chinese_traditional"],"孩":["chinese_simplified","chinese_traditional"],"脱":["chinese_simplified"],"硫":["chinese_simplified","chinese_traditional"],"肥":["chinese_simplified","chinese_traditional"],"善":["chinese_simplified","chinese_traditional"],"龙":["chinese_simplified"],"演":["chinese_simplified","chinese_traditional"],"父":["chinese_simplified","chinese_traditional"],"渐":["chinese_simplified"],"血":["chinese_simplified","chinese_traditional"],"欢":["chinese_simplified"],"械":["chinese_simplified","chinese_traditional"],"掌":["chinese_simplified","chinese_traditional"],"歌":["chinese_simplified","chinese_traditional"],"沙":["chinese_simplified","chinese_traditional"],"刚":["chinese_simplified"],"攻":["chinese_simplified","chinese_traditional"],"谓":["chinese_simplified"],"盾":["chinese_simplified","chinese_traditional"],"讨":["chinese_simplified"],"晚":["chinese_simplified","chinese_traditional"],"粒":["chinese_simplified","chinese_traditional"],"乱":["chinese_simplified"],"燃":["chinese_simplified","chinese_traditional"],"矛":["chinese_simplified","chinese_traditional"],"乎":["chinese_simplified","chinese_traditional"],"杀":["chinese_simplified"],"药":["chinese_simplified"],"宁":["chinese_simplified"],"鲁":["chinese_simplified"],"贵":["chinese_simplified"],"钟":["chinese_simplified"],"煤":["chinese_simplified","chinese_traditional"],"读":["chinese_simplified"],"班":["chinese_simplified","chinese_traditional"],"伯":["chinese_simplified","chinese_traditional"],"香":["chinese_simplified","chinese_traditional"],"介":["chinese_simplified","chinese_traditional"],"迫":["chinese_simplified","chinese_traditional"],"句":["chinese_simplified","chinese_traditional"],"丰":["chinese_simplified"],"培":["chinese_simplified","chinese_traditional"],"握":["chinese_simplified","chinese_traditional"],"兰":["chinese_simplified"],"担":["chinese_simplified"],"弦":["chinese_simplified","chinese_traditional"],"蛋":["chinese_simplified","chinese_traditional"],"沉":["chinese_simplified","chinese_traditional"],"假":["chinese_simplified","chinese_traditional"],"穿":["chinese_simplified","chinese_traditional"],"执":["chinese_simplified"],"答":["chinese_simplified","chinese_traditional"],"乐":["chinese_simplified"],"谁":["chinese_simplified"],"顺":["chinese_simplified"],"烟":["chinese_simplified"],"缩":["chinese_simplified"],"征":["chinese_simplified"],"脸":["chinese_simplified"],"喜":["chinese_simplified","chinese_traditional"],"松":["chinese_simplified","chinese_traditional"],"脚":["chinese_simplified"],"困":["chinese_simplified","chinese_traditional"],"异":["chinese_simplified"],"免":["chinese_simplified","chinese_traditional"],"背":["chinese_simplified","chinese_traditional"],"星":["chinese_simplified","chinese_traditional"],"福":["chinese_simplified","chinese_traditional"],"买":["chinese_simplified"],"染":["chinese_simplified","chinese_traditional"],"井":["chinese_simplified","chinese_traditional"],"概":["chinese_simplified","chinese_traditional"],"慢":["chinese_simplified","chinese_traditional"],"怕":["chinese_simplified","chinese_traditional"],"磁":["chinese_simplified","chinese_traditional"],"倍":["chinese_simplified","chinese_traditional"],"祖":["chinese_simplified","chinese_traditional"],"皇":["chinese_simplified","chinese_traditional"],"促":["chinese_simplified","chinese_traditional"],"静":["chinese_simplified"],"补":["chinese_simplified"],"评":["chinese_simplified"],"翻":["chinese_simplified","chinese_traditional"],"肉":["chinese_simplified","chinese_traditional"],"践":["chinese_simplified"],"尼":["chinese_simplified","chinese_traditional"],"衣":["chinese_simplified","chinese_traditional"],"宽":["chinese_simplified"],"扬":["chinese_simplified"],"棉":["chinese_simplified","chinese_traditional"],"希":["chinese_simplified","chinese_traditional"],"伤":["chinese_simplified"],"操":["chinese_simplified","chinese_traditional"],"垂":["chinese_simplified","chinese_traditional"],"秋":["chinese_simplified","chinese_traditional"],"宜":["chinese_simplified","chinese_traditional"],"氢":["chinese_simplified"],"套":["chinese_simplified","chinese_traditional"],"督":["chinese_simplified","chinese_traditional"],"振":["chinese_simplified","chinese_traditional"],"架":["chinese_simplified","chinese_traditional"],"亮":["chinese_simplified","chinese_traditional"],"末":["chinese_simplified","chinese_traditional"],"宪":["chinese_simplified"],"庆":["chinese_simplified"],"编":["chinese_simplified"],"牛":["chinese_simplified","chinese_traditional"],"触":["chinese_simplified"],"映":["chinese_simplified","chinese_traditional"],"雷":["chinese_simplified","chinese_traditional"],"销":["chinese_simplified"],"诗":["chinese_simplified"],"座":["chinese_simplified","chinese_traditional"],"居":["chinese_simplified","chinese_traditional"],"抓":["chinese_simplified","chinese_traditional"],"裂":["chinese_simplified","chinese_traditional"],"胞":["chinese_simplified","chinese_traditional"],"呼":["chinese_simplified","chinese_traditional"],"娘":["chinese_simplified","chinese_traditional"],"景":["chinese_simplified","chinese_traditional"],"威":["chinese_simplified","chinese_traditional"],"绿":["chinese_simplified"],"晶":["chinese_simplified","chinese_traditional"],"厚":["chinese_simplified","chinese_traditional"],"盟":["chinese_simplified","chinese_traditional"],"衡":["chinese_simplified","chinese_traditional"],"鸡":["chinese_simplified"],"孙":["chinese_simplified"],"延":["chinese_simplified","chinese_traditional"],"危":["chinese_simplified","chinese_traditional"],"胶":["chinese_simplified"],"屋":["chinese_simplified","chinese_traditional"],"乡":["chinese_simplified"],"临":["chinese_simplified"],"陆":["chinese_simplified"],"顾":["chinese_simplified"],"掉":["chinese_simplified","chinese_traditional"],"呀":["chinese_simplified","chinese_traditional"],"灯":["chinese_simplified"],"岁":["chinese_simplified"],"措":["chinese_simplified","chinese_traditional"],"束":["chinese_simplified","chinese_traditional"],"耐":["chinese_simplified","chinese_traditional"],"剧":["chinese_simplified"],"玉":["chinese_simplified","chinese_traditional"],"赵":["chinese_simplified"],"跳":["chinese_simplified","chinese_traditional"],"哥":["chinese_simplified","chinese_traditional"],"季":["chinese_simplified","chinese_traditional"],"课":["chinese_simplified"],"凯":["chinese_simplified"],"胡":["chinese_simplified","chinese_traditional"],"额":["chinese_simplified"],"款":["chinese_simplified","chinese_traditional"],"绍":["chinese_simplified"],"卷":["chinese_simplified","chinese_traditional"],"齐":["chinese_simplified"],"伟":["chinese_simplified"],"蒸":["chinese_simplified","chinese_traditional"],"殖":["chinese_simplified","chinese_traditional"],"永":["chinese_simplified","chinese_traditional"],"宗":["chinese_simplified","chinese_traditional"],"苗":["chinese_simplified","chinese_traditional"],"川":["chinese_simplified","chinese_traditional"],"炉":["chinese_simplified"],"岩":["chinese_simplified","chinese_traditional"],"弱":["chinese_simplified","chinese_traditional"],"零":["chinese_simplified","chinese_traditional"],"杨":["chinese_simplified"],"奏":["chinese_simplified","chinese_traditional"],"沿":["chinese_simplified","chinese_traditional"],"露":["chinese_simplified","chinese_traditional"],"杆":["chinese_simplified"],"探":["chinese_simplified","chinese_traditional"],"滑":["chinese_simplified","chinese_traditional"],"镇":["chinese_simplified"],"饭":["chinese_simplified"],"浓":["chinese_simplified"],"航":["chinese_simplified","chinese_traditional"],"怀":["chinese_simplified"],"赶":["chinese_simplified"],"库":["chinese_simplified"],"夺":["chinese_simplified"],"伊":["chinese_simplified","chinese_traditional"],"灵":["chinese_simplified"],"税":["chinese_simplified"],"途":["chinese_simplified","chinese_traditional"],"灭":["chinese_simplified"],"赛":["chinese_simplified"],"归":["chinese_simplified"],"召":["chinese_simplified","chinese_traditional"],"鼓":["chinese_simplified","chinese_traditional"],"播":["chinese_simplified","chinese_traditional"],"盘":["chinese_simplified"],"裁":["chinese_simplified","chinese_traditional"],"险":["chinese_simplified"],"康":["chinese_simplified","chinese_traditional"],"唯":["chinese_simplified","chinese_traditional"],"录":["chinese_simplified"],"菌":["chinese_simplified","chinese_traditional"],"纯":["chinese_simplified"],"借":["chinese_simplified","chinese_traditional"],"糖":["chinese_simplified","chinese_traditional"],"盖":["chinese_simplified"],"横":["chinese_simplified"],"符":["chinese_simplified","chinese_traditional"],"私":["chinese_simplified","chinese_traditional"],"努":["chinese_simplified","chinese_traditional"],"堂":["chinese_simplified","chinese_traditional"],"域":["chinese_simplified","chinese_traditional"],"枪":["chinese_simplified"],"润":["chinese_simplified"],"幅":["chinese_simplified","chinese_traditional"],"哈":["chinese_simplified","chinese_traditional"],"竟":["chinese_simplified","chinese_traditional"],"熟":["chinese_simplified","chinese_traditional"],"虫":["chinese_simplified"],"泽":["chinese_simplified"],"脑":["chinese_simplified"],"壤":["chinese_simplified","chinese_traditional"],"碳":["chinese_simplified","chinese_traditional"],"欧":["chinese_simplified"],"遍":["chinese_simplified","chinese_traditional"],"侧":["chinese_simplified"],"寨":["chinese_simplified","chinese_traditional"],"敢":["chinese_simplified","chinese_traditional"],"彻":["chinese_simplified"],"虑":["chinese_simplified"],"斜":["chinese_simplified","chinese_traditional"],"薄":["chinese_simplified","chinese_traditional"],"庭":["chinese_simplified","chinese_traditional"],"纳":["chinese_simplified"],"弹":["chinese_simplified"],"饲":["chinese_simplified"],"伸":["chinese_simplified","chinese_traditional"],"折":["chinese_simplified","chinese_traditional"],"麦":["chinese_simplified"],"湿":["chinese_simplified"],"暗":["chinese_simplified","chinese_traditional"],"荷":["chinese_simplified","chinese_traditional"],"瓦":["chinese_simplified","chinese_traditional"],"塞":["chinese_simplified","chinese_traditional"],"床":["chinese_simplified","chinese_traditional"],"筑":["chinese_simplified"],"恶":["chinese_simplified"],"户":["chinese_simplified"],"访":["chinese_simplified"],"塔":["chinese_simplified","chinese_traditional"],"奇":["chinese_simplified","chinese_traditional"],"透":["chinese_simplified","chinese_traditional"],"梁":["chinese_simplified","chinese_traditional"],"刀":["chinese_simplified","chinese_traditional"],"旋":["chinese_simplified","chinese_traditional"],"迹":["chinese_simplified"],"卡":["chinese_simplified","chinese_traditional"],"氯":["chinese_simplified","chinese_traditional"],"遇":["chinese_simplified","chinese_traditional"],"份":["chinese_simplified","chinese_traditional"],"毒":["chinese_simplified","chinese_traditional"],"泥":["chinese_simplified","chinese_traditional"],"退":["chinese_simplified","chinese_traditional"],"洗":["chinese_simplified","chinese_traditional"],"摆":["chinese_simplified"],"灰":["chinese_simplified","chinese_traditional"],"彩":["chinese_simplified","chinese_traditional"],"卖":["chinese_simplified"],"耗":["chinese_simplified","chinese_traditional"],"夏":["chinese_simplified","chinese_traditional"],"择":["chinese_simplified"],"忙":["chinese_simplified","chinese_traditional"],"铜":["chinese_simplified"],"献":["chinese_simplified"],"硬":["chinese_simplified","chinese_traditional"],"予":["chinese_simplified","chinese_traditional"],"繁":["chinese_simplified","chinese_traditional"],"圈":["chinese_simplified","chinese_traditional"],"雪":["chinese_simplified","chinese_traditional"],"函":["chinese_simplified","chinese_traditional"],"亦":["chinese_simplified","chinese_traditional"],"抽":["chinese_simplified","chinese_traditional"],"篇":["chinese_simplified","chinese_traditional"],"阵":["chinese_simplified"],"阴":["chinese_simplified"],"丁":["chinese_simplified","chinese_traditional"],"尺":["chinese_simplified","chinese_traditional"],"追":["chinese_simplified","chinese_traditional"],"堆":["chinese_simplified","chinese_traditional"],"雄":["chinese_simplified","chinese_traditional"],"迎":["chinese_simplified","chinese_traditional"],"泛":["chinese_simplified","chinese_traditional"],"爸":["chinese_simplified","chinese_traditional"],"楼":["chinese_simplified"],"避":["chinese_simplified","chinese_traditional"],"谋":["chinese_simplified"],"吨":["chinese_simplified"],"野":["chinese_simplified","chinese_traditional"],"猪":["chinese_simplified"],"旗":["chinese_simplified","chinese_traditional"],"累":["chinese_simplified","chinese_traditional"],"偏":["chinese_simplified","chinese_traditional"],"典":["chinese_simplified","chinese_traditional"],"馆":["chinese_simplified"],"索":["chinese_simplified","chinese_traditional"],"秦":["chinese_simplified","chinese_traditional"],"脂":["chinese_simplified","chinese_traditional"],"潮":["chinese_simplified","chinese_traditional"],"爷":["chinese_simplified"],"豆":["chinese_simplified","chinese_traditional"],"忽":["chinese_simplified","chinese_traditional"],"托":["chinese_simplified","chinese_traditional"],"惊":["chinese_simplified"],"塑":["chinese_simplified","chinese_traditional"],"遗":["chinese_simplified"],"愈":["chinese_simplified","chinese_traditional"],"朱":["chinese_simplified","chinese_traditional"],"替":["chinese_simplified","chinese_traditional"],"纤":["chinese_simplified"],"粗":["chinese_simplified","chinese_traditional"],"倾":["chinese_simplified"],"尚":["chinese_simplified","chinese_traditional"],"痛":["chinese_simplified","chinese_traditional"],"楚":["chinese_simplified","chinese_traditional"],"谢":["chinese_simplified"],"奋":["chinese_simplified"],"购":["chinese_simplified"],"磨":["chinese_simplified","chinese_traditional"],"君":["chinese_simplified","chinese_traditional"],"池":["chinese_simplified","chinese_traditional"],"旁":["chinese_simplified","chinese_traditional"],"碎":["chinese_simplified","chinese_traditional"],"骨":["chinese_simplified","chinese_traditional"],"监":["chinese_simplified"],"捕":["chinese_simplified","chinese_traditional"],"弟":["chinese_simplified","chinese_traditional"],"暴":["chinese_simplified","chinese_traditional"],"割":["chinese_simplified","chinese_traditional"],"贯":["chinese_simplified"],"殊":["chinese_simplified","chinese_traditional"],"释":["chinese_simplified"],"词":["chinese_simplified"],"亡":["chinese_simplified","chinese_traditional"],"壁":["chinese_simplified","chinese_traditional"],"顿":["chinese_simplified"],"宝":["chinese_simplified"],"午":["chinese_simplified","chinese_traditional"],"尘":["chinese_simplified"],"闻":["chinese_simplified"],"揭":["chinese_simplified","chinese_traditional"],"炮":["chinese_simplified","chinese_traditional"],"残":["chinese_simplified"],"冬":["chinese_simplified","chinese_traditional"],"桥":["chinese_simplified"],"妇":["chinese_simplified"],"警":["chinese_simplified","chinese_traditional"],"综":["chinese_simplified"],"招":["chinese_simplified","chinese_traditional"],"吴":["chinese_simplified"],"付":["chinese_simplified","chinese_traditional"],"浮":["chinese_simplified","chinese_traditional"],"遭":["chinese_simplified","chinese_traditional"],"徐":["chinese_simplified","chinese_traditional"],"您":["chinese_simplified","chinese_traditional"],"摇":["chinese_simplified"],"谷":["chinese_simplified","chinese_traditional"],"赞":["chinese_simplified"],"箱":["chinese_simplified","chinese_traditional"],"隔":["chinese_simplified","chinese_traditional"],"订":["chinese_simplified"],"男":["chinese_simplified","chinese_traditional"],"吹":["chinese_simplified","chinese_traditional"],"园":["chinese_simplified"],"纷":["chinese_simplified"],"唐":["chinese_simplified","chinese_traditional"],"败":["chinese_simplified"],"宋":["chinese_simplified","chinese_traditional"],"玻":["chinese_simplified","chinese_traditional"],"巨":["chinese_simplified","chinese_traditional"],"耕":["chinese_simplified","chinese_traditional"],"坦":["chinese_simplified","chinese_traditional"],"荣":["chinese_simplified"],"闭":["chinese_simplified"],"湾":["chinese_simplified"],"键":["chinese_simplified"],"凡":["chinese_simplified","chinese_traditional"],"驻":["chinese_simplified"],"锅":["chinese_simplified"],"救":["chinese_simplified","chinese_traditional"],"恩":["chinese_simplified","chinese_traditional"],"剥":["chinese_simplified"],"凝":["chinese_simplified","chinese_traditional"],"碱":["chinese_simplified"],"齿":["chinese_simplified"],"截":["chinese_simplified","chinese_traditional"],"炼":["chinese_simplified"],"麻":["chinese_simplified","chinese_traditional"],"纺":["chinese_simplified"],"禁":["chinese_simplified","chinese_traditional"],"废":["chinese_simplified"],"盛":["chinese_simplified","chinese_traditional"],"版":["chinese_simplified","chinese_traditional"],"缓":["chinese_simplified"],"净":["chinese_simplified"],"睛":["chinese_simplified","chinese_traditional"],"昌":["chinese_simplified","chinese_traditional"],"婚":["chinese_simplified","chinese_traditional"],"涉":["chinese_simplified","chinese_traditional"],"筒":["chinese_simplified","chinese_traditional"],"嘴":["chinese_simplified","chinese_traditional"],"插":["chinese_simplified","chinese_traditional"],"岸":["chinese_simplified","chinese_traditional"],"朗":["chinese_simplified","chinese_traditional"],"庄":["chinese_simplified"],"街":["chinese_simplified","chinese_traditional"],"藏":["chinese_simplified","chinese_traditional"],"姑":["chinese_simplified","chinese_traditional"],"贸":["chinese_simplified"],"腐":["chinese_simplified","chinese_traditional"],"奴":["chinese_simplified","chinese_traditional"],"啦":["chinese_simplified","chinese_traditional"],"惯":["chinese_simplified"],"乘":["chinese_simplified","chinese_traditional"],"伙":["chinese_simplified"],"恢":["chinese_simplified","chinese_traditional"],"匀":["chinese_simplified"],"纱":["chinese_simplified"],"扎":["chinese_simplified","chinese_traditional"],"辩":["chinese_simplified"],"耳":["chinese_simplified","chinese_traditional"],"彪":["chinese_simplified","chinese_traditional"],"臣":["chinese_simplified","chinese_traditional"],"亿":["chinese_simplified"],"璃":["chinese_simplified","chinese_traditional"],"抵":["chinese_simplified","chinese_traditional"],"脉":["chinese_simplified"],"秀":["chinese_simplified","chinese_traditional"],"萨":["chinese_simplified"],"俄":["chinese_simplified","chinese_traditional"],"网":["chinese_simplified"],"舞":["chinese_simplified","chinese_traditional"],"店":["chinese_simplified","chinese_traditional"],"喷":["chinese_simplified"],"纵":["chinese_simplified"],"寸":["chinese_simplified","chinese_traditional"],"汗":["chinese_simplified","chinese_traditional"],"挂":["chinese_simplified"],"洪":["chinese_simplified","chinese_traditional"],"贺":["chinese_simplified"],"闪":["chinese_simplified"],"柬":["chinese_simplified","chinese_traditional"],"爆":["chinese_simplified","chinese_traditional"],"烯":["chinese_simplified","chinese_traditional"],"津":["chinese_simplified","chinese_traditional"],"稻":["chinese_simplified","chinese_traditional"],"墙":["chinese_simplified"],"软":["chinese_simplified"],"勇":["chinese_simplified","chinese_traditional"],"像":["chinese_simplified","chinese_traditional"],"滚":["chinese_simplified"],"厘":["chinese_simplified","chinese_traditional"],"蒙":["chinese_simplified","chinese_traditional"],"芳":["chinese_simplified","chinese_traditional"],"肯":["chinese_simplified","chinese_traditional"],"坡":["chinese_simplified","chinese_traditional"],"柱":["chinese_simplified","chinese_traditional"],"荡":["chinese_simplified"],"腿":["chinese_simplified","chinese_traditional"],"仪":["chinese_simplified"],"旅":["chinese_simplified","chinese_traditional"],"尾":["chinese_simplified","chinese_traditional"],"轧":["chinese_simplified"],"冰":["chinese_simplified","chinese_traditional"],"贡":["chinese_simplified"],"登":["chinese_simplified","chinese_traditional"],"黎":["chinese_simplified","chinese_traditional"],"削":["chinese_simplified","chinese_traditional"],"钻":["chinese_simplified"],"勒":["chinese_simplified","chinese_traditional"],"逃":["chinese_simplified","chinese_traditional"],"障":["chinese_simplified","chinese_traditional"],"氨":["chinese_simplified","chinese_traditional"],"郭":["chinese_simplified","chinese_traditional"],"峰":["chinese_simplified","chinese_traditional"],"币":["chinese_simplified"],"港":["chinese_simplified","chinese_traditional"],"伏":["chinese_simplified","chinese_traditional"],"轨":["chinese_simplified"],"亩":["chinese_simplified"],"毕":["chinese_simplified"],"擦":["chinese_simplified","chinese_traditional"],"莫":["chinese_simplified","chinese_traditional"],"刺":["chinese_simplified","chinese_traditional"],"浪":["chinese_simplified","chinese_traditional"],"秘":["chinese_simplified","chinese_traditional"],"援":["chinese_simplified","chinese_traditional"],"株":["chinese_simplified","chinese_traditional"],"健":["chinese_simplified","chinese_traditional"],"售":["chinese_simplified","chinese_traditional"],"股":["chinese_simplified","chinese_traditional"],"岛":["chinese_simplified"],"甘":["chinese_simplified","chinese_traditional"],"泡":["chinese_simplified","chinese_traditional"],"睡":["chinese_simplified","chinese_traditional"],"童":["chinese_simplified","chinese_traditional"],"铸":["chinese_simplified"],"汤":["chinese_simplified"],"阀":["chinese_simplified"],"休":["chinese_simplified","chinese_traditional"],"汇":["chinese_simplified"],"舍":["chinese_simplified","chinese_traditional"],"牧":["chinese_simplified","chinese_traditional"],"绕":["chinese_simplified"],"炸":["chinese_simplified","chinese_traditional"],"哲":["chinese_simplified","chinese_traditional"],"磷":["chinese_simplified","chinese_traditional"],"绩":["chinese_simplified"],"朋":["chinese_simplified","chinese_traditional"],"淡":["chinese_simplified","chinese_traditional"],"尖":["chinese_simplified","chinese_traditional"],"启":["chinese_simplified"],"陷":["chinese_simplified","chinese_traditional"],"柴":["chinese_simplified","chinese_traditional"],"呈":["chinese_simplified","chinese_traditional"],"徒":["chinese_simplified","chinese_traditional"],"颜":["chinese_simplified"],"泪":["chinese_simplified"],"稍":["chinese_simplified","chinese_traditional"],"忘":["chinese_simplified","chinese_traditional"],"泵":["chinese_simplified","chinese_traditional"],"蓝":["chinese_simplified"],"拖":["chinese_simplified","chinese_traditional"],"洞":["chinese_simplified","chinese_traditional"],"授":["chinese_simplified","chinese_traditional"],"镜":["chinese_simplified"],"辛":["chinese_simplified","chinese_traditional"],"壮":["chinese_simplified"],"锋":["chinese_simplified"],"贫":["chinese_simplified"],"虚":["chinese_simplified"],"弯":["chinese_simplified"],"摩":["chinese_simplified","chinese_traditional"],"泰":["chinese_simplified","chinese_traditional"],"幼":["chinese_simplified","chinese_traditional"],"廷":["chinese_simplified","chinese_traditional"],"尊":["chinese_simplified","chinese_traditional"],"窗":["chinese_simplified","chinese_traditional"],"纲":["chinese_simplified"],"弄":["chinese_simplified","chinese_traditional"],"隶":["chinese_simplified"],"疑":["chinese_simplified","chinese_traditional"],"氏":["chinese_simplified","chinese_traditional"],"宫":["chinese_simplified"],"姐":["chinese_simplified","chinese_traditional"],"震":["chinese_simplified","chinese_traditional"],"瑞":["chinese_simplified","chinese_traditional"],"怪":["chinese_simplified","chinese_traditional"],"尤":["chinese_simplified","chinese_traditional"],"琴":["chinese_simplified","chinese_traditional"],"循":["chinese_simplified","chinese_traditional"],"描":["chinese_simplified","chinese_traditional"],"膜":["chinese_simplified","chinese_traditional"],"违":["chinese_simplified"],"夹":["chinese_simplified"],"腰":["chinese_simplified","chinese_traditional"],"缘":["chinese_simplified"],"珠":["chinese_simplified","chinese_traditional"],"穷":["chinese_simplified"],"森":["chinese_simplified","chinese_traditional"],"枝":["chinese_simplified","chinese_traditional"],"竹":["chinese_simplified","chinese_traditional"],"沟":["chinese_simplified"],"催":["chinese_simplified","chinese_traditional"],"绳":["chinese_simplified"],"忆":["chinese_simplified"],"邦":["chinese_simplified","chinese_traditional"],"剩":["chinese_simplified","chinese_traditional"],"幸":["chinese_simplified","chinese_traditional"],"浆":["chinese_simplified"],"栏":["chinese_simplified"],"拥":["chinese_simplified"],"牙":["chinese_simplified","chinese_traditional"],"贮":["chinese_simplified"],"礼":["chinese_simplified"],"滤":["chinese_simplified"],"钠":["chinese_simplified"],"纹":["chinese_simplified"],"罢":["chinese_simplified"],"拍":["chinese_simplified","chinese_traditional"],"咱":["chinese_simplified","chinese_traditional"],"喊":["chinese_simplified","chinese_traditional"],"袖":["chinese_simplified","chinese_traditional"],"埃":["chinese_simplified","chinese_traditional"],"勤":["chinese_simplified","chinese_traditional"],"罚":["chinese_simplified"],"焦":["chinese_simplified","chinese_traditional"],"潜":["chinese_simplified"],"伍":["chinese_simplified","chinese_traditional"],"墨":["chinese_simplified","chinese_traditional"],"欲":["chinese_simplified","chinese_traditional"],"缝":["chinese_simplified"],"姓":["chinese_simplified","chinese_traditional"],"刊":["chinese_simplified","chinese_traditional"],"饱":["chinese_simplified"],"仿":["chinese_simplified","chinese_traditional"],"奖":["chinese_simplified"],"铝":["chinese_simplified"],"鬼":["chinese_simplified","chinese_traditional"],"丽":["chinese_simplified"],"跨":["chinese_simplified","chinese_traditional"],"默":["chinese_simplified","chinese_traditional"],"挖":["chinese_simplified","chinese_traditional"],"链":["chinese_simplified"],"扫":["chinese_simplified"],"喝":["chinese_simplified","chinese_traditional"],"袋":["chinese_simplified","chinese_traditional"],"炭":["chinese_simplified","chinese_traditional"],"污":["chinese_simplified","chinese_traditional"],"幕":["chinese_simplified","chinese_traditional"],"诸":["chinese_simplified"],"弧":["chinese_simplified","chinese_traditional"],"励":["chinese_simplified"],"梅":["chinese_simplified","chinese_traditional"],"奶":["chinese_simplified","chinese_traditional"],"洁":["chinese_simplified"],"灾":["chinese_simplified"],"舟":["chinese_simplified","chinese_traditional"],"鉴":["chinese_simplified"],"苯":["chinese_simplified","chinese_traditional"],"讼":["chinese_simplified"],"抱":["chinese_simplified","chinese_traditional"],"毁":["chinese_simplified"],"懂":["chinese_simplified","chinese_traditional"],"寒":["chinese_simplified","chinese_traditional"],"智":["chinese_simplified","chinese_traditional"],"埔":["chinese_simplified","chinese_traditional"],"寄":["chinese_simplified","chinese_traditional"],"届":["chinese_simplified"],"跃":["chinese_simplified"],"渡":["chinese_simplified","chinese_traditional"],"挑":["chinese_simplified","chinese_traditional"],"丹":["chinese_simplified","chinese_traditional"],"艰":["chinese_simplified"],"贝":["chinese_simplified"],"碰":["chinese_simplified","chinese_traditional"],"拔":["chinese_simplified","chinese_traditional"],"爹":["chinese_simplified","chinese_traditional"],"戴":["chinese_simplified","chinese_traditional"],"码":["chinese_simplified"],"梦":["chinese_simplified"],"芽":["chinese_simplified","chinese_traditional"],"熔":["chinese_simplified","chinese_traditional"],"赤":["chinese_simplified","chinese_traditional"],"渔":["chinese_simplified"],"哭":["chinese_simplified","chinese_traditional"],"敬":["chinese_simplified","chinese_traditional"],"颗":["chinese_simplified"],"奔":["chinese_simplified","chinese_traditional"],"铅":["chinese_simplified"],"仲":["chinese_simplified","chinese_traditional"],"虎":["chinese_simplified","chinese_traditional"],"稀":["chinese_simplified","chinese_traditional"],"妹":["chinese_simplified","chinese_traditional"],"乏":["chinese_simplified","chinese_traditional"],"珍":["chinese_simplified","chinese_traditional"],"申":["chinese_simplified","chinese_traditional"],"桌":["chinese_simplified","chinese_traditional"],"遵":["chinese_simplified","chinese_traditional"],"允":["chinese_simplified","chinese_traditional"],"隆":["chinese_simplified","chinese_traditional"],"螺":["chinese_simplified","chinese_traditional"],"仓":["chinese_simplified"],"魏":["chinese_simplified","chinese_traditional"],"锐":["chinese_simplified"],"晓":["chinese_simplified"],"氮":["chinese_simplified","chinese_traditional"],"兼":["chinese_simplified","chinese_traditional"],"隐":["chinese_simplified"],"碍":["chinese_simplified"],"赫":["chinese_simplified","chinese_traditional"],"拨":["chinese_simplified"],"忠":["chinese_simplified","chinese_traditional"],"肃":["chinese_simplified"],"缸":["chinese_simplified","chinese_traditional"],"牵":["chinese_simplified"],"抢":["chinese_simplified"],"博":["chinese_simplified","chinese_traditional"],"巧":["chinese_simplified","chinese_traditional"],"壳":["chinese_simplified"],"兄":["chinese_simplified","chinese_traditional"],"杜":["chinese_simplified","chinese_traditional"],"讯":["chinese_simplified"],"诚":["chinese_simplified"],"碧":["chinese_simplified","chinese_traditional"],"祥":["chinese_simplified","chinese_traditional"],"柯":["chinese_simplified","chinese_traditional"],"页":["chinese_simplified"],"巡":["chinese_simplified","chinese_traditional"],"矩":["chinese_simplified","chinese_traditional"],"悲":["chinese_simplified","chinese_traditional"],"灌":["chinese_simplified","chinese_traditional"],"龄":["chinese_simplified"],"伦":["chinese_simplified"],"票":["chinese_simplified","chinese_traditional"],"寻":["chinese_simplified"],"桂":["chinese_simplified","chinese_traditional"],"铺":["chinese_simplified"],"圣":["chinese_simplified"],"恐":["chinese_simplified","chinese_traditional"],"恰":["chinese_simplified","chinese_traditional"],"郑":["chinese_simplified"],"趣":["chinese_simplified","chinese_traditional"],"抬":["chinese_simplified","chinese_traditional"],"荒":["chinese_simplified","chinese_traditional"],"腾":["chinese_simplified"],"贴":["chinese_simplified"],"柔":["chinese_simplified","chinese_traditional"],"滴":["chinese_simplified","chinese_traditional"],"猛":["chinese_simplified","chinese_traditional"],"阔":["chinese_simplified"],"辆":["chinese_simplified"],"妻":["chinese_simplified","chinese_traditional"],"填":["chinese_simplified","chinese_traditional"],"撤":["chinese_simplified","chinese_traditional"],"储":["chinese_simplified"],"签":["chinese_simplified"],"闹":["chinese_simplified"],"扰":["chinese_simplified"],"紫":["chinese_simplified","chinese_traditional"],"砂":["chinese_simplified","chinese_traditional"],"递":["chinese_simplified"],"戏":["chinese_simplified"],"吊":["chinese_simplified","chinese_traditional"],"陶":["chinese_simplified","chinese_traditional"],"伐":["chinese_simplified","chinese_traditional"],"喂":["chinese_simplified"],"疗":["chinese_simplified"],"瓶":["chinese_simplified","chinese_traditional"],"婆":["chinese_simplified","chinese_traditional"],"抚":["chinese_simplified"],"臂":["chinese_simplified","chinese_traditional"],"摸":["chinese_simplified","chinese_traditional"],"忍":["chinese_simplified","chinese_traditional"],"虾":["chinese_simplified"],"蜡":["chinese_simplified"],"邻":["chinese_simplified"],"胸":["chinese_simplified","chinese_traditional"],"巩":["chinese_simplified"],"挤":["chinese_simplified"],"偶":["chinese_simplified","chinese_traditional"],"弃":["chinese_simplified"],"槽":["chinese_simplified","chinese_traditional"],"劲":["chinese_simplified"],"乳":["chinese_simplified","chinese_traditional"],"邓":["chinese_simplified"],"吉":["chinese_simplified","chinese_traditional"],"仁":["chinese_simplified","chinese_traditional"],"烂":["chinese_simplified"],"砖":["chinese_simplified"],"租":["chinese_simplified","chinese_traditional"],"乌":["chinese_simplified"],"舰":["chinese_simplified"],"伴":["chinese_simplified","chinese_traditional"],"瓜":["chinese_simplified","chinese_traditional"],"浅":["chinese_simplified"],"丙":["chinese_simplified","chinese_traditional"],"暂":["chinese_simplified"],"燥":["chinese_simplified","chinese_traditional"],"橡":["chinese_simplified","chinese_traditional"],"柳":["chinese_simplified","chinese_traditional"],"迷":["chinese_simplified","chinese_traditional"],"暖":["chinese_simplified","chinese_traditional"],"牌":["chinese_simplified","chinese_traditional"],"秧":["chinese_simplified","chinese_traditional"],"胆":["chinese_simplified"],"详":["chinese_simplified"],"簧":["chinese_simplified","chinese_traditional"],"踏":["chinese_simplified","chinese_traditional"],"瓷":["chinese_simplified","chinese_traditional"],"谱":["chinese_simplified"],"呆":["chinese_simplified","chinese_traditional"],"宾":["chinese_simplified"],"糊":["chinese_simplified","chinese_traditional"],"洛":["chinese_simplified","chinese_traditional"],"辉":["chinese_simplified"],"愤":["chinese_simplified"],"竞":["chinese_simplified"],"隙":["chinese_simplified","chinese_traditional"],"怒":["chinese_simplified","chinese_traditional"],"粘":["chinese_simplified","chinese_traditional"],"乃":["chinese_simplified","chinese_traditional"],"绪":["chinese_simplified"],"肩":["chinese_simplified","chinese_traditional"],"籍":["chinese_simplified","chinese_traditional"],"敏":["chinese_simplified","chinese_traditional"],"涂":["chinese_simplified"],"熙":["chinese_simplified","chinese_traditional"],"皆":["chinese_simplified","chinese_traditional"],"侦":["chinese_simplified"],"悬":["chinese_simplified"],"掘":["chinese_simplified","chinese_traditional"],"享":["chinese_simplified","chinese_traditional"],"纠":["chinese_simplified"],"醒":["chinese_simplified","chinese_traditional"],"狂":["chinese_simplified","chinese_traditional"],"锁":["chinese_simplified"],"淀":["chinese_simplified","chinese_traditional"],"恨":["chinese_simplified","chinese_traditional"],"牲":["chinese_simplified","chinese_traditional"],"霸":["chinese_simplified","chinese_traditional"],"爬":["chinese_simplified","chinese_traditional"],"赏":["chinese_simplified"],"逆":["chinese_simplified","chinese_traditional"],"玩":["chinese_simplified","chinese_traditional"],"陵":["chinese_simplified","chinese_traditional"],"祝":["chinese_simplified","chinese_traditional"],"秒":["chinese_simplified","chinese_traditional"],"浙":["chinese_simplified","chinese_traditional"],"貌":["chinese_simplified","chinese_traditional"],"役":["chinese_simplified","chinese_traditional"],"彼":["chinese_simplified","chinese_traditional"],"悉":["chinese_simplified","chinese_traditional"],"鸭":["chinese_simplified"],"趋":["chinese_simplified"],"凤":["chinese_simplified"],"晨":["chinese_simplified","chinese_traditional"],"畜":["chinese_simplified","chinese_traditional"],"辈":["chinese_simplified"],"秩":["chinese_simplified","chinese_traditional"],"卵":["chinese_simplified","chinese_traditional"],"署":["chinese_simplified","chinese_traditional"],"梯":["chinese_simplified","chinese_traditional"],"炎":["chinese_simplified","chinese_traditional"],"滩":["chinese_simplified"],"棋":["chinese_simplified","chinese_traditional"],"驱":["chinese_simplified"],"筛":["chinese_simplified"],"峡":["chinese_simplified"],"冒":["chinese_simplified","chinese_traditional"],"啥":["chinese_simplified","chinese_traditional"],"寿":["chinese_simplified"],"译":["chinese_simplified"],"浸":["chinese_simplified","chinese_traditional"],"泉":["chinese_simplified","chinese_traditional"],"帽":["chinese_simplified","chinese_traditional"],"迟":["chinese_simplified"],"硅":["chinese_simplified"],"疆":["chinese_simplified","chinese_traditional"],"贷":["chinese_simplified"],"漏":["chinese_simplified","chinese_traditional"],"稿":["chinese_simplified","chinese_traditional"],"冠":["chinese_simplified","chinese_traditional"],"嫩":["chinese_simplified","chinese_traditional"],"胁":["chinese_simplified"],"芯":["chinese_simplified","chinese_traditional"],"牢":["chinese_simplified","chinese_traditional"],"叛":["chinese_simplified","chinese_traditional"],"蚀":["chinese_simplified"],"奥":["chinese_simplified"],"鸣":["chinese_simplified"],"岭":["chinese_simplified"],"羊":["chinese_simplified","chinese_traditional"],"凭":["chinese_simplified"],"串":["chinese_simplified","chinese_traditional"],"塘":["chinese_simplified","chinese_traditional"],"绘":["chinese_simplified"],"酵":["chinese_simplified","chinese_traditional"],"融":["chinese_simplified","chinese_traditional"],"盆":["chinese_simplified","chinese_traditional"],"锡":["chinese_simplified"],"庙":["chinese_simplified"],"筹":["chinese_simplified"],"冻":["chinese_simplified"],"辅":["chinese_simplified"],"摄":["chinese_simplified"],"袭":["chinese_simplified"],"筋":["chinese_simplified","chinese_traditional"],"拒":["chinese_simplified","chinese_traditional"],"僚":["chinese_simplified","chinese_traditional"],"旱":["chinese_simplified","chinese_traditional"],"钾":["chinese_simplified"],"鸟":["chinese_simplified"],"漆":["chinese_simplified","chinese_traditional"],"沈":["chinese_simplified","chinese_traditional"],"眉":["chinese_simplified","chinese_traditional"],"疏":["chinese_simplified","chinese_traditional"],"添":["chinese_simplified","chinese_traditional"],"棒":["chinese_simplified","chinese_traditional"],"穗":["chinese_simplified","chinese_traditional"],"硝":["chinese_simplified","chinese_traditional"],"韩":["chinese_simplified"],"逼":["chinese_simplified","chinese_traditional"],"扭":["chinese_simplified","chinese_traditional"],"侨":["chinese_simplified"],"凉":["chinese_simplified"],"挺":["chinese_simplified","chinese_traditional"],"碗":["chinese_simplified","chinese_traditional"],"栽":["chinese_simplified","chinese_traditional"],"炒":["chinese_simplified","chinese_traditional"],"杯":["chinese_simplified","chinese_traditional"],"患":["chinese_simplified","chinese_traditional"],"馏":["chinese_simplified"],"劝":["chinese_simplified"],"豪":["chinese_simplified","chinese_traditional"],"辽":["chinese_simplified"],"勃":["chinese_simplified","chinese_traditional"],"鸿":["chinese_simplified"],"旦":["chinese_simplified","chinese_traditional"],"吏":["chinese_simplified","chinese_traditional"],"拜":["chinese_simplified","chinese_traditional"],"狗":["chinese_simplified","chinese_traditional"],"埋":["chinese_simplified","chinese_traditional"],"辊":["chinese_simplified"],"掩":["chinese_simplified","chinese_traditional"],"饮":["chinese_simplified"],"搬":["chinese_simplified","chinese_traditional"],"骂":["chinese_simplified"],"辞":["chinese_simplified"],"勾":["chinese_simplified","chinese_traditional"],"扣":["chinese_simplified","chinese_traditional"],"估":["chinese_simplified","chinese_traditional"],"蒋":["chinese_simplified"],"绒":["chinese_simplified"],"雾":["chinese_simplified"],"丈":["chinese_simplified","chinese_traditional"],"朵":["chinese_simplified","chinese_traditional"],"姆":["chinese_simplified","chinese_traditional"],"拟":["chinese_simplified"],"宇":["chinese_simplified","chinese_traditional"],"辑":["chinese_simplified"],"陕":["chinese_simplified"],"雕":["chinese_simplified","chinese_traditional"],"偿":["chinese_simplified"],"蓄":["chinese_simplified","chinese_traditional"],"崇":["chinese_simplified","chinese_traditional"],"剪":["chinese_simplified","chinese_traditional"],"倡":["chinese_simplified","chinese_traditional"],"厅":["chinese_simplified"],"咬":["chinese_simplified","chinese_traditional"],"驶":["chinese_simplified"],"薯":["chinese_simplified","chinese_traditional"],"刷":["chinese_simplified","chinese_traditional"],"斥":["chinese_simplified","chinese_traditional"],"番":["chinese_simplified","chinese_traditional"],"赋":["chinese_simplified"],"奉":["chinese_simplified","chinese_traditional"],"佛":["chinese_simplified","chinese_traditional"],"浇":["chinese_simplified"],"漫":["chinese_simplified","chinese_traditional"],"曼":["chinese_simplified","chinese_traditional"],"扇":["chinese_simplified","chinese_traditional"],"钙":["chinese_simplified"],"桃":["chinese_simplified","chinese_traditional"],"扶":["chinese_simplified","chinese_traditional"],"仔":["chinese_simplified","chinese_traditional"],"返":["chinese_simplified","chinese_traditional"],"俗":["chinese_simplified","chinese_traditional"],"亏":["chinese_simplified"],"腔":["chinese_simplified","chinese_traditional"],"鞋":["chinese_simplified","chinese_traditional"],"棱":["chinese_simplified","chinese_traditional"],"覆":["chinese_simplified","chinese_traditional"],"框":["chinese_simplified","chinese_traditional"],"悄":["chinese_simplified","chinese_traditional"],"叔":["chinese_simplified","chinese_traditional"],"撞":["chinese_simplified","chinese_traditional"],"骗":["chinese_simplified"],"勘":["chinese_simplified","chinese_traditional"],"旺":["chinese_simplified","chinese_traditional"],"沸":["chinese_simplified","chinese_traditional"],"孤":["chinese_simplified","chinese_traditional"],"吐":["chinese_simplified","chinese_traditional"],"孟":["chinese_simplified","chinese_traditional"],"渠":["chinese_simplified","chinese_traditional"],"屈":["chinese_simplified","chinese_traditional"],"疾":["chinese_simplified","chinese_traditional"],"妙":["chinese_simplified","chinese_traditional"],"惜":["chinese_simplified","chinese_traditional"],"仰":["chinese_simplified","chinese_traditional"],"狠":["chinese_simplified","chinese_traditional"],"胀":["chinese_simplified"],"谐":["chinese_simplified"],"抛":["chinese_simplified"],"霉":["chinese_simplified"],"桑":["chinese_simplified","chinese_traditional"],"岗":["chinese_simplified"],"嘛":["chinese_simplified","chinese_traditional"],"衰":["chinese_simplified","chinese_traditional"],"盗":["chinese_simplified"],"渗":["chinese_simplified"],"脏":["chinese_simplified"],"赖":["chinese_simplified"],"涌":["chinese_simplified"],"甜":["chinese_simplified","chinese_traditional"],"曹":["chinese_simplified","chinese_traditional"],"阅":["chinese_simplified"],"肌":["chinese_simplified","chinese_traditional"],"哩":["chinese_simplified","chinese_traditional"],"厉":["chinese_simplified"],"烃":["chinese_simplified"],"纬":["chinese_simplified"],"毅":["chinese_simplified","chinese_traditional"],"昨":["chinese_simplified","chinese_traditional"],"伪":["chinese_simplified"],"症":["chinese_simplified","chinese_traditional"],"煮":["chinese_simplified","chinese_traditional"],"叹":["chinese_simplified"],"钉":["chinese_simplified"],"搭":["chinese_simplified","chinese_traditional"],"茎":["chinese_simplified"],"笼":["chinese_simplified"],"酷":["chinese_simplified","chinese_traditional"],"偷":["chinese_simplified","chinese_traditional"],"弓":["chinese_simplified","chinese_traditional"],"锥":["chinese_simplified"],"恒":["chinese_simplified"],"杰":["chinese_simplified"],"坑":["chinese_simplified","chinese_traditional"],"鼻":["chinese_simplified","chinese_traditional"],"翼":["chinese_simplified","chinese_traditional"],"纶":["chinese_simplified"],"叙":["chinese_simplified"],"狱":["chinese_simplified"],"逮":["chinese_simplified","chinese_traditional"],"罐":["chinese_simplified","chinese_traditional"],"络":["chinese_simplified"],"棚":["chinese_simplified","chinese_traditional"],"抑":["chinese_simplified","chinese_traditional"],"膨":["chinese_simplified","chinese_traditional"],"蔬":["chinese_simplified","chinese_traditional"],"寺":["chinese_simplified","chinese_traditional"],"骤":["chinese_simplified"],"穆":["chinese_simplified","chinese_traditional"],"冶":["chinese_simplified","chinese_traditional"],"枯":["chinese_simplified","chinese_traditional"],"册":["chinese_simplified"],"尸":["chinese_simplified"],"凸":["chinese_simplified","chinese_traditional"],"绅":["chinese_simplified"],"坯":["chinese_simplified","chinese_traditional"],"牺":["chinese_simplified"],"焰":["chinese_simplified","chinese_traditional"],"轰":["chinese_simplified"],"欣":["chinese_simplified","chinese_traditional"],"晋":["chinese_simplified"],"瘦":["chinese_simplified","chinese_traditional"],"御":["chinese_simplified"],"锭":["chinese_simplified"],"锦":["chinese_simplified"],"丧":["chinese_simplified"],"旬":["chinese_simplified","chinese_traditional"],"锻":["chinese_simplified"],"垄":["chinese_simplified"],"搜":["chinese_simplified","chinese_traditional"],"扑":["chinese_simplified"],"邀":["chinese_simplified","chinese_traditional"],"亭":["chinese_simplified","chinese_traditional"],"酯":["chinese_simplified","chinese_traditional"],"迈":["chinese_simplified"],"舒":["chinese_simplified","chinese_traditional"],"脆":["chinese_simplified","chinese_traditional"],"酶":["chinese_simplified","chinese_traditional"],"闲":["chinese_simplified"],"忧":["chinese_simplified"],"酚":["chinese_simplified","chinese_traditional"],"顽":["chinese_simplified"],"羽":["chinese_simplified","chinese_traditional"],"涨":["chinese_simplified"],"卸":["chinese_simplified","chinese_traditional"],"仗":["chinese_simplified","chinese_traditional"],"陪":["chinese_simplified","chinese_traditional"],"辟":["chinese_simplified"],"惩":["chinese_simplified"],"杭":["chinese_simplified","chinese_traditional"],"姚":["chinese_simplified","chinese_traditional"],"肚":["chinese_simplified","chinese_traditional"],"捉":["chinese_simplified","chinese_traditional"],"飘":["chinese_simplified"],"漂":["chinese_simplified","chinese_traditional"],"昆":["chinese_simplified","chinese_traditional"],"欺":["chinese_simplified","chinese_traditional"],"吾":["chinese_simplified","chinese_traditional"],"郎":["chinese_simplified","chinese_traditional"],"烷":["chinese_simplified","chinese_traditional"],"汁":["chinese_simplified","chinese_traditional"],"呵":["chinese_simplified","chinese_traditional"],"饰":["chinese_simplified"],"萧":["chinese_simplified"],"雅":["chinese_simplified","chinese_traditional"],"邮":["chinese_simplified"],"迁":["chinese_simplified"],"燕":["chinese_simplified","chinese_traditional"],"撒":["chinese_simplified","chinese_traditional"],"姻":["chinese_simplified","chinese_traditional"],"赴":["chinese_simplified","chinese_traditional"],"宴":["chinese_simplified","chinese_traditional"],"烦":["chinese_simplified"],"债":["chinese_simplified"],"帐":["chinese_simplified"],"斑":["chinese_simplified","chinese_traditional"],"铃":["chinese_simplified"],"旨":["chinese_simplified","chinese_traditional"],"醇":["chinese_simplified","chinese_traditional"],"董":["chinese_simplified","chinese_traditional"],"饼":["chinese_simplified"],"雏":["chinese_simplified"],"姿":["chinese_simplified","chinese_traditional"],"拌":["chinese_simplified","chinese_traditional"],"傅":["chinese_simplified","chinese_traditional"],"腹":["chinese_simplified","chinese_traditional"],"妥":["chinese_simplified","chinese_traditional"],"揉":["chinese_simplified","chinese_traditional"],"贤":["chinese_simplified"],"拆":["chinese_simplified","chinese_traditional"],"歪":["chinese_simplified","chinese_traditional"],"葡":["chinese_simplified","chinese_traditional"],"胺":["chinese_simplified","chinese_traditional"],"丢":["chinese_simplified"],"浩":["chinese_simplified","chinese_traditional"],"徽":["chinese_simplified","chinese_traditional"],"昂":["chinese_simplified","chinese_traditional"],"垫":["chinese_simplified"],"挡":["chinese_simplified"],"览":["chinese_simplified"],"贪":["chinese_simplified"],"慰":["chinese_simplified","chinese_traditional"],"缴":["chinese_simplified"],"汪":["chinese_simplified","chinese_traditional"],"慌":["chinese_simplified","chinese_traditional"],"冯":["chinese_simplified"],"诺":["chinese_simplified"],"姜":["chinese_simplified","chinese_traditional"],"谊":["chinese_simplified"],"凶":["chinese_simplified"],"劣":["chinese_simplified","chinese_traditional"],"诬":["chinese_simplified"],"耀":["chinese_simplified","chinese_traditional"],"昏":["chinese_simplified","chinese_traditional"],"躺":["chinese_simplified","chinese_traditional"],"盈":["chinese_simplified","chinese_traditional"],"骑":["chinese_simplified"],"乔":["chinese_simplified"],"溪":["chinese_simplified","chinese_traditional"],"丛":["chinese_simplified"],"卢":["chinese_simplified"],"抹":["chinese_simplified","chinese_traditional"],"闷":["chinese_simplified"],"咨":["chinese_simplified"],"刮":["chinese_simplified","chinese_traditional"],"驾":["chinese_simplified"],"缆":["chinese_simplified"],"悟":["chinese_simplified","chinese_traditional"],"摘":["chinese_simplified","chinese_traditional"],"铒":["chinese_simplified"],"掷":["chinese_simplified"],"颇":["chinese_simplified"],"幻":["chinese_simplified","chinese_traditional"],"柄":["chinese_simplified","chinese_traditional"],"惠":["chinese_simplified","chinese_traditional"],"惨":["chinese_simplified"],"佳":["chinese_simplified","chinese_traditional"],"仇":["chinese_simplified","chinese_traditional"],"腊":["chinese_simplified"],"窝":["chinese_simplified"],"涤":["chinese_simplified"],"剑":["chinese_simplified"],"瞧":["chinese_simplified","chinese_traditional"],"堡":["chinese_simplified","chinese_traditional"],"泼":["chinese_simplified"],"葱":["chinese_simplified"],"罩":["chinese_simplified","chinese_traditional"],"霍":["chinese_simplified","chinese_traditional"],"捞":["chinese_simplified"],"胎":["chinese_simplified","chinese_traditional"],"苍":["chinese_simplified"],"滨":["chinese_simplified"],"俩":["chinese_simplified"],"捅":["chinese_simplified","chinese_traditional"],"湘":["chinese_simplified","chinese_traditional"],"砍":["chinese_simplified","chinese_traditional"],"霞":["chinese_simplified","chinese_traditional"],"邵":["chinese_simplified","chinese_traditional"],"萄":["chinese_simplified","chinese_traditional"],"疯":["chinese_simplified"],"淮":["chinese_simplified","chinese_traditional"],"遂":["chinese_simplified","chinese_traditional"],"熊":["chinese_simplified","chinese_traditional"],"粪":["chinese_simplified"],"烘":["chinese_simplified","chinese_traditional"],"宿":["chinese_simplified","chinese_traditional"],"档":["chinese_simplified"],"戈":["chinese_simplified","chinese_traditional"],"驳":["chinese_simplified"],"嫂":["chinese_simplified","chinese_traditional"],"裕":["chinese_simplified","chinese_traditional"],"徙":["chinese_simplified","chinese_traditional"],"箭":["chinese_simplified","chinese_traditional"],"捐":["chinese_simplified","chinese_traditional"],"肠":["chinese_simplified"],"撑":["chinese_simplified"],"晒":["chinese_simplified"],"辨":["chinese_simplified","chinese_traditional"],"殿":["chinese_simplified","chinese_traditional"],"莲":["chinese_simplified"],"摊":["chinese_simplified"],"搅":["chinese_simplified"],"酱":["chinese_simplified"],"屏":["chinese_simplified","chinese_traditional"],"疫":["chinese_simplified","chinese_traditional"],"哀":["chinese_simplified","chinese_traditional"],"蔡":["chinese_simplified","chinese_traditional"],"堵":["chinese_simplified","chinese_traditional"],"沫":["chinese_simplified","chinese_traditional"],"皱":["chinese_simplified"],"畅":["chinese_simplified"],"叠":["chinese_simplified"],"阁":["chinese_simplified"],"莱":["chinese_simplified"],"敲":["chinese_simplified","chinese_traditional"],"辖":["chinese_simplified"],"钩":["chinese_simplified"],"痕":["chinese_simplified","chinese_traditional"],"坝":["chinese_simplified"],"巷":["chinese_simplified","chinese_traditional"],"饿":["chinese_simplified"],"祸":["chinese_simplified"],"丘":["chinese_simplified","chinese_traditional"],"玄":["chinese_simplified","chinese_traditional"],"溜":["chinese_simplified","chinese_traditional"],"曰":["chinese_simplified","chinese_traditional"],"逻":["chinese_simplified"],"彭":["chinese_simplified","chinese_traditional"],"尝":["chinese_simplified"],"卿":["chinese_simplified","chinese_traditional"],"妨":["chinese_simplified","chinese_traditional"],"艇":["chinese_simplified","chinese_traditional"],"吞":["chinese_simplified","chinese_traditional"],"韦":["chinese_simplified"],"怨":["chinese_simplified","chinese_traditional"],"矮":["chinese_simplified","chinese_traditional"],"歇":["chinese_simplified","chinese_traditional"],"這":["chinese_traditional"],"為":["chinese_traditional"],"個":["chinese_traditional"],"國":["chinese_traditional"],"時":["chinese_traditional"],"來":["chinese_traditional"],"們":["chinese_traditional"],"於":["chinese_traditional"],"對":["chinese_traditional"],"會":["chinese_traditional"],"發":["chinese_traditional"],"動":["chinese_traditional"],"過":["chinese_traditional"],"說":["chinese_traditional"],"產":["chinese_traditional"],"種":["chinese_traditional"],"後":["chinese_traditional"],"學":["chinese_traditional"],"經":["chinese_traditional"],"進":["chinese_traditional"],"著":["chinese_traditional"],"電":["chinese_traditional"],"裡":["chinese_traditional"],"現":["chinese_traditional"],"實":["chinese_traditional"],"兩":["chinese_traditional"],"體":["chinese_traditional"],"機":["chinese_traditional"],"當":["chinese_traditional"],"點":["chinese_traditional"],"從":["chinese_traditional"],"業":["chinese_traditional"],"應":["chinese_traditional"],"開":["chinese_traditional"],"還":["chinese_traditional"],"義":["chinese_traditional"],"間":["chinese_traditional"],"樣":["chinese_traditional"],"與":["chinese_traditional"],"關":["chinese_traditional"],"線":["chinese_traditional"],"內":["chinese_traditional"],"數":["chinese_traditional"],"麼":["chinese_traditional"],"質":["chinese_traditional"],"氣":["chinese_traditional"],"變":["chinese_traditional"],"條":["chinese_traditional"],"沒":["chinese_traditional"],"結":["chinese_traditional"],"問":["chinese_traditional"],"無":["chinese_traditional"],"軍":["chinese_traditional"],"並":["chinese_traditional"],"題":["chinese_traditional"],"黨":["chinese_traditional"],"員":["chinese_traditional"],"總":["chinese_traditional"],"設":["chinese_traditional"],"長":["chinese_traditional"],"頭":["chinese_traditional"],"資":["chinese_traditional"],"邊":["chinese_traditional"],"級":["chinese_traditional"],"圖":["chinese_traditional"],"統":["chinese_traditional"],"較":["chinese_traditional"],"將":["chinese_traditional"],"組":["chinese_traditional"],"見":["chinese_traditional"],"計":["chinese_traditional"],"別":["chinese_traditional"],"論":["chinese_traditional"],"運":["chinese_traditional"],"農":["chinese_traditional"],"幾":["chinese_traditional"],"區":["chinese_traditional"],"強":["chinese_traditional"],"決":["chinese_traditional"],"幹":["chinese_traditional"],"戰":["chinese_traditional"],"則":["chinese_traditional"],"據":["chinese_traditional"],"處":["chinese_traditional"],"隊":["chinese_traditional"],"給":["chinese_traditional"],"門":["chinese_traditional"],"規":["chinese_traditional"],"熱":["chinese_traditional"],"領":["chinese_traditional"],"東":["chinese_traditional"],"導":["chinese_traditional"],"壓":["chinese_traditional"],"爭":["chinese_traditional"],"濟":["chinese_traditional"],"階":["chinese_traditional"],"術":["chinese_traditional"],"極":["chinese_traditional"],"聯":["chinese_traditional"],"認":["chinese_traditional"],"權":["chinese_traditional"],"證":["chinese_traditional"],"採":["chinese_traditional"],"轉":["chinese_traditional"],"單":["chinese_traditional"],"風":["chinese_traditional"],"帶":["chinese_traditional"],"場":["chinese_traditional"],"車":["chinese_traditional"],"務":["chinese_traditional"],"萬":["chinese_traditional"],"達":["chinese_traditional"],"積":["chinese_traditional"],"議":["chinese_traditional"],"聲":["chinese_traditional"],"報":["chinese_traditional"],"鬥":["chinese_traditional"],"類":["chinese_traditional"],"離":["chinese_traditional"],"華":["chinese_traditional"],"確":["chinese_traditional"],"張":["chinese_traditional"],"馬":["chinese_traditional"],"節":["chinese_traditional"],"話":["chinese_traditional"],"況":["chinese_traditional"],"溫":["chinese_traditional"],"傳":["chinese_traditional"],"許":["chinese_traditional"],"廣":["chinese_traditional"],"記":["chinese_traditional"],"觀":["chinese_traditional"],"織":["chinese_traditional"],"裝":["chinese_traditional"],"眾":["chinese_traditional"],"書":["chinese_traditional"],"兒":["chinese_traditional"],"須":["chinese_traditional"],"際":["chinese_traditional"],"驗":["chinese_traditional"],"連":["chinese_traditional"],"斷":["chinese_traditional"],"難":["chinese_traditional"],"礦":["chinese_traditional"],"週":["chinese_traditional"],"備":["chinese_traditional"],"辦":["chinese_traditional"],"習":["chinese_traditional"],"響":["chinese_traditional"],"約":["chinese_traditional"],"勞":["chinese_traditional"],"團":["chinese_traditional"],"歷":["chinese_traditional"],"構":["chinese_traditional"],"稱":["chinese_traditional"],"準":["chinese_traditional"],"號":["chinese_traditional"],"維":["chinese_traditional"],"劃":["chinese_traditional"],"選":["chinese_traditional"],"標":["chinese_traditional"],"寫":["chinese_traditional"],"親":["chinese_traditional"],"養":["chinese_traditional"],"層":["chinese_traditional"],"卻":["chinese_traditional"],"專":["chinese_traditional"],"狀":["chinese_traditional"],"廠":["chinese_traditional"],"識":["chinese_traditional"],"適":["chinese_traditional"],"屬":["chinese_traditional"],"圓":["chinese_traditional"],"調":["chinese_traditional"],"滿":["chinese_traditional"],"縣":["chinese_traditional"],"參":["chinese_traditional"],"紅":["chinese_traditional"],"細":["chinese_traditional"],"聽":["chinese_traditional"],"該":["chinese_traditional"],"鐵":["chinese_traditional"],"價":["chinese_traditional"],"嚴":["chinese_traditional"],"隨":["chinese_traditional"],"蘇":["chinese_traditional"],"爾":["chinese_traditional"],"講":["chinese_traditional"],"黃":["chinese_traditional"],"顯":["chinese_traditional"],"談":["chinese_traditional"],"藝":["chinese_traditional"],"營":["chinese_traditional"],"項":["chinese_traditional"],"舉":["chinese_traditional"],"勢":["chinese_traditional"],"幫":["chinese_traditional"],"輪":["chinese_traditional"],"亞":["chinese_traditional"],"師":["chinese_traditional"],"圍":["chinese_traditional"],"遠":["chinese_traditional"],"態":["chinese_traditional"],"減":["chinese_traditional"],"樹":["chinese_traditional"],"葉":["chinese_traditional"],"魚":["chinese_traditional"],"視":["chinese_traditional"],"僅":["chinese_traditional"],"費":["chinese_traditional"],"緊":["chinese_traditional"],"愛":["chinese_traditional"],"續":["chinese_traditional"],"輕":["chinese_traditional"],"試":["chinese_traditional"],"護":["chinese_traditional"],"練":["chinese_traditional"],"負":["chinese_traditional"],"擊":["chinese_traditional"],"繼":["chinese_traditional"],"興":["chinese_traditional"],"餘":["chinese_traditional"],"堅":["chinese_traditional"],"輸":["chinese_traditional"],"夠":["chinese_traditional"],"筆":["chinese_traditional"],"佔":["chinese_traditional"],"財":["chinese_traditional"],"職":["chinese_traditional"],"覺":["chinese_traditional"],"漢":["chinese_traditional"],"畫":["chinese_traditional"],"雖":["chinese_traditional"],"雜":["chinese_traditional"],"飛":["chinese_traditional"],"檢":["chinese_traditional"],"昇":["chinese_traditional"],"陽":["chinese_traditional"],"創":["chinese_traditional"],"壞":["chinese_traditional"],"徑":["chinese_traditional"],"換":["chinese_traditional"],"鋼":["chinese_traditional"],"責":["chinese_traditional"],"簡":["chinese_traditional"],"錢":["chinese_traditional"],"盡":["chinese_traditional"],"衝":["chinese_traditional"],"獨":["chinese_traditional"],"環":["chinese_traditional"],"雙":["chinese_traditional"],"請":["chinese_traditional"],"讓":["chinese_traditional"],"軸":["chinese_traditional"],"紀":["chinese_traditional"],"優":["chinese_traditional"],"頂":["chinese_traditional"],"礎":["chinese_traditional"],"載":["chinese_traditional"],"敵":["chinese_traditional"],"勝":["chinese_traditional"],"絕":["chinese_traditional"],"塊":["chinese_traditional"],"劑":["chinese_traditional"],"測":["chinese_traditional"],"絲":["chinese_traditional"],"協":["chinese_traditional"],"訴":["chinese_traditional"],"陳":["chinese_traditional"],"羅":["chinese_traditional"],"鹽":["chinese_traditional"],"錯":["chinese_traditional"],"頻":["chinese_traditional"],"終":["chinese_traditional"],"雲":["chinese_traditional"],"衛":["chinese_traditional"],"燒":["chinese_traditional"],"遊":["chinese_traditional"],"舊":["chinese_traditional"],"貨":["chinese_traditional"],"損":["chinese_traditional"],"預":["chinese_traditional"],"穩":["chinese_traditional"],"媽":["chinese_traditional"],"擴":["chinese_traditional"],"銀":["chinese_traditional"],"語":["chinese_traditional"],"揮":["chinese_traditional"],"紙":["chinese_traditional"],"醫":["chinese_traditional"],"嗎":["chinese_traditional"],"針":["chinese_traditional"],"劉":["chinese_traditional"],"誤":["chinese_traditional"],"訓":["chinese_traditional"],"願":["chinese_traditional"],"審":["chinese_traditional"],"獲":["chinese_traditional"],"鮮":["chinese_traditional"],"糧":["chinese_traditional"],"脫":["chinese_traditional"],"龍":["chinese_traditional"],"漸":["chinese_traditional"],"歡":["chinese_traditional"],"剛":["chinese_traditional"],"謂":["chinese_traditional"],"討":["chinese_traditional"],"亂":["chinese_traditional"],"殺":["chinese_traditional"],"藥":["chinese_traditional"],"寧":["chinese_traditional"],"魯":["chinese_traditional"],"貴":["chinese_traditional"],"鐘":["chinese_traditional"],"讀":["chinese_traditional"],"豐":["chinese_traditional"],"蘭":["chinese_traditional"],"擔":["chinese_traditional"],"執":["chinese_traditional"],"樂":["chinese_traditional"],"誰":["chinese_traditional"],"順":["chinese_traditional"],"煙":["chinese_traditional"],"縮":["chinese_traditional"],"徵":["chinese_traditional"],"臉":["chinese_traditional"],"腳":["chinese_traditional"],"異":["chinese_traditional"],"買":["chinese_traditional"],"靜":["chinese_traditional"],"補":["chinese_traditional"],"評":["chinese_traditional"],"踐":["chinese_traditional"],"寬":["chinese_traditional"],"揚":["chinese_traditional"],"傷":["chinese_traditional"],"氫":["chinese_traditional"],"憲":["chinese_traditional"],"慶":["chinese_traditional"],"編":["chinese_traditional"],"觸":["chinese_traditional"],"銷":["chinese_traditional"],"詩":["chinese_traditional"],"綠":["chinese_traditional"],"雞":["chinese_traditional"],"孫":["chinese_traditional"],"膠":["chinese_traditional"],"鄉":["chinese_traditional"],"臨":["chinese_traditional"],"陸":["chinese_traditional"],"顧":["chinese_traditional"],"燈":["chinese_traditional"],"歲":["chinese_traditional"],"劇":["chinese_traditional"],"趙":["chinese_traditional"],"課":["chinese_traditional"],"凱":["chinese_traditional"],"額":["chinese_traditional"],"紹":["chinese_traditional"],"齊":["chinese_traditional"],"偉":["chinese_traditional"],"爐":["chinese_traditional"],"楊":["chinese_traditional"],"桿":["chinese_traditional"],"鎮":["chinese_traditional"],"飯":["chinese_traditional"],"濃":["chinese_traditional"],"懷":["chinese_traditional"],"趕":["chinese_traditional"],"庫":["chinese_traditional"],"奪":["chinese_traditional"],"靈":["chinese_traditional"],"稅":["chinese_traditional"],"滅":["chinese_traditional"],"賽":["chinese_traditional"],"歸":["chinese_traditional"],"盤":["chinese_traditional"],"險":["chinese_traditional"],"錄":["chinese_traditional"],"純":["chinese_traditional"],"蓋":["chinese_traditional"],"橫":["chinese_traditional"],"槍":["chinese_traditional"],"潤":["chinese_traditional"],"蟲":["chinese_traditional"],"澤":["chinese_traditional"],"腦":["chinese_traditional"],"歐":["chinese_traditional"],"側":["chinese_traditional"],"徹":["chinese_traditional"],"慮":["chinese_traditional"],"納":["chinese_traditional"],"彈":["chinese_traditional"],"飼":["chinese_traditional"],"麥":["chinese_traditional"],"濕":["chinese_traditional"],"築":["chinese_traditional"],"惡":["chinese_traditional"],"戶":["chinese_traditional"],"訪":["chinese_traditional"],"跡":["chinese_traditional"],"擺":["chinese_traditional"],"賣":["chinese_traditional"],"擇":["chinese_traditional"],"銅":["chinese_traditional"],"獻":["chinese_traditional"],"陣":["chinese_traditional"],"陰":["chinese_traditional"],"樓":["chinese_traditional"],"謀":["chinese_traditional"],"噸":["chinese_traditional"],"豬":["chinese_traditional"],"館":["chinese_traditional"],"爺":["chinese_traditional"],"驚":["chinese_traditional"],"遺":["chinese_traditional"],"纖":["chinese_traditional"],"傾":["chinese_traditional"],"謝":["chinese_traditional"],"奮":["chinese_traditional"],"購":["chinese_traditional"],"監":["chinese_traditional"],"貫":["chinese_traditional"],"釋":["chinese_traditional"],"詞":["chinese_traditional"],"頓":["chinese_traditional"],"寶":["chinese_traditional"],"塵":["chinese_traditional"],"聞":["chinese_traditional"],"殘":["chinese_traditional"],"橋":["chinese_traditional"],"婦":["chinese_traditional"],"綜":["chinese_traditional"],"吳":["chinese_traditional"],"搖":["chinese_traditional"],"贊":["chinese_traditional"],"訂":["chinese_traditional"],"園":["chinese_traditional"],"紛":["chinese_traditional"],"敗":["chinese_traditional"],"榮":["chinese_traditional"],"閉":["chinese_traditional"],"灣":["chinese_traditional"],"鍵":["chinese_traditional"],"駐":["chinese_traditional"],"鍋":["chinese_traditional"],"剝":["chinese_traditional"],"鹼":["chinese_traditional"],"齒":["chinese_traditional"],"煉":["chinese_traditional"],"紡":["chinese_traditional"],"廢":["chinese_traditional"],"緩":["chinese_traditional"],"淨":["chinese_traditional"],"莊":["chinese_traditional"],"貿":["chinese_traditional"],"慣":["chinese_traditional"],"夥":["chinese_traditional"],"勻":["chinese_traditional"],"紗":["chinese_traditional"],"辯":["chinese_traditional"],"億":["chinese_traditional"],"脈":["chinese_traditional"],"薩":["chinese_traditional"],"網":["chinese_traditional"],"噴":["chinese_traditional"],"縱":["chinese_traditional"],"掛":["chinese_traditional"],"賀":["chinese_traditional"],"閃":["chinese_traditional"],"牆":["chinese_traditional"],"軟":["chinese_traditional"],"滾":["chinese_traditional"],"盪":["chinese_traditional"],"儀":["chinese_traditional"],"軋":["chinese_traditional"],"貢":["chinese_traditional"],"鑽":["chinese_traditional"],"幣":["chinese_traditional"],"軌":["chinese_traditional"],"畝":["chinese_traditional"],"畢":["chinese_traditional"],"島":["chinese_traditional"],"鑄":["chinese_traditional"],"湯":["chinese_traditional"],"閥":["chinese_traditional"],"匯":["chinese_traditional"],"繞":["chinese_traditional"],"績":["chinese_traditional"],"啟":["chinese_traditional"],"顏":["chinese_traditional"],"淚":["chinese_traditional"],"藍":["chinese_traditional"],"鏡":["chinese_traditional"],"壯":["chinese_traditional"],"鋒":["chinese_traditional"],"貧":["chinese_traditional"],"虛":["chinese_traditional"],"彎":["chinese_traditional"],"綱":["chinese_traditional"],"隸":["chinese_traditional"],"宮":["chinese_traditional"],"違":["chinese_traditional"],"夾":["chinese_traditional"],"緣":["chinese_traditional"],"窮":["chinese_traditional"],"溝":["chinese_traditional"],"繩":["chinese_traditional"],"憶":["chinese_traditional"],"漿":["chinese_traditional"],"欄":["chinese_traditional"],"擁":["chinese_traditional"],"貯":["chinese_traditional"],"禮":["chinese_traditional"],"濾":["chinese_traditional"],"鈉":["chinese_traditional"],"紋":["chinese_traditional"],"罷":["chinese_traditional"],"罰":["chinese_traditional"],"潛":["chinese_traditional"],"縫":["chinese_traditional"],"飽":["chinese_traditional"],"獎":["chinese_traditional"],"鋁":["chinese_traditional"],"麗":["chinese_traditional"],"鏈":["chinese_traditional"],"掃":["chinese_traditional"],"諸":["chinese_traditional"],"勵":["chinese_traditional"],"潔":["chinese_traditional"],"災":["chinese_traditional"],"鑑":["chinese_traditional"],"訟":["chinese_traditional"],"毀":["chinese_traditional"],"屆":["chinese_traditional"],"躍":["chinese_traditional"],"艱":["chinese_traditional"],"貝":["chinese_traditional"],"碼":["chinese_traditional"],"夢":["chinese_traditional"],"漁":["chinese_traditional"],"顆":["chinese_traditional"],"鉛":["chinese_traditional"],"倉":["chinese_traditional"],"銳":["chinese_traditional"],"曉":["chinese_traditional"],"隱":["chinese_traditional"],"礙":["chinese_traditional"],"撥":["chinese_traditional"],"肅":["chinese_traditional"],"牽":["chinese_traditional"],"搶":["chinese_traditional"],"殼":["chinese_traditional"],"訊":["chinese_traditional"],"誠":["chinese_traditional"],"頁":["chinese_traditional"],"齡":["chinese_traditional"],"倫":["chinese_traditional"],"尋":["chinese_traditional"],"鋪":["chinese_traditional"],"聖":["chinese_traditional"],"鄭":["chinese_traditional"],"騰":["chinese_traditional"],"貼":["chinese_traditional"],"闊":["chinese_traditional"],"輛":["chinese_traditional"],"儲":["chinese_traditional"],"簽":["chinese_traditional"],"鬧":["chinese_traditional"],"擾":["chinese_traditional"],"遞":["chinese_traditional"],"戲":["chinese_traditional"],"餵":["chinese_traditional"],"療":["chinese_traditional"],"撫":["chinese_traditional"],"蝦":["chinese_traditional"],"蠟":["chinese_traditional"],"鄰":["chinese_traditional"],"鞏":["chinese_traditional"],"擠":["chinese_traditional"],"棄":["chinese_traditional"],"勁":["chinese_traditional"],"鄧":["chinese_traditional"],"爛":["chinese_traditional"],"磚":["chinese_traditional"],"烏":["chinese_traditional"],"艦":["chinese_traditional"],"淺":["chinese_traditional"],"暫":["chinese_traditional"],"膽":["chinese_traditional"],"詳":["chinese_traditional"],"譜":["chinese_traditional"],"賓":["chinese_traditional"],"輝":["chinese_traditional"],"憤":["chinese_traditional"],"競":["chinese_traditional"],"緒":["chinese_traditional"],"塗":["chinese_traditional"],"偵":["chinese_traditional"],"懸":["chinese_traditional"],"糾":["chinese_traditional"],"鎖":["chinese_traditional"],"賞":["chinese_traditional"],"鴨":["chinese_traditional"],"趨":["chinese_traditional"],"鳳":["chinese_traditional"],"輩":["chinese_traditional"],"灘":["chinese_traditional"],"驅":["chinese_traditional"],"篩":["chinese_traditional"],"峽":["chinese_traditional"],"壽":["chinese_traditional"],"譯":["chinese_traditional"],"遲":["chinese_traditional"],"矽":["chinese_traditional"],"貸":["chinese_traditional"],"脅":["chinese_traditional"],"蝕":["chinese_traditional"],"奧":["chinese_traditional"],"鳴":["chinese_traditional"],"嶺":["chinese_traditional"],"憑":["chinese_traditional"],"繪":["chinese_traditional"],"錫":["chinese_traditional"],"廟":["chinese_traditional"],"籌":["chinese_traditional"],"凍":["chinese_traditional"],"輔":["chinese_traditional"],"攝":["chinese_traditional"],"襲":["chinese_traditional"],"鉀":["chinese_traditional"],"鳥":["chinese_traditional"],"韓":["chinese_traditional"],"僑":["chinese_traditional"],"涼":["chinese_traditional"],"餾":["chinese_traditional"],"勸":["chinese_traditional"],"遼":["chinese_traditional"],"鴻":["chinese_traditional"],"輥":["chinese_traditional"],"飲":["chinese_traditional"],"罵":["chinese_traditional"],"辭":["chinese_traditional"],"蔣":["chinese_traditional"],"絨":["chinese_traditional"],"霧":["chinese_traditional"],"擬":["chinese_traditional"],"輯":["chinese_traditional"],"陝":["chinese_traditional"],"償":["chinese_traditional"],"廳":["chinese_traditional"],"駛":["chinese_traditional"],"賦":["chinese_traditional"],"澆":["chinese_traditional"],"鈣":["chinese_traditional"],"虧":["chinese_traditional"],"騙":["chinese_traditional"],"脹":["chinese_traditional"],"諧":["chinese_traditional"],"拋":["chinese_traditional"],"黴":["chinese_traditional"],"崗":["chinese_traditional"],"盜":["chinese_traditional"],"滲":["chinese_traditional"],"臟":["chinese_traditional"],"賴":["chinese_traditional"],"湧":["chinese_traditional"],"閱":["chinese_traditional"],"厲":["chinese_traditional"],"烴":["chinese_traditional"],"緯":["chinese_traditional"],"偽":["chinese_traditional"],"嘆":["chinese_traditional"],"釘":["chinese_traditional"],"莖":["chinese_traditional"],"籠":["chinese_traditional"],"錐":["chinese_traditional"],"恆":["chinese_traditional"],"傑":["chinese_traditional"],"綸":["chinese_traditional"],"敘":["chinese_traditional"],"獄":["chinese_traditional"],"絡":["chinese_traditional"],"驟":["chinese_traditional"],"冊":["chinese_traditional"],"屍":["chinese_traditional"],"紳":["chinese_traditional"],"犧":["chinese_traditional"],"轟":["chinese_traditional"],"晉":["chinese_traditional"],"禦":["chinese_traditional"],"錠":["chinese_traditional"],"錦":["chinese_traditional"],"喪":["chinese_traditional"],"鍛":["chinese_traditional"],"壟":["chinese_traditional"],"撲":["chinese_traditional"],"邁":["chinese_traditional"],"閒":["chinese_traditional"],"憂":["chinese_traditional"],"頑":["chinese_traditional"],"漲":["chinese_traditional"],"闢":["chinese_traditional"],"懲":["chinese_traditional"],"飄":["chinese_traditional"],"飾":["chinese_traditional"],"蕭":["chinese_traditional"],"郵":["chinese_traditional"],"遷":["chinese_traditional"],"煩":["chinese_traditional"],"債":["chinese_traditional"],"帳":["chinese_traditional"],"鈴":["chinese_traditional"],"餅":["chinese_traditional"],"雛":["chinese_traditional"],"賢":["chinese_traditional"],"丟":["chinese_traditional"],"墊":["chinese_traditional"],"擋":["chinese_traditional"],"覽":["chinese_traditional"],"貪":["chinese_traditional"],"繳":["chinese_traditional"],"馮":["chinese_traditional"],"諾":["chinese_traditional"],"誼":["chinese_traditional"],"兇":["chinese_traditional"],"誣":["chinese_traditional"],"騎":["chinese_traditional"],"喬":["chinese_traditional"],"叢":["chinese_traditional"],"盧":["chinese_traditional"],"悶":["chinese_traditional"],"諮":["chinese_traditional"],"駕":["chinese_traditional"],"纜":["chinese_traditional"],"鉺":["chinese_traditional"],"擲":["chinese_traditional"],"頗":["chinese_traditional"],"慘":["chinese_traditional"],"臘":["chinese_traditional"],"窩":["chinese_traditional"],"滌":["chinese_traditional"],"劍":["chinese_traditional"],"潑":["chinese_traditional"],"蔥":["chinese_traditional"],"撈":["chinese_traditional"],"蒼":["chinese_traditional"],"濱":["chinese_traditional"],"倆":["chinese_traditional"],"瘋":["chinese_traditional"],"糞":["chinese_traditional"],"檔":["chinese_traditional"],"駁":["chinese_traditional"],"腸":["chinese_traditional"],"撐":["chinese_traditional"],"曬":["chinese_traditional"],"蓮":["chinese_traditional"],"攤":["chinese_traditional"],"攪":["chinese_traditional"],"醬":["chinese_traditional"],"皺":["chinese_traditional"],"暢":["chinese_traditional"],"疊":["chinese_traditional"],"閣":["chinese_traditional"],"萊":["chinese_traditional"],"轄":["chinese_traditional"],"鉤":["chinese_traditional"],"壩":["chinese_traditional"],"餓":["chinese_traditional"],"禍":["chinese_traditional"],"邏":["chinese_traditional"],"嘗":["chinese_traditional"],"韋":["chinese_traditional"],"abdikace":["czech"],"abeceda":["czech"],"adresa":["czech"],"agrese":["czech"],"akce":["czech"],"aktovka":["czech"],"alej":["czech"],"alkohol":["czech"],"amputace":["czech"],"ananas":["czech"],"andulka":["czech"],"anekdota":["czech"],"anketa":["czech"],"antika":["czech"],"anulovat":["czech"],"archa":["czech"],"arogance":["czech"],"asfalt":["czech","turkish"],"asistent":["czech"],"aspirace":["czech"],"astma":["czech"],"astronom":["czech"],"atlas":["czech"],"atletika":["czech"],"atol":["czech"],"autobus":["czech"],"azyl":["czech"],"babka":["czech"],"bachor":["czech"],"bacil":["czech"],"baculka":["czech"],"badatel":["czech"],"bageta":["czech"],"bagr":["czech"],"bahno":["czech"],"bakterie":["czech"],"balada":["czech"],"baletka":["czech"],"balkon":["czech"],"balonek":["czech"],"balvan":["czech"],"balza":["czech"],"bambus":["czech"],"bankomat":["czech"],"barbar":["czech"],"baret":["czech"],"barman":["czech"],"baroko":["czech"],"barva":["czech"],"baterka":["czech"],"batoh":["czech"],"bavlna":["czech"],"bazalka":["czech"],"bazilika":["czech"],"bazuka":["czech"],"bedna":["czech"],"beran":["czech"],"beseda":["czech"],"bestie":["czech"],"beton":["czech","turkish"],"bezinka":["czech"],"bezmoc":["czech"],"beztak":["czech"],"bicykl":["czech"],"bidlo":["czech"],"biftek":["czech","turkish"],"bikiny":["czech"],"bilance":["czech"],"biograf":["czech"],"biolog":["czech"],"bitva":["czech"],"bizon":["czech"],"blahobyt":["czech"],"blatouch":["czech"],"blecha":["czech"],"bledule":["czech"],"blesk":["czech"],"blikat":["czech"],"blizna":["czech"],"blokovat":["czech"],"bloudit":["czech"],"blud":["czech"],"bobek":["czech"],"bobr":["czech"],"bodlina":["czech"],"bodnout":["czech"],"bohatost":["czech"],"bojkot":["czech"],"bojovat":["czech"],"bokorys":["czech"],"bolest":["czech"],"borec":["czech"],"borovice":["czech"],"bota":["czech"],"boubel":["czech"],"bouchat":["czech"],"bouda":["czech"],"boule":["czech"],"bourat":["czech"],"boxer":["czech"],"bradavka":["czech"],"brambora":["czech"],"branka":["czech"],"bratr":["czech"],"brepta":["czech"],"briketa":["czech"],"brko":["czech"],"brloh":["czech"],"bronz":["czech"],"broskev":["czech"],"brunetka":["czech"],"brusinka":["czech"],"brzda":["czech"],"brzy":["czech"],"bublina":["czech"],"bubnovat":["czech"],"buchta":["czech"],"buditel":["czech"],"budka":["czech"],"budova":["czech"],"bufet":["czech"],"bujarost":["czech"],"bukvice":["czech"],"buldok":["czech"],"bulva":["czech"],"bunda":["czech"],"bunkr":["czech"],"burza":["czech"],"butik":["czech","turkish"],"buvol":["czech"],"buzola":["czech"],"bydlet":["czech"],"bylina":["czech"],"bytovka":["czech"],"bzukot":["czech"],"capart":["czech"],"carevna":["czech"],"cedr":["czech"],"cedule":["czech"],"cejch":["czech"],"cejn":["czech"],"cela":["czech"],"celer":["czech"],"celkem":["czech"],"celnice":["czech"],"cenina":["czech"],"cennost":["czech"],"cenovka":["czech"],"centrum":["czech"],"cenzor":["czech"],"cestopis":["czech"],"cetka":["czech"],"chalupa":["czech"],"chapadlo":["czech"],"charita":["czech"],"chata":["czech"],"chechtat":["czech"],"chemie":["czech"],"chichot":["czech"],"chirurg":["czech"],"chlad":["czech"],"chleba":["czech"],"chlubit":["czech"],"chmel":["czech"],"chmura":["czech"],"chobot":["czech"],"chochol":["czech"],"chodba":["czech"],"cholera":["czech"],"chomout":["czech"],"chopit":["czech"],"choroba":["czech"],"chov":["czech"],"chrapot":["czech"],"chrlit":["czech"],"chrt":["czech"],"chrup":["czech"],"chtivost":["czech"],"chudina":["czech"],"chutnat":["czech"],"chvat":["czech"],"chvilka":["czech"],"chvost":["czech"],"chyba":["czech"],"chystat":["czech"],"chytit":["czech"],"cibule":["czech"],"cigareta":["czech"],"cihelna":["czech"],"cihla":["czech"],"cinkot":["czech"],"cirkus":["czech"],"cisterna":["czech"],"citace":["czech"],"citrus":["czech"],"cizinec":["czech"],"cizost":["czech"],"clona":["czech"],"cokoliv":["czech"],"couvat":["czech"],"ctitel":["czech"],"ctnost":["czech"],"cudnost":["czech"],"cuketa":["czech"],"cukr":["czech"],"cupot":["czech"],"cvaknout":["czech"],"cval":["czech"],"cvik":["czech"],"cvrkot":["czech"],"cyklista":["czech"],"daleko":["czech"],"dareba":["czech"],"datel":["czech"],"datum":["czech"],"dcera":["czech"],"debata":["czech"],"dechovka":["czech"],"decibel":["czech"],"deficit":["czech"],"deflace":["czech"],"dekl":["czech"],"dekret":["czech"],"demokrat":["czech"],"deprese":["czech"],"derby":["czech"],"deska":["czech"],"detektiv":["czech"],"dikobraz":["czech"],"diktovat":["czech"],"dioda":["czech"],"diplom":["czech"],"disk":["czech","turkish"],"displej":["czech"],"divadlo":["czech"],"divoch":["czech"],"dlaha":["czech"],"dlouho":["czech"],"dluhopis":["czech"],"dnes":["czech"],"dobro":["czech"],"dobytek":["czech"],"docent":["czech"],"dochutit":["czech"],"dodnes":["czech"],"dohled":["czech"],"dohoda":["czech"],"dohra":["czech"],"dojem":["czech"],"dojnice":["czech"],"doklad":["czech"],"dokola":["czech"],"doktor":["czech","turkish"],"dokument":["czech"],"dolar":["czech"],"doleva":["czech"],"dolina":["czech"],"doma":["czech"],"dominant":["czech"],"domluvit":["czech"],"domov":["czech"],"donutit":["czech"],"dopad":["czech"],"dopis":["czech"],"doplnit":["czech"],"doposud":["czech"],"doprovod":["czech"],"dopustit":["czech"],"dorazit":["czech"],"dorost":["czech"],"dort":["czech"],"dosah":["czech"],"doslov":["czech"],"dostatek":["czech"],"dosud":["czech"],"dosyta":["czech"],"dotaz":["czech"],"dotek":["czech"],"dotknout":["czech"],"doufat":["czech"],"doutnat":["czech"],"dovozce":["czech"],"dozadu":["czech"],"doznat":["czech"],"dozorce":["czech"],"drahota":["czech"],"drak":["czech"],"dramatik":["czech"],"dravec":["czech"],"draze":["czech"],"drdol":["czech"],"drobnost":["czech"],"drogerie":["czech"],"drozd":["czech"],"drsnost":["czech"],"drtit":["czech"],"drzost":["czech"],"duben":["czech"],"duchovno":["czech"],"dudek":["czech"],"duha":["czech"],"duhovka":["czech"],"dusit":["czech"],"dusno":["czech"],"dutost":["czech"],"dvojice":["czech"],"dvorec":["czech"],"dynamit":["czech"],"ekolog":["czech"],"ekonomie":["czech"],"elektron":["czech"],"elipsa":["czech"],"email":["czech"],"emise":["czech"],"emoce":["czech"],"empatie":["czech"],"epizoda":["czech"],"epocha":["czech"],"epopej":["czech"],"epos":["czech"],"esej":["czech"],"esence":["czech"],"eskorta":["czech"],"eskymo":["czech"],"etiketa":["czech"],"euforie":["czech"],"evoluce":["czech"],"exekuce":["czech"],"exkurze":["czech"],"expedice":["czech"],"exploze":["czech"],"export":["czech"],"extrakt":["czech"],"facka":["czech"],"fajfka":["czech"],"fakulta":["czech"],"fanatik":["czech","turkish"],"fantazie":["czech"],"farmacie":["czech"],"favorit":["czech"],"fazole":["czech"],"federace":["czech"],"fejeton":["czech"],"fenka":["czech"],"fialka":["czech"],"figurant":["czech"],"filozof":["czech"],"filtr":["czech"],"finance":["czech"],"finta":["czech"],"fixace":["czech"],"fjord":["czech"],"flanel":["czech"],"flirt":["czech"],"flotila":["czech"],"fond":["czech"],"fosfor":["czech"],"fotbal":["czech"],"fotka":["czech"],"foton":["czech"],"frakce":["czech"],"freska":["czech"],"fronta":["czech"],"fukar":["czech"],"funkce":["czech"],"fyzika":["czech"],"galeje":["czech"],"garant":["czech"],"genetika":["czech"],"geolog":["czech"],"gilotina":["czech"],"glazura":["czech"],"glejt":["czech"],"golem":["czech"],"golfista":["czech"],"gotika":["czech"],"graf":["czech"],"gramofon":["czech"],"granule":["czech"],"grep":["czech"],"gril":["czech"],"grog":["czech"],"groteska":["czech"],"guma":["czech"],"hadice":["czech"],"hadr":["czech"],"hala":["czech"],"halenka":["czech"],"hanba":["czech"],"hanopis":["czech"],"harfa":["czech"],"harpuna":["czech"],"havran":["czech"],"hebkost":["czech"],"hejkal":["czech"],"hejno":["czech"],"hejtman":["czech"],"hektar":["czech","turkish"],"helma":["czech"],"hematom":["czech"],"herec":["czech"],"herna":["czech"],"heslo":["czech"],"hezky":["czech"],"historik":["czech"],"hladovka":["czech"],"hlasivky":["czech"],"hlava":["czech"],"hledat":["czech"],"hlen":["czech"],"hlodavec":["czech"],"hloh":["czech"],"hloupost":["czech"],"hltat":["czech"],"hlubina":["czech"],"hluchota":["czech"],"hmat":["czech"],"hmota":["czech"],"hmyz":["czech"],"hnis":["czech"],"hnojivo":["czech"],"hnout":["czech"],"hoblina":["czech"],"hoboj":["czech"],"hoch":["czech"],"hodiny":["czech"],"hodlat":["czech"],"hodnota":["czech"],"hodovat":["czech"],"hojnost":["czech"],"hokej":["czech"],"holinka":["czech"],"holka":["czech"],"holub":["czech"],"homole":["czech"],"honitba":["czech"],"honorace":["czech"],"horal":["czech"],"horda":["czech"],"horizont":["czech"],"horko":["czech"],"horlivec":["czech"],"hormon":["czech","turkish"],"hornina":["czech"],"horoskop":["czech"],"horstvo":["czech"],"hospoda":["czech"],"hostina":["czech"],"hotovost":["czech"],"houba":["czech"],"houf":["czech"],"houpat":["czech"],"houska":["czech"],"hovor":["czech"],"hradba":["czech"],"hranice":["czech"],"hravost":["czech"],"hrazda":["czech"],"hrbolek":["czech"],"hrdina":["czech"],"hrdlo":["czech"],"hrdost":["czech"],"hrnek":["czech"],"hrobka":["czech"],"hromada":["czech"],"hrot":["czech"],"hrouda":["czech"],"hrozen":["czech"],"hrstka":["czech"],"hrubost":["czech"],"hryzat":["czech"],"hubenost":["czech"],"hubnout":["czech"],"hudba":["czech"],"hukot":["czech"],"humr":["czech"],"husita":["czech"],"hustota":["czech"],"hvozd":["czech"],"hybnost":["czech"],"hydrant":["czech"],"hygiena":["czech"],"hymna":["czech"],"hysterik":["czech"],"idylka":["czech"],"ihned":["czech"],"ikona":["czech"],"iluze":["czech"],"imunita":["czech"],"infekce":["czech"],"inflace":["czech"],"inkaso":["czech"],"inovace":["czech"],"inspekce":["czech"],"internet":["czech"],"invalida":["czech"],"investor":["czech"],"inzerce":["czech"],"ironie":["czech"],"jablko":["czech"],"jachta":["czech"],"jahoda":["czech"],"jakmile":["czech"],"jakost":["czech"],"jalovec":["czech"],"jantar":["czech"],"jarmark":["czech"],"jaro":["czech"],"jasan":["czech"],"jasno":["czech"],"jatka":["czech"],"javor":["czech"],"jazyk":["czech"],"jedinec":["czech"],"jedle":["czech"],"jednatel":["czech"],"jehlan":["czech"],"jekot":["czech"],"jelen":["czech"],"jelito":["czech"],"jemnost":["czech"],"jenom":["czech"],"jepice":["czech"],"jeseter":["czech"],"jevit":["czech"],"jezdec":["czech"],"jezero":["czech"],"jinak":["czech"],"jindy":["czech"],"jinoch":["czech"],"jiskra":["czech"],"jistota":["czech"],"jitrnice":["czech"],"jizva":["czech"],"jmenovat":["czech"],"jogurt":["czech"],"jurta":["czech"],"kabaret":["czech"],"kabel":["czech"],"kabinet":["czech"],"kachna":["czech"],"kadet":["czech"],"kadidlo":["czech"],"kahan":["czech"],"kajak":["czech"],"kajuta":["czech"],"kakao":["czech"],"kaktus":["czech"],"kalamita":["czech"],"kalhoty":["czech"],"kalibr":["czech"],"kalnost":["czech"],"kamera":["czech"],"kamkoliv":["czech"],"kamna":["czech"],"kanibal":["czech"],"kanoe":["czech"],"kantor":["czech"],"kapalina":["czech"],"kapela":["czech"],"kapitola":["czech"],"kapka":["czech"],"kaple":["czech"],"kapota":["czech"],"kapr":["czech"],"kapusta":["czech"],"kapybara":["czech"],"karamel":["czech"],"karotka":["czech"],"karton":["czech"],"kasa":["czech"],"katalog":["czech"],"katedra":["czech"],"kauce":["czech"],"kauza":["czech"],"kavalec":["czech"],"kazajka":["czech"],"kazeta":["czech"],"kazivost":["czech"],"kdekoliv":["czech"],"kdesi":["czech"],"kedluben":["czech"],"kemp":["czech"],"keramika":["czech"],"kino":["czech"],"klacek":["czech"],"kladivo":["czech"],"klam":["czech"],"klapot":["czech"],"klasika":["czech"],"klaun":["czech"],"klec":["czech"],"klenba":["czech"],"klepat":["czech"],"klesnout":["czech"],"klid":["czech"],"klima":["czech"],"klisna":["czech"],"klobouk":["czech"],"klokan":["czech"],"klopa":["czech"],"kloub":["czech"],"klubovna":["czech"],"klusat":["czech"],"kluzkost":["czech"],"kmen":["czech"],"kmitat":["czech"],"kmotr":["czech"],"kniha":["czech"],"knot":["czech"],"koalice":["czech"],"koberec":["czech"],"kobka":["czech"],"kobliha":["czech"],"kobyla":["czech"],"kocour":["czech"],"kohout":["czech"],"kojenec":["czech"],"kokos":["czech"],"koktejl":["czech"],"kolaps":["czech"],"koleda":["czech"],"kolize":["czech"],"kolo":["czech"],"komando":["czech"],"kometa":["czech"],"komik":["czech"],"komnata":["czech"],"komora":["czech"],"kompas":["czech"],"komunita":["czech"],"konat":["czech"],"koncept":["czech"],"kondice":["czech"],"konec":["czech"],"konfese":["czech"],"kongres":["czech"],"konina":["czech"],"konkurs":["czech"],"kontakt":["czech"],"konzerva":["czech"],"kopanec":["czech"],"kopie":["czech"],"kopnout":["czech"],"koprovka":["czech"],"korbel":["czech"],"korektor":["czech"],"kormidlo":["czech"],"koroptev":["czech"],"korpus":["czech"],"koruna":["czech"],"koryto":["czech"],"korzet":["czech"],"kosatec":["czech"],"kostka":["czech"],"kotel":["czech"],"kotleta":["czech"],"kotoul":["czech"],"koukat":["czech"],"koupelna":["czech"],"kousek":["czech"],"kouzlo":["czech"],"kovboj":["czech"],"koza":["czech"],"kozoroh":["czech"],"krabice":["czech"],"krach":["czech"],"krajina":["czech"],"kralovat":["czech"],"krasopis":["czech"],"kravata":["czech"],"kredit":["czech"],"krejcar":["czech"],"kresba":["czech"],"kreveta":["czech"],"kriket":["czech"],"kritik":["czech"],"krize":["czech"],"krkavec":["czech"],"krmelec":["czech"],"krmivo":["czech"],"krocan":["czech"],"krok":["czech"],"kronika":["czech"],"kropit":["czech"],"kroupa":["czech"],"krovka":["czech"],"krtek":["czech"],"kruhadlo":["czech"],"krupice":["czech"],"krutost":["czech"],"krvinka":["czech"],"krychle":["czech"],"krypta":["czech"],"krystal":["czech"],"kryt":["czech"],"kudlanka":["czech"],"kufr":["czech"],"kujnost":["czech"],"kukla":["czech"],"kulajda":["czech"],"kulich":["czech"],"kulka":["czech"],"kulomet":["czech"],"kultura":["czech"],"kuna":["czech"],"kupodivu":["czech"],"kurt":["czech"],"kurzor":["czech"],"kutil":["czech"],"kvalita":["czech"],"kvasinka":["czech"],"kvestor":["czech"],"kynolog":["czech"],"kyselina":["czech"],"kytara":["czech"],"kytice":["czech"],"kytka":["czech"],"kytovec":["czech"],"kyvadlo":["czech"],"labrador":["czech"],"lachtan":["czech"],"ladnost":["czech"],"laik":["czech"],"lakomec":["czech"],"lamela":["czech"],"lampa":["czech"],"lanovka":["czech"],"lasice":["czech"],"laso":["czech"],"lastura":["czech"],"latinka":["czech"],"lavina":["czech"],"lebka":["czech"],"leckdy":["czech"],"leden":["czech"],"lednice":["czech"],"ledovka":["czech"],"ledvina":["czech"],"legenda":["czech"],"legie":["czech"],"legrace":["czech"],"lehce":["czech"],"lehkost":["czech"],"lehnout":["czech"],"lektvar":["czech"],"lenochod":["czech"],"lentilka":["czech"],"lepenka":["czech"],"lepidlo":["czech"],"letadlo":["czech"],"letec":["czech"],"letmo":["czech"],"letokruh":["czech"],"levhart":["czech"],"levitace":["czech"],"levobok":["czech"],"libra":["czech"],"lichotka":["czech"],"lidojed":["czech"],"lidskost":["czech"],"lihovina":["czech"],"lijavec":["czech"],"lilek":["czech"],"limetka":["czech"],"linie":["czech"],"linka":["czech"],"linoleum":["czech"],"listopad":["czech"],"litina":["czech"],"litovat":["czech"],"lobista":["czech"],"lodivod":["czech"],"logika":["czech"],"logoped":["czech"],"lokalita":["czech"],"loket":["czech"],"lomcovat":["czech"],"lopata":["czech"],"lopuch":["czech"],"lord":["czech"],"losos":["czech"],"lotr":["czech"],"loudal":["czech"],"louh":["czech"],"louka":["czech"],"louskat":["czech"],"lovec":["czech"],"lstivost":["czech"],"lucerna":["czech"],"lucifer":["czech"],"lump":["czech"],"lusk":["czech"],"lustrace":["czech"],"lvice":["czech"],"lyra":["czech"],"lyrika":["czech"],"lysina":["czech"],"madam":["czech"],"madlo":["czech"],"magistr":["czech"],"mahagon":["czech"],"majetek":["czech"],"majitel":["czech"],"majorita":["czech"],"makak":["czech"],"makovice":["czech"],"makrela":["czech"],"malba":["czech"],"malina":["czech"],"malovat":["czech"],"malvice":["czech"],"maminka":["czech"],"mandle":["czech"],"manko":["czech"],"marnost":["czech"],"masakr":["czech"],"maskot":["czech"],"masopust":["czech"],"matice":["czech"],"matrika":["czech"],"maturita":["czech"],"mazanec":["czech"],"mazivo":["czech"],"mazlit":["czech"],"mazurka":["czech"],"mdloba":["czech"],"mechanik":["czech"],"meditace":["czech"],"medovina":["czech"],"melasa":["czech"],"meloun":["czech"],"mentolka":["czech"],"metla":["czech"],"metoda":["czech"],"metr":["czech"],"mezera":["czech"],"migrace":["czech"],"mihnout":["czech"],"mihule":["czech"],"mikina":["czech"],"mikrofon":["czech","turkish"],"milenec":["czech"],"milimetr":["czech"],"milost":["czech"],"mimika":["czech"],"mincovna":["czech"],"minibar":["czech"],"minomet":["czech"],"minulost":["czech"],"miska":["czech"],"mistr":["czech"],"mixovat":["czech"],"mladost":["czech"],"mlha":["czech"],"mlhovina":["czech"],"mlok":["czech"],"mlsat":["czech"],"mluvit":["czech"],"mnich":["czech"],"mnohem":["czech"],"mobil":["czech"],"mocnost":["czech"],"modelka":["czech"],"modlitba":["czech"],"mohyla":["czech"],"mokro":["czech"],"molekula":["czech"],"momentka":["czech"],"monarcha":["czech"],"monokl":["czech"],"monstrum":["czech"],"montovat":["czech"],"monzun":["czech"],"mosaz":["czech"],"moskyt":["czech"],"most":["czech"],"motivace":["czech"],"motorka":["czech"],"motyka":["czech"],"moucha":["czech"],"moudrost":["czech"],"mozaika":["czech"],"mozek":["czech"],"mozol":["czech"],"mramor":["czech"],"mravenec":["czech"],"mrkev":["czech"],"mrtvola":["czech"],"mrzet":["czech"],"mrzutost":["czech"],"mstitel":["czech"],"mudrc":["czech"],"muflon":["czech"],"mulat":["czech"],"mumie":["czech"],"munice":["czech"],"muset":["czech"],"mutace":["czech"],"muzeum":["czech"],"muzikant":["czech"],"myslivec":["czech"],"mzda":["czech"],"nabourat":["czech"],"nachytat":["czech"],"nadace":["czech"],"nadbytek":["czech"],"nadhoz":["czech"],"nadobro":["czech"],"nadpis":["czech"],"nahlas":["czech"],"nahnat":["czech"],"nahodile":["czech"],"nahradit":["czech"],"naivita":["czech"],"najednou":["czech"],"najisto":["czech"],"najmout":["czech"],"naklonit":["czech"],"nakonec":["czech"],"nakrmit":["czech"],"nalevo":["czech"],"namazat":["czech"],"namluvit":["czech"],"nanometr":["czech"],"naoko":["czech"],"naopak":["czech"],"naostro":["czech"],"napadat":["czech"],"napevno":["czech"],"naplnit":["czech"],"napnout":["czech"],"naposled":["czech"],"naprosto":["czech"],"narodit":["czech"],"naruby":["czech"],"narychlo":["czech"],"nasadit":["czech"],"nasekat":["czech"],"naslepo":["czech"],"nastat":["czech"],"natolik":["czech"],"navenek":["czech"],"navrch":["czech"],"navzdory":["czech"],"nazvat":["czech"],"nebe":["czech"],"nechat":["czech"],"necky":["czech"],"nedaleko":["czech"],"nedbat":["czech"],"neduh":["czech"],"negace":["czech"],"nehet":["czech"],"nehoda":["czech"],"nejen":["czech"],"nejprve":["czech"],"neklid":["czech"],"nelibost":["czech"],"nemilost":["czech"],"nemoc":["czech"],"neochota":["czech"],"neonka":["czech"],"nepokoj":["czech"],"nerost":["czech"],"nerv":["czech"],"nesmysl":["czech"],"nesoulad":["czech"],"netvor":["czech"],"neuron":["czech"],"nevina":["czech"],"nezvykle":["czech"],"nicota":["czech"],"nijak":["czech"],"nikam":["czech"],"nikdy":["czech"],"nikl":["czech"],"nikterak":["czech"],"nitro":["czech"],"nocleh":["czech"],"nohavice":["czech"],"nominace":["czech"],"nora":["czech"],"norek":["czech"],"nositel":["czech"],"nosnost":["czech"],"nouze":["czech"],"noviny":["czech"],"novota":["czech"],"nozdra":["czech"],"nuda":["czech"],"nudle":["czech"],"nuget":["czech"],"nutit":["czech"],"nutnost":["czech"],"nutrie":["czech"],"nymfa":["czech"],"obal":["czech"],"obarvit":["czech"],"obava":["czech"],"obdiv":["czech"],"obec":["czech"],"obehnat":["czech"],"obejmout":["czech"],"obezita":["czech"],"obhajoba":["czech"],"obilnice":["czech"],"objasnit":["czech"],"objekt":["czech"],"obklopit":["czech"],"oblast":["czech"],"oblek":["czech"],"obliba":["czech"],"obloha":["czech"],"obluda":["czech"],"obnos":["czech"],"obohatit":["czech"],"obojek":["czech"],"obout":["czech"],"obrazec":["czech"],"obrna":["czech"],"obruba":["czech"],"obrys":["czech"],"obsah":["czech"],"obsluha":["czech"],"obstarat":["czech"],"obuv":["czech"],"obvaz":["czech"],"obvinit":["czech"],"obvod":["czech"],"obvykle":["czech"],"obyvatel":["czech"],"obzor":["czech"],"ocas":["czech"],"ocel":["czech"],"ocenit":["czech"],"ochladit":["czech"],"ochota":["czech"],"ochrana":["czech"],"ocitnout":["czech"],"odboj":["czech"],"odbyt":["czech"],"odchod":["czech"],"odcizit":["czech"],"odebrat":["czech"],"odeslat":["czech"],"odevzdat":["czech"],"odezva":["czech"],"odhadce":["czech"],"odhodit":["czech"],"odjet":["czech"],"odjinud":["czech"],"odkaz":["czech"],"odkoupit":["czech"],"odliv":["czech"],"odluka":["czech"],"odmlka":["czech"],"odolnost":["czech"],"odpad":["czech"],"odpis":["czech"],"odplout":["czech"],"odpor":["czech"],"odpustit":["czech"],"odpykat":["czech"],"odrazka":["czech"],"odsoudit":["czech"],"odstup":["czech"],"odsun":["czech"],"odtok":["czech"],"odtud":["czech"],"odvaha":["czech"],"odveta":["czech"],"odvolat":["czech"],"odvracet":["czech"],"odznak":["czech"],"ofina":["czech"],"ofsajd":["czech"],"ohlas":["czech"],"ohnisko":["czech"],"ohrada":["czech"],"ohrozit":["czech"],"ohryzek":["czech"],"okap":["czech"],"okenice":["czech"],"oklika":["czech"],"okno":["czech"],"okouzlit":["czech"],"okovy":["czech"],"okrasa":["czech"],"okres":["czech"],"okrsek":["czech"],"okruh":["czech"],"okupant":["czech"],"okurka":["czech"],"okusit":["czech"],"olejnina":["czech"],"olizovat":["czech"],"omak":["czech"],"omeleta":["czech"],"omezit":["czech"],"omladina":["czech"],"omlouvat":["czech"],"omluva":["czech"],"omyl":["czech"],"onehdy":["czech"],"opakovat":["czech"],"opasek":["czech"],"operace":["czech"],"opice":["czech"],"opilost":["czech"],"opisovat":["czech"],"opora":["czech"],"opozice":["czech"],"opravdu":["czech"],"oproti":["czech"],"orbital":["czech"],"orchestr":["czech"],"orgie":["czech"],"orlice":["czech"],"orloj":["czech"],"ortel":["czech"],"osada":["czech"],"oschnout":["czech"],"osika":["czech"],"osivo":["czech"],"oslava":["czech"],"oslepit":["czech"],"oslnit":["czech"],"oslovit":["czech"],"osnova":["czech"],"osoba":["czech"],"osolit":["czech"],"ospalec":["czech"],"osten":["czech"],"ostraha":["czech"],"ostuda":["czech"],"ostych":["czech"],"osvojit":["czech"],"oteplit":["czech"],"otisk":["czech"],"otop":["czech"],"otrhat":["czech"],"otrlost":["czech"],"otrok":["czech"],"otruby":["czech"],"otvor":["czech"],"ovanout":["czech"],"ovar":["czech"],"oves":["czech"],"ovlivnit":["czech"],"ovoce":["czech"],"oxid":["czech"],"ozdoba":["czech"],"pachatel":["czech"],"pacient":["czech"],"padouch":["czech"],"pahorek":["czech"],"pakt":["czech"],"palanda":["czech"],"palec":["czech"],"palivo":["czech"],"paluba":["czech"],"pamflet":["czech"],"pamlsek":["czech"],"panenka":["czech"],"panika":["czech"],"panna":["czech"],"panovat":["czech"],"panstvo":["czech"],"pantofle":["czech"],"paprika":["czech"],"parketa":["czech"],"parodie":["czech"],"parta":["czech"],"paruka":["czech"],"paryba":["czech"],"paseka":["czech"],"pasivita":["czech"],"pastelka":["czech"],"patent":["czech"],"patrona":["czech"],"pavouk":["czech"],"pazneht":["czech"],"pazourek":["czech"],"pecka":["czech"],"pedagog":["czech"],"pejsek":["czech"],"peklo":["czech"],"peloton":["czech"],"penalta":["czech"],"pendrek":["czech"],"penze":["czech"],"periskop":["czech"],"pero":["czech"],"pestrost":["czech"],"petarda":["czech"],"petice":["czech"],"petrolej":["czech"],"pevnina":["czech"],"pexeso":["czech"],"pianista":["czech"],"piha":["czech"],"pijavice":["czech"],"pikle":["czech"],"piknik":["czech","turkish"],"pilina":["czech"],"pilnost":["czech"],"pilulka":["czech"],"pinzeta":["czech"],"pipeta":["czech"],"pisatel":["czech"],"pistole":["czech"],"pitevna":["czech"],"pivnice":["czech"],"pivovar":["czech"],"placenta":["czech"],"plakat":["czech"],"plamen":["czech"],"planeta":["czech"],"plastika":["czech"],"platit":["czech"],"plavidlo":["czech"],"plaz":["czech"],"plech":["czech"],"plemeno":["czech"],"plenta":["czech"],"ples":["czech"],"pletivo":["czech"],"plevel":["czech"],"plivat":["czech"],"plnit":["czech"],"plno":["czech"],"plocha":["czech"],"plodina":["czech"],"plomba":["czech"],"plout":["czech"],"pluk":["czech"],"plyn":["czech"],"pobavit":["czech"],"pobyt":["czech"],"pochod":["czech"],"pocit":["czech"],"poctivec":["czech"],"podat":["czech"],"podcenit":["czech"],"podepsat":["czech"],"podhled":["czech"],"podivit":["czech"],"podklad":["czech"],"podmanit":["czech"],"podnik":["czech"],"podoba":["czech"],"podpora":["czech"],"podraz":["czech"],"podstata":["czech"],"podvod":["czech"],"podzim":["czech"],"poezie":["czech"],"pohanka":["czech"],"pohnutka":["czech"],"pohovor":["czech"],"pohroma":["czech"],"pohyb":["czech"],"pointa":["czech"],"pojistka":["czech"],"pojmout":["czech"],"pokazit":["czech"],"pokles":["czech"],"pokoj":["czech"],"pokrok":["czech"],"pokuta":["czech"],"pokyn":["czech"],"poledne":["czech"],"polibek":["czech"],"polknout":["czech"],"poloha":["czech"],"polynom":["czech"],"pomalu":["czech"],"pominout":["czech"],"pomlka":["czech"],"pomoc":["czech"],"pomsta":["czech"],"pomyslet":["czech"],"ponechat":["czech"],"ponorka":["czech"],"ponurost":["czech"],"popadat":["czech"],"popel":["czech"],"popisek":["czech"],"poplach":["czech"],"poprosit":["czech"],"popsat":["czech"],"popud":["czech"],"poradce":["czech"],"porce":["czech"],"porod":["czech"],"porucha":["czech"],"poryv":["czech"],"posadit":["czech"],"posed":["czech"],"posila":["czech"],"poskok":["czech"],"poslanec":["czech"],"posoudit":["czech"],"pospolu":["czech"],"postava":["czech"],"posudek":["czech"],"posyp":["czech"],"potah":["czech"],"potkan":["czech"],"potlesk":["czech"],"potomek":["czech"],"potrava":["czech"],"potupa":["czech"],"potvora":["czech"],"poukaz":["czech"],"pouto":["czech"],"pouzdro":["czech"],"povaha":["czech"],"povidla":["czech"],"povlak":["czech"],"povoz":["czech"],"povrch":["czech"],"povstat":["czech"],"povyk":["czech"],"povzdech":["czech"],"pozdrav":["czech"],"pozemek":["czech"],"poznatek":["czech"],"pozor":["czech"],"pozvat":["czech"],"pracovat":["czech"],"prahory":["czech"],"praktika":["czech"],"prales":["czech"],"praotec":["czech"],"praporek":["czech"],"prase":["czech"],"pravda":["czech"],"princip":["czech"],"prkno":["czech"],"probudit":["czech"],"procento":["czech"],"prodej":["czech"],"profese":["czech"],"prohra":["czech"],"projekt":["czech"],"prolomit":["czech"],"promile":["czech"],"pronikat":["czech"],"propad":["czech"],"prorok":["czech"],"prosba":["czech"],"proton":["czech"],"proutek":["czech"],"provaz":["czech"],"prskavka":["czech"],"prsten":["czech"],"prudkost":["czech"],"prut":["czech"],"prvek":["czech"],"prvohory":["czech"],"psanec":["czech"],"psovod":["czech"],"pstruh":["czech"],"ptactvo":["czech"],"puberta":["czech"],"puch":["czech"],"pudl":["czech"],"pukavec":["czech"],"puklina":["czech"],"pukrle":["czech"],"pult":["czech"],"pumpa":["czech"],"punc":["czech"],"pupen":["czech"],"pusa":["czech"],"pusinka":["czech"],"pustina":["czech"],"putovat":["czech"],"putyka":["czech"],"pyramida":["czech"],"pysk":["czech"],"pytel":["czech"],"racek":["czech"],"rachot":["czech"],"radiace":["czech"],"radnice":["czech"],"radon":["czech"],"raft":["czech"],"ragby":["czech"],"raketa":["czech"],"rakovina":["czech"],"rameno":["czech"],"rampouch":["czech"],"rande":["czech"],"rarach":["czech"],"rarita":["czech"],"rasovna":["czech"],"rastr":["czech"],"ratolest":["czech"],"razance":["czech"],"razidlo":["czech"],"reagovat":["czech"],"reakce":["czech"],"recept":["czech"],"redaktor":["czech"],"referent":["czech"],"reflex":["czech"],"rejnok":["czech"],"reklama":["czech"],"rekord":["czech"],"rekrut":["czech"],"rektor":["czech"],"reputace":["czech"],"revize":["czech","turkish"],"revma":["czech"],"revolver":["czech"],"rezerva":["czech"],"riskovat":["czech"],"riziko":["czech"],"robotika":["czech"],"rodokmen":["czech"],"rohovka":["czech"],"rokle":["czech"],"rokoko":["czech"],"romaneto":["czech"],"ropovod":["czech"],"ropucha":["czech"],"rorejs":["czech"],"rosol":["czech"],"rostlina":["czech"],"rotmistr":["czech"],"rotoped":["czech"],"rotunda":["czech"],"roubenka":["czech"],"roucho":["czech"],"roup":["czech"],"roura":["czech"],"rovina":["czech"],"rovnice":["czech"],"rozbor":["czech"],"rozchod":["czech"],"rozdat":["czech"],"rozeznat":["czech"],"rozhodce":["czech"],"rozinka":["czech"],"rozjezd":["czech"],"rozkaz":["czech"],"rozloha":["czech"],"rozmar":["czech"],"rozpad":["czech"],"rozruch":["czech"],"rozsah":["czech"],"roztok":["czech"],"rozum":["czech"],"rozvod":["czech"],"rubrika":["czech"],"ruchadlo":["czech"],"rukavice":["czech"],"rukopis":["czech"],"ryba":["czech"],"rybolov":["czech"],"rychlost":["czech"],"rydlo":["czech"],"rypadlo":["czech"],"rytina":["czech"],"ryzost":["czech"],"sadista":["czech"],"sahat":["czech"],"sako":["czech"],"samec":["czech"],"samizdat":["czech"],"samota":["czech"],"sanitka":["czech"],"sardinka":["czech"],"sasanka":["czech"],"satelit":["czech"],"sazba":["czech"],"sazenice":["czech"],"sbor":["czech"],"schovat":["czech"],"sebranka":["czech"],"secese":["czech"],"sedadlo":["czech"],"sediment":["czech"],"sedlo":["czech"],"sehnat":["czech"],"sejmout":["czech"],"sekera":["czech"],"sekta":["czech"],"sekunda":["czech"],"sekvoje":["czech"],"semeno":["czech"],"seno":["czech"],"servis":["czech","turkish"],"sesadit":["czech"],"seshora":["czech"],"seskok":["czech"],"seslat":["czech"],"sestra":["czech"],"sesuv":["czech"],"sesypat":["czech"],"setba":["czech"],"setina":["czech"],"setkat":["czech"],"setnout":["czech"],"setrvat":["czech"],"sever":["czech"],"seznam":["czech"],"shoda":["czech"],"shrnout":["czech"],"sifon":["czech"],"silnice":["czech"],"sirka":["czech"],"sirotek":["czech"],"sirup":["czech"],"situace":["czech"],"skafandr":["czech"],"skalisko":["czech"],"skanzen":["czech"],"skaut":["czech"],"skeptik":["czech"],"skica":["czech"],"skladba":["czech"],"sklenice":["czech"],"sklo":["czech"],"skluz":["czech"],"skoba":["czech"],"skokan":["czech"],"skoro":["czech"],"skripta":["czech"],"skrz":["czech"],"skupina":["czech"],"skvost":["czech"],"skvrna":["czech"],"slabika":["czech"],"sladidlo":["czech"],"slanina":["czech"],"slast":["czech"],"slavnost":["czech"],"sledovat":["czech"],"slepec":["czech"],"sleva":["czech"],"slezina":["czech"],"slib":["czech"],"slina":["czech"],"sliznice":["czech"],"slon":["czech"],"sloupek":["czech"],"slovo":["czech"],"sluch":["czech"],"sluha":["czech"],"slunce":["czech"],"slupka":["czech"],"slza":["czech"],"smaragd":["czech"],"smetana":["czech"],"smilstvo":["czech"],"smlouva":["czech"],"smog":["czech"],"smrad":["czech"],"smrk":["czech"],"smrtka":["czech"],"smutek":["czech"],"smysl":["czech"],"snad":["czech"],"snaha":["czech"],"snob":["czech"],"sobota":["czech"],"socha":["czech"],"sodovka":["czech"],"sokol":["czech"],"sopka":["czech"],"sotva":["czech"],"souboj":["czech"],"soucit":["czech"],"soudce":["czech"],"souhlas":["czech"],"soulad":["czech"],"soumrak":["czech"],"souprava":["czech"],"soused":["czech"],"soutok":["czech"],"souviset":["czech"],"spalovna":["czech"],"spasitel":["czech"],"spis":["czech"],"splav":["czech"],"spodek":["czech"],"spojenec":["czech"],"spolu":["czech"],"sponzor":["czech"],"spornost":["czech"],"spousta":["czech"],"sprcha":["czech"],"spustit":["czech"],"sranda":["czech"],"sraz":["czech"],"srdce":["czech"],"srna":["czech"],"srnec":["czech"],"srovnat":["czech"],"srpen":["czech"],"srst":["czech"],"srub":["czech"],"stanice":["czech"],"starosta":["czech"],"statika":["czech"],"stavba":["czech"],"stehno":["czech"],"stezka":["czech"],"stodola":["czech"],"stolek":["czech"],"stopa":["czech"],"storno":["czech"],"stoupat":["czech"],"strach":["czech"],"stres":["czech"],"strhnout":["czech"],"strom":["czech"],"struna":["czech"],"studna":["czech"],"stupnice":["czech"],"stvol":["czech"],"styk":["czech"],"subjekt":["czech"],"subtropy":["czech"],"suchar":["czech"],"sudost":["czech"],"sukno":["czech"],"sundat":["czech"],"sunout":["czech"],"surikata":["czech"],"surovina":["czech"],"svah":["czech"],"svalstvo":["czech"],"svetr":["czech"],"svatba":["czech"],"svazek":["czech"],"svisle":["czech"],"svitek":["czech"],"svoboda":["czech"],"svodidlo":["czech"],"svorka":["czech"],"svrab":["czech"],"sykavka":["czech"],"sykot":["czech"],"synek":["czech"],"synovec":["czech"],"sypat":["czech"],"sypkost":["czech"],"syrovost":["czech"],"sysel":["czech"],"sytost":["czech"],"tabletka":["czech"],"tabule":["czech"],"tahoun":["czech"],"tajemno":["czech"],"tajfun":["czech"],"tajga":["czech"],"tajit":["czech"],"tajnost":["czech"],"taktika":["czech"],"tamhle":["czech"],"tampon":["czech","turkish"],"tancovat":["czech"],"tanec":["czech"],"tanker":["czech"],"tapeta":["czech"],"tavenina":["czech"],"tazatel":["czech"],"technika":["czech"],"tehdy":["czech"],"tekutina":["czech"],"telefon":["czech"],"temnota":["czech"],"tendence":["czech"],"tenista":["czech"],"tenor":["czech"],"teplota":["czech"],"tepna":["czech"],"teprve":["czech"],"terapie":["czech"],"termoska":["czech"],"textil":["czech"],"ticho":["czech"],"tiskopis":["czech"],"titulek":["czech"],"tkadlec":["czech"],"tkanina":["czech"],"tlapka":["czech"],"tleskat":["czech"],"tlukot":["czech"],"tlupa":["czech"],"tmel":["czech"],"toaleta":["czech"],"topinka":["czech"],"topol":["czech"],"torzo":["czech"],"touha":["czech"],"toulec":["czech"],"tradice":["czech"],"traktor":["czech"],"tramp":["czech"],"trasa":["czech"],"traverza":["czech"],"trefit":["czech"],"trest":["czech"],"trezor":["czech"],"trhavina":["czech"],"trhlina":["czech"],"trochu":["czech"],"trojice":["czech"],"troska":["czech"],"trouba":["czech"],"trpce":["czech"],"trpitel":["czech"],"trpkost":["czech"],"trubec":["czech"],"truchlit":["czech"],"truhlice":["czech"],"trus":["czech"],"trvat":["czech"],"tudy":["czech"],"tuhnout":["czech"],"tuhost":["czech"],"tundra":["czech"],"turista":["czech"],"turnaj":["czech"],"tuzemsko":["czech"],"tvaroh":["czech"],"tvorba":["czech"],"tvrdost":["czech"],"tvrz":["czech"],"tygr":["czech"],"tykev":["czech"],"ubohost":["czech"],"uboze":["czech"],"ubrat":["czech"],"ubrousek":["czech"],"ubrus":["czech"],"ubytovna":["czech"],"ucho":["czech"],"uctivost":["czech"],"udivit":["czech"],"uhradit":["czech"],"ujednat":["czech"],"ujistit":["czech"],"ujmout":["czech"],"ukazatel":["czech"],"uklidnit":["czech"],"uklonit":["czech"],"ukotvit":["czech"],"ukrojit":["czech"],"ulice":["czech"],"ulita":["czech"],"ulovit":["czech"],"umyvadlo":["czech"],"unavit":["czech"],"uniforma":["czech"],"uniknout":["czech"],"upadnout":["czech"],"uplatnit":["czech"],"uplynout":["czech"],"upoutat":["czech"],"upravit":["czech"],"uran":["czech"],"urazit":["czech"],"usednout":["czech"],"usilovat":["czech"],"usmrtit":["czech"],"usnadnit":["czech"],"usnout":["czech"],"usoudit":["czech"],"ustlat":["czech"],"ustrnout":["czech"],"utahovat":["czech"],"utkat":["czech"],"utlumit":["czech"],"utonout":["czech"],"utopenec":["czech"],"utrousit":["czech"],"uvalit":["czech"],"uvolnit":["czech"],"uvozovka":["czech"],"uzdravit":["czech"],"uzel":["czech"],"uzenina":["czech"],"uzlina":["czech"],"uznat":["czech"],"vagon":["czech","turkish"],"valcha":["czech"],"valoun":["czech"],"vana":["czech"],"vandal":["czech"],"vanilka":["czech"],"varan":["czech"],"varhany":["czech"],"varovat":["czech"],"vcelku":["czech"],"vchod":["czech"],"vdova":["czech"],"vedro":["czech"],"vegetace":["czech"],"vejce":["czech"],"velbloud":["czech"],"veletrh":["czech"],"velitel":["czech"],"velmoc":["czech"],"velryba":["czech"],"venkov":["czech"],"veranda":["czech"],"verze":["czech"],"veselka":["czech"],"veskrze":["czech"],"vesnice":["czech"],"vespodu":["czech"],"vesta":["czech"],"veterina":["czech"],"veverka":["czech"],"vibrace":["czech"],"vichr":["czech"],"videohra":["czech"],"vidina":["czech"],"vidle":["czech"],"vila":["czech"],"vinice":["czech"],"viset":["czech"],"vitalita":["czech"],"vize":["czech"],"vizitka":["czech"],"vjezd":["czech"],"vklad":["czech"],"vkus":["czech"],"vlajka":["czech"],"vlak":["czech"],"vlasec":["czech"],"vlevo":["czech"],"vlhkost":["czech"],"vliv":["czech"],"vlnovka":["czech"],"vloupat":["czech"],"vnucovat":["czech"],"vnuk":["czech"],"voda":["czech"],"vodivost":["czech"],"vodoznak":["czech"],"vodstvo":["czech"],"vojensky":["czech"],"vojna":["czech"],"vojsko":["czech"],"volant":["czech"],"volba":["czech"],"volit":["czech"],"volno":["czech"],"voskovka":["czech"],"vozidlo":["czech"],"vozovna":["czech"],"vpravo":["czech"],"vrabec":["czech"],"vracet":["czech"],"vrah":["czech"],"vrata":["czech"],"vrba":["czech"],"vrcholek":["czech"],"vrhat":["czech"],"vrstva":["czech"],"vrtule":["czech"],"vsadit":["czech"],"vstoupit":["czech"],"vstup":["czech"],"vtip":["czech"],"vybavit":["czech"],"vybrat":["czech"],"vychovat":["czech"],"vydat":["czech"],"vydra":["czech"],"vyfotit":["czech"],"vyhledat":["czech"],"vyhnout":["czech"],"vyhodit":["czech"],"vyhradit":["czech"],"vyhubit":["czech"],"vyjasnit":["czech"],"vyjet":["czech"],"vyjmout":["czech"],"vyklopit":["czech"],"vykonat":["czech"],"vylekat":["czech"],"vymazat":["czech"],"vymezit":["czech"],"vymizet":["czech"],"vymyslet":["czech"],"vynechat":["czech"],"vynikat":["czech"],"vynutit":["czech"],"vypadat":["czech"],"vyplatit":["czech"],"vypravit":["czech"],"vypustit":["czech"],"vyrazit":["czech"],"vyrovnat":["czech"],"vyrvat":["czech"],"vyslovit":["czech"],"vysoko":["czech"],"vystavit":["czech"],"vysunout":["czech"],"vysypat":["czech"],"vytasit":["czech"],"vytesat":["czech"],"vytratit":["czech"],"vyvinout":["czech"],"vyvolat":["czech"],"vyvrhel":["czech"],"vyzdobit":["czech"],"vyznat":["czech"],"vzadu":["czech"],"vzbudit":["czech"],"vzchopit":["czech"],"vzdor":["czech"],"vzduch":["czech"],"vzdychat":["czech"],"vzestup":["czech"],"vzhledem":["czech"],"vzkaz":["czech"],"vzlykat":["czech"],"vznik":["czech"],"vzorek":["czech"],"vzpoura":["czech"],"vztah":["czech"],"vztek":["czech"],"xylofon":["czech"],"zabrat":["czech"],"zabydlet":["czech"],"zachovat":["czech"],"zadarmo":["czech"],"zadusit":["czech"],"zafoukat":["czech"],"zahltit":["czech"],"zahodit":["czech"],"zahrada":["czech"],"zahynout":["czech"],"zajatec":["czech"],"zajet":["czech"],"zajistit":["czech"],"zaklepat":["czech"],"zakoupit":["czech"],"zalepit":["czech"],"zamezit":["czech"],"zamotat":["czech"],"zamyslet":["czech"],"zanechat":["czech"],"zanikat":["czech"],"zaplatit":["czech"],"zapojit":["czech"],"zapsat":["czech"],"zarazit":["czech"],"zastavit":["czech"],"zasunout":["czech"],"zatajit":["czech"],"zatemnit":["czech"],"zatknout":["czech"],"zaujmout":["czech"],"zavalit":["czech"],"zavelet":["czech"],"zavinit":["czech"],"zavolat":["czech"],"zavrtat":["czech"],"zazvonit":["czech"],"zbavit":["czech"],"zbrusu":["czech"],"zbudovat":["czech"],"zbytek":["czech"],"zdaleka":["czech"],"zdarma":["czech"],"zdatnost":["czech"],"zdivo":["czech"],"zdobit":["czech"],"zdroj":["czech"],"zdvih":["czech"],"zdymadlo":["czech"],"zelenina":["czech"],"zeman":["czech"],"zemina":["czech"],"zeptat":["czech"],"zezadu":["czech"],"zezdola":["czech"],"zhatit":["czech"],"zhltnout":["czech"],"zhluboka":["czech"],"zhotovit":["czech"],"zhruba":["czech"],"zima":["czech"],"zimnice":["czech"],"zjemnit":["czech"],"zklamat":["czech"],"zkoumat":["czech"],"zkratka":["czech"],"zkumavka":["czech"],"zlato":["czech"],"zlehka":["czech"],"zloba":["czech"],"zlom":["czech"],"zlost":["czech"],"zlozvyk":["czech"],"zmapovat":["czech"],"zmar":["czech"],"zmatek":["czech"],"zmije":["czech"],"zmizet":["czech"],"zmocnit":["czech"],"zmodrat":["czech"],"zmrzlina":["czech"],"zmutovat":["czech"],"znak":["czech"],"znalost":["czech"],"znamenat":["czech"],"znovu":["czech"],"zobrazit":["czech"],"zotavit":["czech"],"zoubek":["czech"],"zoufale":["czech"],"zplodit":["czech"],"zpomalit":["czech"],"zprava":["czech"],"zprostit":["czech"],"zprudka":["czech"],"zprvu":["czech"],"zrada":["czech"],"zranit":["czech"],"zrcadlo":["czech"],"zrnitost":["czech"],"zrno":["czech"],"zrovna":["czech"],"zrychlit":["czech"],"zrzavost":["czech"],"zticha":["czech"],"ztratit":["czech"],"zubovina":["czech"],"zubr":["czech"],"zvednout":["czech"],"zvenku":["czech"],"zvesela":["czech"],"zvon":["czech"],"zvrat":["czech"],"zvukovod":["czech"],"zvyk":["czech"],"abandon":["english","french"],"ability":["english"],"able":["english"],"about":["english"],"above":["english"],"absent":["english"],"absorb":["english"],"abstract":["english"],"absurd":["english"],"abuse":["english"],"access":["english"],"accident":["english"],"account":["english"],"accuse":["english"],"achieve":["english"],"acid":["english"],"acoustic":["english"],"acquire":["english"],"across":["english"],"act":["english"],"action":["english"],"actor":["english"],"actress":["english"],"actual":["english"],"adapt":["english"],"add":["english"],"addict":["english"],"address":["english"],"adjust":["english"],"admit":["english"],"adult":["english"],"advance":["english"],"advice":["english"],"aerobic":["english"],"affair":["english"],"afford":["english"],"afraid":["english"],"again":["english"],"age":["english"],"agent":["english"],"agree":["english"],"ahead":["english"],"aim":["english"],"air":["english"],"airport":["english"],"aisle":["english"],"alarm":["english"],"album":["english"],"alcohol":["english"],"alert":["english"],"alien":["english"],"all":["english"],"alley":["english"],"allow":["english"],"almost":["english"],"alone":["english"],"alpha":["english"],"already":["english"],"also":["english"],"alter":["english"],"always":["english"],"amateur":["english","french"],"amazing":["english"],"among":["english"],"amount":["english"],"amused":["english"],"analyst":["english"],"anchor":["english"],"ancient":["english"],"anger":["english"],"angle":["english","french"],"angry":["english"],"animal":["english","french"],"ankle":["english"],"announce":["english"],"annual":["english"],"another":["english"],"answer":["english"],"antenna":["english"],"antique":["english"],"anxiety":["english"],"any":["english"],"apart":["english"],"apology":["english"],"appear":["english"],"apple":["english"],"approve":["english"],"april":["english"],"arch":["english"],"arctic":["english"],"area":["english"],"arena":["english","turkish"],"argue":["english"],"arm":["english"],"armed":["english"],"armor":["english"],"army":["english"],"around":["english"],"arrange":["english"],"arrest":["english"],"arrive":["english"],"arrow":["english"],"art":["english"],"artefact":["english"],"artist":["english","turkish"],"artwork":["english"],"ask":["english"],"aspect":["english","french"],"assault":["english"],"asset":["english"],"assist":["english"],"assume":["english"],"asthma":["english"],"athlete":["english"],"atom":["english","turkish"],"attack":["english"],"attend":["english"],"attitude":["english"],"attract":["english"],"auction":["english"],"audit":["english"],"august":["english"],"aunt":["english"],"author":["english"],"auto":["english"],"autumn":["english"],"average":["english"],"avocado":["english"],"avoid":["english"],"awake":["english"],"aware":["english"],"away":["english"],"awesome":["english"],"awful":["english"],"awkward":["english"],"axis":["english"],"baby":["english"],"bachelor":["english"],"bacon":["english"],"badge":["english","french"],"bag":["english"],"balance":["english"],"balcony":["english"],"ball":["english"],"bamboo":["english"],"banana":["english"],"banner":["english"],"bar":["english"],"barely":["english"],"bargain":["english"],"barrel":["english"],"base":["english"],"basic":["english"],"basket":["english"],"battle":["english"],"beach":["english"],"bean":["english"],"beauty":["english"],"because":["english"],"become":["english"],"beef":["english"],"before":["english"],"begin":["english"],"behave":["english"],"behind":["english"],"believe":["english"],"below":["english"],"belt":["english"],"bench":["english"],"benefit":["english"],"best":["english"],"betray":["english"],"better":["english"],"between":["english"],"beyond":["english"],"bicycle":["english","french"],"bid":["english"],"bike":["english"],"bind":["english"],"biology":["english"],"bird":["english"],"birth":["english"],"bitter":["english"],"black":["english"],"blade":["english"],"blame":["english"],"blanket":["english"],"blast":["english"],"bleak":["english"],"bless":["english"],"blind":["english"],"blood":["english"],"blossom":["english"],"blouse":["english"],"blue":["english"],"blur":["english"],"blush":["english"],"board":["english"],"boat":["english"],"body":["english"],"boil":["english"],"bomb":["english"],"bone":["english"],"bonus":["english","french"],"book":["english"],"boost":["english"],"border":["english"],"boring":["english"],"borrow":["english"],"boss":["english"],"bottom":["english"],"bounce":["english"],"box":["english"],"boy":["english"],"bracket":["english"],"brain":["english"],"brand":["english"],"brass":["english"],"brave":["english","french"],"bread":["english"],"breeze":["english"],"brick":["english"],"bridge":["english"],"brief":["english"],"bright":["english"],"bring":["english"],"brisk":["english"],"broccoli":["english"],"broken":["english"],"bronze":["english"],"broom":["english"],"brother":["english"],"brown":["english"],"brush":["english"],"bubble":["english"],"buddy":["english"],"budget":["english"],"buffalo":["english"],"build":["english"],"bulb":["english"],"bulk":["english"],"bullet":["english"],"bundle":["english"],"bunker":["english"],"burden":["english"],"burger":["english"],"burst":["english"],"bus":["english"],"business":["english"],"busy":["english"],"butter":["english"],"buyer":["english"],"buzz":["english"],"cabbage":["english"],"cabin":["english"],"cable":["english"],"cactus":["english"],"cage":["english"],"cake":["english"],"call":["english"],"calm":["english"],"camera":["english"],"camp":["english"],"can":["english"],"canal":["english","french"],"cancel":["english"],"candy":["english"],"cannon":["english"],"canoe":["english"],"canvas":["english"],"canyon":["english"],"capable":["english","french"],"capital":["english"],"captain":["english"],"car":["english"],"carbon":["english"],"card":["english"],"cargo":["english"],"carpet":["english"],"carry":["english"],"cart":["english"],"case":["english"],"cash":["english"],"casino":["english"],"castle":["english"],"casual":["english"],"cat":["english"],"catalog":["english"],"catch":["english"],"category":["english"],"cattle":["english"],"caught":["english"],"cause":["english"],"caution":["english","french"],"cave":["english"],"ceiling":["english"],"celery":["english"],"cement":["english"],"census":["english"],"century":["english"],"cereal":["english"],"certain":["english"],"chair":["english"],"chalk":["english"],"champion":["english"],"change":["english"],"chaos":["english"],"chapter":["english"],"charge":["english"],"chase":["english"],"chat":["english"],"cheap":["english"],"check":["english"],"cheese":["english"],"chef":["english"],"cherry":["english"],"chest":["english"],"chicken":["english"],"chief":["english"],"child":["english"],"chimney":["english"],"choice":["english"],"choose":["english"],"chronic":["english"],"chuckle":["english"],"chunk":["english"],"churn":["english"],"cigar":["english"],"cinnamon":["english"],"circle":["english"],"citizen":["english"],"city":["english"],"civil":["english","french"],"claim":["english"],"clap":["english"],"clarify":["english"],"claw":["english"],"clay":["english"],"clean":["english"],"clerk":["english"],"clever":["english"],"click":["english"],"client":["english","french"],"cliff":["english"],"climb":["english"],"clinic":["english"],"clip":["english"],"clock":["english"],"clog":["english"],"close":["english"],"cloth":["english"],"cloud":["english"],"clown":["english"],"club":["english"],"clump":["english"],"cluster":["english"],"clutch":["english"],"coach":["english"],"coast":["english"],"coconut":["english"],"code":["english"],"coffee":["english"],"coil":["english"],"coin":["english"],"collect":["english"],"color":["english"],"column":["english"],"combine":["english"],"come":["english"],"comfort":["english"],"comic":["english"],"common":["english"],"company":["english"],"concert":["english","french"],"conduct":["english"],"confirm":["english"],"congress":["english"],"connect":["english"],"consider":["english"],"control":["english"],"convince":["english"],"cook":["english"],"cool":["english"],"copper":["english"],"copy":["english"],"coral":["english"],"core":["english"],"corn":["english"],"correct":["english","french"],"cost":["english"],"cotton":["english"],"couch":["english"],"country":["english"],"couple":["english"],"course":["english"],"cousin":["english"],"cover":["english"],"coyote":["english","french"],"crack":["english"],"cradle":["english"],"craft":["english"],"cram":["english"],"crane":["english"],"crash":["english"],"crater":["english"],"crawl":["english"],"crazy":["english"],"cream":["english"],"credit":["english"],"creek":["english"],"crew":["english"],"cricket":["english"],"crime":["english"],"crisp":["english"],"critic":["english"],"crop":["english"],"cross":["english"],"crouch":["english"],"crowd":["english"],"crucial":["english","french"],"cruel":["english","french"],"cruise":["english"],"crumble":["english"],"crunch":["english"],"crush":["english"],"cry":["english"],"crystal":["english"],"cube":["english"],"culture":["english"],"cup":["english"],"cupboard":["english"],"curious":["english"],"current":["english"],"curtain":["english"],"curve":["english"],"cushion":["english"],"custom":["english"],"cute":["english"],"cycle":["english","french"],"dad":["english"],"damage":["english"],"damp":["english"],"dance":["english"],"danger":["english","french"],"daring":["english"],"dash":["english"],"daughter":["english"],"dawn":["english"],"day":["english"],"deal":["english"],"debate":["english"],"debris":["english"],"decade":["english"],"december":["english"],"decide":["english"],"decline":["english"],"decorate":["english"],"decrease":["english"],"deer":["english"],"defense":["english"],"define":["english"],"defy":["english"],"degree":["english"],"delay":["english"],"deliver":["english"],"demand":["english"],"demise":["english"],"denial":["english"],"dentist":["english"],"deny":["english"],"depart":["english"],"depend":["english"],"deposit":["english"],"depth":["english"],"deputy":["english"],"derive":["english"],"describe":["english"],"desert":["english"],"design":["english"],"desk":["english"],"despair":["english"],"destroy":["english"],"detail":["english"],"detect":["english"],"develop":["english"],"device":["english"],"devote":["english"],"diagram":["english"],"dial":["english"],"diamond":["english"],"diary":["english"],"dice":["english"],"diesel":["english"],"diet":["english"],"differ":["english"],"digital":["english","french"],"dignity":["english"],"dilemma":["english"],"dinner":["english"],"dinosaur":["english"],"direct":["english"],"dirt":["english"],"disagree":["english"],"discover":["english"],"disease":["english"],"dish":["english"],"dismiss":["english"],"disorder":["english"],"display":["english"],"distance":["english","french"],"divert":["english"],"divide":["english"],"divorce":["english"],"dizzy":["english"],"doctor":["english"],"document":["english"],"dog":["english"],"doll":["english"],"dolphin":["english"],"domain":["english"],"donate":["english"],"donkey":["english"],"donor":["english"],"door":["english"],"dose":["english"],"double":["english","french"],"dove":["english"],"draft":["english"],"dragon":["english","french"],"drama":["english"],"drastic":["english"],"draw":["english"],"dream":["english"],"dress":["english"],"drift":["english"],"drill":["english"],"drink":["english"],"drip":["english"],"drive":["english"],"drop":["english"],"drum":["english"],"dry":["english"],"duck":["english"],"dumb":["english"],"dune":["english"],"during":["english"],"dust":["english"],"dutch":["english"],"duty":["english"],"dwarf":["english"],"dynamic":["english"],"eager":["english"],"eagle":["english"],"early":["english"],"earn":["english"],"earth":["english"],"easily":["english"],"east":["english"],"easy":["english"],"echo":["english"],"ecology":["english"],"economy":["english"],"edge":["english"],"edit":["english"],"educate":["english"],"effort":["english","french"],"egg":["english"],"eight":["english"],"either":["english"],"elbow":["english"],"elder":["english"],"electric":["english"],"elegant":["english"],"element":["english"],"elephant":["english"],"elevator":["english"],"elite":["english"],"else":["english"],"embark":["english"],"embody":["english"],"embrace":["english"],"emerge":["english"],"emotion":["english"],"employ":["english"],"empower":["english"],"empty":["english"],"enable":["english"],"enact":["english"],"end":["english"],"endless":["english"],"endorse":["english"],"enemy":["english"],"energy":["english"],"enforce":["english"],"engage":["english"],"engine":["english"],"enhance":["english"],"enjoy":["english"],"enlist":["english"],"enough":["english"],"enrich":["english"],"enroll":["english"],"ensure":["english"],"enter":["english"],"entire":["english"],"entry":["english"],"envelope":["english"],"episode":["english"],"equal":["english"],"equip":["english"],"era":["english"],"erase":["english"],"erode":["english"],"erosion":["english"],"error":["english"],"erupt":["english"],"escape":["english"],"essay":["english"],"essence":["english","french"],"estate":["english"],"eternal":["english"],"ethics":["english"],"evidence":["english"],"evil":["english"],"evoke":["english"],"evolve":["english"],"exact":["english","french"],"example":["english"],"excess":["english"],"exchange":["english"],"excite":["english"],"exclude":["english"],"excuse":["english","french"],"execute":["english"],"exercise":["english"],"exhaust":["english"],"exhibit":["english"],"exile":["english"],"exist":["english"],"exit":["english"],"exotic":["english"],"expand":["english"],"expect":["english"],"expire":["english"],"explain":["english"],"expose":["english"],"express":["english"],"extend":["english"],"extra":["english"],"eye":["english"],"eyebrow":["english"],"fabric":["english"],"face":["english"],"faculty":["english"],"fade":["english"],"faint":["english"],"faith":["english"],"fall":["english"],"false":["english"],"fame":["english"],"family":["english"],"famous":["english"],"fan":["english"],"fancy":["english"],"fantasy":["english"],"farm":["english"],"fashion":["english"],"fat":["english"],"fatal":["english","french"],"father":["english"],"fatigue":["english","french"],"fault":["english"],"favorite":["english"],"feature":["english"],"february":["english"],"federal":["english","turkish"],"fee":["english"],"feed":["english"],"feel":["english"],"female":["english"],"fence":["english"],"festival":["english","french","turkish"],"fetch":["english"],"fever":["english"],"few":["english"],"fiber":["english"],"fiction":["english"],"field":["english"],"figure":["english","french"],"file":["english"],"film":["english"],"filter":["english"],"final":["english"],"find":["english"],"fine":["english"],"finger":["english"],"finish":["english"],"fire":["english"],"firm":["english"],"first":["english"],"fiscal":["english"],"fish":["english"],"fit":["english"],"fitness":["english"],"fix":["english"],"flag":["english"],"flame":["english"],"flash":["english"],"flat":["english"],"flavor":["english"],"flee":["english"],"flight":["english"],"flip":["english"],"float":["english"],"flock":["english"],"floor":["english"],"flower":["english"],"fluid":["english"],"flush":["english"],"fly":["english"],"foam":["english"],"focus":["english"],"fog":["english"],"foil":["english"],"fold":["english"],"follow":["english"],"food":["english"],"foot":["english"],"force":["english"],"forest":["english"],"forget":["english"],"fork":["english"],"fortune":["english","french"],"forum":["english"],"forward":["english"],"fossil":["english"],"foster":["english"],"found":["english"],"fox":["english"],"fragile":["english","french"],"frame":["english"],"frequent":["english"],"fresh":["english"],"friend":["english"],"fringe":["english"],"frog":["english"],"front":["english"],"frost":["english"],"frown":["english"],"frozen":["english"],"fruit":["english","french"],"fuel":["english"],"fun":["english"],"funny":["english"],"furnace":["english"],"fury":["english"],"future":["english"],"gadget":["english"],"gain":["english"],"galaxy":["english"],"gallery":["english"],"game":["english"],"gap":["english"],"garage":["english"],"garbage":["english"],"garden":["english"],"garlic":["english"],"garment":["english"],"gas":["english"],"gasp":["english"],"gate":["english"],"gather":["english"],"gauge":["english"],"gaze":["english"],"general":["english"],"genius":["english"],"genre":["english"],"gentle":["english"],"genuine":["english"],"gesture":["english"],"ghost":["english"],"giant":["english"],"gift":["english"],"giggle":["english"],"ginger":["english"],"giraffe":["english"],"girl":["english"],"give":["english"],"glad":["english"],"glance":["english"],"glare":["english"],"glass":["english"],"glide":["english"],"glimpse":["english"],"globe":["english","french"],"gloom":["english"],"glory":["english"],"glove":["english"],"glow":["english"],"glue":["english"],"goat":["english"],"goddess":["english"],"gold":["english"],"good":["english"],"goose":["english"],"gorilla":["english"],"gospel":["english"],"gossip":["english"],"govern":["english"],"gown":["english"],"grab":["english"],"grace":["english"],"grain":["english"],"grant":["english"],"grape":["english"],"grass":["english"],"gravity":["english"],"great":["english"],"green":["english"],"grid":["english"],"grief":["english"],"grit":["english"],"grocery":["english"],"group":["english"],"grow":["english"],"grunt":["english"],"guard":["english"],"guess":["english"],"guide":["english","french"],"guilt":["english"],"guitar":["english"],"gun":["english"],"gym":["english"],"habit":["english"],"hair":["english"],"half":["english"],"hammer":["english"],"hamster":["english"],"hand":["english"],"happy":["english"],"harbor":["english"],"hard":["english"],"harsh":["english"],"harvest":["english"],"hat":["english"],"have":["english"],"hawk":["english"],"hazard":["english"],"head":["english"],"health":["english"],"heart":["english"],"heavy":["english"],"hedgehog":["english"],"height":["english"],"hello":["english"],"helmet":["english"],"help":["english"],"hen":["english"],"hero":["english"],"hidden":["english"],"high":["english"],"hill":["english"],"hint":["english"],"hip":["english"],"hire":["english"],"history":["english"],"hobby":["english"],"hockey":["english"],"hold":["english"],"hole":["english"],"holiday":["english"],"hollow":["english"],"home":["english"],"honey":["english"],"hood":["english"],"hope":["english"],"horn":["english"],"horror":["english"],"horse":["english"],"hospital":["english"],"host":["english"],"hotel":["english"],"hour":["english"],"hover":["english"],"hub":["english"],"huge":["english"],"human":["english"],"humble":["english","french"],"humor":["english"],"hundred":["english"],"hungry":["english"],"hunt":["english"],"hurdle":["english"],"hurry":["english"],"hurt":["english"],"husband":["english"],"hybrid":["english"],"ice":["english"],"icon":["english"],"idea":["english"],"identify":["english"],"idle":["english"],"ignore":["english"],"ill":["english"],"illegal":["english"],"illness":["english"],"image":["english","french"],"imitate":["english"],"immense":["english","french"],"immune":["english"],"impact":["english","french"],"impose":["english"],"improve":["english"],"impulse":["english"],"inch":["english"],"include":["english"],"income":["english"],"increase":["english"],"index":["english"],"indicate":["english"],"indoor":["english"],"industry":["english"],"infant":["english"],"inflict":["english"],"inform":["english"],"inhale":["english"],"inherit":["english"],"initial":["english"],"inject":["english"],"injury":["english"],"inmate":["english"],"inner":["english"],"innocent":["english","french"],"input":["english"],"inquiry":["english"],"insane":["english"],"insect":["english"],"inside":["english"],"inspire":["english"],"install":["english"],"intact":["english","french"],"interest":["english"],"into":["english"],"invest":["english"],"invite":["english"],"involve":["english"],"iron":["english"],"island":["english"],"isolate":["english"],"issue":["english"],"item":["english"],"ivory":["english"],"jacket":["english"],"jaguar":["english","french"],"jar":["english"],"jazz":["english"],"jealous":["english"],"jeans":["english"],"jelly":["english"],"jewel":["english"],"job":["english"],"join":["english"],"joke":["english"],"journey":["english"],"joy":["english"],"judge":["english"],"juice":["english"],"jump":["english"],"jungle":["english"],"junior":["english","french"],"junk":["english"],"just":["english"],"kangaroo":["english"],"keen":["english"],"keep":["english"],"ketchup":["english"],"key":["english"],"kick":["english"],"kid":["english"],"kidney":["english"],"kind":["english"],"kingdom":["english"],"kiss":["english"],"kit":["english"],"kitchen":["english"],"kite":["english"],"kitten":["english"],"kiwi":["english"],"knee":["english"],"knife":["english"],"knock":["english"],"know":["english"],"lab":["english"],"label":["english","french"],"labor":["english"],"ladder":["english"],"lady":["english"],"lake":["english"],"lamp":["english"],"language":["english"],"laptop":["english"],"large":["english"],"later":["english"],"latin":["english"],"laugh":["english"],"laundry":["english"],"lava":["english"],"law":["english"],"lawn":["english"],"lawsuit":["english"],"layer":["english"],"lazy":["english"],"leader":["english"],"leaf":["english"],"learn":["english"],"leave":["english"],"lecture":["english","french"],"left":["english"],"leg":["english"],"legal":["english"],"legend":["english"],"leisure":["english"],"lemon":["english"],"lend":["english"],"length":["english"],"lens":["english"],"leopard":["english"],"lesson":["english"],"letter":["english"],"level":["english"],"liar":["english"],"liberty":["english"],"library":["english"],"license":["english"],"life":["english"],"lift":["english"],"light":["english"],"like":["english"],"limb":["english"],"limit":["english"],"link":["english"],"lion":["english"],"liquid":["english"],"list":["english"],"little":["english"],"live":["english"],"lizard":["english"],"load":["english"],"loan":["english"],"lobster":["english"],"local":["english"],"lock":["english"],"logic":["english"],"lonely":["english"],"long":["english"],"loop":["english"],"lottery":["english"],"loud":["english"],"lounge":["english"],"love":["english"],"loyal":["english","french"],"lucky":["english"],"luggage":["english"],"lumber":["english"],"lunar":["english"],"lunch":["english"],"luxury":["english"],"lyrics":["english"],"machine":["english","french"],"mad":["english"],"magic":["english"],"magnet":["english"],"maid":["english"],"mail":["english"],"main":["english"],"major":["english"],"make":["english"],"mammal":["english"],"man":["english"],"manage":["english"],"mandate":["english"],"mango":["english"],"mansion":["english"],"manual":["english"],"maple":["english"],"marble":["english"],"march":["english"],"margin":["english"],"marine":["english"],"market":["english","turkish"],"marriage":["english"],"mask":["english"],"mass":["english"],"master":["english"],"match":["english"],"material":["english"],"math":["english"],"matrix":["english"],"matter":["english"],"maximum":["english"],"maze":["english"],"meadow":["english"],"mean":["english"],"measure":["english"],"meat":["english"],"mechanic":["english"],"medal":["english"],"media":["english"],"melody":["english"],"melt":["english"],"member":["english"],"memory":["english"],"mention":["english"],"menu":["english"],"mercy":["english"],"merge":["english"],"merit":["english"],"merry":["english"],"mesh":["english"],"message":["english"],"metal":["english"],"method":["english"],"middle":["english"],"midnight":["english"],"milk":["english"],"million":["english","french"],"mimic":["english"],"mind":["english"],"minimum":["english"],"minor":["english"],"minute":["english","french"],"miracle":["english","french"],"mirror":["english"],"misery":["english"],"miss":["english"],"mistake":["english"],"mix":["english"],"mixed":["english"],"mixture":["english"],"mobile":["english","french"],"model":["english","turkish"],"modify":["english"],"mom":["english"],"moment":["english"],"monitor":["english"],"monkey":["english"],"monster":["english"],"month":["english"],"moon":["english"],"moral":["english"],"more":["english"],"morning":["english"],"mosquito":["english"],"mother":["english"],"motion":["english"],"motor":["english","turkish"],"mountain":["english"],"mouse":["english"],"move":["english"],"movie":["english"],"much":["english"],"muffin":["english"],"mule":["english"],"multiply":["english"],"muscle":["english","french"],"museum":["english"],"mushroom":["english"],"music":["english"],"must":["english"],"mutual":["english"],"myself":["english"],"mystery":["english"],"myth":["english"],"naive":["english"],"name":["english"],"napkin":["english"],"narrow":["english"],"nasty":["english"],"nation":["english","french"],"nature":["english","french"],"near":["english"],"neck":["english"],"need":["english"],"negative":["english"],"neglect":["english"],"neither":["english"],"nephew":["english"],"nerve":["english"],"nest":["english"],"net":["english"],"network":["english"],"neutral":["english"],"never":["english"],"news":["english"],"next":["english"],"nice":["english"],"night":["english"],"noble":["english","french"],"noise":["english"],"nominee":["english"],"noodle":["english"],"normal":["english","turkish"],"north":["english"],"nose":["english"],"notable":["english","french"],"note":["english"],"nothing":["english"],"notice":["english"],"novel":["english"],"now":["english"],"nuclear":["english"],"number":["english"],"nurse":["english"],"nut":["english"],"oak":["english"],"obey":["english"],"object":["english"],"oblige":["english"],"obscure":["english"],"observe":["english"],"obtain":["english"],"obvious":["english"],"occur":["english"],"ocean":["english"],"october":["english"],"odor":["english"],"off":["english"],"offer":["english"],"office":["english"],"often":["english"],"oil":["english"],"okay":["english"],"old":["english"],"olive":["english"],"olympic":["english"],"omit":["english"],"once":["english"],"one":["english"],"onion":["english"],"online":["english"],"only":["english"],"open":["english"],"opera":["english","turkish"],"opinion":["english","french"],"oppose":["english"],"option":["english"],"orange":["english","french"],"orbit":["english"],"orchard":["english"],"order":["english"],"ordinary":["english"],"organ":["english"],"orient":["english"],"original":["english"],"orphan":["english"],"ostrich":["english"],"other":["english"],"outdoor":["english"],"outer":["english"],"output":["english"],"outside":["english"],"oval":["english"],"oven":["english"],"over":["english"],"own":["english"],"owner":["english"],"oxygen":["english"],"oyster":["english"],"ozone":["english","french"],"pact":["english"],"paddle":["english"],"page":["english"],"pair":["english"],"palace":["english","french"],"palm":["english"],"panda":["english","french","turkish"],"panel":["english","turkish"],"panic":["english"],"panther":["english"],"paper":["english"],"parade":["english"],"parent":["english"],"park":["english"],"parrot":["english"],"party":["english"],"pass":["english"],"patch":["english"],"path":["english"],"patient":["english"],"patrol":["english"],"pattern":["english"],"pause":["english"],"pave":["english"],"payment":["english"],"peace":["english"],"peanut":["english"],"pear":["english"],"peasant":["english"],"pelican":["english"],"pen":["english"],"penalty":["english"],"pencil":["english"],"people":["english"],"pepper":["english"],"perfect":["english"],"permit":["english"],"person":["english"],"pet":["english"],"phone":["english"],"photo":["english"],"phrase":["english","french"],"physical":["english"],"piano":["english","french"],"picnic":["english"],"picture":["english"],"piece":["english"],"pig":["english"],"pigeon":["english"],"pill":["english"],"pilot":["english","turkish"],"pink":["english"],"pioneer":["english"],"pipe":["english"],"pistol":["english"],"pitch":["english"],"pizza":["english","french"],"place":["english"],"planet":["english"],"plastic":["english"],"plate":["english"],"play":["english"],"please":["english"],"pledge":["english"],"pluck":["english"],"plug":["english"],"plunge":["english"],"poem":["english"],"poet":["english"],"point":["english"],"polar":["english"],"pole":["english"],"police":["english"],"pond":["english"],"pony":["english"],"pool":["english"],"popular":["english"],"portion":["english"],"position":["english","french"],"possible":["english"],"post":["english"],"potato":["english"],"pottery":["english"],"poverty":["english"],"powder":["english"],"power":["english"],"practice":["english"],"praise":["english"],"predict":["english"],"prefer":["english"],"prepare":["english"],"present":["english"],"pretty":["english"],"prevent":["english"],"price":["english"],"pride":["english"],"primary":["english"],"print":["english"],"priority":["english"],"prison":["english","french"],"private":["english"],"prize":["english"],"problem":["english","turkish"],"process":["english"],"produce":["english"],"profit":["english"],"program":["english","turkish"],"project":["english"],"promote":["english"],"proof":["english"],"property":["english"],"prosper":["english"],"protect":["english"],"proud":["english"],"provide":["english"],"public":["english","french"],"pudding":["english"],"pull":["english"],"pulp":["english"],"pulse":["english"],"pumpkin":["english"],"punch":["english"],"pupil":["english"],"puppy":["english"],"purchase":["english"],"purity":["english"],"purpose":["english"],"purse":["english"],"push":["english"],"put":["english"],"puzzle":["english","french"],"pyramid":["english"],"quality":["english"],"quantum":["english"],"quarter":["english"],"question":["english","french"],"quick":["english"],"quit":["english"],"quiz":["english"],"quote":["english"],"rabbit":["english"],"raccoon":["english"],"race":["english"],"rack":["english"],"radar":["english","turkish"],"radio":["english"],"rail":["english"],"rain":["english"],"raise":["english"],"rally":["english"],"ramp":["english"],"ranch":["english"],"random":["english"],"range":["english"],"rapid":["english"],"rare":["english"],"rate":["english"],"rather":["english"],"raven":["english"],"raw":["english"],"razor":["english"],"ready":["english"],"real":["english"],"reason":["english"],"rebel":["english"],"rebuild":["english"],"recall":["english"],"receive":["english"],"recipe":["english"],"record":["english"],"recycle":["english"],"reduce":["english"],"reflect":["english"],"reform":["english","turkish"],"refuse":["english"],"region":["english"],"regret":["english"],"regular":["english"],"reject":["english"],"relax":["english"],"release":["english"],"relief":["english","french"],"rely":["english"],"remain":["english"],"remember":["english"],"remind":["english"],"remove":["english"],"render":["english"],"renew":["english"],"rent":["english"],"reopen":["english"],"repair":["english"],"repeat":["english"],"replace":["english"],"report":["english"],"require":["english"],"rescue":["english"],"resemble":["english"],"resist":["english"],"resource":["english"],"response":["english"],"result":["english"],"retire":["english"],"retreat":["english"],"return":["english"],"reunion":["english"],"reveal":["english"],"review":["english"],"reward":["english"],"rhythm":["english"],"rib":["english"],"ribbon":["english"],"rice":["english"],"rich":["english"],"ride":["english"],"ridge":["english"],"rifle":["english"],"right":["english"],"rigid":["english"],"ring":["english"],"riot":["english"],"ripple":["english"],"risk":["english"],"ritual":["english"],"rival":["english","french"],"river":["english"],"road":["english"],"roast":["english"],"robot":["english","turkish"],"robust":["english"],"rocket":["english"],"romance":["english","french"],"roof":["english"],"rookie":["english"],"room":["english"],"rose":["english"],"rotate":["english"],"rough":["english"],"round":["english"],"route":["english"],"royal":["english"],"rubber":["english"],"rude":["english"],"rug":["english"],"rule":["english"],"run":["english"],"runway":["english"],"rural":["english"],"sad":["english"],"saddle":["english"],"sadness":["english"],"safe":["english"],"sail":["english"],"salad":["english"],"salmon":["english"],"salon":["english","french","turkish"],"salt":["english"],"salute":["english"],"same":["english"],"sample":["english"],"sand":["english"],"satisfy":["english"],"satoshi":["english"],"sauce":["english"],"sausage":["english"],"save":["english"],"say":["english"],"scale":["english"],"scan":["english"],"scare":["english"],"scatter":["english"],"scene":["english"],"scheme":["english"],"school":["english"],"science":["english","french"],"scissors":["english"],"scorpion":["english"],"scout":["english"],"scrap":["english"],"screen":["english"],"script":["english"],"scrub":["english"],"sea":["english"],"search":["english"],"season":["english"],"seat":["english"],"second":["english"],"secret":["english"],"section":["english"],"security":["english"],"seed":["english"],"seek":["english"],"segment":["english"],"select":["english"],"sell":["english"],"seminar":["english"],"senior":["english"],"sense":["english"],"sentence":["english","french"],"series":["english"],"service":["english","french"],"session":["english"],"settle":["english"],"setup":["english"],"seven":["english"],"shadow":["english"],"shaft":["english"],"shallow":["english"],"share":["english"],"shed":["english"],"shell":["english"],"sheriff":["english"],"shield":["english"],"shift":["english"],"shine":["english"],"ship":["english"],"shiver":["english"],"shock":["english"],"shoe":["english"],"shoot":["english"],"shop":["english"],"short":["english"],"shoulder":["english"],"shove":["english"],"shrimp":["english"],"shrug":["english"],"shuffle":["english"],"shy":["english"],"sibling":["english"],"sick":["english"],"side":["english"],"siege":["english"],"sight":["english"],"sign":["english"],"silent":["english"],"silk":["english"],"silly":["english"],"silver":["english"],"similar":["english"],"simple":["english","french"],"since":["english"],"sing":["english"],"siren":["english"],"sister":["english"],"situate":["english"],"six":["english"],"size":["english"],"skate":["english"],"sketch":["english"],"ski":["english"],"skill":["english"],"skin":["english"],"skirt":["english"],"skull":["english"],"slab":["english"],"slam":["english"],"sleep":["english"],"slender":["english"],"slice":["english"],"slide":["english"],"slight":["english"],"slim":["english"],"slogan":["english","turkish"],"slot":["english"],"slow":["english"],"slush":["english"],"small":["english"],"smart":["english"],"smile":["english"],"smoke":["english"],"smooth":["english"],"snack":["english"],"snake":["english"],"snap":["english"],"sniff":["english"],"snow":["english"],"soap":["english"],"soccer":["english"],"social":["english","french"],"sock":["english"],"soda":["english"],"soft":["english"],"solar":["english"],"soldier":["english"],"solid":["english"],"solution":["english"],"solve":["english"],"someone":["english"],"song":["english"],"soon":["english"],"sorry":["english"],"sort":["english"],"soul":["english"],"sound":["english"],"soup":["english"],"source":["english","french"],"south":["english"],"space":["english"],"spare":["english"],"spatial":["english","french"],"spawn":["english"],"speak":["english"],"special":["english"],"speed":["english"],"spell":["english"],"spend":["english"],"sphere":["english"],"spice":["english"],"spider":["english"],"spike":["english"],"spin":["english"],"spirit":["english"],"split":["english"],"spoil":["english"],"sponsor":["english","turkish"],"spoon":["english"],"sport":["english"],"spot":["english"],"spray":["english"],"spread":["english"],"spring":["english"],"spy":["english"],"square":["english"],"squeeze":["english"],"squirrel":["english"],"stable":["english","french"],"stadium":["english"],"staff":["english"],"stage":["english"],"stairs":["english"],"stamp":["english"],"stand":["english"],"start":["english"],"state":["english"],"stay":["english"],"steak":["english"],"steel":["english"],"stem":["english"],"step":["english"],"stereo":["english"],"stick":["english"],"still":["english"],"sting":["english"],"stock":["english"],"stomach":["english"],"stone":["english"],"stool":["english"],"story":["english"],"stove":["english"],"strategy":["english"],"street":["english"],"strike":["english"],"strong":["english"],"struggle":["english"],"student":["english"],"stuff":["english"],"stumble":["english"],"style":["english"],"subject":["english"],"submit":["english"],"subway":["english"],"success":["english"],"such":["english"],"sudden":["english"],"suffer":["english"],"sugar":["english"],"suggest":["english"],"suit":["english"],"summer":["english"],"sun":["english"],"sunny":["english"],"sunset":["english"],"super":["english"],"supply":["english"],"supreme":["english"],"sure":["english"],"surface":["english","french"],"surge":["english"],"surprise":["english","french"],"surround":["english"],"survey":["english"],"suspect":["english","french"],"sustain":["english"],"swallow":["english"],"swamp":["english"],"swap":["english"],"swarm":["english"],"swear":["english"],"sweet":["english"],"swift":["english"],"swim":["english"],"swing":["english"],"switch":["english"],"sword":["english"],"symbol":["english"],"symptom":["english"],"syrup":["english"],"system":["english"],"table":["english"],"tackle":["english"],"tag":["english"],"tail":["english"],"talent":["english","french"],"talk":["english"],"tank":["english"],"tape":["english"],"target":["english"],"task":["english"],"taste":["english"],"tattoo":["english"],"taxi":["english"],"teach":["english"],"team":["english"],"tell":["english"],"ten":["english"],"tenant":["english"],"tennis":["english"],"tent":["english"],"term":["english"],"test":["english"],"text":["english"],"thank":["english"],"that":["english"],"theme":["english"],"then":["english"],"theory":["english"],"there":["english"],"they":["english"],"thing":["english"],"this":["english"],"thought":["english"],"three":["english"],"thrive":["english"],"throw":["english"],"thumb":["english"],"thunder":["english"],"ticket":["english"],"tide":["english"],"tiger":["english"],"tilt":["english"],"timber":["english"],"time":["english"],"tiny":["english"],"tip":["english"],"tired":["english"],"tissue":["english"],"title":["english"],"toast":["english"],"tobacco":["english"],"today":["english"],"toddler":["english"],"toe":["english"],"together":["english"],"toilet":["english"],"token":["english"],"tomato":["english"],"tomorrow":["english"],"tone":["english"],"tongue":["english"],"tonight":["english"],"tool":["english"],"tooth":["english"],"top":["english"],"topic":["english"],"topple":["english"],"torch":["english"],"tornado":["english"],"tortoise":["english"],"toss":["english"],"total":["english"],"tourist":["english"],"toward":["english"],"tower":["english"],"town":["english"],"toy":["english"],"track":["english"],"trade":["english"],"traffic":["english"],"tragic":["english"],"train":["english","french"],"transfer":["english","turkish"],"trap":["english"],"trash":["english"],"travel":["english"],"tray":["english"],"treat":["english"],"tree":["english"],"trend":["english"],"trial":["english"],"tribe":["english"],"trick":["english"],"trigger":["english"],"trim":["english"],"trip":["english"],"trophy":["english"],"trouble":["english"],"truck":["english"],"true":["english"],"truly":["english"],"trumpet":["english"],"trust":["english"],"truth":["english"],"try":["english"],"tube":["english"],"tuition":["english"],"tumble":["english"],"tuna":["english"],"tunnel":["english","french"],"turkey":["english"],"turn":["english"],"turtle":["english"],"twelve":["english"],"twenty":["english"],"twice":["english"],"twin":["english"],"twist":["english"],"two":["english"],"type":["english"],"typical":["english"],"ugly":["english"],"umbrella":["english"],"unable":["english"],"unaware":["english"],"uncle":["english"],"uncover":["english"],"under":["english"],"undo":["english"],"unfair":["english"],"unfold":["english"],"unhappy":["english"],"uniform":["english"],"unique":["english","french"],"unit":["english"],"universe":["english"],"unknown":["english"],"unlock":["english"],"until":["english"],"unusual":["english"],"unveil":["english"],"update":["english"],"upgrade":["english"],"uphold":["english"],"upon":["english"],"upper":["english"],"upset":["english"],"urban":["english"],"urge":["english"],"usage":["english","french"],"use":["english"],"used":["english"],"useful":["english"],"useless":["english"],"usual":["english"],"utility":["english"],"vacant":["english"],"vacuum":["english"],"vague":["english","french"],"valid":["english"],"valley":["english"],"valve":["english","french"],"van":["english"],"vanish":["english"],"vapor":["english"],"various":["english"],"vast":["english"],"vault":["english"],"vehicle":["english"],"velvet":["english"],"vendor":["english"],"venture":["english"],"venue":["english"],"verb":["english"],"verify":["english"],"version":["english"],"very":["english"],"vessel":["english"],"veteran":["english"],"viable":["english"],"vibrant":["english"],"vicious":["english"],"victory":["english"],"video":["english"],"view":["english"],"village":["english","french"],"vintage":["english"],"violin":["english"],"virtual":["english"],"virus":["english","french"],"visa":["english"],"visit":["english"],"visual":["english"],"vital":["english","french"],"vivid":["english"],"vocal":["english"],"voice":["english"],"void":["english"],"volcano":["english"],"volume":["english","french"],"vote":["english"],"voyage":["english","french"],"wage":["english"],"wagon":["english","french"],"wait":["english"],"walk":["english"],"wall":["english"],"walnut":["english"],"want":["english"],"warfare":["english"],"warm":["english"],"warrior":["english"],"wash":["english"],"wasp":["english"],"waste":["english"],"water":["english"],"wave":["english"],"way":["english"],"wealth":["english"],"weapon":["english"],"wear":["english"],"weasel":["english"],"weather":["english"],"web":["english"],"wedding":["english"],"weekend":["english"],"weird":["english"],"welcome":["english"],"west":["english"],"wet":["english"],"whale":["english"],"what":["english"],"wheat":["english"],"wheel":["english"],"when":["english"],"where":["english"],"whip":["english"],"whisper":["english"],"wide":["english"],"width":["english"],"wife":["english"],"wild":["english"],"will":["english"],"win":["english"],"window":["english"],"wine":["english"],"wing":["english"],"wink":["english"],"winner":["english"],"winter":["english"],"wire":["english"],"wisdom":["english"],"wise":["english"],"wish":["english"],"witness":["english"],"wolf":["english"],"woman":["english"],"wonder":["english"],"wood":["english"],"wool":["english"],"word":["english"],"work":["english"],"world":["english"],"worry":["english"],"worth":["english"],"wrap":["english"],"wreck":["english"],"wrestle":["english"],"wrist":["english"],"write":["english"],"wrong":["english"],"yard":["english"],"year":["english"],"yellow":["english"],"you":["english"],"young":["english"],"youth":["english"],"zebra":["english"],"zero":["english"],"zone":["english"],"zoo":["english"],"abaisser":["french"],"abdiquer":["french"],"abeille":["french"],"abolir":["french"],"aborder":["french"],"aboutir":["french"],"aboyer":["french"],"abrasif":["french"],"abreuver":["french"],"abriter":["french"],"abroger":["french"],"abrupt":["french"],"absence":["french"],"absolu":["french"],"absurde":["french"],"abusif":["french"],"abyssal":["french"],"académie":["french"],"acajou":["french"],"acarien":["french"],"accabler":["french"],"accepter":["french"],"acclamer":["french"],"accolade":["french"],"accroche":["french"],"accuser":["french"],"acerbe":["french"],"achat":["french"],"acheter":["french"],"aciduler":["french"],"acier":["french"],"acompte":["french"],"acquérir":["french"],"acronyme":["french"],"acteur":["french"],"actif":["french"],"actuel":["french"],"adepte":["french"],"adéquat":["french"],"adhésif":["french"],"adjectif":["french"],"adjuger":["french"],"admettre":["french"],"admirer":["french"],"adopter":["french"],"adorer":["french"],"adoucir":["french"],"adresse":["french"],"adroit":["french"],"adulte":["french"],"adverbe":["french"],"aérer":["french"],"aéronef":["french"],"affaire":["french"],"affecter":["french"],"affiche":["french"],"affreux":["french"],"affubler":["french"],"agacer":["french"],"agencer":["french"],"agile":["french"],"agiter":["french"],"agrafer":["french"],"agréable":["french"],"agrume":["french"],"aider":["french"],"aiguille":["french"],"ailier":["french"],"aimable":["french"],"aisance":["french"],"ajouter":["french"],"ajuster":["french"],"alarmer":["french"],"alchimie":["french"],"alerte":["french"],"algèbre":["french"],"algue":["french"],"aliéner":["french"],"aliment":["french"],"alléger":["french"],"alliage":["french"],"allouer":["french"],"allumer":["french"],"alourdir":["french"],"alpaga":["french"],"altesse":["french"],"alvéole":["french"],"ambigu":["french"],"ambre":["french"],"aménager":["french"],"amertume":["french"],"amidon":["french"],"amiral":["french"],"amorcer":["french"],"amour":["french"],"amovible":["french"],"amphibie":["french"],"ampleur":["french"],"amusant":["french"],"analyse":["french"],"anaphore":["french"],"anarchie":["french"],"anatomie":["french"],"ancien":["french"],"anéantir":["french"],"angoisse":["french"],"anguleux":["french"],"annexer":["french"],"annonce":["french"],"annuel":["french"],"anodin":["french"],"anomalie":["french"],"anonyme":["french"],"anormal":["french"],"antenne":["french"],"antidote":["french"],"anxieux":["french"],"apaiser":["french"],"apéritif":["french"],"aplanir":["french"],"apologie":["french"],"appareil":["french"],"appeler":["french"],"apporter":["french"],"appuyer":["french"],"aquarium":["french"],"aqueduc":["french"],"arbitre":["french"],"arbuste":["french"],"ardeur":["french"],"ardoise":["french"],"argent":["french"],"arlequin":["french"],"armature":["french"],"armement":["french"],"armoire":["french"],"armure":["french"],"arpenter":["french"],"arracher":["french"],"arriver":["french"],"arroser":["french"],"arsenic":["french"],"artériel":["french"],"article":["french"],"asphalte":["french"],"aspirer":["french"],"assaut":["french"],"asservir":["french"],"assiette":["french"],"associer":["french"],"assurer":["french"],"asticot":["french"],"astre":["french"],"astuce":["french"],"atelier":["french"],"atome":["french"],"atrium":["french"],"atroce":["french"],"attaque":["french"],"attentif":["french"],"attirer":["french"],"attraper":["french"],"aubaine":["french"],"auberge":["french"],"audace":["french"],"audible":["french"],"augurer":["french"],"aurore":["french"],"automne":["french"],"autruche":["french"],"avaler":["french"],"avancer":["french"],"avarice":["french"],"avenir":["french"],"averse":["french"],"aveugle":["french"],"aviateur":["french"],"avide":["french"],"avion":["french"],"aviser":["french"],"avoine":["french"],"avouer":["french"],"avril":["french"],"axial":["french"],"axiome":["french"],"bafouer":["french"],"bagage":["french"],"baguette":["french"],"baignade":["french"],"balancer":["french"],"balcon":["french"],"baleine":["french"],"balisage":["french"],"bambin":["french"],"bancaire":["french"],"bandage":["french"],"banlieue":["french"],"bannière":["french"],"banquier":["french"],"barbier":["french"],"baril":["french"],"baron":["french"],"barque":["french"],"barrage":["french"],"bassin":["french"],"bastion":["french"],"bataille":["french"],"bateau":["french"],"batterie":["french"],"baudrier":["french"],"bavarder":["french"],"belette":["french"],"bélier":["french"],"belote":["french"],"bénéfice":["french"],"berceau":["french"],"berger":["french"],"berline":["french"],"bermuda":["french","turkish"],"besace":["french"],"besogne":["french"],"bétail":["french"],"beurre":["french"],"biberon":["french"],"bidule":["french"],"bijou":["french"],"bilan":["french"],"bilingue":["french"],"billard":["french"],"binaire":["french"],"biologie":["french"],"biopsie":["french"],"biotype":["french"],"biscuit":["french"],"bison":["french"],"bistouri":["french"],"bitume":["french"],"bizarre":["french"],"blafard":["french"],"blague":["french"],"blanchir":["french"],"blessant":["french"],"blinder":["french"],"blond":["french"],"bloquer":["french"],"blouson":["french"],"bobard":["french"],"bobine":["french"],"boire":["french"],"boiser":["french"],"bolide":["french"],"bonbon":["french"],"bondir":["french"],"bonheur":["french"],"bonifier":["french"],"bordure":["french"],"borne":["french"],"botte":["french"],"boucle":["french"],"boueux":["french"],"bougie":["french"],"boulon":["french"],"bouquin":["french"],"bourse":["french"],"boussole":["french"],"boutique":["french"],"boxeur":["french"],"branche":["french"],"brasier":["french"],"brebis":["french"],"brèche":["french"],"breuvage":["french"],"bricoler":["french"],"brigade":["french"],"brillant":["french"],"brioche":["french"],"brique":["french"],"brochure":["french"],"broder":["french"],"bronzer":["french"],"brousse":["french"],"broyeur":["french"],"brume":["french"],"brusque":["french"],"brutal":["french"],"bruyant":["french"],"buffle":["french"],"buisson":["french"],"bulletin":["french"],"bureau":["french"],"burin":["french"],"bustier":["french"],"butiner":["french"],"butoir":["french"],"buvable":["french"],"buvette":["french"],"cabanon":["french"],"cabine":["french"],"cachette":["french"],"cadeau":["french"],"cadre":["french"],"caféine":["french"],"caillou":["french"],"caisson":["french"],"calculer":["french"],"calepin":["french"],"calibre":["french"],"calmer":["french"],"calomnie":["french"],"calvaire":["french"],"camarade":["french"],"caméra":["french"],"camion":["french"],"campagne":["french"],"caneton":["french"],"canon":["french"],"cantine":["french"],"canular":["french"],"caporal":["french"],"caprice":["french"],"capsule":["french"],"capter":["french"],"capuche":["french"],"carabine":["french"],"carbone":["french"],"caresser":["french"],"caribou":["french"],"carnage":["french"],"carotte":["french"],"carreau":["french"],"carton":["french"],"cascade":["french"],"casier":["french"],"casque":["french"],"cassure":["french"],"causer":["french"],"cavalier":["french"],"caverne":["french"],"caviar":["french"],"cédille":["french"],"ceinture":["french"],"céleste":["french"],"cellule":["french"],"cendrier":["french"],"censurer":["french"],"central":["french"],"cercle":["french"],"cérébral":["french"],"cerise":["french"],"cerner":["french"],"cerveau":["french"],"cesser":["french"],"chagrin":["french"],"chaise":["french"],"chaleur":["french"],"chambre":["french"],"chance":["french"],"chapitre":["french"],"charbon":["french"],"chasseur":["french"],"chaton":["french"],"chausson":["french"],"chavirer":["french"],"chemise":["french"],"chenille":["french"],"chéquier":["french"],"chercher":["french"],"cheval":["french"],"chien":["french"],"chiffre":["french"],"chignon":["french"],"chimère":["french"],"chiot":["french"],"chlorure":["french"],"chocolat":["french"],"choisir":["french"],"chose":["french"],"chouette":["french"],"chrome":["french"],"chute":["french"],"cigare":["french"],"cigogne":["french"],"cimenter":["french"],"cinéma":["french"],"cintrer":["french"],"circuler":["french"],"cirer":["french"],"cirque":["french"],"citerne":["french"],"citoyen":["french"],"citron":["french"],"clairon":["french"],"clameur":["french"],"claquer":["french"],"classe":["french"],"clavier":["french"],"cligner":["french"],"climat":["french"],"clivage":["french"],"cloche":["french"],"clonage":["french"],"cloporte":["french"],"cobalt":["french"],"cobra":["french"],"cocasse":["french"],"cocotier":["french"],"coder":["french"],"codifier":["french"],"coffre":["french"],"cogner":["french"],"cohésion":["french"],"coiffer":["french"],"coincer":["french"],"colère":["french"],"colibri":["french"],"colline":["french"],"colmater":["french"],"colonel":["french"],"combat":["french"],"comédie":["french"],"commande":["french"],"compact":["french"],"conduire":["french"],"confier":["french"],"congeler":["french"],"connoter":["french"],"consonne":["french"],"contact":["french"],"convexe":["french"],"copain":["french"],"copie":["french"],"corail":["french"],"corbeau":["french"],"cordage":["french"],"corniche":["french"],"corpus":["french"],"cortège":["french"],"cosmique":["french"],"costume":["french"],"coton":["french"],"coude":["french"],"coupure":["french"],"courage":["french"],"couteau":["french"],"couvrir":["french"],"crabe":["french"],"crainte":["french"],"cravate":["french"],"crayon":["french"],"créature":["french"],"créditer":["french"],"crémeux":["french"],"creuser":["french"],"crevette":["french"],"cribler":["french"],"crier":["french"],"cristal":["french"],"critère":["french"],"croire":["french"],"croquer":["french"],"crotale":["french"],"crypter":["french"],"cubique":["french"],"cueillir":["french"],"cuillère":["french"],"cuisine":["french"],"cuivre":["french"],"culminer":["french"],"cultiver":["french"],"cumuler":["french"],"cupide":["french"],"curatif":["french"],"curseur":["french"],"cyanure":["french"],"cylindre":["french"],"cynique":["french"],"daigner":["french"],"damier":["french"],"danseur":["french"],"dauphin":["french"],"débattre":["french"],"débiter":["french"],"déborder":["french"],"débrider":["french"],"débutant":["french"],"décaler":["french"],"décembre":["french"],"déchirer":["french"],"décider":["french"],"déclarer":["french"],"décorer":["french"],"décrire":["french"],"décupler":["french"],"dédale":["french"],"déductif":["french"],"déesse":["french"],"défensif":["french"],"défiler":["french"],"défrayer":["french"],"dégager":["french"],"dégivrer":["french"],"déglutir":["french"],"dégrafer":["french"],"déjeuner":["french"],"délice":["french"],"déloger":["french"],"demander":["french"],"demeurer":["french"],"démolir":["french"],"dénicher":["french"],"dénouer":["french"],"dentelle":["french"],"dénuder":["french"],"départ":["french"],"dépenser":["french"],"déphaser":["french"],"déplacer":["french"],"déposer":["french"],"déranger":["french"],"dérober":["french"],"désastre":["french"],"descente":["french"],"désert":["french"],"désigner":["french"],"désobéir":["french"],"dessiner":["french"],"destrier":["french"],"détacher":["french"],"détester":["french"],"détourer":["french"],"détresse":["french"],"devancer":["french"],"devenir":["french"],"deviner":["french"],"devoir":["french"],"diable":["french"],"dialogue":["french"],"diamant":["french"],"dicter":["french"],"différer":["french"],"digérer":["french"],"digne":["french"],"diluer":["french"],"dimanche":["french"],"diminuer":["french"],"dioxyde":["french"],"directif":["french"],"diriger":["french"],"discuter":["french"],"disposer":["french"],"dissiper":["french"],"divertir":["french"],"diviser":["french"],"docile":["french"],"docteur":["french"],"dogme":["french"],"doigt":["french"],"domaine":["french"],"domicile":["french"],"dompter":["french"],"donateur":["french"],"donjon":["french"],"donner":["french"],"dopamine":["french"],"dortoir":["french"],"dorure":["french"],"dosage":["french"],"doseur":["french"],"dossier":["french"],"dotation":["french"],"douanier":["french"],"douceur":["french"],"douter":["french"],"doyen":["french"],"draper":["french"],"dresser":["french"],"dribbler":["french"],"droiture":["french"],"duperie":["french"],"duplexe":["french"],"durable":["french"],"durcir":["french"],"dynastie":["french"],"éblouir":["french"],"écarter":["french"],"écharpe":["french"],"échelle":["french"],"éclairer":["french"],"éclipse":["french"],"éclore":["french"],"écluse":["french"],"école":["french"],"économie":["french"],"écorce":["french"],"écouter":["french"],"écraser":["french"],"écrémer":["french"],"écrivain":["french"],"écrou":["french"],"écume":["french"],"écureuil":["french"],"édifier":["french"],"éduquer":["french"],"effacer":["french"],"effectif":["french"],"effigie":["french"],"effrayer":["french"],"effusion":["french"],"égaliser":["french"],"égarer":["french"],"éjecter":["french"],"élaborer":["french"],"élargir":["french"],"électron":["french"],"élégant":["french"],"éléphant":["french"],"élève":["french"],"éligible":["french"],"élitisme":["french"],"éloge":["french"],"élucider":["french"],"éluder":["french"],"emballer":["french"],"embellir":["french"],"embryon":["french"],"émeraude":["french"],"émission":["french"],"emmener":["french"],"émotion":["french"],"émouvoir":["french"],"empereur":["french"],"employer":["french"],"emporter":["french"],"emprise":["french"],"émulsion":["french"],"encadrer":["french"],"enchère":["french"],"enclave":["french"],"encoche":["french"],"endiguer":["french"],"endosser":["french"],"endroit":["french"],"enduire":["french"],"énergie":["french"],"enfance":["french"],"enfermer":["french"],"enfouir":["french"],"engager":["french"],"engin":["french","turkish"],"englober":["french"],"énigme":["french"],"enjamber":["french"],"enjeu":["french"],"enlever":["french"],"ennemi":["french"],"ennuyeux":["french"],"enrichir":["french"],"enrobage":["french"],"enseigne":["french"],"entasser":["french"],"entendre":["french"],"entier":["french"],"entourer":["french"],"entraver":["french"],"énumérer":["french"],"envahir":["french"],"enviable":["french"],"envoyer":["french"],"enzyme":["french"],"éolien":["french"],"épaissir":["french"],"épargne":["french"],"épatant":["french"],"épaule":["french"],"épicerie":["french"],"épidémie":["french"],"épier":["french"],"épilogue":["french"],"épine":["french"],"épisode":["french"],"épitaphe":["french"],"époque":["french"],"épreuve":["french"],"éprouver":["french"],"épuisant":["french"],"équerre":["french"],"équipe":["french"],"ériger":["french"],"érosion":["french"],"erreur":["french"],"éruption":["french"],"escalier":["french"],"espadon":["french"],"espèce":["french"],"espiègle":["french"],"espoir":["french"],"esprit":["french"],"esquiver":["french"],"essayer":["french"],"essieu":["french"],"essorer":["french"],"estime":["french"],"estomac":["french"],"estrade":["french"],"étagère":["french"],"étaler":["french"],"étanche":["french"],"étatique":["french"],"éteindre":["french"],"étendoir":["french"],"éternel":["french"],"éthanol":["french"],"éthique":["french"],"ethnie":["french"],"étirer":["french"],"étoffer":["french"],"étoile":["french"],"étonnant":["french"],"étourdir":["french"],"étrange":["french"],"étroit":["french"],"étude":["french"],"euphorie":["french"],"évaluer":["french"],"évasion":["french"],"éventail":["french"],"évidence":["french"],"éviter":["french"],"évolutif":["french"],"évoquer":["french"],"exagérer":["french"],"exaucer":["french"],"exceller":["french"],"excitant":["french"],"exclusif":["french"],"exécuter":["french"],"exemple":["french"],"exercer":["french"],"exhaler":["french"],"exhorter":["french"],"exigence":["french"],"exiler":["french"],"exister":["french"],"exotique":["french"],"expédier":["french"],"explorer":["french"],"exposer":["french"],"exprimer":["french"],"exquis":["french"],"extensif":["french"],"extraire":["french"],"exulter":["french"],"fable":["french"],"fabuleux":["french"],"facette":["french"],"facile":["french"],"facture":["french"],"faiblir":["french"],"falaise":["french"],"fameux":["french"],"famille":["french"],"farceur":["french"],"farfelu":["french"],"farine":["french"],"farouche":["french"],"fasciner":["french"],"faucon":["french"],"fautif":["french"],"faveur":["french"],"favori":["french","turkish"],"fébrile":["french"],"féconder":["french"],"fédérer":["french"],"félin":["french"],"femme":["french"],"fémur":["french"],"fendoir":["french"],"féodal":["french"],"fermer":["french"],"féroce":["french"],"ferveur":["french"],"feuille":["french"],"feutre":["french"],"février":["french"],"fiasco":["french"],"ficeler":["french"],"fictif":["french"],"fidèle":["french"],"filature":["french"],"filetage":["french"],"filière":["french"],"filleul":["french"],"filmer":["french"],"filou":["french"],"filtrer":["french"],"financer":["french"],"finir":["french"],"fiole":["french"],"firme":["french"],"fissure":["french"],"fixer":["french"],"flairer":["french"],"flamme":["french"],"flasque":["french"],"flatteur":["french"],"fléau":["french"],"flèche":["french"],"fleur":["french"],"flexion":["french"],"flocon":["french"],"flore":["french"],"fluctuer":["french"],"fluide":["french"],"fluvial":["french"],"folie":["french"],"fonderie":["french"],"fongible":["french"],"fontaine":["french"],"forcer":["french"],"forgeron":["french"],"formuler":["french"],"fossile":["french"],"foudre":["french"],"fougère":["french"],"fouiller":["french"],"foulure":["french"],"fourmi":["french"],"fraise":["french"],"franchir":["french"],"frapper":["french"],"frayeur":["french"],"frégate":["french"],"freiner":["french"],"frelon":["french"],"frémir":["french"],"frénésie":["french"],"frère":["french"],"friable":["french"],"friction":["french"],"frisson":["french"],"frivole":["french"],"froid":["french"],"fromage":["french"],"frontal":["french"],"frotter":["french"],"fugitif":["french"],"fuite":["french"],"fureur":["french"],"furieux":["french"],"furtif":["french"],"fusion":["french"],"futur":["french"],"gagner":["french"],"galaxie":["french"],"galerie":["french"],"gambader":["french"],"garantir":["french"],"gardien":["french"],"garnir":["french"],"garrigue":["french"],"gazelle":["french"],"gazon":["french"],"géant":["french"],"gélatine":["french"],"gélule":["french"],"gendarme":["french"],"général":["french"],"génie":["french"],"genou":["french"],"gentil":["french"],"géologie":["french"],"géomètre":["french"],"géranium":["french"],"germe":["french"],"gestuel":["french"],"geyser":["french"],"gibier":["french"],"gicler":["french"],"girafe":["french"],"givre":["french"],"glace":["french"],"glaive":["french"],"glisser":["french"],"gloire":["french"],"glorieux":["french"],"golfeur":["french"],"gomme":["french"],"gonfler":["french"],"gorge":["french"],"gorille":["french"],"goudron":["french"],"gouffre":["french"],"goulot":["french"],"goupille":["french"],"gourmand":["french"],"goutte":["french"],"graduel":["french"],"graffiti":["french"],"graine":["french"],"grand":["french"],"grappin":["french"],"gratuit":["french"],"gravir":["french"],"grenat":["french"],"griffure":["french"],"griller":["french"],"grimper":["french"],"grogner":["french"],"gronder":["french"],"grotte":["french"],"groupe":["french"],"gruger":["french"],"grutier":["french"],"gruyère":["french"],"guépard":["french"],"guerrier":["french"],"guimauve":["french"],"guitare":["french"],"gustatif":["french"],"gymnaste":["french"],"gyrostat":["french"],"habitude":["french"],"hachoir":["french"],"halte":["french"],"hameau":["french"],"hangar":["french","turkish"],"hanneton":["french"],"haricot":["french"],"harmonie":["french"],"harpon":["french"],"hasard":["french"],"hélium":["french"],"hématome":["french"],"herbe":["french"],"hérisson":["french"],"hermine":["french"],"héron":["french"],"hésiter":["french"],"heureux":["french"],"hiberner":["french"],"hibou":["french"],"hilarant":["french"],"histoire":["french"],"hiver":["french"],"homard":["french"],"hommage":["french"],"homogène":["french"],"honneur":["french"],"honorer":["french"],"honteux":["french"],"horde":["french"],"horizon":["french"],"horloge":["french"],"hormone":["french"],"horrible":["french"],"houleux":["french"],"housse":["french"],"hublot":["french"],"huileux":["french"],"humain":["french"],"humide":["french"],"humour":["french"],"hurler":["french"],"hydromel":["french"],"hygiène":["french"],"hymne":["french"],"hypnose":["french"],"idylle":["french"],"ignorer":["french"],"iguane":["french"],"illicite":["french"],"illusion":["french"],"imbiber":["french"],"imiter":["french"],"immobile":["french"],"immuable":["french"],"impérial":["french"],"implorer":["french"],"imposer":["french"],"imprimer":["french"],"imputer":["french"],"incarner":["french"],"incendie":["french"],"incident":["french"],"incliner":["french"],"incolore":["french"],"indexer":["french"],"indice":["french"],"inductif":["french"],"inédit":["french"],"ineptie":["french"],"inexact":["french"],"infini":["french"],"infliger":["french"],"informer":["french"],"infusion":["french"],"ingérer":["french"],"inhaler":["french"],"inhiber":["french"],"injecter":["french"],"injure":["french"],"inoculer":["french"],"inonder":["french"],"inscrire":["french"],"insecte":["french"],"insigne":["french"],"insolite":["french"],"inspirer":["french"],"instinct":["french"],"insulter":["french"],"intense":["french"],"intime":["french"],"intrigue":["french"],"intuitif":["french"],"inutile":["french"],"invasion":["french"],"inventer":["french"],"inviter":["french"],"invoquer":["french"],"ironique":["french"],"irradier":["french"],"irréel":["french"],"irriter":["french"],"isoler":["french"],"ivoire":["french"],"ivresse":["french"],"jaillir":["french"],"jambe":["french"],"janvier":["french"],"jardin":["french"],"jauger":["french"],"jaune":["french"],"javelot":["french"],"jetable":["french"],"jeton":["french"],"jeudi":["french"],"jeunesse":["french"],"joindre":["french"],"joncher":["french"],"jongler":["french"],"joueur":["french"],"jouissif":["french"],"journal":["french"],"jovial":["french"],"joyau":["french"],"joyeux":["french"],"jubiler":["french"],"jugement":["french"],"jupon":["french"],"juriste":["french"],"justice":["french"],"juteux":["french"],"juvénile":["french"],"kayak":["french"],"kimono":["french"],"kiosque":["french"],"labial":["french"],"labourer":["french"],"lacérer":["french"],"lactose":["french"],"lagune":["french"],"laine":["french"],"laisser":["french"],"laitier":["french"],"lambeau":["french"],"lamelle":["french"],"lampe":["french"],"lanceur":["french"],"langage":["french"],"lanterne":["french"],"lapin":["french"],"largeur":["french"],"larme":["french"],"laurier":["french"],"lavabo":["french"],"lavoir":["french"],"légal":["french"],"léger":["french"],"légume":["french"],"lessive":["french"],"lettre":["french"],"levier":["french"],"lexique":["french"],"lézard":["french"],"liasse":["french"],"libérer":["french"],"libre":["french"],"licence":["french"],"licorne":["french"],"liège":["french"],"lièvre":["french"],"ligature":["french"],"ligoter":["french"],"ligue":["french"],"limer":["french"],"limite":["french"],"limonade":["french"],"limpide":["french"],"linéaire":["french"],"lingot":["french"],"lionceau":["french"],"liquide":["french"],"lisière":["french"],"lister":["french"],"lithium":["french"],"litige":["french"],"littoral":["french"],"livreur":["french"],"logique":["french"],"lointain":["french"],"loisir":["french"],"lombric":["french"],"loterie":["french"],"louer":["french"],"lourd":["french"],"loutre":["french"],"louve":["french"],"lubie":["french"],"lucide":["french"],"lucratif":["french"],"lueur":["french"],"lugubre":["french"],"luisant":["french"],"lumière":["french"],"lunaire":["french"],"lundi":["french"],"luron":["french"],"lutter":["french"],"luxueux":["french"],"magasin":["french"],"magenta":["french"],"magique":["french"],"maigre":["french"],"maillon":["french"],"maintien":["french"],"mairie":["french"],"maison":["french"],"majorer":["french"],"malaxer":["french"],"maléfice":["french"],"malheur":["french"],"malice":["french"],"mallette":["french"],"mammouth":["french"],"mandater":["french"],"maniable":["french"],"manquant":["french"],"manteau":["french"],"manuel":["french"],"marathon":["french"],"marbre":["french"],"marchand":["french"],"mardi":["french"],"maritime":["french"],"marqueur":["french"],"marron":["french"],"marteler":["french"],"mascotte":["french"],"massif":["french"],"matériel":["french"],"matière":["french"],"matraque":["french"],"maudire":["french"],"maussade":["french"],"mauve":["french"],"maximal":["french"],"méchant":["french"],"méconnu":["french"],"médaille":["french"],"médecin":["french"],"méditer":["french"],"méduse":["french"],"meilleur":["french"],"mélange":["french"],"mélodie":["french"],"membre":["french"],"mémoire":["french"],"menacer":["french"],"mener":["french"],"menhir":["french"],"mensonge":["french"],"mentor":["french"],"mercredi":["french"],"mérite":["french"],"merle":["french"],"messager":["french"],"mesure":["french"],"métal":["french"],"météore":["french"],"méthode":["french"],"métier":["french"],"meuble":["french"],"miauler":["french"],"microbe":["french"],"miette":["french"],"mignon":["french"],"migrer":["french"],"milieu":["french"],"mimique":["french"],"mince":["french"],"minéral":["french"],"minimal":["french"],"minorer":["french"],"miroiter":["french"],"missile":["french"],"mixte":["french"],"moderne":["french"],"moelleux":["french"],"mondial":["french"],"moniteur":["french"],"monnaie":["french"],"monotone":["french"],"monstre":["french"],"montagne":["french"],"monument":["french"],"moqueur":["french"],"morceau":["french"],"morsure":["french"],"mortier":["french"],"moteur":["french"],"motif":["french"],"mouche":["french"],"moufle":["french"],"moulin":["french"],"mousson":["french"],"mouton":["french"],"mouvant":["french"],"multiple":["french"],"munition":["french"],"muraille":["french"],"murène":["french"],"murmure":["french"],"muséum":["french"],"musicien":["french"],"mutation":["french"],"muter":["french"],"mutuel":["french"],"myriade":["french"],"myrtille":["french"],"mystère":["french"],"mythique":["french"],"nageur":["french"],"nappe":["french"],"narquois":["french"],"narrer":["french"],"natation":["french"],"naufrage":["french"],"nautique":["french"],"navire":["french"],"nébuleux":["french"],"nectar":["french"],"néfaste":["french"],"négation":["french"],"négliger":["french"],"négocier":["french"],"neige":["french"],"nerveux":["french"],"nettoyer":["french"],"neurone":["french"],"neutron":["french"],"neveu":["french"],"niche":["french"],"nickel":["french"],"nitrate":["french"],"niveau":["french"],"nocif":["french"],"nocturne":["french"],"noirceur":["french"],"noisette":["french"],"nomade":["french"],"nombreux":["french"],"nommer":["french"],"normatif":["french"],"notifier":["french"],"notoire":["french"],"nourrir":["french"],"nouveau":["french"],"novateur":["french"],"novembre":["french"],"novice":["french"],"nuage":["french"],"nuancer":["french"],"nuire":["french"],"nuisible":["french"],"numéro":["french"],"nuptial":["french"],"nuque":["french"],"nutritif":["french"],"obéir":["french"],"objectif":["french"],"obliger":["french"],"obscur":["french"],"observer":["french"],"obstacle":["french"],"obtenir":["french"],"obturer":["french"],"occasion":["french"],"occuper":["french"],"océan":["french"],"octobre":["french"],"octroyer":["french"],"octupler":["french"],"oculaire":["french"],"odeur":["french"],"odorant":["french"],"offenser":["french"],"officier":["french"],"offrir":["french"],"ogive":["french"],"oiseau":["french"],"oisillon":["french"],"olfactif":["french"],"olivier":["french"],"ombrage":["french"],"omettre":["french"],"onctueux":["french"],"onduler":["french"],"onéreux":["french"],"onirique":["french"],"opale":["french"],"opaque":["french"],"opérer":["french"],"opportun":["french"],"opprimer":["french"],"opter":["french"],"optique":["french"],"orageux":["french"],"orbite":["french"],"ordonner":["french"],"oreille":["french"],"organe":["french"],"orgueil":["french"],"orifice":["french"],"ornement":["french"],"orque":["french"],"ortie":["french"],"osciller":["french"],"osmose":["french"],"ossature":["french"],"otarie":["french"],"ouragan":["french"],"ourson":["french"],"outil":["french"],"outrager":["french"],"ouvrage":["french"],"ovation":["french"],"oxyde":["french"],"oxygène":["french"],"paisible":["french"],"palmarès":["french"],"palourde":["french"],"palper":["french"],"panache":["french"],"pangolin":["french"],"paniquer":["french"],"panneau":["french"],"panorama":["french"],"pantalon":["french"],"papaye":["french"],"papier":["french"],"papoter":["french"],"papyrus":["french"],"paradoxe":["french"],"parcelle":["french"],"paresse":["french"],"parfumer":["french"],"parler":["french"],"parole":["french"],"parrain":["french"],"parsemer":["french"],"partager":["french"],"parure":["french"],"parvenir":["french"],"passion":["french"],"pastèque":["french"],"paternel":["french"],"patience":["french"],"patron":["french","turkish"],"pavillon":["french"],"pavoiser":["french"],"payer":["french"],"paysage":["french"],"peigne":["french"],"peintre":["french"],"pelage":["french"],"pélican":["french"],"pelle":["french"],"pelouse":["french"],"peluche":["french"],"pendule":["french"],"pénétrer":["french"],"pénible":["french"],"pensif":["french"],"pénurie":["french"],"pépite":["french"],"péplum":["french"],"perdrix":["french"],"perforer":["french"],"période":["french"],"permuter":["french"],"perplexe":["french"],"persil":["french"],"perte":["french"],"peser":["french"],"pétale":["french"],"petit":["french"],"pétrir":["french"],"peuple":["french"],"pharaon":["french"],"phobie":["french"],"phoque":["french"],"photon":["french"],"physique":["french"],"pictural":["french"],"pièce":["french"],"pierre":["french"],"pieuvre":["french"],"pilote":["french"],"pinceau":["french"],"pipette":["french"],"piquer":["french"],"pirogue":["french"],"piscine":["french"],"piston":["french"],"pivoter":["french"],"pixel":["french"],"placard":["french"],"plafond":["french"],"plaisir":["french"],"planer":["french"],"plaque":["french"],"plastron":["french"],"plateau":["french"],"pleurer":["french"],"plexus":["french"],"pliage":["french"],"plomb":["french"],"plonger":["french"],"pluie":["french"],"plumage":["french"],"pochette":["french"],"poésie":["french"],"poète":["french"],"pointe":["french"],"poirier":["french"],"poisson":["french"],"poivre":["french"],"polaire":["french"],"policier":["french"],"pollen":["french"],"polygone":["french"],"pommade":["french"],"pompier":["french"],"ponctuel":["french"],"pondérer":["french"],"poney":["french"],"portique":["french"],"posséder":["french"],"posture":["french"],"potager":["french"],"poteau":["french"],"potion":["french"],"pouce":["french"],"poulain":["french"],"poumon":["french"],"pourpre":["french"],"poussin":["french"],"pouvoir":["french"],"prairie":["french"],"pratique":["french"],"précieux":["french"],"prédire":["french"],"préfixe":["french"],"prélude":["french"],"prénom":["french"],"présence":["french"],"prétexte":["french"],"prévoir":["french"],"primitif":["french"],"prince":["french"],"priver":["french"],"problème":["french"],"procéder":["french"],"prodige":["french"],"profond":["french"],"progrès":["french"],"proie":["french"],"projeter":["french"],"prologue":["french"],"promener":["french"],"propre":["french"],"prospère":["french"],"protéger":["french"],"prouesse":["french"],"proverbe":["french"],"prudence":["french"],"pruneau":["french"],"psychose":["french"],"puceron":["french"],"puiser":["french"],"pulpe":["french"],"pulsar":["french"],"punaise":["french"],"punitif":["french"],"pupitre":["french"],"purifier":["french"],"pyramide":["french"],"quasar":["french"],"querelle":["french"],"quiétude":["french"],"quitter":["french"],"quotient":["french"],"racine":["french"],"raconter":["french"],"radieux":["french"],"ragondin":["french"],"raideur":["french"],"raisin":["french"],"ralentir":["french"],"rallonge":["french"],"ramasser":["french"],"rapide":["french"],"rasage":["french"],"ratisser":["french"],"ravager":["french"],"ravin":["french"],"rayonner":["french"],"réactif":["french"],"réagir":["french"],"réaliser":["french"],"réanimer":["french"],"recevoir":["french"],"réciter":["french"],"réclamer":["french"],"récolter":["french"],"recruter":["french"],"reculer":["french"],"recycler":["french"],"rédiger":["french"],"redouter":["french"],"refaire":["french"],"réflexe":["french"],"réformer":["french"],"refrain":["french"],"refuge":["french"],"régalien":["french"],"région":["french"],"réglage":["french"],"régulier":["french"],"réitérer":["french"],"rejeter":["french"],"rejouer":["french"],"relatif":["french"],"relever":["french"],"remarque":["french"],"remède":["french"],"remise":["french"],"remonter":["french"],"remplir":["french"],"remuer":["french"],"renard":["french"],"renfort":["french"],"renifler":["french"],"renoncer":["french"],"rentrer":["french"],"renvoi":["french"],"replier":["french"],"reporter":["french"],"reprise":["french"],"reptile":["french"],"requin":["french"],"réserve":["french"],"résineux":["french"],"résoudre":["french"],"respect":["french"],"rester":["french"],"résultat":["french"],"rétablir":["french"],"retenir":["french"],"réticule":["french"],"retomber":["french"],"retracer":["french"],"réunion":["french"],"réussir":["french"],"revanche":["french"],"revivre":["french"],"révolte":["french"],"révulsif":["french"],"richesse":["french"],"rideau":["french"],"rieur":["french"],"rigide":["french"],"rigoler":["french"],"rincer":["french"],"riposter":["french"],"risible":["french"],"risque":["french"],"rituel":["french"],"rivière":["french"],"rocheux":["french"],"rompre":["french"],"ronce":["french"],"rondin":["french"],"roseau":["french"],"rosier":["french"],"rotatif":["french"],"rotor":["french"],"rotule":["french"],"rouge":["french"],"rouille":["french"],"rouleau":["french"],"routine":["french"],"royaume":["french"],"ruban":["french"],"rubis":["french"],"ruche":["french"],"ruelle":["french"],"rugueux":["french"],"ruiner":["french"],"ruisseau":["french"],"ruser":["french"],"rustique":["french"],"rythme":["french"],"sabler":["french"],"saboter":["french"],"sabre":["french"],"sacoche":["french"],"safari":["french"],"sagesse":["french"],"saisir":["french"],"salade":["french"],"salive":["french"],"saluer":["french"],"samedi":["french"],"sanction":["french"],"sanglier":["french"],"sarcasme":["french"],"sardine":["french"],"saturer":["french"],"saugrenu":["french"],"saumon":["french"],"sauter":["french"],"sauvage":["french"],"savant":["french"],"savonner":["french"],"scalpel":["french"],"scandale":["french"],"scélérat":["french"],"scénario":["french"],"sceptre":["french"],"schéma":["french"],"scinder":["french"],"score":["french"],"scrutin":["french"],"sculpter":["french"],"séance":["french"],"sécable":["french"],"sécher":["french"],"secouer":["french"],"sécréter":["french"],"sédatif":["french"],"séduire":["french"],"seigneur":["french"],"séjour":["french"],"sélectif":["french"],"semaine":["french"],"sembler":["french"],"semence":["french"],"séminal":["french"],"sénateur":["french"],"sensible":["french"],"séparer":["french"],"séquence":["french"],"serein":["french"],"sergent":["french"],"sérieux":["french"],"serrure":["french"],"sérum":["french"],"sésame":["french"],"sévir":["french"],"sevrage":["french"],"sextuple":["french"],"sidéral":["french"],"siècle":["french"],"siéger":["french"],"siffler":["french"],"sigle":["french"],"signal":["french"],"silence":["french"],"silicium":["french"],"sincère":["french"],"sinistre":["french"],"siphon":["french"],"sirop":["french"],"sismique":["french"],"situer":["french"],"skier":["french"],"socle":["french"],"sodium":["french"],"soigneux":["french"],"soldat":["french"],"soleil":["french"],"solitude":["french"],"soluble":["french"],"sombre":["french"],"sommeil":["french"],"somnoler":["french"],"sonde":["french"],"songeur":["french"],"sonnette":["french"],"sonore":["french"],"sorcier":["french"],"sortir":["french"],"sosie":["french"],"sottise":["french"],"soucieux":["french"],"soudure":["french"],"souffle":["french"],"soulever":["french"],"soupape":["french"],"soutirer":["french"],"souvenir":["french"],"spacieux":["french"],"spécial":["french"],"sphère":["french"],"spiral":["french","turkish"],"station":["french"],"sternum":["french"],"stimulus":["french"],"stipuler":["french"],"strict":["french"],"studieux":["french"],"stupeur":["french"],"styliste":["french"],"sublime":["french"],"substrat":["french"],"subtil":["french"],"subvenir":["french"],"succès":["french"],"sucre":["french"],"suffixe":["french"],"suggérer":["french"],"suiveur":["french"],"sulfate":["french"],"superbe":["french"],"supplier":["french"],"suricate":["french"],"surmener":["french"],"sursaut":["french"],"survie":["french"],"syllabe":["french"],"symbole":["french"],"symétrie":["french"],"synapse":["french"],"syntaxe":["french"],"système":["french"],"tabac":["french"],"tablier":["french"],"tactile":["french"],"tailler":["french"],"talisman":["french"],"talonner":["french"],"tambour":["french"],"tamiser":["french"],"tangible":["french"],"tapis":["french"],"taquiner":["french"],"tarder":["french"],"tarif":["french"],"tartine":["french"],"tasse":["french"],"tatami":["french"],"tatouage":["french"],"taupe":["french"],"taureau":["french"],"taxer":["french"],"témoin":["french"],"temporel":["french"],"tenaille":["french"],"tendre":["french"],"teneur":["french"],"tenir":["french"],"tension":["french"],"terminer":["french"],"terne":["french"],"terrible":["french"],"tétine":["french"],"texte":["french"],"thème":["french"],"théorie":["french"],"thérapie":["french"],"thorax":["french"],"tibia":["french"],"tiède":["french"],"timide":["french"],"tirelire":["french"],"tiroir":["french"],"tissu":["french"],"titane":["french"],"titre":["french"],"tituber":["french"],"toboggan":["french"],"tolérant":["french"],"tomate":["french"],"tonique":["french"],"tonneau":["french"],"toponyme":["french"],"torche":["french"],"tordre":["french"],"tornade":["french"],"torpille":["french"],"torrent":["french"],"torse":["french"],"tortue":["french"],"totem":["french"],"toucher":["french"],"tournage":["french"],"tousser":["french"],"toxine":["french"],"traction":["french"],"trafic":["french"],"tragique":["french"],"trahir":["french"],"trancher":["french"],"travail":["french"],"trèfle":["french"],"tremper":["french"],"trésor":["french"],"treuil":["french"],"triage":["french"],"tribunal":["french"],"tricoter":["french"],"trilogie":["french"],"triomphe":["french"],"tripler":["french"],"triturer":["french"],"trivial":["french"],"trombone":["french"],"tronc":["french"],"tropical":["french"],"troupeau":["french"],"tuile":["french"],"tulipe":["french"],"tumulte":["french"],"turbine":["french"],"tuteur":["french"],"tutoyer":["french"],"tuyau":["french"],"tympan":["french"],"typhon":["french"],"typique":["french"],"tyran":["french"],"ubuesque":["french"],"ultime":["french"],"ultrason":["french"],"unanime":["french"],"unifier":["french"],"union":["french"],"unitaire":["french"],"univers":["french"],"uranium":["french"],"urbain":["french"],"urticant":["french"],"usine":["french"],"usuel":["french"],"usure":["french"],"utile":["french"],"utopie":["french"],"vacarme":["french"],"vaccin":["french"],"vagabond":["french"],"vaillant":["french"],"vaincre":["french"],"vaisseau":["french"],"valable":["french"],"valise":["french"],"vallon":["french"],"vampire":["french"],"vanille":["french"],"vapeur":["french"],"varier":["french"],"vaseux":["french"],"vassal":["french"],"vaste":["french"],"vecteur":["french"],"vedette":["french"],"végétal":["french"],"véhicule":["french"],"veinard":["french"],"véloce":["french"],"vendredi":["french"],"vénérer":["french"],"venger":["french"],"venimeux":["french"],"ventouse":["french"],"verdure":["french"],"vérin":["french"],"vernir":["french"],"verrou":["french"],"verser":["french"],"vertu":["french"],"veston":["french"],"vétéran":["french"],"vétuste":["french"],"vexant":["french"],"vexer":["french"],"viaduc":["french"],"viande":["french"],"victoire":["french"],"vidange":["french"],"vidéo":["french"],"vignette":["french"],"vigueur":["french"],"vilain":["french"],"vinaigre":["french"],"violon":["french"],"vipère":["french"],"virement":["french"],"virtuose":["french"],"visage":["french"],"viseur":["french"],"vision":["french"],"visqueux":["french"],"visuel":["french"],"vitesse":["french"],"viticole":["french"],"vitrine":["french"],"vivace":["french"],"vivipare":["french"],"vocation":["french"],"voguer":["french"],"voile":["french"],"voisin":["french"],"voiture":["french"],"volaille":["french"],"volcan":["french"],"voltiger":["french"],"vorace":["french"],"vortex":["french"],"voter":["french"],"vouloir":["french"],"voyelle":["french"],"xénon":["french"],"yacht":["french"],"zèbre":["french"],"zénith":["french"],"zeste":["french"],"zoologie":["french"],"abaco":["italian"],"abbaglio":["italian"],"abbinato":["italian"],"abete":["italian"],"abisso":["italian"],"abolire":["italian"],"abrasivo":["italian"],"abrogato":["italian"],"accadere":["italian"],"accenno":["italian"],"accusato":["italian"],"acetone":["italian"],"achille":["italian"],"acido":["italian"],"acqua":["italian"],"acre":["italian"],"acrilico":["italian"],"acrobata":["italian"],"acuto":["italian"],"adagio":["italian"],"addebito":["italian"],"addome":["italian"],"adeguato":["italian"],"aderire":["italian"],"adipe":["italian"],"adottare":["italian"],"adulare":["italian"],"affabile":["italian"],"affetto":["italian"],"affisso":["italian"],"affranto":["italian"],"aforisma":["italian"],"afoso":["italian"],"africano":["italian"],"agave":["italian"],"agente":["italian"],"agevole":["italian"],"aggancio":["italian"],"agire":["italian"],"agitare":["italian"],"agonismo":["italian"],"agricolo":["italian"],"agrumeto":["italian"],"aguzzo":["italian"],"alabarda":["italian"],"alato":["italian"],"albatro":["italian"],"alberato":["italian"],"albo":["italian"],"albume":["italian"],"alce":["italian"],"alcolico":["italian"],"alettone":["italian"],"alfa":["italian"],"algebra":["italian"],"aliante":["italian"],"alibi":["italian"],"alimento":["italian"],"allagato":["italian"],"allegro":["italian"],"allievo":["italian"],"allodola":["italian"],"allusivo":["italian"],"almeno":["italian"],"alogeno":["italian"],"alpaca":["italian"],"alpestre":["italian"],"altalena":["italian"],"alterno":["italian"],"alticcio":["italian"],"altrove":["italian"],"alunno":["italian"],"alveolo":["italian"],"alzare":["italian"],"amalgama":["italian"],"amanita":["italian"],"amarena":["italian"],"ambito":["italian"],"ambrato":["italian"],"ameba":["italian"],"america":["italian"],"ametista":["italian"],"amico":["italian"],"ammasso":["italian"],"ammenda":["italian"],"ammirare":["italian"],"ammonito":["italian"],"amore":["italian"],"ampio":["italian"],"ampliare":["italian"],"amuleto":["italian"],"anacardo":["italian"],"anagrafe":["italian"],"analista":["italian"],"anarchia":["italian"],"anatra":["italian"],"anca":["italian"],"ancella":["italian"],"ancora":["italian"],"andare":["italian"],"andrea":["italian"],"anello":["italian"],"angelo":["italian"],"angolare":["italian"],"angusto":["italian"],"anima":["italian"],"annegare":["italian"],"annidato":["italian"],"anno":["italian"],"annuncio":["italian"],"anonimo":["italian"],"anticipo":["italian"],"anzi":["italian"],"apatico":["italian"],"apertura":["italian"],"apode":["italian"],"apparire":["italian"],"appetito":["italian"],"appoggio":["italian"],"approdo":["italian"],"appunto":["italian"],"aprile":["italian"],"arabica":["italian"],"arachide":["italian"],"aragosta":["italian"],"araldica":["italian"],"arancio":["italian"],"aratura":["italian"],"arazzo":["italian"],"arbitro":["italian"],"archivio":["italian"],"ardito":["italian"],"arenile":["italian"],"argento":["italian"],"argine":["italian"],"arguto":["italian"],"aria":["italian"],"armonia":["italian"],"arnese":["italian"],"arredato":["italian"],"arringa":["italian"],"arrosto":["italian"],"arsenico":["italian"],"arso":["italian"],"artefice":["italian"],"arzillo":["italian"],"asciutto":["italian"],"ascolto":["italian"],"asepsi":["italian"],"asettico":["italian"],"asfalto":["italian"],"asino":["italian"],"asola":["italian"],"aspirato":["italian"],"aspro":["italian"],"assaggio":["italian"],"asse":["italian"],"assoluto":["italian"],"assurdo":["italian"],"asta":["italian"],"astenuto":["italian"],"astice":["italian"],"astratto":["italian"],"atavico":["italian"],"ateismo":["italian"],"atomico":["italian"],"atono":["italian"],"attesa":["italian"],"attivare":["italian"],"attorno":["italian"],"attrito":["italian"],"attuale":["italian"],"ausilio":["italian"],"austria":["italian"],"autista":["italian"],"autonomo":["italian"],"autunno":["italian"],"avanzato":["italian"],"avere":["italian"],"avvenire":["italian"],"avviso":["italian"],"avvolgere":["italian"],"azione":["italian"],"azoto":["italian"],"azzimo":["italian"],"azzurro":["italian"],"babele":["italian"],"baccano":["italian"],"bacino":["italian"],"baco":["italian"],"badessa":["italian"],"badilata":["italian"],"bagnato":["italian"],"baita":["italian"],"balcone":["italian"],"baldo":["italian"],"balena":["italian"],"ballata":["italian"],"balzano":["italian"],"bambino":["italian"],"bandire":["italian"],"baraonda":["italian"],"barbaro":["italian"],"barca":["italian"],"baritono":["italian"],"barlume":["italian"],"barocco":["italian"],"basilico":["italian"],"basso":["italian"],"batosta":["italian"],"battuto":["italian"],"baule":["italian"],"bava":["italian"],"bavosa":["italian"],"becco":["italian"],"beffa":["italian"],"belgio":["italian"],"belva":["italian"],"benda":["italian"],"benevole":["italian"],"benigno":["italian"],"benzina":["italian"],"bere":["italian"],"berlina":["italian"],"beta":["italian"],"bibita":["italian"],"bici":["italian"],"bidone":["italian"],"bifido":["italian"],"biga":["italian"],"bilancia":["italian"],"bimbo":["italian"],"binocolo":["italian"],"biologo":["italian"],"bipede":["italian"],"bipolare":["italian"],"birbante":["italian"],"birra":["italian"],"biscotto":["italian"],"bisesto":["italian"],"bisnonno":["italian"],"bisonte":["italian"],"bisturi":["italian"],"bizzarro":["italian"],"blando":["italian"],"blatta":["italian"],"bollito":["italian"],"bonifico":["italian"],"bordo":["italian"],"bosco":["italian"],"botanico":["italian"],"bottino":["italian"],"bozzolo":["italian"],"braccio":["italian"],"bradipo":["italian"],"brama":["italian"],"branca":["italian"],"bravura":["italian"],"bretella":["italian"],"brevetto":["italian"],"brezza":["italian"],"briglia":["italian"],"brillante":["italian"],"brindare":["italian"],"broccolo":["italian"],"brodo":["italian"],"bronzina":["italian"],"brullo":["italian"],"bruno":["italian"],"bubbone":["italian"],"buca":["italian"],"budino":["italian"],"buffone":["italian"],"buio":["italian"],"bulbo":["italian"],"buono":["italian"],"burlone":["italian"],"burrasca":["italian"],"bussola":["italian"],"busta":["italian"],"cadetto":["italian"],"caduco":["italian"],"calamaro":["italian"],"calcolo":["italian"],"calesse":["italian"],"calibro":["italian"],"calmo":["italian"],"caloria":["italian"],"cambusa":["italian"],"camerata":["italian"],"camicia":["italian"],"cammino":["italian"],"camola":["italian"],"campale":["italian"],"canapa":["italian"],"candela":["italian"],"cane":["italian"],"canino":["italian"],"canotto":["italian"],"cantina":["italian"],"capace":["italian"],"capello":["italian"],"capitolo":["italian"],"capogiro":["italian"],"cappero":["italian"],"capra":["italian"],"capsula":["italian"],"carapace":["italian"],"carcassa":["italian"],"cardo":["italian"],"carisma":["italian"],"carovana":["italian"],"carretto":["italian"],"cartolina":["italian"],"casaccio":["italian"],"cascata":["italian"],"caserma":["italian"],"caso":["italian"],"cassone":["italian"],"castello":["italian"],"casuale":["italian"],"catasta":["italian"],"catena":["italian"],"catrame":["italian"],"cauto":["italian"],"cavillo":["italian"],"cedibile":["italian"],"cedrata":["italian"],"cefalo":["italian"],"celebre":["italian"],"cellulare":["italian"],"cena":["italian"],"cenone":["italian"],"centesimo":["italian"],"ceramica":["italian"],"cercare":["italian"],"certo":["italian"],"cerume":["italian"],"cervello":["italian"],"cesoia":["italian"],"cespo":["italian"],"ceto":["italian"],"chela":["italian"],"chiaro":["italian"],"chicca":["italian"],"chiedere":["italian"],"chimera":["italian"],"china":["italian"],"chirurgo":["italian"],"chitarra":["italian"],"ciao":["italian"],"ciclismo":["italian"],"cifrare":["italian"],"cigno":["italian"],"cilindro":["italian"],"ciottolo":["italian"],"circa":["italian"],"cirrosi":["italian"],"citrico":["italian"],"cittadino":["italian"],"ciuffo":["italian"],"civetta":["italian"],"civile":["italian"],"classico":["italian"],"clinica":["italian"],"cloro":["italian"],"cocco":["italian"],"codardo":["italian"],"codice":["italian"],"coerente":["italian"],"cognome":["italian"],"collare":["italian"],"colmato":["italian"],"colore":["italian"],"colposo":["italian"],"coltivato":["italian"],"colza":["italian"],"coma":["italian"],"cometa":["italian"],"commando":["italian"],"comodo":["italian"],"computer":["italian"],"comune":["italian"],"conciso":["italian"],"condurre":["italian"],"conferma":["italian"],"congelare":["italian"],"coniuge":["italian"],"connesso":["italian"],"conoscere":["italian"],"consumo":["italian"],"continuo":["italian"],"convegno":["italian"],"coperto":["italian"],"copione":["italian"],"coppia":["italian"],"copricapo":["italian"],"corazza":["italian"],"cordata":["italian"],"coricato":["italian"],"cornice":["italian"],"corolla":["italian"],"corpo":["italian"],"corredo":["italian"],"corsia":["italian"],"cortese":["italian"],"cosmico":["italian"],"costante":["italian"],"cottura":["italian"],"covato":["italian"],"cratere":["italian"],"cravatta":["italian"],"creato":["italian"],"credere":["italian"],"cremoso":["italian"],"crescita":["italian"],"creta":["italian"],"criceto":["italian"],"crinale":["italian"],"crisi":["italian"],"critico":["italian"],"croce":["italian"],"cronaca":["italian"],"crostata":["italian"],"cruciale":["italian"],"crusca":["italian"],"cucire":["italian"],"cuculo":["italian"],"cugino":["italian"],"cullato":["italian"],"cupola":["italian"],"curatore":["italian"],"cursore":["italian"],"curvo":["italian"],"cuscino":["italian"],"custode":["italian"],"dado":["italian"],"daino":["italian"],"dalmata":["italian"],"damerino":["italian"],"daniela":["italian"],"dannoso":["italian"],"danzare":["italian"],"datato":["italian"],"davanti":["italian"],"davvero":["italian"],"debutto":["italian"],"decennio":["italian"],"deciso":["italian"],"declino":["italian"],"decollo":["italian"],"decreto":["italian"],"dedicato":["italian"],"definito":["italian"],"deforme":["italian"],"degno":["italian"],"delegare":["italian"],"delfino":["italian"],"delirio":["italian"],"delta":["italian"],"demenza":["italian"],"denotato":["italian"],"dentro":["italian"],"deposito":["italian"],"derapata":["italian"],"derivare":["italian"],"deroga":["italian"],"descritto":["italian"],"deserto":["italian"],"desiderio":["italian"],"desumere":["italian"],"detersivo":["italian"],"devoto":["italian"],"diametro":["italian"],"dicembre":["italian"],"diedro":["italian"],"difeso":["italian"],"diffuso":["italian"],"digerire":["italian"],"digitale":["italian"],"diluvio":["italian"],"dinamico":["italian"],"dinnanzi":["italian"],"dipinto":["italian"],"diploma":["italian"],"dipolo":["italian"],"diradare":["italian"],"dire":["italian"],"dirotto":["italian"],"dirupo":["italian"],"disagio":["italian"],"discreto":["italian"],"disfare":["italian"],"disgelo":["italian"],"disposto":["italian"],"distanza":["italian"],"disumano":["italian"],"dito":["italian"],"divano":["italian"],"divelto":["italian"],"dividere":["italian"],"divorato":["italian"],"doblone":["italian"],"docente":["italian"],"doganale":["italian"],"dogma":["italian"],"dolce":["italian"],"domato":["italian"],"domenica":["italian"],"dominare":["italian"],"dondolo":["italian"],"dono":["italian"],"dormire":["italian"],"dote":["italian"],"dottore":["italian"],"dovuto":["italian"],"dozzina":["italian"],"drago":["italian"],"druido":["italian"],"dubbio":["italian"],"dubitare":["italian"],"ducale":["italian"],"duna":["italian"],"duomo":["italian"],"duplice":["italian"],"duraturo":["italian"],"ebano":["italian"],"eccesso":["italian"],"ecco":["italian"],"eclissi":["italian"],"economia":["italian"],"edera":["italian"],"edicola":["italian"],"edile":["italian"],"editoria":["italian"],"educare":["italian"],"egemonia":["italian"],"egli":["italian"],"egoismo":["italian"],"egregio":["italian"],"elaborato":["italian"],"elargire":["italian"],"elegante":["italian"],"elencato":["italian"],"eletto":["italian"],"elevare":["italian"],"elfico":["italian"],"elica":["italian"],"elmo":["italian"],"elsa":["italian"],"eluso":["italian"],"emanato":["italian"],"emblema":["italian"],"emesso":["italian"],"emiro":["italian"],"emotivo":["italian"],"emozione":["italian"],"empirico":["italian"],"emulo":["italian"],"endemico":["italian"],"enduro":["italian"],"energia":["italian"],"enfasi":["italian"],"enoteca":["italian"],"entrare":["italian"],"enzima":["italian"],"epatite":["italian"],"epilogo":["italian"],"episodio":["italian"],"epocale":["italian"],"eppure":["italian"],"equatore":["italian"],"erario":["italian"],"erba":["italian"],"erboso":["italian"],"erede":["italian"],"eremita":["italian"],"erigere":["italian"],"ermetico":["italian"],"eroe":["italian"],"erosivo":["italian"],"errante":["italian"],"esagono":["italian"],"esame":["italian"],"esanime":["italian"],"esaudire":["italian"],"esca":["italian"],"esempio":["italian"],"esercito":["italian"],"esibito":["italian"],"esigente":["italian"],"esistere":["italian"],"esito":["italian"],"esofago":["italian"],"esortato":["italian"],"esoso":["italian"],"espanso":["italian"],"espresso":["italian"],"essenza":["italian"],"esso":["italian"],"esteso":["italian"],"estimare":["italian"],"estonia":["italian"],"estroso":["italian"],"esultare":["italian"],"etilico":["italian"],"etnico":["italian"],"etrusco":["italian"],"etto":["italian"],"euclideo":["italian"],"europa":["italian"],"evaso":["italian"],"evidenza":["italian"],"evitato":["italian"],"evoluto":["italian"],"evviva":["italian"],"fabbrica":["italian"],"faccenda":["italian"],"fachiro":["italian"],"falco":["italian"],"famiglia":["italian"],"fanale":["italian"],"fanfara":["italian"],"fango":["italian"],"fantasma":["italian"],"fare":["italian"],"farfalla":["italian"],"farinoso":["italian"],"farmaco":["italian"],"fascia":["italian"],"fastoso":["italian"],"fasullo":["italian"],"faticare":["italian"],"fato":["italian"],"favoloso":["italian"],"febbre":["italian"],"fecola":["italian"],"fede":["italian"],"fegato":["italian"],"felpa":["italian"],"feltro":["italian"],"femmina":["italian"],"fendere":["italian"],"fenomeno":["italian"],"fermento":["italian"],"ferro":["italian"],"fertile":["italian"],"fessura":["italian"],"festivo":["italian"],"fetta":["italian"],"feudo":["italian"],"fiaba":["italian"],"fiducia":["italian"],"fifa":["italian"],"figurato":["italian"],"filo":["italian","turkish"],"finanza":["italian"],"finestra":["italian"],"finire":["italian"],"fiore":["italian"],"fiscale":["italian"],"fisico":["italian"],"fiume":["italian"],"flacone":["italian"],"flamenco":["italian"],"flebo":["italian"],"flemma":["italian"],"florido":["italian"],"fluente":["italian"],"fluoro":["italian"],"fobico":["italian"],"focaccia":["italian"],"focoso":["italian"],"foderato":["italian"],"foglio":["italian"],"folata":["italian"],"folclore":["italian"],"folgore":["italian"],"fondente":["italian"],"fonetico":["italian"],"fonia":["italian"],"fontana":["italian"],"forbito":["italian"],"forchetta":["italian"],"foresta":["italian"],"formica":["italian"],"fornaio":["italian"],"foro":["italian"],"fortezza":["italian"],"forzare":["italian"],"fosfato":["italian"],"fosso":["italian"],"fracasso":["italian"],"frana":["italian"],"frassino":["italian"],"fratello":["italian"],"freccetta":["italian"],"frenata":["italian"],"fresco":["italian"],"frigo":["italian"],"frollino":["italian"],"fronde":["italian"],"frugale":["italian"],"frutta":["italian"],"fucilata":["italian"],"fucsia":["italian"],"fuggente":["italian"],"fulmine":["italian"],"fulvo":["italian"],"fumante":["italian"],"fumetto":["italian"],"fumoso":["italian"],"fune":["italian"],"funzione":["italian"],"fuoco":["italian"],"furbo":["italian"],"furgone":["italian"],"furore":["italian"],"fuso":["italian"],"futile":["italian"],"gabbiano":["italian"],"gaffe":["italian"],"galateo":["italian"],"gallina":["italian"],"galoppo":["italian"],"gambero":["italian"],"gamma":["italian"],"garanzia":["italian"],"garbo":["italian"],"garofano":["italian"],"garzone":["italian"],"gasdotto":["italian"],"gasolio":["italian"],"gastrico":["italian"],"gatto":["italian"],"gaudio":["italian"],"gazebo":["italian"],"gazzella":["italian"],"geco":["italian"],"gelatina":["italian"],"gelso":["italian"],"gemello":["italian"],"gemmato":["italian"],"gene":["italian"],"genitore":["italian"],"gennaio":["italian"],"genotipo":["italian"],"gergo":["italian"],"ghepardo":["italian"],"ghiaccio":["italian"],"ghisa":["italian"],"giallo":["italian"],"gilda":["italian"],"ginepro":["italian"],"giocare":["italian"],"gioiello":["italian"],"giorno":["italian"],"giove":["italian"],"girato":["italian"],"girone":["italian"],"gittata":["italian"],"giudizio":["italian"],"giurato":["italian"],"giusto":["italian"],"globulo":["italian"],"glutine":["italian"],"gnomo":["italian"],"gobba":["italian"],"golf":["italian"],"gomito":["italian"],"gommone":["italian"],"gonfio":["italian"],"gonna":["italian"],"governo":["italian"],"gracile":["italian"],"grado":["italian"],"grafico":["italian"],"grammo":["italian"],"grande":["italian"],"grattare":["italian"],"gravoso":["italian"],"grazia":["italian"],"greca":["italian"],"gregge":["italian"],"grifone":["italian"],"grigio":["italian"],"grinza":["italian"],"grotta":["italian"],"gruppo":["italian"],"guadagno":["italian"],"guaio":["italian"],"guanto":["italian"],"guardare":["italian"],"gufo":["italian"],"guidare":["italian"],"ibernato":["italian"],"icona":["italian"],"identico":["italian"],"idillio":["italian"],"idolo":["italian"],"idra":["italian"],"idrico":["italian"],"idrogeno":["italian"],"igiene":["italian"],"ignaro":["italian"],"ignorato":["italian"],"ilare":["italian"],"illeso":["italian"],"illogico":["italian"],"illudere":["italian"],"imballo":["italian"],"imbevuto":["italian"],"imbocco":["italian"],"imbuto":["italian"],"immane":["italian"],"immerso":["italian"],"immolato":["italian"],"impacco":["italian"],"impeto":["italian"],"impiego":["italian"],"importo":["italian"],"impronta":["italian"],"inalare":["italian"],"inarcare":["italian"],"inattivo":["italian"],"incanto":["italian"],"incendio":["italian"],"inchino":["italian"],"incisivo":["italian"],"incluso":["italian"],"incontro":["italian"],"incrocio":["italian"],"incubo":["italian"],"indagine":["italian"],"india":["italian"],"indole":["italian"],"inedito":["italian"],"infatti":["italian"],"infilare":["italian"],"inflitto":["italian"],"ingaggio":["italian"],"ingegno":["italian"],"inglese":["italian"],"ingordo":["italian"],"ingrosso":["italian"],"innesco":["italian"],"inodore":["italian"],"inoltrare":["italian"],"inondato":["italian"],"insano":["italian"],"insetto":["italian"],"insieme":["italian"],"insonnia":["italian"],"insulina":["italian"],"intasato":["italian"],"intero":["italian"],"intonaco":["italian"],"intuito":["italian"],"inumidire":["italian"],"invalido":["italian"],"invece":["italian"],"invito":["italian"],"iperbole":["italian"],"ipnotico":["italian"],"ipotesi":["italian"],"ippica":["italian"],"iride":["italian"],"irlanda":["italian"],"ironico":["italian"],"irrigato":["italian"],"irrorare":["italian"],"isolato":["italian"],"isotopo":["italian"],"isterico":["italian"],"istituto":["italian"],"istrice":["italian"],"italia":["italian"],"iterare":["italian"],"labbro":["italian"],"labirinto":["italian"],"lacca":["italian"],"lacerato":["italian"],"lacrima":["italian"],"lacuna":["italian"],"laddove":["italian"],"lago":["italian"],"lampo":["italian"],"lancetta":["italian"],"lanterna":["italian"],"lardoso":["italian"],"larga":["italian"],"laringe":["italian"],"lastra":["italian"],"latenza":["italian"],"latino":["italian"],"lattuga":["italian"],"lavagna":["italian"],"lavoro":["italian"],"legale":["italian"],"leggero":["italian"],"lembo":["italian"],"lentezza":["italian"],"lenza":["italian"],"leone":["italian"],"lepre":["italian"],"lesivo":["italian"],"lessato":["italian"],"lesto":["italian"],"letterale":["italian"],"leva":["italian"],"levigato":["italian"],"libero":["italian"],"lido":["italian"],"lievito":["italian"],"lilla":["italian"],"limatura":["italian"],"limitare":["italian"],"limpido":["italian"],"lineare":["italian"],"lingua":["italian"],"liquido":["italian"],"lira":["italian"],"lirica":["italian"],"lisca":["italian"],"lite":["italian"],"litigio":["italian"],"livrea":["italian"],"locanda":["italian"],"lode":["italian"],"logica":["italian"],"lombare":["italian"],"londra":["italian"],"longevo":["italian"],"loquace":["italian"],"lorenzo":["italian"],"loto":["italian"],"lotteria":["italian"],"luce":["italian"],"lucidato":["italian"],"lumaca":["italian"],"luminoso":["italian"],"lungo":["italian"],"lupo":["italian"],"luppolo":["italian"],"lusinga":["italian"],"lusso":["italian"],"lutto":["italian"],"macabro":["italian"],"macchina":["italian"],"macero":["italian"],"macinato":["italian"],"madama":["italian"],"magico":["italian"],"maglia":["italian"],"magnete":["italian"],"magro":["italian"],"maiolica":["italian"],"malafede":["italian"],"malgrado":["italian"],"malinteso":["italian"],"malsano":["italian"],"malto":["italian"],"malumore":["italian"],"mana":["italian"],"mancia":["italian"],"mandorla":["italian"],"mangiare":["italian"],"manifesto":["italian"],"mannaro":["italian"],"manovra":["italian"],"mansarda":["italian"],"mantide":["italian"],"manubrio":["italian"],"mappa":["italian"],"maratona":["italian"],"marcire":["italian"],"maretta":["italian"],"marmo":["italian"],"marsupio":["italian"],"maschera":["italian"],"massaia":["italian"],"mastino":["italian"],"materasso":["italian"],"matricola":["italian"],"mattone":["italian"],"maturo":["italian"],"mazurca":["italian"],"meandro":["italian"],"meccanico":["italian"],"mecenate":["italian"],"medesimo":["italian"],"meditare":["italian"],"mega":["italian"],"melassa":["italian"],"melis":["italian"],"melodia":["italian"],"meninge":["italian"],"meno":["italian"],"mensola":["italian"],"mercurio":["italian"],"merenda":["italian"],"merlo":["italian"],"meschino":["italian"],"mese":["italian"],"messere":["italian"],"mestolo":["italian"],"metallo":["italian"],"metodo":["italian"],"mettere":["italian"],"miagolare":["italian"],"mica":["italian"],"micelio":["italian"],"michele":["italian"],"microbo":["italian"],"midollo":["italian"],"miele":["italian"],"migliore":["italian"],"milano":["italian"],"milite":["italian"],"mimosa":["italian"],"minerale":["italian"],"mini":["italian"],"minore":["italian"],"mirino":["italian"],"mirtillo":["italian"],"miscela":["italian"],"missiva":["italian"],"misto":["italian"],"misurare":["italian"],"mitezza":["italian"],"mitigare":["italian"],"mitra":["italian"],"mittente":["italian"],"mnemonico":["italian"],"modello":["italian"],"modifica":["italian"],"modulo":["italian"],"mogano":["italian"],"mogio":["italian"],"mole":["italian"],"molosso":["italian"],"monastero":["italian"],"monco":["italian"],"mondina":["italian"],"monetario":["italian"],"monile":["italian"],"monotono":["italian"],"monsone":["italian"],"montato":["italian"],"monviso":["italian"],"mora":["italian"],"mordere":["italian"],"morsicato":["italian"],"mostro":["italian"],"motivato":["italian"],"motosega":["italian"],"motto":["italian"],"movenza":["italian"],"movimento":["italian"],"mozzo":["italian"],"mucca":["italian"],"mucosa":["italian"],"muffa":["italian"],"mughetto":["italian"],"mugnaio":["italian"],"mulatto":["italian"],"mulinello":["italian"],"multiplo":["italian"],"mummia":["italian"],"munto":["italian"],"muovere":["italian"],"murale":["italian"],"musa":["italian"],"muscolo":["italian"],"musica":["italian"],"mutevole":["italian"],"muto":["italian"],"nababbo":["italian"],"nafta":["italian"],"nanometro":["italian"],"narciso":["italian"],"narice":["italian"],"narrato":["italian"],"nascere":["italian"],"nastrare":["italian"],"naturale":["italian"],"nautica":["italian"],"naviglio":["italian"],"nebulosa":["italian"],"necrosi":["italian"],"negativo":["italian"],"negozio":["italian"],"nemmeno":["italian"],"neofita":["italian"],"neretto":["italian"],"nervo":["italian"],"nessuno":["italian"],"nettuno":["italian"],"neutrale":["italian"],"neve":["italian"],"nevrotico":["italian"],"nicchia":["italian"],"ninfa":["italian"],"nitido":["italian"],"nobile":["italian"],"nocivo":["italian"],"nodo":["italian"],"nome":["italian"],"nomina":["italian"],"nordico":["italian"],"normale":["italian"],"norvegese":["italian"],"nostrano":["italian"],"notare":["italian"],"notizia":["italian"],"notturno":["italian"],"novella":["italian"],"nucleo":["italian"],"nulla":["italian"],"numero":["italian"],"nuovo":["italian"],"nutrire":["italian"],"nuvola":["italian"],"nuziale":["italian"],"oasi":["italian"],"obbedire":["italian"],"obbligo":["italian"],"obelisco":["italian"],"oblio":["italian"],"obolo":["italian"],"obsoleto":["italian"],"occasione":["italian"],"occhio":["italian"],"occidente":["italian"],"occorrere":["italian"],"occultare":["italian"],"ocra":["italian"],"oculato":["italian"],"odierno":["italian"],"odorare":["italian"],"offerta":["italian"],"offrire":["italian"],"offuscato":["italian"],"oggetto":["italian"],"oggi":["italian"],"ognuno":["italian"],"olandese":["italian"],"olfatto":["italian"],"oliato":["italian"],"oliva":["italian"],"ologramma":["italian"],"oltre":["italian"],"omaggio":["italian"],"ombelico":["italian"],"ombra":["italian"],"omega":["italian"],"omissione":["italian"],"ondoso":["italian"],"onere":["italian"],"onice":["italian"],"onnivoro":["italian"],"onorevole":["italian"],"onta":["italian"],"operato":["italian"],"opinione":["italian"],"opposto":["italian"],"oracolo":["italian"],"orafo":["italian"],"ordine":["italian"],"orecchino":["italian"],"orefice":["italian"],"orfano":["italian"],"organico":["italian"],"origine":["italian"],"orizzonte":["italian"],"orma":["italian"],"ormeggio":["italian"],"ornativo":["italian"],"orologio":["italian"],"orrendo":["italian"],"orribile":["italian"],"ortensia":["italian"],"ortica":["italian"],"orzata":["italian"],"orzo":["italian"],"osare":["italian"],"oscurare":["italian"],"osmosi":["italian"],"ospedale":["italian"],"ospite":["italian"],"ossa":["italian"],"ossidare":["italian"],"ostacolo":["italian"],"oste":["italian"],"otite":["italian"],"otre":["italian"],"ottagono":["italian"],"ottimo":["italian"],"ottobre":["italian"],"ovale":["italian"],"ovest":["italian"],"ovino":["italian"],"oviparo":["italian"],"ovocito":["italian"],"ovunque":["italian"],"ovviare":["italian"],"ozio":["italian"],"pacchetto":["italian"],"pace":["italian"],"pacifico":["italian"],"padella":["italian"],"padrone":["italian"],"paese":["italian"],"paga":["italian"],"pagina":["italian"],"palazzina":["italian"],"palesare":["italian"],"pallido":["italian"],"palo":["italian"],"palude":["italian"],"pandoro":["italian"],"pannello":["italian"],"paolo":["italian"],"paonazzo":["italian"],"paprica":["italian"],"parabola":["italian"],"parcella":["italian"],"parere":["italian"],"pargolo":["italian"],"pari":["italian"],"parlato":["italian"],"parola":["italian"],"partire":["italian"],"parvenza":["italian"],"parziale":["italian"],"passivo":["italian"],"pasticca":["italian"],"patacca":["italian"],"patologia":["italian"],"pattume":["italian"],"pavone":["italian"],"peccato":["italian"],"pedalare":["italian"],"pedonale":["italian"],"peggio":["italian"],"peloso":["italian"],"penare":["italian"],"pendice":["italian"],"penisola":["italian"],"pennuto":["italian"],"penombra":["italian"],"pensare":["italian"],"pentola":["italian"],"pepe":["italian"],"pepita":["italian"],"perbene":["italian"],"percorso":["italian"],"perdonato":["italian"],"perforare":["italian"],"pergamena":["italian"],"periodo":["italian"],"permesso":["italian"],"perno":["italian"],"perplesso":["italian"],"persuaso":["italian"],"pertugio":["italian"],"pervaso":["italian"],"pesatore":["italian"],"pesista":["italian"],"peso":["italian"],"pestifero":["italian"],"petalo":["italian"],"pettine":["italian"],"petulante":["italian"],"pezzo":["italian"],"piacere":["italian"],"pianta":["italian"],"piattino":["italian"],"piccino":["italian"],"picozza":["italian"],"piega":["italian"],"pietra":["italian"],"piffero":["italian"],"pigiama":["italian"],"pigolio":["italian"],"pigro":["italian"],"pila":["italian"],"pilifero":["italian"],"pillola":["italian"],"pilota":["italian"],"pimpante":["italian"],"pineta":["italian"],"pinna":["italian"],"pinolo":["italian"],"pioggia":["italian"],"piombo":["italian"],"piramide":["italian"],"piretico":["italian"],"pirite":["italian"],"pirolisi":["italian"],"pitone":["italian"],"pizzico":["italian"],"placebo":["italian"],"planare":["italian"],"plasma":["italian"],"platano":["italian"],"plenario":["italian"],"pochezza":["italian"],"poderoso":["italian"],"podismo":["italian"],"poesia":["italian"],"poggiare":["italian"],"polenta":["italian"],"poligono":["italian"],"pollice":["italian"],"polmonite":["italian"],"polpetta":["italian"],"polso":["italian"],"poltrona":["italian"],"polvere":["italian"],"pomice":["italian"],"pomodoro":["italian"],"ponte":["italian"],"popoloso":["italian"],"porfido":["italian"],"poroso":["italian"],"porpora":["italian"],"porre":["italian"],"portata":["italian"],"posa":["italian","turkish"],"positivo":["italian"],"possesso":["italian"],"postulato":["italian"],"potassio":["italian"],"potere":["italian"],"pranzo":["italian"],"prassi":["italian"],"pratica":["italian"],"precluso":["italian"],"predica":["italian"],"prefisso":["italian"],"pregiato":["italian"],"prelievo":["italian"],"premere":["italian"],"prenotare":["italian"],"preparato":["italian"],"presenza":["italian"],"pretesto":["italian"],"prevalso":["italian"],"prima":["italian"],"principe":["italian"],"privato":["italian"],"problema":["italian"],"procura":["italian"],"produrre":["italian"],"profumo":["italian"],"progetto":["italian"],"prolunga":["italian"],"promessa":["italian"],"pronome":["italian"],"proposta":["italian"],"proroga":["italian"],"proteso":["italian"],"prova":["italian","turkish"],"prudente":["italian"],"prugna":["italian"],"prurito":["italian"],"psiche":["italian"],"pubblico":["italian"],"pudica":["italian"],"pugilato":["italian"],"pugno":["italian"],"pulce":["italian"],"pulito":["italian"],"pulsante":["italian"],"puntare":["italian"],"pupazzo":["italian"],"pupilla":["italian"],"puro":["italian"],"quadro":["italian"],"qualcosa":["italian"],"quasi":["italian"],"querela":["italian"],"quota":["italian"],"raccolto":["italian"],"raddoppio":["italian"],"radicale":["italian"],"radunato":["italian"],"raffica":["italian"],"ragazzo":["italian"],"ragione":["italian"],"ragno":["italian"],"ramarro":["italian"],"ramingo":["italian"],"ramo":["italian"],"randagio":["italian"],"rantolare":["italian"],"rapato":["italian"],"rapina":["italian"],"rappreso":["italian"],"rasatura":["italian"],"raschiato":["italian"],"rasente":["italian"],"rassegna":["italian"],"rastrello":["italian"],"rata":["italian"],"ravveduto":["italian"],"reale":["italian"],"recepire":["italian"],"recinto":["italian"],"recluta":["italian"],"recondito":["italian"],"recupero":["italian"],"reddito":["italian"],"redimere":["italian"],"regalato":["italian"],"registro":["italian"],"regola":["italian"],"regresso":["italian"],"relazione":["italian"],"remare":["italian"],"remoto":["italian"],"renna":["italian"],"replica":["italian"],"reprimere":["italian"],"reputare":["italian"],"resa":["italian"],"residente":["italian"],"responso":["italian"],"restauro":["italian"],"rete":["italian"],"retina":["italian"],"retorica":["italian"],"rettifica":["italian"],"revocato":["italian"],"riassunto":["italian"],"ribadire":["italian"],"ribelle":["italian"],"ribrezzo":["italian"],"ricarica":["italian"],"ricco":["italian"],"ricevere":["italian"],"riciclato":["italian"],"ricordo":["italian"],"ricreduto":["italian"],"ridicolo":["italian"],"ridurre":["italian"],"rifasare":["italian"],"riflesso":["italian"],"riforma":["italian"],"rifugio":["italian"],"rigare":["italian"],"rigettato":["italian"],"righello":["italian"],"rilassato":["italian"],"rilevato":["italian"],"rimanere":["italian"],"rimbalzo":["italian"],"rimedio":["italian"],"rimorchio":["italian"],"rinascita":["italian"],"rincaro":["italian"],"rinforzo":["italian"],"rinnovo":["italian"],"rinomato":["italian"],"rinsavito":["italian"],"rintocco":["italian"],"rinuncia":["italian"],"rinvenire":["italian"],"riparato":["italian"],"ripetuto":["italian"],"ripieno":["italian"],"riportare":["italian"],"ripresa":["italian"],"ripulire":["italian"],"risata":["italian"],"rischio":["italian"],"riserva":["italian"],"risibile":["italian"],"riso":["italian"],"rispetto":["italian"],"ristoro":["italian"],"risultato":["italian"],"risvolto":["italian"],"ritardo":["italian"],"ritegno":["italian"],"ritmico":["italian"],"ritrovo":["italian"],"riunione":["italian"],"riva":["italian"],"riverso":["italian"],"rivincita":["italian"],"rivolto":["italian"],"rizoma":["italian"],"roba":["italian"],"robotico":["italian"],"robusto":["italian"],"roccia":["italian"],"roco":["italian"],"rodaggio":["italian"],"rodere":["italian"],"roditore":["italian"],"rogito":["italian"],"rollio":["italian"],"romantico":["italian"],"rompere":["italian"],"ronzio":["italian"],"rosolare":["italian"],"rospo":["italian"],"rotante":["italian"],"rotondo":["italian"],"rotula":["italian"],"rovescio":["italian"],"rubizzo":["italian"],"rubrica":["italian"],"ruga":["italian"],"rullino":["italian"],"rumine":["italian"],"rumoroso":["italian"],"ruolo":["italian"],"rupe":["italian"],"russare":["italian"],"rustico":["italian"],"sabato":["italian"],"sabbiare":["italian"],"sabotato":["italian"],"sagoma":["italian"],"salasso":["italian"],"saldatura":["italian"],"salgemma":["italian"],"salivare":["italian"],"salmone":["italian"],"salone":["italian"],"saltare":["italian"],"saluto":["italian"],"salvo":["italian"],"sapere":["italian"],"sapido":["italian"],"saporito":["italian"],"saraceno":["italian"],"sarcasmo":["italian"],"sarto":["italian"],"sassoso":["italian"],"satellite":["italian"],"satira":["italian"],"satollo":["italian"],"saturno":["italian"],"savana":["italian"],"savio":["italian"],"saziato":["italian"],"sbadiglio":["italian"],"sbalzo":["italian"],"sbancato":["italian"],"sbarra":["italian"],"sbattere":["italian"],"sbavare":["italian"],"sbendare":["italian"],"sbirciare":["italian"],"sbloccato":["italian"],"sbocciato":["italian"],"sbrinare":["italian"],"sbruffone":["italian"],"sbuffare":["italian"],"scabroso":["italian"],"scadenza":["italian"],"scala":["italian"],"scambiare":["italian"],"scandalo":["italian"],"scapola":["italian"],"scarso":["italian"],"scatenare":["italian"],"scavato":["italian"],"scelto":["italian"],"scenico":["italian"],"scettro":["italian"],"scheda":["italian"],"schiena":["italian"],"sciarpa":["italian"],"scienza":["italian"],"scindere":["italian"],"scippo":["italian"],"sciroppo":["italian"],"scivolo":["italian"],"sclerare":["italian"],"scodella":["italian"],"scolpito":["italian"],"scomparto":["italian"],"sconforto":["italian"],"scoprire":["italian"],"scorta":["italian"],"scossone":["italian"],"scozzese":["italian"],"scriba":["italian"],"scrollare":["italian"],"scrutinio":["italian"],"scuderia":["italian"],"scultore":["italian"],"scuola":["italian"],"scuro":["italian"],"scusare":["italian"],"sdebitare":["italian"],"sdoganare":["italian"],"seccatura":["italian"],"secondo":["italian"],"sedano":["italian"],"seggiola":["italian"],"segnalato":["italian"],"segregato":["italian"],"seguito":["italian"],"selciato":["italian"],"selettivo":["italian"],"sella":["italian"],"selvaggio":["italian"],"semaforo":["italian"],"sembrare":["italian"],"seme":["italian"],"seminato":["italian"],"sempre":["italian"],"senso":["italian"],"sentire":["italian"],"sepolto":["italian"],"sequenza":["italian"],"serata":["italian"],"serbato":["italian"],"sereno":["italian"],"serio":["italian"],"serpente":["italian"],"serraglio":["italian"],"servire":["italian"],"sestina":["italian"],"setola":["italian"],"settimana":["italian"],"sfacelo":["italian"],"sfaldare":["italian"],"sfamato":["italian"],"sfarzoso":["italian"],"sfaticato":["italian"],"sfera":["italian"],"sfida":["italian"],"sfilato":["italian"],"sfinge":["italian"],"sfocato":["italian"],"sfoderare":["italian"],"sfogo":["italian"],"sfoltire":["italian"],"sforzato":["italian"],"sfratto":["italian"],"sfruttato":["italian"],"sfuggito":["italian"],"sfumare":["italian"],"sfuso":["italian"],"sgabello":["italian"],"sgarbato":["italian"],"sgonfiare":["italian"],"sgorbio":["italian"],"sgrassato":["italian"],"sguardo":["italian"],"sibilo":["italian"],"siccome":["italian"],"sierra":["italian"],"sigla":["italian"],"signore":["italian"],"silenzio":["italian"],"sillaba":["italian"],"simbolo":["italian"],"simpatico":["italian"],"simulato":["italian"],"sinfonia":["italian"],"singolo":["italian"],"sinistro":["italian"],"sino":["italian"],"sintesi":["italian"],"sinusoide":["italian"],"sipario":["italian"],"sisma":["italian"],"sistole":["italian"],"situato":["italian"],"slitta":["italian"],"slogatura":["italian"],"sloveno":["italian"],"smarrito":["italian"],"smemorato":["italian"],"smentito":["italian"],"smeraldo":["italian"],"smilzo":["italian"],"smontare":["italian"],"smottato":["italian"],"smussato":["italian"],"snellire":["italian"],"snervato":["italian"],"snodo":["italian"],"sobbalzo":["italian"],"sobrio":["italian"],"soccorso":["italian"],"sociale":["italian"],"sodale":["italian"],"soffitto":["italian"],"sogno":["italian"],"soldato":["italian"],"solenne":["italian"],"solido":["italian"],"sollazzo":["italian"],"solo":["italian"],"solubile":["italian"],"solvente":["italian"],"somatico":["italian"],"somma":["italian"],"sonda":["italian"],"sonetto":["italian"],"sonnifero":["italian"],"sopire":["italian"],"soppeso":["italian"],"sopra":["italian"],"sorgere":["italian"],"sorpasso":["italian"],"sorriso":["italian"],"sorso":["italian"],"sorteggio":["italian"],"sorvolato":["italian"],"sospiro":["italian"],"sosta":["italian"],"sottile":["italian"],"spada":["italian"],"spalla":["italian"],"spargere":["italian"],"spatola":["italian"],"spavento":["italian"],"spazzola":["italian"],"specie":["italian"],"spedire":["italian"],"spegnere":["italian"],"spelatura":["italian"],"speranza":["italian"],"spessore":["italian"],"spettrale":["italian"],"spezzato":["italian"],"spia":["italian"],"spigoloso":["italian"],"spillato":["italian"],"spinoso":["italian"],"spirale":["italian"],"splendido":["italian"],"sportivo":["italian"],"sposo":["italian"],"spranga":["italian"],"sprecare":["italian"],"spronato":["italian"],"spruzzo":["italian"],"spuntino":["italian"],"squillo":["italian"],"sradicare":["italian"],"srotolato":["italian"],"stabile":["italian"],"stacco":["italian"],"staffa":["italian"],"stagnare":["italian"],"stampato":["italian"],"stantio":["italian"],"starnuto":["italian"],"stasera":["italian"],"statuto":["italian"],"stelo":["italian"],"steppa":["italian"],"sterzo":["italian"],"stiletto":["italian"],"stima":["italian"],"stirpe":["italian"],"stivale":["italian"],"stizzoso":["italian"],"stonato":["italian"],"storico":["italian"],"strappo":["italian"],"stregato":["italian"],"stridulo":["italian"],"strozzare":["italian"],"strutto":["italian"],"stuccare":["italian"],"stufo":["italian"],"stupendo":["italian"],"subentro":["italian"],"succoso":["italian"],"sudore":["italian"],"suggerito":["italian"],"sugo":["italian"],"sultano":["italian"],"suonare":["italian"],"superbo":["italian"],"supporto":["italian"],"surgelato":["italian"],"surrogato":["italian"],"sussurro":["italian"],"sutura":["italian"],"svagare":["italian"],"svedese":["italian"],"sveglio":["italian"],"svelare":["italian"],"svenuto":["italian"],"svezia":["italian"],"sviluppo":["italian"],"svista":["italian"],"svizzera":["italian"],"svolta":["italian"],"svuotare":["italian"],"tabacco":["italian"],"tabulato":["italian"],"tacciare":["italian"],"taciturno":["italian"],"tale":["italian"],"talismano":["italian"],"tampone":["italian"],"tannino":["italian"],"tara":["italian"],"tardivo":["italian"],"targato":["italian"],"tariffa":["italian"],"tarpare":["italian"],"tartaruga":["italian"],"tasto":["italian"],"tattico":["italian"],"taverna":["italian"],"tavolata":["italian"],"tazza":["italian"],"teca":["italian"],"tecnico":["italian"],"telefono":["italian"],"temerario":["italian"],"tempo":["italian","turkish"],"temuto":["italian"],"tendone":["italian"],"tenero":["italian"],"tensione":["italian"],"tentacolo":["italian"],"teorema":["italian"],"terme":["italian"],"terrazzo":["italian"],"terzetto":["italian"],"tesi":["italian"],"tesserato":["italian"],"testato":["italian"],"tetro":["italian"],"tettoia":["italian"],"tifare":["italian"],"tigella":["italian"],"timbro":["italian"],"tinto":["italian"],"tipico":["italian"],"tipografo":["italian"],"tiraggio":["italian"],"tiro":["italian"],"titanio":["italian"],"titolo":["italian"],"titubante":["italian"],"tizio":["italian"],"tizzone":["italian"],"toccare":["italian"],"tollerare":["italian"],"tolto":["italian"],"tombola":["italian"],"tomo":["italian"],"tonfo":["italian"],"tonsilla":["italian"],"topazio":["italian"],"topologia":["italian"],"toppa":["italian"],"torba":["italian"],"tornare":["italian"],"torrone":["italian"],"tortora":["italian"],"toscano":["italian"],"tossire":["italian"],"tostatura":["italian"],"totano":["italian"],"trabocco":["italian"],"trachea":["italian"],"trafila":["italian"],"tragedia":["italian"],"tralcio":["italian"],"tramonto":["italian"],"transito":["italian"],"trapano":["italian"],"trarre":["italian"],"trasloco":["italian"],"trattato":["italian"],"trave":["italian"],"treccia":["italian"],"tremolio":["italian"],"trespolo":["italian"],"tributo":["italian"],"tricheco":["italian"],"trifoglio":["italian"],"trillo":["italian"],"trincea":["italian"],"trio":["italian"],"tristezza":["italian"],"triturato":["italian"],"trivella":["italian"],"tromba":["italian"],"trono":["italian"],"troppo":["italian"],"trottola":["italian"],"trovare":["italian"],"truccato":["italian"],"tubatura":["italian"],"tuffato":["italian"],"tulipano":["italian"],"tumulto":["italian"],"tunisia":["italian"],"turbare":["italian"],"turchino":["italian"],"tuta":["italian"],"tutela":["italian"],"ubicato":["italian"],"uccello":["italian"],"uccisore":["italian"],"udire":["italian"],"uditivo":["italian"],"uffa":["italian"],"ufficio":["italian"],"uguale":["italian"],"ulisse":["italian"],"ultimato":["italian"],"umano":["italian"],"umile":["italian"],"umorismo":["italian"],"uncinetto":["italian"],"ungere":["italian"],"ungherese":["italian"],"unicorno":["italian"],"unificato":["italian"],"unisono":["italian"],"unitario":["italian"],"unte":["italian"],"uovo":["italian"],"upupa":["italian"],"uragano":["italian"],"urgenza":["italian"],"urlo":["italian"],"usanza":["italian"],"usato":["italian"],"uscito":["italian"],"usignolo":["italian"],"usuraio":["italian"],"utensile":["italian"],"utilizzo":["italian"],"utopia":["italian"],"vacante":["italian"],"vaccinato":["italian"],"vagabondo":["italian"],"vagliato":["italian"],"valanga":["italian"],"valgo":["italian"],"valico":["italian"],"valletta":["italian"],"valoroso":["italian"],"valutare":["italian"],"valvola":["italian"],"vampata":["italian"],"vangare":["italian"],"vanitoso":["italian"],"vano":["italian"],"vantaggio":["italian"],"vanvera":["italian"],"vapore":["italian"],"varano":["italian"],"varcato":["italian"],"variante":["italian"],"vasca":["italian"],"vedetta":["italian"],"vedova":["italian"],"veduto":["italian"],"vegetale":["italian"],"veicolo":["italian"],"velcro":["italian"],"velina":["italian"],"velluto":["italian"],"veloce":["italian"],"venato":["italian"],"vendemmia":["italian"],"vento":["italian"],"verace":["italian"],"verbale":["italian"],"vergogna":["italian"],"verifica":["italian"],"vero":["italian"],"verruca":["italian"],"verticale":["italian"],"vescica":["italian"],"vessillo":["italian"],"vestale":["italian"],"veterano":["italian"],"vetrina":["italian"],"vetusto":["italian"],"viandante":["italian"],"vibrante":["italian"],"vicenda":["italian"],"vichingo":["italian"],"vicinanza":["italian"],"vidimare":["italian"],"vigilia":["italian"],"vigneto":["italian"],"vigore":["italian"],"vile":["italian"],"villano":["italian"],"vimini":["italian"],"vincitore":["italian"],"viola":["italian"],"vipera":["italian"],"virgola":["italian"],"virologo":["italian"],"virulento":["italian"],"viscoso":["italian"],"visione":["italian"],"vispo":["italian"],"vissuto":["italian"],"visura":["italian"],"vita":["italian"],"vitello":["italian"],"vittima":["italian"],"vivanda":["italian"],"vivido":["italian"],"viziare":["italian"],"voce":["italian"],"voga":["italian"],"volatile":["italian"],"volere":["italian"],"volpe":["italian"],"voragine":["italian"],"vulcano":["italian"],"zampogna":["italian"],"zanna":["italian"],"zappato":["italian"],"zattera":["italian"],"zavorra":["italian"],"zefiro":["italian"],"zelante":["italian"],"zelo":["italian"],"zenzero":["italian"],"zerbino":["italian"],"zibetto":["italian"],"zinco":["italian"],"zircone":["italian"],"zitto":["italian"],"zolla":["italian"],"zotico":["italian"],"zucchero":["italian"],"zufolo":["italian"],"zulu":["italian"],"zuppa":["italian"],"あいこくしん":["japanese"],"あいさつ":["japanese"],"あいだ":["japanese"],"あおぞら":["japanese"],"あかちゃん":["japanese"],"あきる":["japanese"],"あけがた":["japanese"],"あける":["japanese"],"あこがれる":["japanese"],"あさい":["japanese"],"あさひ":["japanese"],"あしあと":["japanese"],"あじわう":["japanese"],"あずかる":["japanese"],"あずき":["japanese"],"あそぶ":["japanese"],"あたえる":["japanese"],"あたためる":["japanese"],"あたりまえ":["japanese"],"あたる":["japanese"],"あつい":["japanese"],"あつかう":["japanese"],"あっしゅく":["japanese"],"あつまり":["japanese"],"あつめる":["japanese"],"あてな":["japanese"],"あてはまる":["japanese"],"あひる":["japanese"],"あぶら":["japanese"],"あぶる":["japanese"],"あふれる":["japanese"],"あまい":["japanese"],"あまど":["japanese"],"あまやかす":["japanese"],"あまり":["japanese"],"あみもの":["japanese"],"あめりか":["japanese"],"あやまる":["japanese"],"あゆむ":["japanese"],"あらいぐま":["japanese"],"あらし":["japanese"],"あらすじ":["japanese"],"あらためる":["japanese"],"あらゆる":["japanese"],"あらわす":["japanese"],"ありがとう":["japanese"],"あわせる":["japanese"],"あわてる":["japanese"],"あんい":["japanese"],"あんがい":["japanese"],"あんこ":["japanese"],"あんぜん":["japanese"],"あんてい":["japanese"],"あんない":["japanese"],"あんまり":["japanese"],"いいだす":["japanese"],"いおん":["japanese"],"いがい":["japanese"],"いがく":["japanese"],"いきおい":["japanese"],"いきなり":["japanese"],"いきもの":["japanese"],"いきる":["japanese"],"いくじ":["japanese"],"いくぶん":["japanese"],"いけばな":["japanese"],"いけん":["japanese"],"いこう":["japanese"],"いこく":["japanese"],"いこつ":["japanese"],"いさましい":["japanese"],"いさん":["japanese"],"いしき":["japanese"],"いじゅう":["japanese"],"いじょう":["japanese"],"いじわる":["japanese"],"いずみ":["japanese"],"いずれ":["japanese"],"いせい":["japanese"],"いせえび":["japanese"],"いせかい":["japanese"],"いせき":["japanese"],"いぜん":["japanese"],"いそうろう":["japanese"],"いそがしい":["japanese"],"いだい":["japanese"],"いだく":["japanese"],"いたずら":["japanese"],"いたみ":["japanese"],"いたりあ":["japanese"],"いちおう":["japanese"],"いちじ":["japanese"],"いちど":["japanese"],"いちば":["japanese"],"いちぶ":["japanese"],"いちりゅう":["japanese"],"いつか":["japanese"],"いっしゅん":["japanese"],"いっせい":["japanese"],"いっそう":["japanese"],"いったん":["japanese"],"いっち":["japanese"],"いってい":["japanese"],"いっぽう":["japanese"],"いてざ":["japanese"],"いてん":["japanese"],"いどう":["japanese"],"いとこ":["japanese"],"いない":["japanese"],"いなか":["japanese"],"いねむり":["japanese"],"いのち":["japanese"],"いのる":["japanese"],"いはつ":["japanese"],"いばる":["japanese"],"いはん":["japanese"],"いびき":["japanese"],"いひん":["japanese"],"いふく":["japanese"],"いへん":["japanese"],"いほう":["japanese"],"いみん":["japanese"],"いもうと":["japanese"],"いもたれ":["japanese"],"いもり":["japanese"],"いやがる":["japanese"],"いやす":["japanese"],"いよかん":["japanese"],"いよく":["japanese"],"いらい":["japanese"],"いらすと":["japanese"],"いりぐち":["japanese"],"いりょう":["japanese"],"いれい":["japanese"],"いれもの":["japanese"],"いれる":["japanese"],"いろえんぴつ":["japanese"],"いわい":["japanese"],"いわう":["japanese"],"いわかん":["japanese"],"いわば":["japanese"],"いわゆる":["japanese"],"いんげんまめ":["japanese"],"いんさつ":["japanese"],"いんしょう":["japanese"],"いんよう":["japanese"],"うえき":["japanese"],"うえる":["japanese"],"うおざ":["japanese"],"うがい":["japanese"],"うかぶ":["japanese"],"うかべる":["japanese"],"うきわ":["japanese"],"うくらいな":["japanese"],"うくれれ":["japanese"],"うけたまわる":["japanese"],"うけつけ":["japanese"],"うけとる":["japanese"],"うけもつ":["japanese"],"うける":["japanese"],"うごかす":["japanese"],"うごく":["japanese"],"うこん":["japanese"],"うさぎ":["japanese"],"うしなう":["japanese"],"うしろがみ":["japanese"],"うすい":["japanese"],"うすぎ":["japanese"],"うすぐらい":["japanese"],"うすめる":["japanese"],"うせつ":["japanese"],"うちあわせ":["japanese"],"うちがわ":["japanese"],"うちき":["japanese"],"うちゅう":["japanese"],"うっかり":["japanese"],"うつくしい":["japanese"],"うったえる":["japanese"],"うつる":["japanese"],"うどん":["japanese"],"うなぎ":["japanese"],"うなじ":["japanese"],"うなずく":["japanese"],"うなる":["japanese"],"うねる":["japanese"],"うのう":["japanese"],"うぶげ":["japanese"],"うぶごえ":["japanese"],"うまれる":["japanese"],"うめる":["japanese"],"うもう":["japanese"],"うやまう":["japanese"],"うよく":["japanese"],"うらがえす":["japanese"],"うらぐち":["japanese"],"うらない":["japanese"],"うりあげ":["japanese"],"うりきれ":["japanese"],"うるさい":["japanese"],"うれしい":["japanese"],"うれゆき":["japanese"],"うれる":["japanese"],"うろこ":["japanese"],"うわき":["japanese"],"うわさ":["japanese"],"うんこう":["japanese"],"うんちん":["japanese"],"うんてん":["japanese"],"うんどう":["japanese"],"えいえん":["japanese"],"えいが":["japanese"],"えいきょう":["japanese"],"えいご":["japanese"],"えいせい":["japanese"],"えいぶん":["japanese"],"えいよう":["japanese"],"えいわ":["japanese"],"えおり":["japanese"],"えがお":["japanese"],"えがく":["japanese"],"えきたい":["japanese"],"えくせる":["japanese"],"えしゃく":["japanese"],"えすて":["japanese"],"えつらん":["japanese"],"えのぐ":["japanese"],"えほうまき":["japanese"],"えほん":["japanese"],"えまき":["japanese"],"えもじ":["japanese"],"えもの":["japanese"],"えらい":["japanese"],"えらぶ":["japanese"],"えりあ":["japanese"],"えんえん":["japanese"],"えんかい":["japanese"],"えんぎ":["japanese"],"えんげき":["japanese"],"えんしゅう":["japanese"],"えんぜつ":["japanese"],"えんそく":["japanese"],"えんちょう":["japanese"],"えんとつ":["japanese"],"おいかける":["japanese"],"おいこす":["japanese"],"おいしい":["japanese"],"おいつく":["japanese"],"おうえん":["japanese"],"おうさま":["japanese"],"おうじ":["japanese"],"おうせつ":["japanese"],"おうたい":["japanese"],"おうふく":["japanese"],"おうべい":["japanese"],"おうよう":["japanese"],"おえる":["japanese"],"おおい":["japanese"],"おおう":["japanese"],"おおどおり":["japanese"],"おおや":["japanese"],"おおよそ":["japanese"],"おかえり":["japanese"],"おかず":["japanese"],"おがむ":["japanese"],"おかわり":["japanese"],"おぎなう":["japanese"],"おきる":["japanese"],"おくさま":["japanese"],"おくじょう":["japanese"],"おくりがな":["japanese"],"おくる":["japanese"],"おくれる":["japanese"],"おこす":["japanese"],"おこなう":["japanese"],"おこる":["japanese"],"おさえる":["japanese"],"おさない":["japanese"],"おさめる":["japanese"],"おしいれ":["japanese"],"おしえる":["japanese"],"おじぎ":["japanese"],"おじさん":["japanese"],"おしゃれ":["japanese"],"おそらく":["japanese"],"おそわる":["japanese"],"おたがい":["japanese"],"おたく":["japanese"],"おだやか":["japanese"],"おちつく":["japanese"],"おっと":["japanese"],"おつり":["japanese"],"おでかけ":["japanese"],"おとしもの":["japanese"],"おとなしい":["japanese"],"おどり":["japanese"],"おどろかす":["japanese"],"おばさん":["japanese"],"おまいり":["japanese"],"おめでとう":["japanese"],"おもいで":["japanese"],"おもう":["japanese"],"おもたい":["japanese"],"おもちゃ":["japanese"],"おやつ":["japanese"],"おやゆび":["japanese"],"およぼす":["japanese"],"おらんだ":["japanese"],"おろす":["japanese"],"おんがく":["japanese"],"おんけい":["japanese"],"おんしゃ":["japanese"],"おんせん":["japanese"],"おんだん":["japanese"],"おんちゅう":["japanese"],"おんどけい":["japanese"],"かあつ":["japanese"],"かいが":["japanese"],"がいき":["japanese"],"がいけん":["japanese"],"がいこう":["japanese"],"かいさつ":["japanese"],"かいしゃ":["japanese"],"かいすいよく":["japanese"],"かいぜん":["japanese"],"かいぞうど":["japanese"],"かいつう":["japanese"],"かいてん":["japanese"],"かいとう":["japanese"],"かいふく":["japanese"],"がいへき":["japanese"],"かいほう":["japanese"],"かいよう":["japanese"],"がいらい":["japanese"],"かいわ":["japanese"],"かえる":["japanese"],"かおり":["japanese"],"かかえる":["japanese"],"かがく":["japanese"],"かがし":["japanese"],"かがみ":["japanese"],"かくご":["japanese"],"かくとく":["japanese"],"かざる":["japanese"],"がぞう":["japanese"],"かたい":["japanese"],"かたち":["japanese"],"がちょう":["japanese"],"がっきゅう":["japanese"],"がっこう":["japanese"],"がっさん":["japanese"],"がっしょう":["japanese"],"かなざわし":["japanese"],"かのう":["japanese"],"がはく":["japanese"],"かぶか":["japanese"],"かほう":["japanese"],"かほご":["japanese"],"かまう":["japanese"],"かまぼこ":["japanese"],"かめれおん":["japanese"],"かゆい":["japanese"],"かようび":["japanese"],"からい":["japanese"],"かるい":["japanese"],"かろう":["japanese"],"かわく":["japanese"],"かわら":["japanese"],"がんか":["japanese"],"かんけい":["japanese"],"かんこう":["japanese"],"かんしゃ":["japanese"],"かんそう":["japanese"],"かんたん":["japanese"],"かんち":["japanese"],"がんばる":["japanese"],"きあい":["japanese"],"きあつ":["japanese"],"きいろ":["japanese"],"ぎいん":["japanese"],"きうい":["japanese"],"きうん":["japanese"],"きえる":["japanese"],"きおう":["japanese"],"きおく":["japanese"],"きおち":["japanese"],"きおん":["japanese"],"きかい":["japanese"],"きかく":["japanese"],"きかんしゃ":["japanese"],"ききて":["japanese"],"きくばり":["japanese"],"きくらげ":["japanese"],"きけんせい":["japanese"],"きこう":["japanese"],"きこえる":["japanese"],"きこく":["japanese"],"きさい":["japanese"],"きさく":["japanese"],"きさま":["japanese"],"きさらぎ":["japanese"],"ぎじかがく":["japanese"],"ぎしき":["japanese"],"ぎじたいけん":["japanese"],"ぎじにってい":["japanese"],"ぎじゅつしゃ":["japanese"],"きすう":["japanese"],"きせい":["japanese"],"きせき":["japanese"],"きせつ":["japanese"],"きそう":["japanese"],"きぞく":["japanese"],"きぞん":["japanese"],"きたえる":["japanese"],"きちょう":["japanese"],"きつえん":["japanese"],"ぎっちり":["japanese"],"きつつき":["japanese"],"きつね":["japanese"],"きてい":["japanese"],"きどう":["japanese"],"きどく":["japanese"],"きない":["japanese"],"きなが":["japanese"],"きなこ":["japanese"],"きぬごし":["japanese"],"きねん":["japanese"],"きのう":["japanese"],"きのした":["japanese"],"きはく":["japanese"],"きびしい":["japanese"],"きひん":["japanese"],"きふく":["japanese"],"きぶん":["japanese"],"きぼう":["japanese"],"きほん":["japanese"],"きまる":["japanese"],"きみつ":["japanese"],"きむずかしい":["japanese"],"きめる":["japanese"],"きもだめし":["japanese"],"きもち":["japanese"],"きもの":["japanese"],"きゃく":["japanese"],"きやく":["japanese"],"ぎゅうにく":["japanese"],"きよう":["japanese"],"きょうりゅう":["japanese"],"きらい":["japanese"],"きらく":["japanese"],"きりん":["japanese"],"きれい":["japanese"],"きれつ":["japanese"],"きろく":["japanese"],"ぎろん":["japanese"],"きわめる":["japanese"],"ぎんいろ":["japanese"],"きんかくじ":["japanese"],"きんじょ":["japanese"],"きんようび":["japanese"],"ぐあい":["japanese"],"くいず":["japanese"],"くうかん":["japanese"],"くうき":["japanese"],"くうぐん":["japanese"],"くうこう":["japanese"],"ぐうせい":["japanese"],"くうそう":["japanese"],"ぐうたら":["japanese"],"くうふく":["japanese"],"くうぼ":["japanese"],"くかん":["japanese"],"くきょう":["japanese"],"くげん":["japanese"],"ぐこう":["japanese"],"くさい":["japanese"],"くさき":["japanese"],"くさばな":["japanese"],"くさる":["japanese"],"くしゃみ":["japanese"],"くしょう":["japanese"],"くすのき":["japanese"],"くすりゆび":["japanese"],"くせげ":["japanese"],"くせん":["japanese"],"ぐたいてき":["japanese"],"くださる":["japanese"],"くたびれる":["japanese"],"くちこみ":["japanese"],"くちさき":["japanese"],"くつした":["japanese"],"ぐっすり":["japanese"],"くつろぐ":["japanese"],"くとうてん":["japanese"],"くどく":["japanese"],"くなん":["japanese"],"くねくね":["japanese"],"くのう":["japanese"],"くふう":["japanese"],"くみあわせ":["japanese"],"くみたてる":["japanese"],"くめる":["japanese"],"くやくしょ":["japanese"],"くらす":["japanese"],"くらべる":["japanese"],"くるま":["japanese"],"くれる":["japanese"],"くろう":["japanese"],"くわしい":["japanese"],"ぐんかん":["japanese"],"ぐんしょく":["japanese"],"ぐんたい":["japanese"],"ぐんて":["japanese"],"けあな":["japanese"],"けいかく":["japanese"],"けいけん":["japanese"],"けいこ":["japanese"],"けいさつ":["japanese"],"げいじゅつ":["japanese"],"けいたい":["japanese"],"げいのうじん":["japanese"],"けいれき":["japanese"],"けいろ":["japanese"],"けおとす":["japanese"],"けおりもの":["japanese"],"げきか":["japanese"],"げきげん":["japanese"],"げきだん":["japanese"],"げきちん":["japanese"],"げきとつ":["japanese"],"げきは":["japanese"],"げきやく":["japanese"],"げこう":["japanese"],"げこくじょう":["japanese"],"げざい":["japanese"],"けさき":["japanese"],"げざん":["japanese"],"けしき":["japanese"],"けしごむ":["japanese"],"けしょう":["japanese"],"げすと":["japanese"],"けたば":["japanese"],"けちゃっぷ":["japanese"],"けちらす":["japanese"],"けつあつ":["japanese"],"けつい":["japanese"],"けつえき":["japanese"],"けっこん":["japanese"],"けつじょ":["japanese"],"けっせき":["japanese"],"けってい":["japanese"],"けつまつ":["japanese"],"げつようび":["japanese"],"げつれい":["japanese"],"けつろん":["japanese"],"げどく":["japanese"],"けとばす":["japanese"],"けとる":["japanese"],"けなげ":["japanese"],"けなす":["japanese"],"けなみ":["japanese"],"けぬき":["japanese"],"げねつ":["japanese"],"けねん":["japanese"],"けはい":["japanese"],"げひん":["japanese"],"けぶかい":["japanese"],"げぼく":["japanese"],"けまり":["japanese"],"けみかる":["japanese"],"けむし":["japanese"],"けむり":["japanese"],"けもの":["japanese"],"けらい":["japanese"],"けろけろ":["japanese"],"けわしい":["japanese"],"けんい":["japanese"],"けんえつ":["japanese"],"けんお":["japanese"],"けんか":["japanese"],"げんき":["japanese"],"けんげん":["japanese"],"けんこう":["japanese"],"けんさく":["japanese"],"けんしゅう":["japanese"],"けんすう":["japanese"],"げんそう":["japanese"],"けんちく":["japanese"],"けんてい":["japanese"],"けんとう":["japanese"],"けんない":["japanese"],"けんにん":["japanese"],"げんぶつ":["japanese"],"けんま":["japanese"],"けんみん":["japanese"],"けんめい":["japanese"],"けんらん":["japanese"],"けんり":["japanese"],"こあくま":["japanese"],"こいぬ":["japanese"],"こいびと":["japanese"],"ごうい":["japanese"],"こうえん":["japanese"],"こうおん":["japanese"],"こうかん":["japanese"],"ごうきゅう":["japanese"],"ごうけい":["japanese"],"こうこう":["japanese"],"こうさい":["japanese"],"こうじ":["japanese"],"こうすい":["japanese"],"ごうせい":["japanese"],"こうそく":["japanese"],"こうたい":["japanese"],"こうちゃ":["japanese"],"こうつう":["japanese"],"こうてい":["japanese"],"こうどう":["japanese"],"こうない":["japanese"],"こうはい":["japanese"],"ごうほう":["japanese"],"ごうまん":["japanese"],"こうもく":["japanese"],"こうりつ":["japanese"],"こえる":["japanese"],"こおり":["japanese"],"ごかい":["japanese"],"ごがつ":["japanese"],"ごかん":["japanese"],"こくご":["japanese"],"こくさい":["japanese"],"こくとう":["japanese"],"こくない":["japanese"],"こくはく":["japanese"],"こぐま":["japanese"],"こけい":["japanese"],"こける":["japanese"],"ここのか":["japanese"],"こころ":["japanese"],"こさめ":["japanese"],"こしつ":["japanese"],"こすう":["japanese"],"こせい":["japanese"],"こせき":["japanese"],"こぜん":["japanese"],"こそだて":["japanese"],"こたい":["japanese"],"こたえる":["japanese"],"こたつ":["japanese"],"こちょう":["japanese"],"こっか":["japanese"],"こつこつ":["japanese"],"こつばん":["japanese"],"こつぶ":["japanese"],"こてい":["japanese"],"こてん":["japanese"],"ことがら":["japanese"],"ことし":["japanese"],"ことば":["japanese"],"ことり":["japanese"],"こなごな":["japanese"],"こねこね":["japanese"],"このまま":["japanese"],"このみ":["japanese"],"このよ":["japanese"],"ごはん":["japanese"],"こひつじ":["japanese"],"こふう":["japanese"],"こふん":["japanese"],"こぼれる":["japanese"],"ごまあぶら":["japanese"],"こまかい":["japanese"],"ごますり":["japanese"],"こまつな":["japanese"],"こまる":["japanese"],"こむぎこ":["japanese"],"こもじ":["japanese"],"こもち":["japanese"],"こもの":["japanese"],"こもん":["japanese"],"こやく":["japanese"],"こやま":["japanese"],"こゆう":["japanese"],"こゆび":["japanese"],"こよい":["japanese"],"こよう":["japanese"],"こりる":["japanese"],"これくしょん":["japanese"],"ころっけ":["japanese"],"こわもて":["japanese"],"こわれる":["japanese"],"こんいん":["japanese"],"こんかい":["japanese"],"こんき":["japanese"],"こんしゅう":["japanese"],"こんすい":["japanese"],"こんだて":["japanese"],"こんとん":["japanese"],"こんなん":["japanese"],"こんびに":["japanese"],"こんぽん":["japanese"],"こんまけ":["japanese"],"こんや":["japanese"],"こんれい":["japanese"],"こんわく":["japanese"],"ざいえき":["japanese"],"さいかい":["japanese"],"さいきん":["japanese"],"ざいげん":["japanese"],"ざいこ":["japanese"],"さいしょ":["japanese"],"さいせい":["japanese"],"ざいたく":["japanese"],"ざいちゅう":["japanese"],"さいてき":["japanese"],"ざいりょう":["japanese"],"さうな":["japanese"],"さかいし":["japanese"],"さがす":["japanese"],"さかな":["japanese"],"さかみち":["japanese"],"さがる":["japanese"],"さぎょう":["japanese"],"さくし":["japanese"],"さくひん":["japanese"],"さくら":["japanese"],"さこく":["japanese"],"さこつ":["japanese"],"さずかる":["japanese"],"ざせき":["japanese"],"さたん":["japanese"],"さつえい":["japanese"],"ざつおん":["japanese"],"ざっか":["japanese"],"ざつがく":["japanese"],"さっきょく":["japanese"],"ざっし":["japanese"],"さつじん":["japanese"],"ざっそう":["japanese"],"さつたば":["japanese"],"さつまいも":["japanese"],"さてい":["japanese"],"さといも":["japanese"],"さとう":["japanese"],"さとおや":["japanese"],"さとし":["japanese"],"さとる":["japanese"],"さのう":["japanese"],"さばく":["japanese"],"さびしい":["japanese"],"さべつ":["japanese"],"さほう":["japanese"],"さほど":["japanese"],"さます":["japanese"],"さみしい":["japanese"],"さみだれ":["japanese"],"さむけ":["japanese"],"さめる":["japanese"],"さやえんどう":["japanese"],"さゆう":["japanese"],"さよう":["japanese"],"さよく":["japanese"],"さらだ":["japanese"],"ざるそば":["japanese"],"さわやか":["japanese"],"さわる":["japanese"],"さんいん":["japanese"],"さんか":["japanese"],"さんきゃく":["japanese"],"さんこう":["japanese"],"さんさい":["japanese"],"ざんしょ":["japanese"],"さんすう":["japanese"],"さんせい":["japanese"],"さんそ":["japanese"],"さんち":["japanese"],"さんま":["japanese"],"さんみ":["japanese"],"さんらん":["japanese"],"しあい":["japanese"],"しあげ":["japanese"],"しあさって":["japanese"],"しあわせ":["japanese"],"しいく":["japanese"],"しいん":["japanese"],"しうち":["japanese"],"しえい":["japanese"],"しおけ":["japanese"],"しかい":["japanese"],"しかく":["japanese"],"じかん":["japanese"],"しごと":["japanese"],"しすう":["japanese"],"じだい":["japanese"],"したうけ":["japanese"],"したぎ":["japanese"],"したて":["japanese"],"したみ":["japanese"],"しちょう":["japanese"],"しちりん":["japanese"],"しっかり":["japanese"],"しつじ":["japanese"],"しつもん":["japanese"],"してい":["japanese"],"してき":["japanese"],"してつ":["japanese"],"じてん":["japanese"],"じどう":["japanese"],"しなぎれ":["japanese"],"しなもの":["japanese"],"しなん":["japanese"],"しねま":["japanese"],"しねん":["japanese"],"しのぐ":["japanese"],"しのぶ":["japanese"],"しはい":["japanese"],"しばかり":["japanese"],"しはつ":["japanese"],"しはらい":["japanese"],"しはん":["japanese"],"しひょう":["japanese"],"しふく":["japanese"],"じぶん":["japanese"],"しへい":["japanese"],"しほう":["japanese"],"しほん":["japanese"],"しまう":["japanese"],"しまる":["japanese"],"しみん":["japanese"],"しむける":["japanese"],"じむしょ":["japanese"],"しめい":["japanese"],"しめる":["japanese"],"しもん":["japanese"],"しゃいん":["japanese"],"しゃうん":["japanese"],"しゃおん":["japanese"],"じゃがいも":["japanese"],"しやくしょ":["japanese"],"しゃくほう":["japanese"],"しゃけん":["japanese"],"しゃこ":["japanese"],"しゃざい":["japanese"],"しゃしん":["japanese"],"しゃせん":["japanese"],"しゃそう":["japanese"],"しゃたい":["japanese"],"しゃちょう":["japanese"],"しゃっきん":["japanese"],"じゃま":["japanese"],"しゃりん":["japanese"],"しゃれい":["japanese"],"じゆう":["japanese"],"じゅうしょ":["japanese"],"しゅくはく":["japanese"],"じゅしん":["japanese"],"しゅっせき":["japanese"],"しゅみ":["japanese"],"しゅらば":["japanese"],"じゅんばん":["japanese"],"しょうかい":["japanese"],"しょくたく":["japanese"],"しょっけん":["japanese"],"しょどう":["japanese"],"しょもつ":["japanese"],"しらせる":["japanese"],"しらべる":["japanese"],"しんか":["japanese"],"しんこう":["japanese"],"じんじゃ":["japanese"],"しんせいじ":["japanese"],"しんちく":["japanese"],"しんりん":["japanese"],"すあげ":["japanese"],"すあし":["japanese"],"すあな":["japanese"],"ずあん":["japanese"],"すいえい":["japanese"],"すいか":["japanese"],"すいとう":["japanese"],"ずいぶん":["japanese"],"すいようび":["japanese"],"すうがく":["japanese"],"すうじつ":["japanese"],"すうせん":["japanese"],"すおどり":["japanese"],"すきま":["japanese"],"すくう":["japanese"],"すくない":["japanese"],"すける":["japanese"],"すごい":["japanese"],"すこし":["japanese"],"ずさん":["japanese"],"すずしい":["japanese"],"すすむ":["japanese"],"すすめる":["japanese"],"すっかり":["japanese"],"ずっしり":["japanese"],"ずっと":["japanese"],"すてき":["japanese"],"すてる":["japanese"],"すねる":["japanese"],"すのこ":["japanese"],"すはだ":["japanese"],"すばらしい":["japanese"],"ずひょう":["japanese"],"ずぶぬれ":["japanese"],"すぶり":["japanese"],"すふれ":["japanese"],"すべて":["japanese"],"すべる":["japanese"],"ずほう":["japanese"],"すぼん":["japanese"],"すまい":["japanese"],"すめし":["japanese"],"すもう":["japanese"],"すやき":["japanese"],"すらすら":["japanese"],"するめ":["japanese"],"すれちがう":["japanese"],"すろっと":["japanese"],"すわる":["japanese"],"すんぜん":["japanese"],"すんぽう":["japanese"],"せあぶら":["japanese"],"せいかつ":["japanese"],"せいげん":["japanese"],"せいじ":["japanese"],"せいよう":["japanese"],"せおう":["japanese"],"せかいかん":["japanese"],"せきにん":["japanese"],"せきむ":["japanese"],"せきゆ":["japanese"],"せきらんうん":["japanese"],"せけん":["japanese"],"せこう":["japanese"],"せすじ":["japanese"],"せたい":["japanese"],"せたけ":["japanese"],"せっかく":["japanese"],"せっきゃく":["japanese"],"ぜっく":["japanese"],"せっけん":["japanese"],"せっこつ":["japanese"],"せっさたくま":["japanese"],"せつぞく":["japanese"],"せつだん":["japanese"],"せつでん":["japanese"],"せっぱん":["japanese"],"せつび":["japanese"],"せつぶん":["japanese"],"せつめい":["japanese"],"せつりつ":["japanese"],"せなか":["japanese"],"せのび":["japanese"],"せはば":["japanese"],"せびろ":["japanese"],"せぼね":["japanese"],"せまい":["japanese"],"せまる":["japanese"],"せめる":["japanese"],"せもたれ":["japanese"],"せりふ":["japanese"],"ぜんあく":["japanese"],"せんい":["japanese"],"せんえい":["japanese"],"せんか":["japanese"],"せんきょ":["japanese"],"せんく":["japanese"],"せんげん":["japanese"],"ぜんご":["japanese"],"せんさい":["japanese"],"せんしゅ":["japanese"],"せんすい":["japanese"],"せんせい":["japanese"],"せんぞ":["japanese"],"せんたく":["japanese"],"せんちょう":["japanese"],"せんてい":["japanese"],"せんとう":["japanese"],"せんぬき":["japanese"],"せんねん":["japanese"],"せんぱい":["japanese"],"ぜんぶ":["japanese"],"ぜんぽう":["japanese"],"せんむ":["japanese"],"せんめんじょ":["japanese"],"せんもん":["japanese"],"せんやく":["japanese"],"せんゆう":["japanese"],"せんよう":["japanese"],"ぜんら":["japanese"],"ぜんりゃく":["japanese"],"せんれい":["japanese"],"せんろ":["japanese"],"そあく":["japanese"],"そいとげる":["japanese"],"そいね":["japanese"],"そうがんきょう":["japanese"],"そうき":["japanese"],"そうご":["japanese"],"そうしん":["japanese"],"そうだん":["japanese"],"そうなん":["japanese"],"そうび":["japanese"],"そうめん":["japanese"],"そうり":["japanese"],"そえもの":["japanese"],"そえん":["japanese"],"そがい":["japanese"],"そげき":["japanese"],"そこう":["japanese"],"そこそこ":["japanese"],"そざい":["japanese"],"そしな":["japanese"],"そせい":["japanese"],"そせん":["japanese"],"そそぐ":["japanese"],"そだてる":["japanese"],"そつう":["japanese"],"そつえん":["japanese"],"そっかん":["japanese"],"そつぎょう":["japanese"],"そっけつ":["japanese"],"そっこう":["japanese"],"そっせん":["japanese"],"そっと":["japanese"],"そとがわ":["japanese"],"そとづら":["japanese"],"そなえる":["japanese"],"そなた":["japanese"],"そふぼ":["japanese"],"そぼく":["japanese"],"そぼろ":["japanese"],"そまつ":["japanese"],"そまる":["japanese"],"そむく":["japanese"],"そむりえ":["japanese"],"そめる":["japanese"],"そもそも":["japanese"],"そよかぜ":["japanese"],"そらまめ":["japanese"],"そろう":["japanese"],"そんかい":["japanese"],"そんけい":["japanese"],"そんざい":["japanese"],"そんしつ":["japanese"],"そんぞく":["japanese"],"そんちょう":["japanese"],"ぞんび":["japanese"],"ぞんぶん":["japanese"],"そんみん":["japanese"],"たあい":["japanese"],"たいいん":["japanese"],"たいうん":["japanese"],"たいえき":["japanese"],"たいおう":["japanese"],"だいがく":["japanese"],"たいき":["japanese"],"たいぐう":["japanese"],"たいけん":["japanese"],"たいこ":["japanese"],"たいざい":["japanese"],"だいじょうぶ":["japanese"],"だいすき":["japanese"],"たいせつ":["japanese"],"たいそう":["japanese"],"だいたい":["japanese"],"たいちょう":["japanese"],"たいてい":["japanese"],"だいどころ":["japanese"],"たいない":["japanese"],"たいねつ":["japanese"],"たいのう":["japanese"],"たいはん":["japanese"],"だいひょう":["japanese"],"たいふう":["japanese"],"たいへん":["japanese"],"たいほ":["japanese"],"たいまつばな":["japanese"],"たいみんぐ":["japanese"],"たいむ":["japanese"],"たいめん":["japanese"],"たいやき":["japanese"],"たいよう":["japanese"],"たいら":["japanese"],"たいりょく":["japanese"],"たいる":["japanese"],"たいわん":["japanese"],"たうえ":["japanese"],"たえる":["japanese"],"たおす":["japanese"],"たおる":["japanese"],"たおれる":["japanese"],"たかい":["japanese"],"たかね":["japanese"],"たきび":["japanese"],"たくさん":["japanese"],"たこく":["japanese"],"たこやき":["japanese"],"たさい":["japanese"],"たしざん":["japanese"],"だじゃれ":["japanese"],"たすける":["japanese"],"たずさわる":["japanese"],"たそがれ":["japanese"],"たたかう":["japanese"],"たたく":["japanese"],"ただしい":["japanese"],"たたみ":["japanese"],"たちばな":["japanese"],"だっかい":["japanese"],"だっきゃく":["japanese"],"だっこ":["japanese"],"だっしゅつ":["japanese"],"だったい":["japanese"],"たてる":["japanese"],"たとえる":["japanese"],"たなばた":["japanese"],"たにん":["japanese"],"たぬき":["japanese"],"たのしみ":["japanese"],"たはつ":["japanese"],"たぶん":["japanese"],"たべる":["japanese"],"たぼう":["japanese"],"たまご":["japanese"],"たまる":["japanese"],"だむる":["japanese"],"ためいき":["japanese"],"ためす":["japanese"],"ためる":["japanese"],"たもつ":["japanese"],"たやすい":["japanese"],"たよる":["japanese"],"たらす":["japanese"],"たりきほんがん":["japanese"],"たりょう":["japanese"],"たりる":["japanese"],"たると":["japanese"],"たれる":["japanese"],"たれんと":["japanese"],"たろっと":["japanese"],"たわむれる":["japanese"],"だんあつ":["japanese"],"たんい":["japanese"],"たんおん":["japanese"],"たんか":["japanese"],"たんき":["japanese"],"たんけん":["japanese"],"たんご":["japanese"],"たんさん":["japanese"],"たんじょうび":["japanese"],"だんせい":["japanese"],"たんそく":["japanese"],"たんたい":["japanese"],"だんち":["japanese"],"たんてい":["japanese"],"たんとう":["japanese"],"だんな":["japanese"],"たんにん":["japanese"],"だんねつ":["japanese"],"たんのう":["japanese"],"たんぴん":["japanese"],"だんぼう":["japanese"],"たんまつ":["japanese"],"たんめい":["japanese"],"だんれつ":["japanese"],"だんろ":["japanese"],"だんわ":["japanese"],"ちあい":["japanese"],"ちあん":["japanese"],"ちいき":["japanese"],"ちいさい":["japanese"],"ちえん":["japanese"],"ちかい":["japanese"],"ちから":["japanese"],"ちきゅう":["japanese"],"ちきん":["japanese"],"ちけいず":["japanese"],"ちけん":["japanese"],"ちこく":["japanese"],"ちさい":["japanese"],"ちしき":["japanese"],"ちしりょう":["japanese"],"ちせい":["japanese"],"ちそう":["japanese"],"ちたい":["japanese"],"ちたん":["japanese"],"ちちおや":["japanese"],"ちつじょ":["japanese"],"ちてき":["japanese"],"ちてん":["japanese"],"ちぬき":["japanese"],"ちぬり":["japanese"],"ちのう":["japanese"],"ちひょう":["japanese"],"ちへいせん":["japanese"],"ちほう":["japanese"],"ちまた":["japanese"],"ちみつ":["japanese"],"ちみどろ":["japanese"],"ちめいど":["japanese"],"ちゃんこなべ":["japanese"],"ちゅうい":["japanese"],"ちゆりょく":["japanese"],"ちょうし":["japanese"],"ちょさくけん":["japanese"],"ちらし":["japanese"],"ちらみ":["japanese"],"ちりがみ":["japanese"],"ちりょう":["japanese"],"ちるど":["japanese"],"ちわわ":["japanese"],"ちんたい":["japanese"],"ちんもく":["japanese"],"ついか":["japanese"],"ついたち":["japanese"],"つうか":["japanese"],"つうじょう":["japanese"],"つうはん":["japanese"],"つうわ":["japanese"],"つかう":["japanese"],"つかれる":["japanese"],"つくね":["japanese"],"つくる":["japanese"],"つけね":["japanese"],"つける":["japanese"],"つごう":["japanese"],"つたえる":["japanese"],"つづく":["japanese"],"つつじ":["japanese"],"つつむ":["japanese"],"つとめる":["japanese"],"つながる":["japanese"],"つなみ":["japanese"],"つねづね":["japanese"],"つのる":["japanese"],"つぶす":["japanese"],"つまらない":["japanese"],"つまる":["japanese"],"つみき":["japanese"],"つめたい":["japanese"],"つもり":["japanese"],"つもる":["japanese"],"つよい":["japanese"],"つるぼ":["japanese"],"つるみく":["japanese"],"つわもの":["japanese"],"つわり":["japanese"],"てあし":["japanese"],"てあて":["japanese"],"てあみ":["japanese"],"ていおん":["japanese"],"ていか":["japanese"],"ていき":["japanese"],"ていけい":["japanese"],"ていこく":["japanese"],"ていさつ":["japanese"],"ていし":["japanese"],"ていせい":["japanese"],"ていたい":["japanese"],"ていど":["japanese"],"ていねい":["japanese"],"ていひょう":["japanese"],"ていへん":["japanese"],"ていぼう":["japanese"],"てうち":["japanese"],"ておくれ":["japanese"],"てきとう":["japanese"],"てくび":["japanese"],"でこぼこ":["japanese"],"てさぎょう":["japanese"],"てさげ":["japanese"],"てすり":["japanese"],"てそう":["japanese"],"てちがい":["japanese"],"てちょう":["japanese"],"てつがく":["japanese"],"てつづき":["japanese"],"でっぱ":["japanese"],"てつぼう":["japanese"],"てつや":["japanese"],"でぬかえ":["japanese"],"てぬき":["japanese"],"てぬぐい":["japanese"],"てのひら":["japanese"],"てはい":["japanese"],"てぶくろ":["japanese"],"てふだ":["japanese"],"てほどき":["japanese"],"てほん":["japanese"],"てまえ":["japanese"],"てまきずし":["japanese"],"てみじか":["japanese"],"てみやげ":["japanese"],"てらす":["japanese"],"てれび":["japanese"],"てわけ":["japanese"],"てわたし":["japanese"],"でんあつ":["japanese"],"てんいん":["japanese"],"てんかい":["japanese"],"てんき":["japanese"],"てんぐ":["japanese"],"てんけん":["japanese"],"てんごく":["japanese"],"てんさい":["japanese"],"てんし":["japanese"],"てんすう":["japanese"],"でんち":["japanese"],"てんてき":["japanese"],"てんとう":["japanese"],"てんない":["japanese"],"てんぷら":["japanese"],"てんぼうだい":["japanese"],"てんめつ":["japanese"],"てんらんかい":["japanese"],"でんりょく":["japanese"],"でんわ":["japanese"],"どあい":["japanese"],"といれ":["japanese"],"どうかん":["japanese"],"とうきゅう":["japanese"],"どうぐ":["japanese"],"とうし":["japanese"],"とうむぎ":["japanese"],"とおい":["japanese"],"とおか":["japanese"],"とおく":["japanese"],"とおす":["japanese"],"とおる":["japanese"],"とかい":["japanese"],"とかす":["japanese"],"ときおり":["japanese"],"ときどき":["japanese"],"とくい":["japanese"],"とくしゅう":["japanese"],"とくてん":["japanese"],"とくに":["japanese"],"とくべつ":["japanese"],"とけい":["japanese"],"とける":["japanese"],"とこや":["japanese"],"とさか":["japanese"],"としょかん":["japanese"],"とそう":["japanese"],"とたん":["japanese"],"とちゅう":["japanese"],"とっきゅう":["japanese"],"とっくん":["japanese"],"とつぜん":["japanese"],"とつにゅう":["japanese"],"とどける":["japanese"],"ととのえる":["japanese"],"とない":["japanese"],"となえる":["japanese"],"となり":["japanese"],"とのさま":["japanese"],"とばす":["japanese"],"どぶがわ":["japanese"],"とほう":["japanese"],"とまる":["japanese"],"とめる":["japanese"],"ともだち":["japanese"],"ともる":["japanese"],"どようび":["japanese"],"とらえる":["japanese"],"とんかつ":["japanese"],"どんぶり":["japanese"],"ないかく":["japanese"],"ないこう":["japanese"],"ないしょ":["japanese"],"ないす":["japanese"],"ないせん":["japanese"],"ないそう":["japanese"],"なおす":["japanese"],"ながい":["japanese"],"なくす":["japanese"],"なげる":["japanese"],"なこうど":["japanese"],"なさけ":["japanese"],"なたでここ":["japanese"],"なっとう":["japanese"],"なつやすみ":["japanese"],"ななおし":["japanese"],"なにごと":["japanese"],"なにもの":["japanese"],"なにわ":["japanese"],"なのか":["japanese"],"なふだ":["japanese"],"なまいき":["japanese"],"なまえ":["japanese"],"なまみ":["japanese"],"なみだ":["japanese"],"なめらか":["japanese"],"なめる":["japanese"],"なやむ":["japanese"],"ならう":["japanese"],"ならび":["japanese"],"ならぶ":["japanese"],"なれる":["japanese"],"なわとび":["japanese"],"なわばり":["japanese"],"にあう":["japanese"],"にいがた":["japanese"],"にうけ":["japanese"],"におい":["japanese"],"にかい":["japanese"],"にがて":["japanese"],"にきび":["japanese"],"にくしみ":["japanese"],"にくまん":["japanese"],"にげる":["japanese"],"にさんかたんそ":["japanese"],"にしき":["japanese"],"にせもの":["japanese"],"にちじょう":["japanese"],"にちようび":["japanese"],"にっか":["japanese"],"にっき":["japanese"],"にっけい":["japanese"],"にっこう":["japanese"],"にっさん":["japanese"],"にっしょく":["japanese"],"にっすう":["japanese"],"にっせき":["japanese"],"にってい":["japanese"],"になう":["japanese"],"にほん":["japanese"],"にまめ":["japanese"],"にもつ":["japanese"],"にやり":["japanese"],"にゅういん":["japanese"],"にりんしゃ":["japanese"],"にわとり":["japanese"],"にんい":["japanese"],"にんか":["japanese"],"にんき":["japanese"],"にんげん":["japanese"],"にんしき":["japanese"],"にんずう":["japanese"],"にんそう":["japanese"],"にんたい":["japanese"],"にんち":["japanese"],"にんてい":["japanese"],"にんにく":["japanese"],"にんぷ":["japanese"],"にんまり":["japanese"],"にんむ":["japanese"],"にんめい":["japanese"],"にんよう":["japanese"],"ぬいくぎ":["japanese"],"ぬかす":["japanese"],"ぬぐいとる":["japanese"],"ぬぐう":["japanese"],"ぬくもり":["japanese"],"ぬすむ":["japanese"],"ぬまえび":["japanese"],"ぬめり":["japanese"],"ぬらす":["japanese"],"ぬんちゃく":["japanese"],"ねあげ":["japanese"],"ねいき":["japanese"],"ねいる":["japanese"],"ねいろ":["japanese"],"ねぐせ":["japanese"],"ねくたい":["japanese"],"ねくら":["japanese"],"ねこぜ":["japanese"],"ねこむ":["japanese"],"ねさげ":["japanese"],"ねすごす":["japanese"],"ねそべる":["japanese"],"ねだん":["japanese"],"ねつい":["japanese"],"ねっしん":["japanese"],"ねつぞう":["japanese"],"ねったいぎょ":["japanese"],"ねぶそく":["japanese"],"ねふだ":["japanese"],"ねぼう":["japanese"],"ねほりはほり":["japanese"],"ねまき":["japanese"],"ねまわし":["japanese"],"ねみみ":["japanese"],"ねむい":["japanese"],"ねむたい":["japanese"],"ねもと":["japanese"],"ねらう":["japanese"],"ねわざ":["japanese"],"ねんいり":["japanese"],"ねんおし":["japanese"],"ねんかん":["japanese"],"ねんきん":["japanese"],"ねんぐ":["japanese"],"ねんざ":["japanese"],"ねんし":["japanese"],"ねんちゃく":["japanese"],"ねんど":["japanese"],"ねんぴ":["japanese"],"ねんぶつ":["japanese"],"ねんまつ":["japanese"],"ねんりょう":["japanese"],"ねんれい":["japanese"],"のいず":["japanese"],"のおづま":["japanese"],"のがす":["japanese"],"のきなみ":["japanese"],"のこぎり":["japanese"],"のこす":["japanese"],"のこる":["japanese"],"のせる":["japanese"],"のぞく":["japanese"],"のぞむ":["japanese"],"のたまう":["japanese"],"のちほど":["japanese"],"のっく":["japanese"],"のばす":["japanese"],"のはら":["japanese"],"のべる":["japanese"],"のぼる":["japanese"],"のみもの":["japanese"],"のやま":["japanese"],"のらいぬ":["japanese"],"のらねこ":["japanese"],"のりもの":["japanese"],"のりゆき":["japanese"],"のれん":["japanese"],"のんき":["japanese"],"ばあい":["japanese"],"はあく":["japanese"],"ばあさん":["japanese"],"ばいか":["japanese"],"ばいく":["japanese"],"はいけん":["japanese"],"はいご":["japanese"],"はいしん":["japanese"],"はいすい":["japanese"],"はいせん":["japanese"],"はいそう":["japanese"],"はいち":["japanese"],"ばいばい":["japanese"],"はいれつ":["japanese"],"はえる":["japanese"],"はおる":["japanese"],"はかい":["japanese"],"ばかり":["japanese"],"はかる":["japanese"],"はくしゅ":["japanese"],"はけん":["japanese"],"はこぶ":["japanese"],"はさみ":["japanese"],"はさん":["japanese"],"はしご":["japanese"],"ばしょ":["japanese"],"はしる":["japanese"],"はせる":["japanese"],"ぱそこん":["japanese"],"はそん":["japanese"],"はたん":["japanese"],"はちみつ":["japanese"],"はつおん":["japanese"],"はっかく":["japanese"],"はづき":["japanese"],"はっきり":["japanese"],"はっくつ":["japanese"],"はっけん":["japanese"],"はっこう":["japanese"],"はっさん":["japanese"],"はっしん":["japanese"],"はったつ":["japanese"],"はっちゅう":["japanese"],"はってん":["japanese"],"はっぴょう":["japanese"],"はっぽう":["japanese"],"はなす":["japanese"],"はなび":["japanese"],"はにかむ":["japanese"],"はぶらし":["japanese"],"はみがき":["japanese"],"はむかう":["japanese"],"はめつ":["japanese"],"はやい":["japanese"],"はやし":["japanese"],"はらう":["japanese"],"はろうぃん":["japanese"],"はわい":["japanese"],"はんい":["japanese"],"はんえい":["japanese"],"はんおん":["japanese"],"はんかく":["japanese"],"はんきょう":["japanese"],"ばんぐみ":["japanese"],"はんこ":["japanese"],"はんしゃ":["japanese"],"はんすう":["japanese"],"はんだん":["japanese"],"ぱんち":["japanese"],"ぱんつ":["japanese"],"はんてい":["japanese"],"はんとし":["japanese"],"はんのう":["japanese"],"はんぱ":["japanese"],"はんぶん":["japanese"],"はんぺん":["japanese"],"はんぼうき":["japanese"],"はんめい":["japanese"],"はんらん":["japanese"],"はんろん":["japanese"],"ひいき":["japanese"],"ひうん":["japanese"],"ひえる":["japanese"],"ひかく":["japanese"],"ひかり":["japanese"],"ひかる":["japanese"],"ひかん":["japanese"],"ひくい":["japanese"],"ひけつ":["japanese"],"ひこうき":["japanese"],"ひこく":["japanese"],"ひさい":["japanese"],"ひさしぶり":["japanese"],"ひさん":["japanese"],"びじゅつかん":["japanese"],"ひしょ":["japanese"],"ひそか":["japanese"],"ひそむ":["japanese"],"ひたむき":["japanese"],"ひだり":["japanese"],"ひたる":["japanese"],"ひつぎ":["japanese"],"ひっこし":["japanese"],"ひっし":["japanese"],"ひつじゅひん":["japanese"],"ひっす":["japanese"],"ひつぜん":["japanese"],"ぴったり":["japanese"],"ぴっちり":["japanese"],"ひつよう":["japanese"],"ひてい":["japanese"],"ひとごみ":["japanese"],"ひなまつり":["japanese"],"ひなん":["japanese"],"ひねる":["japanese"],"ひはん":["japanese"],"ひびく":["japanese"],"ひひょう":["japanese"],"ひほう":["japanese"],"ひまわり":["japanese"],"ひまん":["japanese"],"ひみつ":["japanese"],"ひめい":["japanese"],"ひめじし":["japanese"],"ひやけ":["japanese"],"ひやす":["japanese"],"ひよう":["japanese"],"びょうき":["japanese"],"ひらがな":["japanese"],"ひらく":["japanese"],"ひりつ":["japanese"],"ひりょう":["japanese"],"ひるま":["japanese"],"ひるやすみ":["japanese"],"ひれい":["japanese"],"ひろい":["japanese"],"ひろう":["japanese"],"ひろき":["japanese"],"ひろゆき":["japanese"],"ひんかく":["japanese"],"ひんけつ":["japanese"],"ひんこん":["japanese"],"ひんしゅ":["japanese"],"ひんそう":["japanese"],"ぴんち":["japanese"],"ひんぱん":["japanese"],"びんぼう":["japanese"],"ふあん":["japanese"],"ふいうち":["japanese"],"ふうけい":["japanese"],"ふうせん":["japanese"],"ぷうたろう":["japanese"],"ふうとう":["japanese"],"ふうふ":["japanese"],"ふえる":["japanese"],"ふおん":["japanese"],"ふかい":["japanese"],"ふきん":["japanese"],"ふくざつ":["japanese"],"ふくぶくろ":["japanese"],"ふこう":["japanese"],"ふさい":["japanese"],"ふしぎ":["japanese"],"ふじみ":["japanese"],"ふすま":["japanese"],"ふせい":["japanese"],"ふせぐ":["japanese"],"ふそく":["japanese"],"ぶたにく":["japanese"],"ふたん":["japanese"],"ふちょう":["japanese"],"ふつう":["japanese"],"ふつか":["japanese"],"ふっかつ":["japanese"],"ふっき":["japanese"],"ふっこく":["japanese"],"ぶどう":["japanese"],"ふとる":["japanese"],"ふとん":["japanese"],"ふのう":["japanese"],"ふはい":["japanese"],"ふひょう":["japanese"],"ふへん":["japanese"],"ふまん":["japanese"],"ふみん":["japanese"],"ふめつ":["japanese"],"ふめん":["japanese"],"ふよう":["japanese"],"ふりこ":["japanese"],"ふりる":["japanese"],"ふるい":["japanese"],"ふんいき":["japanese"],"ぶんがく":["japanese"],"ぶんぐ":["japanese"],"ふんしつ":["japanese"],"ぶんせき":["japanese"],"ふんそう":["japanese"],"ぶんぽう":["japanese"],"へいあん":["japanese"],"へいおん":["japanese"],"へいがい":["japanese"],"へいき":["japanese"],"へいげん":["japanese"],"へいこう":["japanese"],"へいさ":["japanese"],"へいしゃ":["japanese"],"へいせつ":["japanese"],"へいそ":["japanese"],"へいたく":["japanese"],"へいてん":["japanese"],"へいねつ":["japanese"],"へいわ":["japanese"],"へきが":["japanese"],"へこむ":["japanese"],"べにいろ":["japanese"],"べにしょうが":["japanese"],"へらす":["japanese"],"へんかん":["japanese"],"べんきょう":["japanese"],"べんごし":["japanese"],"へんさい":["japanese"],"へんたい":["japanese"],"べんり":["japanese"],"ほあん":["japanese"],"ほいく":["japanese"],"ぼうぎょ":["japanese"],"ほうこく":["japanese"],"ほうそう":["japanese"],"ほうほう":["japanese"],"ほうもん":["japanese"],"ほうりつ":["japanese"],"ほえる":["japanese"],"ほおん":["japanese"],"ほかん":["japanese"],"ほきょう":["japanese"],"ぼきん":["japanese"],"ほくろ":["japanese"],"ほけつ":["japanese"],"ほけん":["japanese"],"ほこう":["japanese"],"ほこる":["japanese"],"ほしい":["japanese"],"ほしつ":["japanese"],"ほしゅ":["japanese"],"ほしょう":["japanese"],"ほせい":["japanese"],"ほそい":["japanese"],"ほそく":["japanese"],"ほたて":["japanese"],"ほたる":["japanese"],"ぽちぶくろ":["japanese"],"ほっきょく":["japanese"],"ほっさ":["japanese"],"ほったん":["japanese"],"ほとんど":["japanese"],"ほめる":["japanese"],"ほんい":["japanese"],"ほんき":["japanese"],"ほんけ":["japanese"],"ほんしつ":["japanese"],"ほんやく":["japanese"],"まいにち":["japanese"],"まかい":["japanese"],"まかせる":["japanese"],"まがる":["japanese"],"まける":["japanese"],"まこと":["japanese"],"まさつ":["japanese"],"まじめ":["japanese"],"ますく":["japanese"],"まぜる":["japanese"],"まつり":["japanese"],"まとめ":["japanese"],"まなぶ":["japanese"],"まぬけ":["japanese"],"まねく":["japanese"],"まほう":["japanese"],"まもる":["japanese"],"まゆげ":["japanese"],"まよう":["japanese"],"まろやか":["japanese"],"まわす":["japanese"],"まわり":["japanese"],"まわる":["japanese"],"まんが":["japanese"],"まんきつ":["japanese"],"まんぞく":["japanese"],"まんなか":["japanese"],"みいら":["japanese"],"みうち":["japanese"],"みえる":["japanese"],"みがく":["japanese"],"みかた":["japanese"],"みかん":["japanese"],"みけん":["japanese"],"みこん":["japanese"],"みじかい":["japanese"],"みすい":["japanese"],"みすえる":["japanese"],"みせる":["japanese"],"みっか":["japanese"],"みつかる":["japanese"],"みつける":["japanese"],"みてい":["japanese"],"みとめる":["japanese"],"みなと":["japanese"],"みなみかさい":["japanese"],"みねらる":["japanese"],"みのう":["japanese"],"みのがす":["japanese"],"みほん":["japanese"],"みもと":["japanese"],"みやげ":["japanese"],"みらい":["japanese"],"みりょく":["japanese"],"みわく":["japanese"],"みんか":["japanese"],"みんぞく":["japanese"],"むいか":["japanese"],"むえき":["japanese"],"むえん":["japanese"],"むかい":["japanese"],"むかう":["japanese"],"むかえ":["japanese"],"むかし":["japanese"],"むぎちゃ":["japanese"],"むける":["japanese"],"むげん":["japanese"],"むさぼる":["japanese"],"むしあつい":["japanese"],"むしば":["japanese"],"むじゅん":["japanese"],"むしろ":["japanese"],"むすう":["japanese"],"むすこ":["japanese"],"むすぶ":["japanese"],"むすめ":["japanese"],"むせる":["japanese"],"むせん":["japanese"],"むちゅう":["japanese"],"むなしい":["japanese"],"むのう":["japanese"],"むやみ":["japanese"],"むよう":["japanese"],"むらさき":["japanese"],"むりょう":["japanese"],"むろん":["japanese"],"めいあん":["japanese"],"めいうん":["japanese"],"めいえん":["japanese"],"めいかく":["japanese"],"めいきょく":["japanese"],"めいさい":["japanese"],"めいし":["japanese"],"めいそう":["japanese"],"めいぶつ":["japanese"],"めいれい":["japanese"],"めいわく":["japanese"],"めぐまれる":["japanese"],"めざす":["japanese"],"めした":["japanese"],"めずらしい":["japanese"],"めだつ":["japanese"],"めまい":["japanese"],"めやす":["japanese"],"めんきょ":["japanese"],"めんせき":["japanese"],"めんどう":["japanese"],"もうしあげる":["japanese"],"もうどうけん":["japanese"],"もえる":["japanese"],"もくし":["japanese"],"もくてき":["japanese"],"もくようび":["japanese"],"もちろん":["japanese"],"もどる":["japanese"],"もらう":["japanese"],"もんく":["japanese"],"もんだい":["japanese"],"やおや":["japanese"],"やける":["japanese"],"やさい":["japanese"],"やさしい":["japanese"],"やすい":["japanese"],"やすたろう":["japanese"],"やすみ":["japanese"],"やせる":["japanese"],"やそう":["japanese"],"やたい":["japanese"],"やちん":["japanese"],"やっと":["japanese"],"やっぱり":["japanese"],"やぶる":["japanese"],"やめる":["japanese"],"ややこしい":["japanese"],"やよい":["japanese"],"やわらかい":["japanese"],"ゆうき":["japanese"],"ゆうびんきょく":["japanese"],"ゆうべ":["japanese"],"ゆうめい":["japanese"],"ゆけつ":["japanese"],"ゆしゅつ":["japanese"],"ゆせん":["japanese"],"ゆそう":["japanese"],"ゆたか":["japanese"],"ゆちゃく":["japanese"],"ゆでる":["japanese"],"ゆにゅう":["japanese"],"ゆびわ":["japanese"],"ゆらい":["japanese"],"ゆれる":["japanese"],"ようい":["japanese"],"ようか":["japanese"],"ようきゅう":["japanese"],"ようじ":["japanese"],"ようす":["japanese"],"ようちえん":["japanese"],"よかぜ":["japanese"],"よかん":["japanese"],"よきん":["japanese"],"よくせい":["japanese"],"よくぼう":["japanese"],"よけい":["japanese"],"よごれる":["japanese"],"よさん":["japanese"],"よしゅう":["japanese"],"よそう":["japanese"],"よそく":["japanese"],"よっか":["japanese"],"よてい":["japanese"],"よどがわく":["japanese"],"よねつ":["japanese"],"よやく":["japanese"],"よゆう":["japanese"],"よろこぶ":["japanese"],"よろしい":["japanese"],"らいう":["japanese"],"らくがき":["japanese"],"らくご":["japanese"],"らくさつ":["japanese"],"らくだ":["japanese"],"らしんばん":["japanese"],"らせん":["japanese"],"らぞく":["japanese"],"らたい":["japanese"],"らっか":["japanese"],"られつ":["japanese"],"りえき":["japanese"],"りかい":["japanese"],"りきさく":["japanese"],"りきせつ":["japanese"],"りくぐん":["japanese"],"りくつ":["japanese"],"りけん":["japanese"],"りこう":["japanese"],"りせい":["japanese"],"りそう":["japanese"],"りそく":["japanese"],"りてん":["japanese"],"りねん":["japanese"],"りゆう":["japanese"],"りゅうがく":["japanese"],"りよう":["japanese"],"りょうり":["japanese"],"りょかん":["japanese"],"りょくちゃ":["japanese"],"りょこう":["japanese"],"りりく":["japanese"],"りれき":["japanese"],"りろん":["japanese"],"りんご":["japanese"],"るいけい":["japanese"],"るいさい":["japanese"],"るいじ":["japanese"],"るいせき":["japanese"],"るすばん":["japanese"],"るりがわら":["japanese"],"れいかん":["japanese"],"れいぎ":["japanese"],"れいせい":["japanese"],"れいぞうこ":["japanese"],"れいとう":["japanese"],"れいぼう":["japanese"],"れきし":["japanese"],"れきだい":["japanese"],"れんあい":["japanese"],"れんけい":["japanese"],"れんこん":["japanese"],"れんさい":["japanese"],"れんしゅう":["japanese"],"れんぞく":["japanese"],"れんらく":["japanese"],"ろうか":["japanese"],"ろうご":["japanese"],"ろうじん":["japanese"],"ろうそく":["japanese"],"ろくが":["japanese"],"ろこつ":["japanese"],"ろじうら":["japanese"],"ろしゅつ":["japanese"],"ろせん":["japanese"],"ろてん":["japanese"],"ろめん":["japanese"],"ろれつ":["japanese"],"ろんぎ":["japanese"],"ろんぱ":["japanese"],"ろんぶん":["japanese"],"ろんり":["japanese"],"わかす":["japanese"],"わかめ":["japanese"],"わかやま":["japanese"],"わかれる":["japanese"],"わしつ":["japanese"],"わじまし":["japanese"],"わすれもの":["japanese"],"わらう":["japanese"],"われる":["japanese"],"가격":["korean"],"가끔":["korean"],"가난":["korean"],"가능":["korean"],"가득":["korean"],"가르침":["korean"],"가뭄":["korean"],"가방":["korean"],"가상":["korean"],"가슴":["korean"],"가운데":["korean"],"가을":["korean"],"가이드":["korean"],"가입":["korean"],"가장":["korean"],"가정":["korean"],"가족":["korean"],"가죽":["korean"],"각오":["korean"],"각자":["korean"],"간격":["korean"],"간부":["korean"],"간섭":["korean"],"간장":["korean"],"간접":["korean"],"간판":["korean"],"갈등":["korean"],"갈비":["korean"],"갈색":["korean"],"갈증":["korean"],"감각":["korean"],"감기":["korean"],"감소":["korean"],"감수성":["korean"],"감자":["korean"],"감정":["korean"],"갑자기":["korean"],"강남":["korean"],"강당":["korean"],"강도":["korean"],"강력히":["korean"],"강변":["korean"],"강북":["korean"],"강사":["korean"],"강수량":["korean"],"강아지":["korean"],"강원도":["korean"],"강의":["korean"],"강제":["korean"],"강조":["korean"],"같이":["korean"],"개구리":["korean"],"개나리":["korean"],"개방":["korean"],"개별":["korean"],"개선":["korean"],"개성":["korean"],"개인":["korean"],"객관적":["korean"],"거실":["korean"],"거액":["korean"],"거울":["korean"],"거짓":["korean"],"거품":["korean"],"걱정":["korean"],"건강":["korean"],"건물":["korean"],"건설":["korean"],"건조":["korean"],"건축":["korean"],"걸음":["korean"],"검사":["korean"],"검토":["korean"],"게시판":["korean"],"게임":["korean"],"겨울":["korean"],"견해":["korean"],"결과":["korean"],"결국":["korean"],"결론":["korean"],"결석":["korean"],"결승":["korean"],"결심":["korean"],"결정":["korean"],"결혼":["korean"],"경계":["korean"],"경고":["korean"],"경기":["korean"],"경력":["korean"],"경복궁":["korean"],"경비":["korean"],"경상도":["korean"],"경영":["korean"],"경우":["korean"],"경쟁":["korean"],"경제":["korean"],"경주":["korean"],"경찰":["korean"],"경치":["korean"],"경향":["korean"],"경험":["korean"],"계곡":["korean"],"계단":["korean"],"계란":["korean"],"계산":["korean"],"계속":["korean"],"계약":["korean"],"계절":["korean"],"계층":["korean"],"계획":["korean"],"고객":["korean"],"고구려":["korean"],"고궁":["korean"],"고급":["korean"],"고등학생":["korean"],"고무신":["korean"],"고민":["korean"],"고양이":["korean"],"고장":["korean"],"고전":["korean"],"고집":["korean"],"고춧가루":["korean"],"고통":["korean"],"고향":["korean"],"곡식":["korean"],"골목":["korean"],"골짜기":["korean"],"골프":["korean"],"공간":["korean"],"공개":["korean"],"공격":["korean"],"공군":["korean"],"공급":["korean"],"공기":["korean"],"공동":["korean"],"공무원":["korean"],"공부":["korean"],"공사":["korean"],"공식":["korean"],"공업":["korean"],"공연":["korean"],"공원":["korean"],"공장":["korean"],"공짜":["korean"],"공책":["korean"],"공통":["korean"],"공포":["korean"],"공항":["korean"],"공휴일":["korean"],"과목":["korean"],"과일":["korean"],"과장":["korean"],"과정":["korean"],"과학":["korean"],"관객":["korean"],"관계":["korean"],"관광":["korean"],"관념":["korean"],"관람":["korean"],"관련":["korean"],"관리":["korean"],"관습":["korean"],"관심":["korean"],"관점":["korean"],"관찰":["korean"],"광경":["korean"],"광고":["korean"],"광장":["korean"],"광주":["korean"],"괴로움":["korean"],"굉장히":["korean"],"교과서":["korean"],"교문":["korean"],"교복":["korean"],"교실":["korean"],"교양":["korean"],"교육":["korean"],"교장":["korean"],"교직":["korean"],"교통":["korean"],"교환":["korean"],"교훈":["korean"],"구경":["korean"],"구름":["korean"],"구멍":["korean"],"구별":["korean"],"구분":["korean"],"구석":["korean"],"구성":["korean"],"구속":["korean"],"구역":["korean"],"구입":["korean"],"구청":["korean"],"구체적":["korean"],"국가":["korean"],"국기":["korean"],"국내":["korean"],"국립":["korean"],"국물":["korean"],"국민":["korean"],"국수":["korean"],"국어":["korean"],"국왕":["korean"],"국적":["korean"],"국제":["korean"],"국회":["korean"],"군대":["korean"],"군사":["korean"],"군인":["korean"],"궁극적":["korean"],"권리":["korean"],"권위":["korean"],"권투":["korean"],"귀국":["korean"],"귀신":["korean"],"규정":["korean"],"규칙":["korean"],"균형":["korean"],"그날":["korean"],"그냥":["korean"],"그늘":["korean"],"그러나":["korean"],"그룹":["korean"],"그릇":["korean"],"그림":["korean"],"그제서야":["korean"],"그토록":["korean"],"극복":["korean"],"극히":["korean"],"근거":["korean"],"근교":["korean"],"근래":["korean"],"근로":["korean"],"근무":["korean"],"근본":["korean"],"근원":["korean"],"근육":["korean"],"근처":["korean"],"글씨":["korean"],"글자":["korean"],"금강산":["korean"],"금고":["korean"],"금년":["korean"],"금메달":["korean"],"금액":["korean"],"금연":["korean"],"금요일":["korean"],"금지":["korean"],"긍정적":["korean"],"기간":["korean"],"기관":["korean"],"기념":["korean"],"기능":["korean"],"기독교":["korean"],"기둥":["korean"],"기록":["korean"],"기름":["korean"],"기법":["korean"],"기본":["korean"],"기분":["korean"],"기쁨":["korean"],"기숙사":["korean"],"기술":["korean"],"기억":["korean"],"기업":["korean"],"기온":["korean"],"기운":["korean"],"기원":["korean"],"기적":["korean"],"기준":["korean"],"기침":["korean"],"기혼":["korean"],"기획":["korean"],"긴급":["korean"],"긴장":["korean"],"길이":["korean"],"김밥":["korean"],"김치":["korean"],"김포공항":["korean"],"깍두기":["korean"],"깜빡":["korean"],"깨달음":["korean"],"깨소금":["korean"],"껍질":["korean"],"꼭대기":["korean"],"꽃잎":["korean"],"나들이":["korean"],"나란히":["korean"],"나머지":["korean"],"나물":["korean"],"나침반":["korean"],"나흘":["korean"],"낙엽":["korean"],"난방":["korean"],"날개":["korean"],"날씨":["korean"],"날짜":["korean"],"남녀":["korean"],"남대문":["korean"],"남매":["korean"],"남산":["korean"],"남자":["korean"],"남편":["korean"],"남학생":["korean"],"낭비":["korean"],"낱말":["korean"],"내년":["korean"],"내용":["korean"],"내일":["korean"],"냄비":["korean"],"냄새":["korean"],"냇물":["korean"],"냉동":["korean"],"냉면":["korean"],"냉방":["korean"],"냉장고":["korean"],"넥타이":["korean"],"넷째":["korean"],"노동":["korean"],"노란색":["korean"],"노력":["korean"],"노인":["korean"],"녹음":["korean"],"녹차":["korean"],"녹화":["korean"],"논리":["korean"],"논문":["korean"],"논쟁":["korean"],"놀이":["korean"],"농구":["korean"],"농담":["korean"],"농민":["korean"],"농부":["korean"],"농업":["korean"],"농장":["korean"],"농촌":["korean"],"높이":["korean"],"눈동자":["korean"],"눈물":["korean"],"눈썹":["korean"],"뉴욕":["korean"],"느낌":["korean"],"늑대":["korean"],"능동적":["korean"],"능력":["korean"],"다방":["korean"],"다양성":["korean"],"다음":["korean"],"다이어트":["korean"],"다행":["korean"],"단계":["korean"],"단골":["korean"],"단독":["korean"],"단맛":["korean"],"단순":["korean"],"단어":["korean"],"단위":["korean"],"단점":["korean"],"단체":["korean"],"단추":["korean"],"단편":["korean"],"단풍":["korean"],"달걀":["korean"],"달러":["korean"],"달력":["korean"],"달리":["korean"],"닭고기":["korean"],"담당":["korean"],"담배":["korean"],"담요":["korean"],"담임":["korean"],"답변":["korean"],"답장":["korean"],"당근":["korean"],"당분간":["korean"],"당연히":["korean"],"당장":["korean"],"대규모":["korean"],"대낮":["korean"],"대단히":["korean"],"대답":["korean"],"대도시":["korean"],"대략":["korean"],"대량":["korean"],"대륙":["korean"],"대문":["korean"],"대부분":["korean"],"대신":["korean"],"대응":["korean"],"대장":["korean"],"대전":["korean"],"대접":["korean"],"대중":["korean"],"대책":["korean"],"대출":["korean"],"대충":["korean"],"대통령":["korean"],"대학":["korean"],"대한민국":["korean"],"대합실":["korean"],"대형":["korean"],"덩어리":["korean"],"데이트":["korean"],"도대체":["korean"],"도덕":["korean"],"도둑":["korean"],"도망":["korean"],"도서관":["korean"],"도심":["korean"],"도움":["korean"],"도입":["korean"],"도자기":["korean"],"도저히":["korean"],"도전":["korean"],"도중":["korean"],"도착":["korean"],"독감":["korean"],"독립":["korean"],"독서":["korean"],"독일":["korean"],"독창적":["korean"],"동화책":["korean"],"뒷모습":["korean"],"뒷산":["korean"],"딸아이":["korean"],"마누라":["korean"],"마늘":["korean"],"마당":["korean"],"마라톤":["korean"],"마련":["korean"],"마무리":["korean"],"마사지":["korean"],"마약":["korean"],"마요네즈":["korean"],"마을":["korean"],"마음":["korean"],"마이크":["korean"],"마중":["korean"],"마지막":["korean"],"마찬가지":["korean"],"마찰":["korean"],"마흔":["korean"],"막걸리":["korean"],"막내":["korean"],"막상":["korean"],"만남":["korean"],"만두":["korean"],"만세":["korean"],"만약":["korean"],"만일":["korean"],"만점":["korean"],"만족":["korean"],"만화":["korean"],"많이":["korean"],"말기":["korean"],"말씀":["korean"],"말투":["korean"],"맘대로":["korean"],"망원경":["korean"],"매년":["korean"],"매달":["korean"],"매력":["korean"],"매번":["korean"],"매스컴":["korean"],"매일":["korean"],"매장":["korean"],"맥주":["korean"],"먹이":["korean"],"먼저":["korean"],"먼지":["korean"],"멀리":["korean"],"메일":["korean"],"며느리":["korean"],"며칠":["korean"],"면담":["korean"],"멸치":["korean"],"명단":["korean"],"명령":["korean"],"명예":["korean"],"명의":["korean"],"명절":["korean"],"명칭":["korean"],"명함":["korean"],"모금":["korean"],"모니터":["korean"],"모델":["korean"],"모든":["korean"],"모범":["korean"],"모습":["korean"],"모양":["korean"],"모임":["korean"],"모조리":["korean"],"모집":["korean"],"모퉁이":["korean"],"목걸이":["korean"],"목록":["korean"],"목사":["korean"],"목소리":["korean"],"목숨":["korean"],"목적":["korean"],"목표":["korean"],"몰래":["korean"],"몸매":["korean"],"몸무게":["korean"],"몸살":["korean"],"몸속":["korean"],"몸짓":["korean"],"몸통":["korean"],"몹시":["korean"],"무관심":["korean"],"무궁화":["korean"],"무더위":["korean"],"무덤":["korean"],"무릎":["korean"],"무슨":["korean"],"무엇":["korean"],"무역":["korean"],"무용":["korean"],"무조건":["korean"],"무지개":["korean"],"무척":["korean"],"문구":["korean"],"문득":["korean"],"문법":["korean"],"문서":["korean"],"문제":["korean"],"문학":["korean"],"문화":["korean"],"물가":["korean"],"물건":["korean"],"물결":["korean"],"물고기":["korean"],"물론":["korean"],"물리학":["korean"],"물음":["korean"],"물질":["korean"],"물체":["korean"],"미국":["korean"],"미디어":["korean"],"미사일":["korean"],"미술":["korean"],"미역":["korean"],"미용실":["korean"],"미움":["korean"],"미인":["korean"],"미팅":["korean"],"미혼":["korean"],"민간":["korean"],"민족":["korean"],"민주":["korean"],"믿음":["korean"],"밀가루":["korean"],"밀리미터":["korean"],"밑바닥":["korean"],"바가지":["korean"],"바구니":["korean"],"바나나":["korean"],"바늘":["korean"],"바닥":["korean"],"바닷가":["korean"],"바람":["korean"],"바이러스":["korean"],"바탕":["korean"],"박물관":["korean"],"박사":["korean"],"박수":["korean"],"반대":["korean"],"반드시":["korean"],"반말":["korean"],"반발":["korean"],"반성":["korean"],"반응":["korean"],"반장":["korean"],"반죽":["korean"],"반지":["korean"],"반찬":["korean"],"받침":["korean"],"발가락":["korean"],"발걸음":["korean"],"발견":["korean"],"발달":["korean"],"발레":["korean"],"발목":["korean"],"발바닥":["korean"],"발생":["korean"],"발음":["korean"],"발자국":["korean"],"발전":["korean"],"발톱":["korean"],"발표":["korean"],"밤하늘":["korean"],"밥그릇":["korean"],"밥맛":["korean"],"밥상":["korean"],"밥솥":["korean"],"방금":["korean"],"방면":["korean"],"방문":["korean"],"방바닥":["korean"],"방법":["korean"],"방송":["korean"],"방식":["korean"],"방안":["korean"],"방울":["korean"],"방지":["korean"],"방학":["korean"],"방해":["korean"],"방향":["korean"],"배경":["korean"],"배꼽":["korean"],"배달":["korean"],"배드민턴":["korean"],"백두산":["korean"],"백색":["korean"],"백성":["korean"],"백인":["korean"],"백제":["korean"],"백화점":["korean"],"버릇":["korean"],"버섯":["korean"],"버튼":["korean"],"번개":["korean"],"번역":["korean"],"번지":["korean"],"번호":["korean"],"벌금":["korean"],"벌레":["korean"],"벌써":["korean"],"범위":["korean"],"범인":["korean"],"범죄":["korean"],"법률":["korean"],"법원":["korean"],"법적":["korean"],"법칙":["korean"],"베이징":["korean"],"벨트":["korean"],"변경":["korean"],"변동":["korean"],"변명":["korean"],"변신":["korean"],"변호사":["korean"],"변화":["korean"],"별도":["korean"],"별명":["korean"],"별일":["korean"],"병실":["korean"],"병아리":["korean"],"병원":["korean"],"보관":["korean"],"보너스":["korean"],"보라색":["korean"],"보람":["korean"],"보름":["korean"],"보상":["korean"],"보안":["korean"],"보자기":["korean"],"보장":["korean"],"보전":["korean"],"보존":["korean"],"보통":["korean"],"보편적":["korean"],"보험":["korean"],"복도":["korean"],"복사":["korean"],"복숭아":["korean"],"복습":["korean"],"볶음":["korean"],"본격적":["korean"],"본래":["korean"],"본부":["korean"],"본사":["korean"],"본성":["korean"],"본인":["korean"],"본질":["korean"],"볼펜":["korean"],"봉사":["korean"],"봉지":["korean"],"봉투":["korean"],"부근":["korean"],"부끄러움":["korean"],"부담":["korean"],"부동산":["korean"],"부문":["korean"],"부분":["korean"],"부산":["korean"],"부상":["korean"],"부엌":["korean"],"부인":["korean"],"부작용":["korean"],"부장":["korean"],"부정":["korean"],"부족":["korean"],"부지런히":["korean"],"부친":["korean"],"부탁":["korean"],"부품":["korean"],"부회장":["korean"],"북부":["korean"],"북한":["korean"],"분노":["korean"],"분량":["korean"],"분리":["korean"],"분명":["korean"],"분석":["korean"],"분야":["korean"],"분위기":["korean"],"분필":["korean"],"분홍색":["korean"],"불고기":["korean"],"불과":["korean"],"불교":["korean"],"불꽃":["korean"],"불만":["korean"],"불법":["korean"],"불빛":["korean"],"불안":["korean"],"불이익":["korean"],"불행":["korean"],"브랜드":["korean"],"비극":["korean"],"비난":["korean"],"비닐":["korean"],"비둘기":["korean"],"비디오":["korean"],"비로소":["korean"],"비만":["korean"],"비명":["korean"],"비밀":["korean"],"비바람":["korean"],"비빔밥":["korean"],"비상":["korean"],"비용":["korean"],"비율":["korean"],"비중":["korean"],"비타민":["korean"],"비판":["korean"],"빌딩":["korean"],"빗물":["korean"],"빗방울":["korean"],"빗줄기":["korean"],"빛깔":["korean"],"빨간색":["korean"],"빨래":["korean"],"빨리":["korean"],"사건":["korean"],"사계절":["korean"],"사나이":["korean"],"사냥":["korean"],"사람":["korean"],"사랑":["korean"],"사립":["korean"],"사모님":["korean"],"사물":["korean"],"사방":["korean"],"사상":["korean"],"사생활":["korean"],"사설":["korean"],"사슴":["korean"],"사실":["korean"],"사업":["korean"],"사용":["korean"],"사월":["korean"],"사장":["korean"],"사전":["korean"],"사진":["korean"],"사촌":["korean"],"사춘기":["korean"],"사탕":["korean"],"사투리":["korean"],"사흘":["korean"],"산길":["korean"],"산부인과":["korean"],"산업":["korean"],"산책":["korean"],"살림":["korean"],"살인":["korean"],"살짝":["korean"],"삼계탕":["korean"],"삼국":["korean"],"삼십":["korean"],"삼월":["korean"],"삼촌":["korean"],"상관":["korean"],"상금":["korean"],"상대":["korean"],"상류":["korean"],"상반기":["korean"],"상상":["korean"],"상식":["korean"],"상업":["korean"],"상인":["korean"],"상자":["korean"],"상점":["korean"],"상처":["korean"],"상추":["korean"],"상태":["korean"],"상표":["korean"],"상품":["korean"],"상황":["korean"],"새벽":["korean"],"색깔":["korean"],"색연필":["korean"],"생각":["korean"],"생명":["korean"],"생물":["korean"],"생방송":["korean"],"생산":["korean"],"생선":["korean"],"생신":["korean"],"생일":["korean"],"생활":["korean"],"서랍":["korean"],"서른":["korean"],"서명":["korean"],"서민":["korean"],"서비스":["korean"],"서양":["korean"],"서울":["korean"],"서적":["korean"],"서점":["korean"],"서쪽":["korean"],"서클":["korean"],"석사":["korean"],"석유":["korean"],"선거":["korean"],"선물":["korean"],"선배":["korean"],"선생":["korean"],"선수":["korean"],"선원":["korean"],"선장":["korean"],"선전":["korean"],"선택":["korean"],"선풍기":["korean"],"설거지":["korean"],"설날":["korean"],"설렁탕":["korean"],"설명":["korean"],"설문":["korean"],"설사":["korean"],"설악산":["korean"],"설치":["korean"],"설탕":["korean"],"섭씨":["korean"],"성공":["korean"],"성당":["korean"],"성명":["korean"],"성별":["korean"],"성인":["korean"],"성장":["korean"],"성적":["korean"],"성질":["korean"],"성함":["korean"],"세금":["korean"],"세미나":["korean"],"세상":["korean"],"세월":["korean"],"세종대왕":["korean"],"세탁":["korean"],"센터":["korean"],"센티미터":["korean"],"셋째":["korean"],"소규모":["korean"],"소극적":["korean"],"소금":["korean"],"소나기":["korean"],"소년":["korean"],"소득":["korean"],"소망":["korean"],"소문":["korean"],"소설":["korean"],"소속":["korean"],"소아과":["korean"],"소용":["korean"],"소원":["korean"],"소음":["korean"],"소중히":["korean"],"소지품":["korean"],"소질":["korean"],"소풍":["korean"],"소형":["korean"],"속담":["korean"],"속도":["korean"],"속옷":["korean"],"손가락":["korean"],"손길":["korean"],"손녀":["korean"],"손님":["korean"],"손등":["korean"],"손목":["korean"],"손뼉":["korean"],"손실":["korean"],"손질":["korean"],"손톱":["korean"],"손해":["korean"],"솔직히":["korean"],"솜씨":["korean"],"송아지":["korean"],"송이":["korean"],"송편":["korean"],"쇠고기":["korean"],"쇼핑":["korean"],"수건":["korean"],"수년":["korean"],"수단":["korean"],"수돗물":["korean"],"수동적":["korean"],"수면":["korean"],"수명":["korean"],"수박":["korean"],"수상":["korean"],"수석":["korean"],"수술":["korean"],"수시로":["korean"],"수업":["korean"],"수염":["korean"],"수영":["korean"],"수입":["korean"],"수준":["korean"],"수집":["korean"],"수출":["korean"],"수컷":["korean"],"수필":["korean"],"수학":["korean"],"수험생":["korean"],"수화기":["korean"],"숙녀":["korean"],"숙소":["korean"],"숙제":["korean"],"순간":["korean"],"순서":["korean"],"순수":["korean"],"순식간":["korean"],"순위":["korean"],"숟가락":["korean"],"술병":["korean"],"술집":["korean"],"숫자":["korean"],"스님":["korean"],"스물":["korean"],"스스로":["korean"],"스승":["korean"],"스웨터":["korean"],"스위치":["korean"],"스케이트":["korean"],"스튜디오":["korean"],"스트레스":["korean"],"스포츠":["korean"],"슬쩍":["korean"],"슬픔":["korean"],"습관":["korean"],"습기":["korean"],"승객":["korean"],"승리":["korean"],"승부":["korean"],"승용차":["korean"],"승진":["korean"],"시각":["korean"],"시간":["korean"],"시골":["korean"],"시금치":["korean"],"시나리오":["korean"],"시댁":["korean"],"시리즈":["korean"],"시멘트":["korean"],"시민":["korean"],"시부모":["korean"],"시선":["korean"],"시설":["korean"],"시스템":["korean"],"시아버지":["korean"],"시어머니":["korean"],"시월":["korean"],"시인":["korean"],"시일":["korean"],"시작":["korean"],"시장":["korean"],"시절":["korean"],"시점":["korean"],"시중":["korean"],"시즌":["korean"],"시집":["korean"],"시청":["korean"],"시합":["korean"],"시험":["korean"],"식구":["korean"],"식기":["korean"],"식당":["korean"],"식량":["korean"],"식료품":["korean"],"식물":["korean"],"식빵":["korean"],"식사":["korean"],"식생활":["korean"],"식초":["korean"],"식탁":["korean"],"식품":["korean"],"신고":["korean"],"신규":["korean"],"신념":["korean"],"신문":["korean"],"신발":["korean"],"신비":["korean"],"신사":["korean"],"신세":["korean"],"신용":["korean"],"신제품":["korean"],"신청":["korean"],"신체":["korean"],"신화":["korean"],"실감":["korean"],"실내":["korean"],"실력":["korean"],"실례":["korean"],"실망":["korean"],"실수":["korean"],"실습":["korean"],"실시":["korean"],"실장":["korean"],"실정":["korean"],"실질적":["korean"],"실천":["korean"],"실체":["korean"],"실컷":["korean"],"실태":["korean"],"실패":["korean"],"실험":["korean"],"실현":["korean"],"심리":["korean"],"심부름":["korean"],"심사":["korean"],"심장":["korean"],"심정":["korean"],"심판":["korean"],"쌍둥이":["korean"],"씨름":["korean"],"씨앗":["korean"],"아가씨":["korean"],"아나운서":["korean"],"아드님":["korean"],"아들":["korean"],"아쉬움":["korean"],"아스팔트":["korean"],"아시아":["korean"],"아울러":["korean"],"아저씨":["korean"],"아줌마":["korean"],"아직":["korean"],"아침":["korean"],"아파트":["korean"],"아프리카":["korean"],"아픔":["korean"],"아홉":["korean"],"아흔":["korean"],"악기":["korean"],"악몽":["korean"],"악수":["korean"],"안개":["korean"],"안경":["korean"],"안과":["korean"],"안내":["korean"],"안녕":["korean"],"안동":["korean"],"안방":["korean"],"안부":["korean"],"안주":["korean"],"알루미늄":["korean"],"알코올":["korean"],"암시":["korean"],"암컷":["korean"],"압력":["korean"],"앞날":["korean"],"앞문":["korean"],"애인":["korean"],"애정":["korean"],"액수":["korean"],"앨범":["korean"],"야간":["korean"],"야단":["korean"],"야옹":["korean"],"약간":["korean"],"약국":["korean"],"약속":["korean"],"약수":["korean"],"약점":["korean"],"약품":["korean"],"약혼녀":["korean"],"양념":["korean"],"양력":["korean"],"양말":["korean"],"양배추":["korean"],"양주":["korean"],"양파":["korean"],"어둠":["korean"],"어려움":["korean"],"어른":["korean"],"어젯밤":["korean"],"어쨌든":["korean"],"어쩌다가":["korean"],"어쩐지":["korean"],"언니":["korean"],"언덕":["korean"],"언론":["korean"],"언어":["korean"],"얼굴":["korean"],"얼른":["korean"],"얼음":["korean"],"얼핏":["korean"],"엄마":["korean"],"업무":["korean"],"업종":["korean"],"업체":["korean"],"엉덩이":["korean"],"엉망":["korean"],"엉터리":["korean"],"엊그제":["korean"],"에너지":["korean"],"에어컨":["korean"],"엔진":["korean"],"여건":["korean"],"여고생":["korean"],"여관":["korean"],"여군":["korean"],"여권":["korean"],"여대생":["korean"],"여덟":["korean"],"여동생":["korean"],"여든":["korean"],"여론":["korean"],"여름":["korean"],"여섯":["korean"],"여성":["korean"],"여왕":["korean"],"여인":["korean"],"여전히":["korean"],"여직원":["korean"],"여학생":["korean"],"여행":["korean"],"역사":["korean"],"역시":["korean"],"역할":["korean"],"연결":["korean"],"연구":["korean"],"연극":["korean"],"연기":["korean"],"연락":["korean"],"연설":["korean"],"연세":["korean"],"연속":["korean"],"연습":["korean"],"연애":["korean"],"연예인":["korean"],"연인":["korean"],"연장":["korean"],"연주":["korean"],"연출":["korean"],"연필":["korean"],"연합":["korean"],"연휴":["korean"],"열기":["korean"],"열매":["korean"],"열쇠":["korean"],"열심히":["korean"],"열정":["korean"],"열차":["korean"],"열흘":["korean"],"염려":["korean"],"엽서":["korean"],"영국":["korean"],"영남":["korean"],"영상":["korean"],"영양":["korean"],"영역":["korean"],"영웅":["korean"],"영원히":["korean"],"영하":["korean"],"영향":["korean"],"영혼":["korean"],"영화":["korean"],"옆구리":["korean"],"옆방":["korean"],"옆집":["korean"],"예감":["korean"],"예금":["korean"],"예방":["korean"],"예산":["korean"],"예상":["korean"],"예선":["korean"],"예술":["korean"],"예습":["korean"],"예식장":["korean"],"예약":["korean"],"예전":["korean"],"예절":["korean"],"예정":["korean"],"예컨대":["korean"],"옛날":["korean"],"오늘":["korean"],"오락":["korean"],"오랫동안":["korean"],"오렌지":["korean"],"오로지":["korean"],"오른발":["korean"],"오븐":["korean"],"오십":["korean"],"오염":["korean"],"오월":["korean"],"오전":["korean"],"오직":["korean"],"오징어":["korean"],"오페라":["korean"],"오피스텔":["korean"],"오히려":["korean"],"옥상":["korean"],"옥수수":["korean"],"온갖":["korean"],"온라인":["korean"],"온몸":["korean"],"온종일":["korean"],"온통":["korean"],"올가을":["korean"],"올림픽":["korean"],"올해":["korean"],"옷차림":["korean"],"와이셔츠":["korean"],"와인":["korean"],"완성":["korean"],"완전":["korean"],"왕비":["korean"],"왕자":["korean"],"왜냐하면":["korean"],"왠지":["korean"],"외갓집":["korean"],"외국":["korean"],"외로움":["korean"],"외삼촌":["korean"],"외출":["korean"],"외침":["korean"],"외할머니":["korean"],"왼발":["korean"],"왼손":["korean"],"왼쪽":["korean"],"요금":["korean"],"요일":["korean"],"요즘":["korean"],"요청":["korean"],"용기":["korean"],"용서":["korean"],"용어":["korean"],"우산":["korean"],"우선":["korean"],"우승":["korean"],"우연히":["korean"],"우정":["korean"],"우체국":["korean"],"우편":["korean"],"운동":["korean"],"운명":["korean"],"운반":["korean"],"운전":["korean"],"운행":["korean"],"울산":["korean"],"울음":["korean"],"움직임":["korean"],"웃어른":["korean"],"웃음":["korean"],"워낙":["korean"],"원고":["korean"],"원래":["korean"],"원서":["korean"],"원숭이":["korean"],"원인":["korean"],"원장":["korean"],"원피스":["korean"],"월급":["korean"],"월드컵":["korean"],"월세":["korean"],"월요일":["korean"],"웨이터":["korean"],"위반":["korean"],"위법":["korean"],"위성":["korean"],"위원":["korean"],"위험":["korean"],"위협":["korean"],"윗사람":["korean"],"유난히":["korean"],"유럽":["korean"],"유명":["korean"],"유물":["korean"],"유산":["korean"],"유적":["korean"],"유치원":["korean"],"유학":["korean"],"유행":["korean"],"유형":["korean"],"육군":["korean"],"육상":["korean"],"육십":["korean"],"육체":["korean"],"은행":["korean"],"음력":["korean"],"음료":["korean"],"음반":["korean"],"음성":["korean"],"음식":["korean"],"음악":["korean"],"음주":["korean"],"의견":["korean"],"의논":["korean"],"의문":["korean"],"의복":["korean"],"의식":["korean"],"의심":["korean"],"의외로":["korean"],"의욕":["korean"],"의원":["korean"],"의학":["korean"],"이것":["korean"],"이곳":["korean"],"이념":["korean"],"이놈":["korean"],"이달":["korean"],"이대로":["korean"],"이동":["korean"],"이렇게":["korean"],"이력서":["korean"],"이론적":["korean"],"이름":["korean"],"이민":["korean"],"이발소":["korean"],"이별":["korean"],"이불":["korean"],"이빨":["korean"],"이상":["korean"],"이성":["korean"],"이슬":["korean"],"이야기":["korean"],"이용":["korean"],"이웃":["korean"],"이월":["korean"],"이윽고":["korean"],"이익":["korean"],"이전":["korean"],"이중":["korean"],"이튿날":["korean"],"이틀":["korean"],"이혼":["korean"],"인간":["korean"],"인격":["korean"],"인공":["korean"],"인구":["korean"],"인근":["korean"],"인기":["korean"],"인도":["korean"],"인류":["korean"],"인물":["korean"],"인생":["korean"],"인쇄":["korean"],"인연":["korean"],"인원":["korean"],"인재":["korean"],"인종":["korean"],"인천":["korean"],"인체":["korean"],"인터넷":["korean"],"인하":["korean"],"인형":["korean"],"일곱":["korean"],"일기":["korean"],"일단":["korean"],"일대":["korean"],"일등":["korean"],"일반":["korean"],"일본":["korean"],"일부":["korean"],"일상":["korean"],"일생":["korean"],"일손":["korean"],"일요일":["korean"],"일월":["korean"],"일정":["korean"],"일종":["korean"],"일주일":["korean"],"일찍":["korean"],"일체":["korean"],"일치":["korean"],"일행":["korean"],"일회용":["korean"],"임금":["korean"],"임무":["korean"],"입대":["korean"],"입력":["korean"],"입맛":["korean"],"입사":["korean"],"입술":["korean"],"입시":["korean"],"입원":["korean"],"입장":["korean"],"입학":["korean"],"자가용":["korean"],"자격":["korean"],"자극":["korean"],"자동":["korean"],"자랑":["korean"],"자부심":["korean"],"자식":["korean"],"자신":["korean"],"자연":["korean"],"자원":["korean"],"자율":["korean"],"자전거":["korean"],"자정":["korean"],"자존심":["korean"],"자판":["korean"],"작가":["korean"],"작년":["korean"],"작성":["korean"],"작업":["korean"],"작용":["korean"],"작은딸":["korean"],"작품":["korean"],"잔디":["korean"],"잔뜩":["korean"],"잔치":["korean"],"잘못":["korean"],"잠깐":["korean"],"잠수함":["korean"],"잠시":["korean"],"잠옷":["korean"],"잠자리":["korean"],"잡지":["korean"],"장관":["korean"],"장군":["korean"],"장기간":["korean"],"장래":["korean"],"장례":["korean"],"장르":["korean"],"장마":["korean"],"장면":["korean"],"장모":["korean"],"장미":["korean"],"장비":["korean"],"장사":["korean"],"장소":["korean"],"장식":["korean"],"장애인":["korean"],"장인":["korean"],"장점":["korean"],"장차":["korean"],"장학금":["korean"],"재능":["korean"],"재빨리":["korean"],"재산":["korean"],"재생":["korean"],"재작년":["korean"],"재정":["korean"],"재채기":["korean"],"재판":["korean"],"재학":["korean"],"재활용":["korean"],"저것":["korean"],"저고리":["korean"],"저곳":["korean"],"저녁":["korean"],"저런":["korean"],"저렇게":["korean"],"저번":["korean"],"저울":["korean"],"저절로":["korean"],"저축":["korean"],"적극":["korean"],"적당히":["korean"],"적성":["korean"],"적용":["korean"],"적응":["korean"],"전개":["korean"],"전공":["korean"],"전기":["korean"],"전달":["korean"],"전라도":["korean"],"전망":["korean"],"전문":["korean"],"전반":["korean"],"전부":["korean"],"전세":["korean"],"전시":["korean"],"전용":["korean"],"전자":["korean"],"전쟁":["korean"],"전주":["korean"],"전철":["korean"],"전체":["korean"],"전통":["korean"],"전혀":["korean"],"전후":["korean"],"절대":["korean"],"절망":["korean"],"절반":["korean"],"절약":["korean"],"절차":["korean"],"점검":["korean"],"점수":["korean"],"점심":["korean"],"점원":["korean"],"점점":["korean"],"점차":["korean"],"접근":["korean"],"접시":["korean"],"접촉":["korean"],"젓가락":["korean"],"정거장":["korean"],"정도":["korean"],"정류장":["korean"],"정리":["korean"],"정말":["korean"],"정면":["korean"],"정문":["korean"],"정반대":["korean"],"정보":["korean"],"정부":["korean"],"정비":["korean"],"정상":["korean"],"정성":["korean"],"정오":["korean"],"정원":["korean"],"정장":["korean"],"정지":["korean"],"정치":["korean"],"정확히":["korean"],"제공":["korean"],"제과점":["korean"],"제대로":["korean"],"제목":["korean"],"제발":["korean"],"제법":["korean"],"제삿날":["korean"],"제안":["korean"],"제일":["korean"],"제작":["korean"],"제주도":["korean"],"제출":["korean"],"제품":["korean"],"제한":["korean"],"조각":["korean"],"조건":["korean"],"조금":["korean"],"조깅":["korean"],"조명":["korean"],"조미료":["korean"],"조상":["korean"],"조선":["korean"],"조용히":["korean"],"조절":["korean"],"조정":["korean"],"조직":["korean"],"존댓말":["korean"],"존재":["korean"],"졸업":["korean"],"졸음":["korean"],"종교":["korean"],"종로":["korean"],"종류":["korean"],"종소리":["korean"],"종업원":["korean"],"종종":["korean"],"종합":["korean"],"좌석":["korean"],"죄인":["korean"],"주관적":["korean"],"주름":["korean"],"주말":["korean"],"주머니":["korean"],"주먹":["korean"],"주문":["korean"],"주민":["korean"],"주방":["korean"],"주변":["korean"],"주식":["korean"],"주인":["korean"],"주일":["korean"],"주장":["korean"],"주전자":["korean"],"주택":["korean"],"준비":["korean"],"줄거리":["korean"],"줄기":["korean"],"줄무늬":["korean"],"중간":["korean"],"중계방송":["korean"],"중국":["korean"],"중년":["korean"],"중단":["korean"],"중독":["korean"],"중반":["korean"],"중부":["korean"],"중세":["korean"],"중소기업":["korean"],"중순":["korean"],"중앙":["korean"],"중요":["korean"],"중학교":["korean"],"즉석":["korean"],"즉시":["korean"],"즐거움":["korean"],"증가":["korean"],"증거":["korean"],"증권":["korean"],"증상":["korean"],"증세":["korean"],"지각":["korean"],"지갑":["korean"],"지경":["korean"],"지극히":["korean"],"지금":["korean"],"지급":["korean"],"지능":["korean"],"지름길":["korean"],"지리산":["korean"],"지방":["korean"],"지붕":["korean"],"지식":["korean"],"지역":["korean"],"지우개":["korean"],"지원":["korean"],"지적":["korean"],"지점":["korean"],"지진":["korean"],"지출":["korean"],"직선":["korean"],"직업":["korean"],"직원":["korean"],"직장":["korean"],"진급":["korean"],"진동":["korean"],"진로":["korean"],"진료":["korean"],"진리":["korean"],"진짜":["korean"],"진찰":["korean"],"진출":["korean"],"진통":["korean"],"진행":["korean"],"질문":["korean"],"질병":["korean"],"질서":["korean"],"짐작":["korean"],"집단":["korean"],"집안":["korean"],"집중":["korean"],"짜증":["korean"],"찌꺼기":["korean"],"차남":["korean"],"차라리":["korean"],"차량":["korean"],"차림":["korean"],"차별":["korean"],"차선":["korean"],"차츰":["korean"],"착각":["korean"],"찬물":["korean"],"찬성":["korean"],"참가":["korean"],"참기름":["korean"],"참새":["korean"],"참석":["korean"],"참여":["korean"],"참외":["korean"],"참조":["korean"],"찻잔":["korean"],"창가":["korean"],"창고":["korean"],"창구":["korean"],"창문":["korean"],"창밖":["korean"],"창작":["korean"],"창조":["korean"],"채널":["korean"],"채점":["korean"],"책가방":["korean"],"책방":["korean"],"책상":["korean"],"책임":["korean"],"챔피언":["korean"],"처벌":["korean"],"처음":["korean"],"천국":["korean"],"천둥":["korean"],"천장":["korean"],"천재":["korean"],"천천히":["korean"],"철도":["korean"],"철저히":["korean"],"철학":["korean"],"첫날":["korean"],"첫째":["korean"],"청년":["korean"],"청바지":["korean"],"청소":["korean"],"청춘":["korean"],"체계":["korean"],"체력":["korean"],"체온":["korean"],"체육":["korean"],"체중":["korean"],"체험":["korean"],"초등학생":["korean"],"초반":["korean"],"초밥":["korean"],"초상화":["korean"],"초순":["korean"],"초여름":["korean"],"초원":["korean"],"초저녁":["korean"],"초점":["korean"],"초청":["korean"],"초콜릿":["korean"],"촛불":["korean"],"총각":["korean"],"총리":["korean"],"총장":["korean"],"촬영":["korean"],"최근":["korean"],"최상":["korean"],"최선":["korean"],"최신":["korean"],"최악":["korean"],"최종":["korean"],"추석":["korean"],"추억":["korean"],"추진":["korean"],"추천":["korean"],"추측":["korean"],"축구":["korean"],"축소":["korean"],"축제":["korean"],"축하":["korean"],"출근":["korean"],"출발":["korean"],"출산":["korean"],"출신":["korean"],"출연":["korean"],"출입":["korean"],"출장":["korean"],"출판":["korean"],"충격":["korean"],"충고":["korean"],"충돌":["korean"],"충분히":["korean"],"충청도":["korean"],"취업":["korean"],"취직":["korean"],"취향":["korean"],"치약":["korean"],"친구":["korean"],"친척":["korean"],"칠십":["korean"],"칠월":["korean"],"칠판":["korean"],"침대":["korean"],"침묵":["korean"],"침실":["korean"],"칫솔":["korean"],"칭찬":["korean"],"카메라":["korean"],"카운터":["korean"],"칼국수":["korean"],"캐릭터":["korean"],"캠퍼스":["korean"],"캠페인":["korean"],"커튼":["korean"],"컨디션":["korean"],"컬러":["korean"],"컴퓨터":["korean"],"코끼리":["korean"],"코미디":["korean"],"콘서트":["korean"],"콜라":["korean"],"콤플렉스":["korean"],"콩나물":["korean"],"쾌감":["korean"],"쿠데타":["korean"],"크림":["korean"],"큰길":["korean"],"큰딸":["korean"],"큰소리":["korean"],"큰아들":["korean"],"큰어머니":["korean"],"큰일":["korean"],"큰절":["korean"],"클래식":["korean"],"클럽":["korean"],"킬로":["korean"],"타입":["korean"],"타자기":["korean"],"탁구":["korean"],"탁자":["korean"],"탄생":["korean"],"태권도":["korean"],"태양":["korean"],"태풍":["korean"],"택시":["korean"],"탤런트":["korean"],"터널":["korean"],"터미널":["korean"],"테니스":["korean"],"테스트":["korean"],"테이블":["korean"],"텔레비전":["korean"],"토론":["korean"],"토마토":["korean"],"토요일":["korean"],"통계":["korean"],"통과":["korean"],"통로":["korean"],"통신":["korean"],"통역":["korean"],"통일":["korean"],"통장":["korean"],"통제":["korean"],"통증":["korean"],"통합":["korean"],"통화":["korean"],"퇴근":["korean"],"퇴원":["korean"],"퇴직금":["korean"],"튀김":["korean"],"트럭":["korean"],"특급":["korean"],"특별":["korean"],"특성":["korean"],"특수":["korean"],"특징":["korean"],"특히":["korean"],"튼튼히":["korean"],"티셔츠":["korean"],"파란색":["korean"],"파일":["korean"],"파출소":["korean"],"판결":["korean"],"판단":["korean"],"판매":["korean"],"판사":["korean"],"팔십":["korean"],"팔월":["korean"],"팝송":["korean"],"패션":["korean"],"팩스":["korean"],"팩시밀리":["korean"],"팬티":["korean"],"퍼센트":["korean"],"페인트":["korean"],"편견":["korean"],"편의":["korean"],"편지":["korean"],"편히":["korean"],"평가":["korean"],"평균":["korean"],"평생":["korean"],"평소":["korean"],"평양":["korean"],"평일":["korean"],"평화":["korean"],"포스터":["korean"],"포인트":["korean"],"포장":["korean"],"포함":["korean"],"표면":["korean"],"표정":["korean"],"표준":["korean"],"표현":["korean"],"품목":["korean"],"품질":["korean"],"풍경":["korean"],"풍속":["korean"],"풍습":["korean"],"프랑스":["korean"],"프린터":["korean"],"플라스틱":["korean"],"피곤":["korean"],"피망":["korean"],"피아노":["korean"],"필름":["korean"],"필수":["korean"],"필요":["korean"],"필자":["korean"],"필통":["korean"],"핑계":["korean"],"하느님":["korean"],"하늘":["korean"],"하드웨어":["korean"],"하룻밤":["korean"],"하반기":["korean"],"하숙집":["korean"],"하순":["korean"],"하여튼":["korean"],"하지만":["korean"],"하천":["korean"],"하품":["korean"],"하필":["korean"],"학과":["korean"],"학교":["korean"],"학급":["korean"],"학기":["korean"],"학년":["korean"],"학력":["korean"],"학번":["korean"],"학부모":["korean"],"학비":["korean"],"학생":["korean"],"학술":["korean"],"학습":["korean"],"학용품":["korean"],"학원":["korean"],"학위":["korean"],"학자":["korean"],"학점":["korean"],"한계":["korean"],"한글":["korean"],"한꺼번에":["korean"],"한낮":["korean"],"한눈":["korean"],"한동안":["korean"],"한때":["korean"],"한라산":["korean"],"한마디":["korean"],"한문":["korean"],"한번":["korean"],"한복":["korean"],"한식":["korean"],"한여름":["korean"],"한쪽":["korean"],"할머니":["korean"],"할아버지":["korean"],"할인":["korean"],"함께":["korean"],"함부로":["korean"],"합격":["korean"],"합리적":["korean"],"항공":["korean"],"항구":["korean"],"항상":["korean"],"항의":["korean"],"해결":["korean"],"해군":["korean"],"해답":["korean"],"해당":["korean"],"해물":["korean"],"해석":["korean"],"해설":["korean"],"해수욕장":["korean"],"해안":["korean"],"핵심":["korean"],"핸드백":["korean"],"햄버거":["korean"],"햇볕":["korean"],"햇살":["korean"],"행동":["korean"],"행복":["korean"],"행사":["korean"],"행운":["korean"],"행위":["korean"],"향기":["korean"],"향상":["korean"],"향수":["korean"],"허락":["korean"],"허용":["korean"],"헬기":["korean"],"현관":["korean"],"현금":["korean"],"현대":["korean"],"현상":["korean"],"현실":["korean"],"현장":["korean"],"현재":["korean"],"현지":["korean"],"혈액":["korean"],"협력":["korean"],"형부":["korean"],"형사":["korean"],"형수":["korean"],"형식":["korean"],"형제":["korean"],"형태":["korean"],"형편":["korean"],"혜택":["korean"],"호기심":["korean"],"호남":["korean"],"호랑이":["korean"],"호박":["korean"],"호텔":["korean"],"호흡":["korean"],"혹시":["korean"],"홀로":["korean"],"홈페이지":["korean"],"홍보":["korean"],"홍수":["korean"],"홍차":["korean"],"화면":["korean"],"화분":["korean"],"화살":["korean"],"화요일":["korean"],"화장":["korean"],"화학":["korean"],"확보":["korean"],"확인":["korean"],"확장":["korean"],"확정":["korean"],"환갑":["korean"],"환경":["korean"],"환영":["korean"],"환율":["korean"],"환자":["korean"],"활기":["korean"],"활동":["korean"],"활발히":["korean"],"활용":["korean"],"활짝":["korean"],"회견":["korean"],"회관":["korean"],"회복":["korean"],"회색":["korean"],"회원":["korean"],"회장":["korean"],"회전":["korean"],"횟수":["korean"],"횡단보도":["korean"],"효율적":["korean"],"후반":["korean"],"후춧가루":["korean"],"훈련":["korean"],"훨씬":["korean"],"휴식":["korean"],"휴일":["korean"],"흉내":["korean"],"흐름":["korean"],"흑백":["korean"],"흑인":["korean"],"흔적":["korean"],"흔히":["korean"],"흥미":["korean"],"흥분":["korean"],"희곡":["korean"],"희망":["korean"],"희생":["korean"],"흰색":["korean"],"힘껏":["korean"],"abacate":["portuguese"],"abaixo":["portuguese"],"abalar":["portuguese"],"abater":["portuguese"],"abduzir":["portuguese"],"abelha":["portuguese"],"aberto":["portuguese"],"abismo":["portuguese"],"abotoar":["portuguese"],"abranger":["portuguese"],"abreviar":["portuguese"],"abrigar":["portuguese"],"abrupto":["portuguese"],"absinto":["portuguese"],"absoluto":["portuguese"],"absurdo":["portuguese"],"abutre":["portuguese"],"acabado":["portuguese"],"acalmar":["portuguese"],"acampar":["portuguese"],"acanhar":["portuguese"],"acaso":["portuguese"],"aceitar":["portuguese"],"acelerar":["portuguese"],"acenar":["portuguese"],"acervo":["portuguese"],"acessar":["portuguese"],"acetona":["portuguese"],"achatar":["portuguese"],"acidez":["portuguese"],"acima":["portuguese"],"acionado":["portuguese"],"acirrar":["portuguese"],"aclamar":["portuguese"],"aclive":["portuguese"],"acolhida":["portuguese"],"acomodar":["portuguese"],"acoplar":["portuguese"],"acordar":["portuguese"],"acumular":["portuguese"],"acusador":["portuguese"],"adaptar":["portuguese"],"adega":["portuguese"],"adentro":["portuguese"],"adepto":["portuguese"],"adequar":["portuguese"],"aderente":["portuguese"],"adesivo":["portuguese"],"adeus":["portuguese"],"adiante":["portuguese"],"aditivo":["portuguese"],"adjetivo":["portuguese"],"adjunto":["portuguese"],"admirar":["portuguese"],"adorar":["portuguese"],"adquirir":["portuguese"],"adubo":["portuguese"],"adverso":["portuguese"],"advogado":["portuguese"],"aeronave":["portuguese"],"afastar":["portuguese"],"aferir":["portuguese"],"afetivo":["portuguese"],"afinador":["portuguese"],"afivelar":["portuguese"],"aflito":["portuguese"],"afluente":["portuguese"],"afrontar":["portuguese"],"agachar":["portuguese"],"agarrar":["portuguese"],"agasalho":["portuguese"],"agenciar":["portuguese"],"agilizar":["portuguese"],"agiota":["portuguese"],"agitado":["portuguese"],"agora":["portuguese"],"agradar":["portuguese"],"agreste":["portuguese"],"agrupar":["portuguese"],"aguardar":["portuguese"],"agulha":["portuguese"],"ajoelhar":["portuguese"],"ajudar":["portuguese"],"ajustar":["portuguese"],"alameda":["portuguese"],"alarme":["portuguese"],"alastrar":["portuguese"],"alavanca":["portuguese"],"albergue":["portuguese"],"albino":["portuguese"],"alcatra":["portuguese"],"aldeia":["portuguese"],"alecrim":["portuguese"],"alegria":["portuguese"],"alertar":["portuguese"],"alface":["portuguese"],"alfinete":["portuguese"],"algum":["portuguese"],"alheio":["portuguese"],"aliar":["portuguese"],"alicate":["portuguese"],"alienar":["portuguese"],"alinhar":["portuguese"],"aliviar":["portuguese"],"almofada":["portuguese"],"alocar":["portuguese"],"alpiste":["portuguese"],"alterar":["portuguese"],"altitude":["portuguese"],"alucinar":["portuguese"],"alugar":["portuguese"],"aluno":["portuguese"],"alusivo":["portuguese"],"alvo":["portuguese"],"amaciar":["portuguese"],"amador":["portuguese"],"amarelo":["portuguese"],"amassar":["portuguese"],"ambas":["portuguese"],"ambiente":["portuguese"],"ameixa":["portuguese"],"amenizar":["portuguese"],"amido":["portuguese"],"amistoso":["portuguese"],"amizade":["portuguese"],"amolador":["portuguese"],"amontoar":["portuguese"],"amoroso":["portuguese"],"amostra":["portuguese"],"amparar":["portuguese"],"ampliar":["portuguese"],"ampola":["portuguese"],"anagrama":["portuguese"],"analisar":["portuguese"],"anarquia":["portuguese"],"anatomia":["portuguese"],"andaime":["portuguese"],"anel":["portuguese"],"anexo":["portuguese"],"angular":["portuguese"],"animar":["portuguese"],"anjo":["portuguese"],"anomalia":["portuguese"],"anotado":["portuguese"],"ansioso":["portuguese"],"anterior":["portuguese"],"anuidade":["portuguese"],"anunciar":["portuguese"],"anzol":["portuguese"],"apagador":["portuguese"],"apalpar":["portuguese"],"apanhado":["portuguese"],"apego":["portuguese"],"apelido":["portuguese"],"apertada":["portuguese"],"apesar":["portuguese"],"apetite":["portuguese"],"apito":["portuguese"],"aplauso":["portuguese"],"aplicada":["portuguese"],"apoio":["portuguese"],"apontar":["portuguese"],"aposta":["portuguese"],"aprendiz":["portuguese"],"aprovar":["portuguese"],"aquecer":["portuguese"],"arame":["portuguese"],"aranha":["portuguese"],"arara":["portuguese"],"arcada":["portuguese"],"ardente":["portuguese"],"areia":["portuguese"],"arejar":["portuguese"],"arenito":["portuguese"],"aresta":["portuguese"],"argiloso":["portuguese"],"argola":["portuguese"],"arma":["portuguese"],"arquivo":["portuguese"],"arraial":["portuguese"],"arrebate":["portuguese"],"arriscar":["portuguese"],"arroba":["portuguese"],"arrumar":["portuguese"],"arsenal":["portuguese"],"arterial":["portuguese"],"artigo":["portuguese"],"arvoredo":["portuguese"],"asfaltar":["portuguese"],"asilado":["portuguese"],"aspirar":["portuguese"],"assador":["portuguese"],"assinar":["portuguese"],"assoalho":["portuguese"],"assunto":["portuguese"],"astral":["portuguese"],"atacado":["portuguese"],"atadura":["portuguese"],"atalho":["portuguese"],"atarefar":["portuguese"],"atear":["portuguese"],"atender":["portuguese"],"aterro":["portuguese"],"ateu":["portuguese"],"atingir":["portuguese"],"atirador":["portuguese"],"ativo":["portuguese"],"atoleiro":["portuguese"],"atracar":["portuguese"],"atrevido":["portuguese"],"atriz":["portuguese"],"atual":["portuguese"],"atum":["portuguese"],"auditor":["portuguese"],"aumentar":["portuguese"],"aura":["portuguese"],"aurora":["portuguese"],"autismo":["portuguese"],"autoria":["portuguese"],"autuar":["portuguese"],"avaliar":["portuguese"],"avante":["portuguese"],"avaria":["portuguese"],"avental":["portuguese"],"avesso":["portuguese"],"aviador":["portuguese"],"avisar":["portuguese"],"avulso":["portuguese"],"axila":["portuguese"],"azarar":["portuguese"],"azedo":["portuguese"],"azeite":["portuguese"],"azulejo":["portuguese"],"babar":["portuguese"],"babosa":["portuguese"],"bacalhau":["portuguese"],"bacharel":["portuguese"],"bacia":["portuguese"],"bagagem":["portuguese"],"baiano":["portuguese"],"bailar":["portuguese"],"baioneta":["portuguese"],"bairro":["portuguese"],"baixista":["portuguese"],"bajular":["portuguese"],"baleia":["portuguese"],"baliza":["portuguese"],"balsa":["portuguese"],"banal":["portuguese"],"bandeira":["portuguese"],"banho":["portuguese"],"banir":["portuguese"],"banquete":["portuguese"],"barato":["portuguese"],"barbado":["portuguese"],"baronesa":["portuguese"],"barraca":["portuguese"],"barulho":["portuguese"],"baseado":["portuguese"],"bastante":["portuguese"],"batata":["portuguese"],"batedor":["portuguese"],"batida":["portuguese"],"batom":["portuguese"],"batucar":["portuguese"],"baunilha":["portuguese"],"beber":["portuguese"],"beijo":["portuguese"],"beirada":["portuguese"],"beisebol":["portuguese"],"beldade":["portuguese"],"beleza":["portuguese"],"belga":["portuguese"],"beliscar":["portuguese"],"bendito":["portuguese"],"bengala":["portuguese"],"benzer":["portuguese","turkish"],"berimbau":["portuguese"],"berlinda":["portuguese"],"berro":["portuguese"],"besouro":["portuguese"],"bexiga":["portuguese"],"bezerro":["portuguese"],"bico":["portuguese"],"bicudo":["portuguese"],"bienal":["portuguese"],"bifocal":["portuguese"],"bifurcar":["portuguese"],"bigorna":["portuguese"],"bilhete":["portuguese"],"bimestre":["portuguese"],"bimotor":["portuguese"],"biologia":["portuguese"],"biombo":["portuguese"],"biosfera":["portuguese"],"bipolar":["portuguese"],"birrento":["portuguese"],"biscoito":["portuguese"],"bisneto":["portuguese"],"bispo":["portuguese"],"bissexto":["portuguese"],"bitola":["portuguese"],"bizarro":["portuguese"],"blindado":["portuguese"],"bloco":["portuguese"],"bloquear":["portuguese"],"boato":["portuguese"],"bobagem":["portuguese"],"bocado":["portuguese"],"bocejo":["portuguese"],"bochecha":["portuguese"],"boicotar":["portuguese"],"bolada":["portuguese"],"boletim":["portuguese"],"bolha":["portuguese"],"bolo":["portuguese"],"bombeiro":["portuguese"],"bonde":["portuguese"],"boneco":["portuguese"],"bonita":["portuguese"],"borbulha":["portuguese"],"borda":["portuguese"],"boreal":["portuguese"],"borracha":["portuguese"],"bovino":["portuguese"],"boxeador":["portuguese"],"branco":["portuguese"],"brasa":["portuguese"],"braveza":["portuguese"],"breu":["portuguese"],"briga":["portuguese"],"brilho":["portuguese"],"brincar":["portuguese"],"broa":["portuguese"],"brochura":["portuguese"],"bronzear":["portuguese"],"broto":["portuguese"],"bruxo":["portuguese"],"bucha":["portuguese"],"budismo":["portuguese"],"bufar":["portuguese"],"bule":["portuguese"],"buraco":["portuguese"],"busca":["portuguese"],"busto":["portuguese"],"buzina":["portuguese"],"cabana":["portuguese"],"cabelo":["portuguese"],"cabide":["portuguese"],"cabo":["portuguese"],"cabrito":["portuguese"],"cacau":["portuguese"],"cacetada":["portuguese"],"cachorro":["portuguese"],"cacique":["portuguese"],"cadastro":["portuguese"],"cadeado":["portuguese"],"cafezal":["portuguese"],"caiaque":["portuguese"],"caipira":["portuguese"],"caixote":["portuguese"],"cajado":["portuguese"],"caju":["portuguese"],"calafrio":["portuguese"],"calcular":["portuguese"],"caldeira":["portuguese"],"calibrar":["portuguese"],"calmante":["portuguese"],"calota":["portuguese"],"camada":["portuguese"],"cambista":["portuguese"],"camisa":["portuguese"],"camomila":["portuguese"],"campanha":["portuguese"],"camuflar":["portuguese"],"canavial":["portuguese"],"cancelar":["portuguese"],"caneta":["portuguese"],"canguru":["portuguese"],"canhoto":["portuguese"],"canivete":["portuguese"],"canoa":["portuguese"],"cansado":["portuguese"],"cantar":["portuguese"],"canudo":["portuguese"],"capacho":["portuguese"],"capela":["portuguese"],"capinar":["portuguese"],"capotar":["portuguese"],"capricho":["portuguese"],"captador":["portuguese"],"capuz":["portuguese"],"caracol":["portuguese"],"carbono":["portuguese"],"cardeal":["portuguese"],"careca":["portuguese"],"carimbar":["portuguese"],"carneiro":["portuguese"],"carpete":["portuguese"],"carreira":["portuguese"],"cartaz":["portuguese"],"carvalho":["portuguese"],"casaco":["portuguese"],"casca":["portuguese"],"casebre":["portuguese"],"castelo":["portuguese"],"casulo":["portuguese"],"catarata":["portuguese"],"cativar":["portuguese"],"caule":["portuguese"],"causador":["portuguese"],"cautelar":["portuguese"],"cavalo":["portuguese"],"caverna":["portuguese"],"cebola":["portuguese"],"cedilha":["portuguese"],"cegonha":["portuguese"],"celebrar":["portuguese"],"celular":["portuguese"],"cenoura":["portuguese"],"censo":["portuguese"],"centeio":["portuguese"],"cercar":["portuguese"],"cerrado":["portuguese"],"certeiro":["portuguese"],"cerveja":["portuguese"],"cetim":["portuguese"],"cevada":["portuguese"],"chacota":["portuguese"],"chaleira":["portuguese"],"chamado":["portuguese"],"chapada":["portuguese"],"charme":["portuguese"],"chatice":["portuguese"],"chave":["portuguese"],"chefe":["portuguese"],"chegada":["portuguese"],"cheiro":["portuguese"],"cheque":["portuguese"],"chicote":["portuguese"],"chifre":["portuguese"],"chinelo":["portuguese"],"chocalho":["portuguese"],"chover":["portuguese"],"chumbo":["portuguese"],"chutar":["portuguese"],"chuva":["portuguese"],"cicatriz":["portuguese"],"ciclone":["portuguese"],"cidade":["portuguese"],"cidreira":["portuguese"],"ciente":["portuguese"],"cigana":["portuguese"],"cimento":["portuguese"],"cinto":["portuguese"],"cinza":["portuguese"],"ciranda":["portuguese"],"circuito":["portuguese"],"cirurgia":["portuguese"],"citar":["portuguese"],"clareza":["portuguese"],"clero":["portuguese"],"clicar":["portuguese"],"clone":["portuguese"],"clube":["portuguese"],"coado":["portuguese"],"coagir":["portuguese"],"cobaia":["portuguese"],"cobertor":["portuguese"],"cobrar":["portuguese"],"cocada":["portuguese"],"coelho":["portuguese"],"coentro":["portuguese"],"coeso":["portuguese"],"cogumelo":["portuguese"],"coibir":["portuguese"],"coifa":["portuguese"],"coiote":["portuguese"],"colar":["portuguese"],"coleira":["portuguese"],"colher":["portuguese"],"colidir":["portuguese"],"colmeia":["portuguese"],"colono":["portuguese"],"coluna":["portuguese"],"comando":["portuguese"],"combinar":["portuguese"],"comentar":["portuguese"],"comitiva":["portuguese"],"comover":["portuguese"],"complexo":["portuguese"],"comum":["portuguese"],"concha":["portuguese"],"condor":["portuguese"],"conectar":["portuguese"],"confuso":["portuguese"],"congelar":["portuguese"],"conhecer":["portuguese"],"conjugar":["portuguese"],"consumir":["portuguese"],"contrato":["portuguese"],"convite":["portuguese"],"cooperar":["portuguese"],"copeiro":["portuguese"],"copiador":["portuguese"],"copo":["portuguese"],"coquetel":["portuguese"],"coragem":["portuguese"],"cordial":["portuguese"],"corneta":["portuguese"],"coronha":["portuguese"],"corporal":["portuguese"],"correio":["portuguese"],"cortejo":["portuguese"],"coruja":["portuguese"],"corvo":["portuguese"],"cosseno":["portuguese"],"costela":["portuguese"],"cotonete":["portuguese"],"couro":["portuguese"],"couve":["portuguese"],"covil":["portuguese"],"cozinha":["portuguese"],"cratera":["portuguese"],"cravo":["portuguese"],"creche":["portuguese"],"credor":["portuguese"],"creme":["portuguese"],"crer":["portuguese"],"crespo":["portuguese"],"criada":["portuguese"],"criminal":["portuguese"],"crioulo":["portuguese"],"crise":["portuguese"],"criticar":["portuguese"],"crosta":["portuguese"],"crua":["portuguese"],"cruzeiro":["portuguese"],"cubano":["portuguese"],"cueca":["portuguese"],"cuidado":["portuguese"],"cujo":["portuguese"],"culatra":["portuguese"],"culminar":["portuguese"],"culpar":["portuguese"],"cultura":["portuguese"],"cumprir":["portuguese"],"cunhado":["portuguese"],"cupido":["portuguese"],"curativo":["portuguese"],"curral":["portuguese"],"cursar":["portuguese"],"curto":["portuguese"],"cuspir":["portuguese"],"custear":["portuguese"],"cutelo":["portuguese"],"damasco":["portuguese"],"datar":["portuguese"],"debater":["portuguese"],"debitar":["portuguese"],"deboche":["portuguese"],"debulhar":["portuguese"],"decalque":["portuguese"],"decimal":["portuguese"],"declive":["portuguese"],"decote":["portuguese"],"decretar":["portuguese"],"dedal":["portuguese"],"dedicado":["portuguese"],"deduzir":["portuguese"],"defesa":["portuguese"],"defumar":["portuguese"],"degelo":["portuguese"],"degrau":["portuguese"],"degustar":["portuguese"],"deitado":["portuguese"],"deixar":["portuguese"],"delator":["portuguese"],"delegado":["portuguese"],"delinear":["portuguese"],"delonga":["portuguese"],"demanda":["portuguese"],"demitir":["portuguese"],"demolido":["portuguese"],"dentista":["portuguese"],"depenado":["portuguese"],"depilar":["portuguese"],"depois":["portuguese"],"depressa":["portuguese"],"depurar":["portuguese"],"deriva":["portuguese"],"derramar":["portuguese"],"desafio":["portuguese"],"desbotar":["portuguese"],"descanso":["portuguese"],"desenho":["portuguese"],"desfiado":["portuguese"],"desgaste":["portuguese"],"desigual":["portuguese"],"deslize":["portuguese"],"desmamar":["portuguese"],"desova":["portuguese"],"despesa":["portuguese"],"destaque":["portuguese"],"desviar":["portuguese"],"detalhar":["portuguese"],"detentor":["portuguese"],"detonar":["portuguese"],"detrito":["portuguese"],"deusa":["portuguese"],"dever":["portuguese"],"devido":["portuguese"],"devotado":["portuguese"],"dezena":["portuguese"],"diagrama":["portuguese"],"dialeto":["portuguese"],"didata":["portuguese"],"difuso":["portuguese"],"digitar":["portuguese"],"dilatado":["portuguese"],"diluente":["portuguese"],"diminuir":["portuguese"],"dinastia":["portuguese"],"dinheiro":["portuguese"],"diocese":["portuguese"],"direto":["portuguese"],"discreta":["portuguese"],"disfarce":["portuguese"],"disparo":["portuguese"],"disquete":["portuguese"],"dissipar":["portuguese"],"distante":["portuguese"],"ditador":["portuguese"],"diurno":["portuguese"],"diverso":["portuguese"],"divisor":["portuguese"],"divulgar":["portuguese"],"dizer":["portuguese"],"dobrador":["portuguese"],"dolorido":["portuguese"],"domador":["portuguese"],"dominado":["portuguese"],"donativo":["portuguese"],"donzela":["portuguese"],"dormente":["portuguese"],"dorsal":["portuguese"],"dosagem":["portuguese"],"dourado":["portuguese"],"doutor":["portuguese"],"drenagem":["portuguese"],"drible":["portuguese"],"drogaria":["portuguese"],"duelar":["portuguese"],"duende":["portuguese"],"dueto":["portuguese"],"duplo":["portuguese"],"duquesa":["portuguese"],"durante":["portuguese"],"duvidoso":["portuguese"],"eclodir":["portuguese"],"ecoar":["portuguese"],"ecologia":["portuguese"],"edificar":["portuguese"],"edital":["portuguese"],"educado":["portuguese"],"efeito":["portuguese"],"efetivar":["portuguese"],"ejetar":["portuguese"],"elaborar":["portuguese"],"eleger":["portuguese"],"eleitor":["portuguese"],"elenco":["portuguese"],"elevador":["portuguese"],"eliminar":["portuguese"],"elogiar":["portuguese"],"embargo":["portuguese"],"embolado":["portuguese"],"embrulho":["portuguese"],"embutido":["portuguese"],"emenda":["portuguese"],"emergir":["portuguese"],"emissor":["portuguese"],"empatia":["portuguese"],"empenho":["portuguese"],"empinado":["portuguese"],"empolgar":["portuguese"],"emprego":["portuguese"],"empurrar":["portuguese"],"emulador":["portuguese"],"encaixe":["portuguese"],"encenado":["portuguese"],"enchente":["portuguese"],"encontro":["portuguese"],"endeusar":["portuguese"],"endossar":["portuguese"],"enfaixar":["portuguese"],"enfeite":["portuguese"],"enfim":["portuguese"],"engajado":["portuguese"],"engenho":["portuguese"],"englobar":["portuguese"],"engomado":["portuguese"],"engraxar":["portuguese"],"enguia":["portuguese"],"enjoar":["portuguese"],"enlatar":["portuguese"],"enquanto":["portuguese"],"enraizar":["portuguese"],"enrolado":["portuguese"],"enrugar":["portuguese"],"ensaio":["portuguese"],"enseada":["portuguese"],"ensino":["portuguese"],"ensopado":["portuguese"],"entanto":["portuguese"],"enteado":["portuguese"],"entidade":["portuguese"],"entortar":["portuguese"],"entrada":["portuguese"],"entulho":["portuguese"],"envergar":["portuguese"],"enviado":["portuguese"],"envolver":["portuguese"],"enxame":["portuguese"],"enxerto":["portuguese"],"enxofre":["portuguese"],"enxuto":["portuguese"],"epiderme":["portuguese"],"equipar":["portuguese"],"ereto":["portuguese"],"erguido":["portuguese"],"errata":["portuguese"],"erva":["portuguese"],"ervilha":["portuguese"],"esbanjar":["portuguese"],"esbelto":["portuguese"],"escama":["portuguese"],"escola":["portuguese"],"escrita":["portuguese"],"escuta":["portuguese"],"esfinge":["portuguese"],"esfolar":["portuguese"],"esfregar":["portuguese"],"esfumado":["portuguese"],"esgrima":["portuguese"],"esmalte":["portuguese"],"espanto":["portuguese"],"espelho":["portuguese"],"espiga":["portuguese"],"esponja":["portuguese"],"espreita":["portuguese"],"espumar":["portuguese"],"esquerda":["portuguese"],"estaca":["portuguese"],"esteira":["portuguese"],"esticar":["portuguese"],"estofado":["portuguese"],"estrela":["portuguese"],"estudo":["portuguese"],"esvaziar":["portuguese"],"etanol":["portuguese"],"etiqueta":["portuguese"],"euforia":["portuguese"],"europeu":["portuguese"],"evacuar":["portuguese"],"evaporar":["portuguese"],"evasivo":["portuguese"],"eventual":["portuguese"],"evidente":["portuguese"],"evoluir":["portuguese"],"exagero":["portuguese"],"exalar":["portuguese"],"examinar":["portuguese"],"exato":["portuguese"],"exausto":["portuguese"],"excesso":["portuguese"],"excitar":["portuguese"],"exclamar":["portuguese"],"executar":["portuguese"],"exemplo":["portuguese"],"exibir":["portuguese"],"exigente":["portuguese"],"exonerar":["portuguese"],"expandir":["portuguese"],"expelir":["portuguese"],"expirar":["portuguese"],"explanar":["portuguese"],"exposto":["portuguese"],"expresso":["portuguese"],"expulsar":["portuguese"],"externo":["portuguese"],"extinto":["portuguese"],"extrato":["portuguese"],"fabricar":["portuguese"],"fabuloso":["portuguese"],"faceta":["portuguese"],"facial":["portuguese"],"fada":["portuguese"],"fadiga":["portuguese"],"faixa":["portuguese"],"falar":["portuguese"],"falta":["portuguese"],"familiar":["portuguese"],"fandango":["portuguese"],"fanfarra":["portuguese"],"fantoche":["portuguese"],"fardado":["portuguese"],"farelo":["portuguese"],"farinha":["portuguese"],"farofa":["portuguese"],"farpa":["portuguese"],"fartura":["portuguese"],"fatia":["portuguese"],"fator":["portuguese"],"favorita":["portuguese"],"faxina":["portuguese"],"fazenda":["portuguese"],"fechado":["portuguese"],"feijoada":["portuguese"],"feirante":["portuguese"],"felino":["portuguese"],"feminino":["portuguese"],"fenda":["portuguese"],"feno":["portuguese"],"fera":["portuguese"],"feriado":["portuguese"],"ferrugem":["portuguese"],"ferver":["portuguese"],"festejar":["portuguese"],"fetal":["portuguese"],"feudal":["portuguese"],"fiapo":["portuguese"],"fibrose":["portuguese"],"ficar":["portuguese"],"ficheiro":["portuguese"],"figurado":["portuguese"],"fileira":["portuguese"],"filho":["portuguese"],"filme":["portuguese"],"filtrar":["portuguese"],"firmeza":["portuguese"],"fisgada":["portuguese"],"fissura":["portuguese"],"fita":["portuguese"],"fivela":["portuguese"],"fixador":["portuguese"],"fixo":["portuguese"],"flacidez":["portuguese"],"flamingo":["portuguese"],"flanela":["portuguese"],"flechada":["portuguese"],"flora":["portuguese"],"flutuar":["portuguese"],"fluxo":["portuguese"],"focal":["portuguese"],"focinho":["portuguese"],"fofocar":["portuguese"],"fogo":["portuguese"],"foguete":["portuguese"],"foice":["portuguese"],"folgado":["portuguese"],"folheto":["portuguese"],"forjar":["portuguese"],"formiga":["portuguese"],"forno":["portuguese"],"forte":["portuguese"],"fosco":["portuguese"],"fossa":["portuguese"],"fragata":["portuguese"],"fralda":["portuguese"],"frango":["portuguese"],"frasco":["portuguese"],"fraterno":["portuguese"],"freira":["portuguese"],"frente":["portuguese"],"fretar":["portuguese"],"frieza":["portuguese"],"friso":["portuguese"],"fritura":["portuguese"],"fronha":["portuguese"],"frustrar":["portuguese"],"fruteira":["portuguese"],"fugir":["portuguese"],"fulano":["portuguese"],"fuligem":["portuguese"],"fundar":["portuguese"],"fungo":["portuguese"],"funil":["portuguese"],"furador":["portuguese"],"furioso":["portuguese"],"futebol":["portuguese"],"gabarito":["portuguese"],"gabinete":["portuguese"],"gado":["portuguese"],"gaiato":["portuguese"],"gaiola":["portuguese"],"gaivota":["portuguese"],"galega":["portuguese"],"galho":["portuguese"],"galinha":["portuguese"],"galocha":["portuguese"],"ganhar":["portuguese"],"garagem":["portuguese"],"garfo":["portuguese"],"gargalo":["portuguese"],"garimpo":["portuguese"],"garoupa":["portuguese"],"garrafa":["portuguese"],"gasoduto":["portuguese"],"gasto":["portuguese"],"gata":["portuguese"],"gatilho":["portuguese"],"gaveta":["portuguese"],"gazela":["portuguese"],"gelado":["portuguese"],"geleia":["portuguese"],"gelo":["portuguese"],"gemada":["portuguese"],"gemer":["portuguese"],"gemido":["portuguese"],"generoso":["portuguese"],"gengiva":["portuguese"],"genial":["portuguese"],"genoma":["portuguese"],"genro":["portuguese"],"geologia":["portuguese"],"gerador":["portuguese"],"germinar":["portuguese"],"gesso":["portuguese"],"gestor":["portuguese"],"ginasta":["portuguese"],"gincana":["portuguese"],"gingado":["portuguese"],"girafa":["portuguese"],"girino":["portuguese"],"glacial":["portuguese"],"glicose":["portuguese"],"global":["portuguese"],"glorioso":["portuguese"],"goela":["portuguese"],"goiaba":["portuguese"],"golfe":["portuguese"],"golpear":["portuguese"],"gordura":["portuguese"],"gorjeta":["portuguese"],"gorro":["portuguese"],"gostoso":["portuguese"],"goteira":["portuguese"],"governar":["portuguese"],"gracejo":["portuguese"],"gradual":["portuguese"],"grafite":["portuguese"],"gralha":["portuguese"],"grampo":["portuguese"],"granada":["portuguese"],"gratuito":["portuguese"],"graveto":["portuguese"],"graxa":["portuguese"],"grego":["portuguese"],"grelhar":["portuguese"],"greve":["portuguese"],"grilo":["portuguese"],"grisalho":["portuguese"],"gritaria":["portuguese"],"grosso":["portuguese"],"grotesco":["portuguese"],"grudado":["portuguese"],"grunhido":["portuguese"],"gruta":["portuguese"],"guache":["portuguese"],"guarani":["portuguese"],"guaxinim":["portuguese"],"guerrear":["portuguese"],"guiar":["portuguese"],"guincho":["portuguese"],"guisado":["portuguese"],"gula":["portuguese"],"guloso":["portuguese"],"guru":["portuguese"],"habitar":["portuguese"],"harmonia":["portuguese"],"haste":["portuguese"],"haver":["portuguese"],"hectare":["portuguese"],"herdar":["portuguese"],"heresia":["portuguese"],"hesitar":["portuguese"],"hiato":["portuguese"],"hibernar":["portuguese"],"hidratar":["portuguese"],"hiena":["portuguese"],"hino":["portuguese"],"hipismo":["portuguese"],"hipnose":["portuguese"],"hipoteca":["portuguese"],"hoje":["portuguese"],"holofote":["portuguese"],"homem":["portuguese"],"honesto":["portuguese"],"honrado":["portuguese"],"hormonal":["portuguese"],"hospedar":["portuguese"],"humorado":["portuguese"],"iate":["portuguese"],"ideia":["portuguese"],"idoso":["portuguese"],"ignorado":["portuguese"],"igreja":["portuguese"],"iguana":["portuguese"],"ileso":["portuguese"],"ilha":["portuguese"],"iludido":["portuguese"],"iluminar":["portuguese"],"ilustrar":["portuguese"],"imagem":["portuguese"],"imediato":["portuguese"],"imenso":["portuguese"],"imersivo":["portuguese"],"iminente":["portuguese"],"imitador":["portuguese"],"imortal":["portuguese"],"impacto":["portuguese"],"impedir":["portuguese"],"implante":["portuguese"],"impor":["portuguese"],"imprensa":["portuguese"],"impune":["portuguese"],"imunizar":["portuguese"],"inalador":["portuguese"],"inapto":["portuguese"],"inativo":["portuguese"],"incenso":["portuguese"],"inchar":["portuguese"],"incidir":["portuguese"],"incluir":["portuguese"],"incolor":["portuguese"],"indeciso":["portuguese"],"indireto":["portuguese"],"indutor":["portuguese"],"ineficaz":["portuguese"],"inerente":["portuguese"],"infantil":["portuguese"],"infestar":["portuguese"],"infinito":["portuguese"],"inflamar":["portuguese"],"informal":["portuguese"],"infrator":["portuguese"],"ingerir":["portuguese"],"inibido":["portuguese"],"inicial":["portuguese"],"inimigo":["portuguese"],"injetar":["portuguese"],"inocente":["portuguese"],"inodoro":["portuguese"],"inovador":["portuguese"],"inox":["portuguese"],"inquieto":["portuguese"],"inscrito":["portuguese"],"inseto":["portuguese"],"insistir":["portuguese"],"inspetor":["portuguese"],"instalar":["portuguese"],"insulto":["portuguese"],"intacto":["portuguese"],"integral":["portuguese"],"intimar":["portuguese"],"intocado":["portuguese"],"intriga":["portuguese"],"invasor":["portuguese"],"inverno":["portuguese"],"invicto":["portuguese"],"invocar":["portuguese"],"iogurte":["portuguese"],"iraniano":["portuguese"],"ironizar":["portuguese"],"irreal":["portuguese"],"irritado":["portuguese"],"isca":["portuguese"],"isento":["portuguese"],"isolado":["portuguese"],"isqueiro":["portuguese"],"italiano":["portuguese"],"janeiro":["portuguese"],"jangada":["portuguese"],"janta":["portuguese"],"jararaca":["portuguese"],"jardim":["portuguese"],"jarro":["portuguese"],"jasmim":["portuguese"],"jato":["portuguese"],"javali":["portuguese"],"jazida":["portuguese"],"jejum":["portuguese"],"joaninha":["portuguese"],"joelhada":["portuguese"],"jogador":["portuguese"],"joia":["portuguese"],"jornal":["portuguese"],"jorrar":["portuguese"],"jovem":["portuguese"],"juba":["portuguese"],"judeu":["portuguese"],"judoca":["portuguese"],"juiz":["portuguese"],"julgador":["portuguese"],"julho":["portuguese"],"jurado":["portuguese"],"jurista":["portuguese"],"juro":["portuguese"],"justa":["portuguese"],"labareda":["portuguese"],"laboral":["portuguese"],"lacre":["portuguese"],"lactante":["portuguese"],"ladrilho":["portuguese"],"lagarta":["portuguese"],"lagoa":["portuguese"],"laje":["portuguese"],"lamber":["portuguese"],"lamentar":["portuguese"],"laminar":["portuguese"],"lampejo":["portuguese"],"lanche":["portuguese"],"lapidar":["portuguese"],"lapso":["portuguese"],"laranja":["portuguese"],"lareira":["portuguese"],"largura":["portuguese"],"lasanha":["portuguese"],"lastro":["portuguese"],"lateral":["portuguese"],"latido":["portuguese"],"lavanda":["portuguese"],"lavoura":["portuguese"],"lavrador":["portuguese"],"laxante":["portuguese"],"lazer":["portuguese"],"lealdade":["portuguese"],"lebre":["portuguese"],"legado":["portuguese"],"legendar":["portuguese"],"legista":["portuguese"],"leigo":["portuguese"],"leiloar":["portuguese"],"leitura":["portuguese"],"lembrete":["portuguese"],"leme":["portuguese"],"lenhador":["portuguese"],"lentilha":["portuguese"],"leoa":["portuguese"],"lesma":["portuguese"],"leste":["portuguese"],"letivo":["portuguese"],"letreiro":["portuguese"],"levar":["portuguese"],"leveza":["portuguese"],"levitar":["portuguese"],"liberal":["portuguese"],"libido":["portuguese"],"liderar":["portuguese"],"ligar":["portuguese"],"ligeiro":["portuguese"],"limitar":["portuguese"],"limoeiro":["portuguese"],"limpador":["portuguese"],"linda":["portuguese"],"linear":["portuguese"],"linhagem":["portuguese"],"liquidez":["portuguese"],"listagem":["portuguese"],"lisura":["portuguese"],"litoral":["portuguese"],"livro":["portuguese"],"lixa":["portuguese"],"lixeira":["portuguese"],"locador":["portuguese"],"locutor":["portuguese"],"lojista":["portuguese"],"lombo":["portuguese"],"lona":["portuguese"],"longe":["portuguese"],"lontra":["portuguese"],"lorde":["portuguese"],"lotado":["portuguese"],"loteria":["portuguese"],"loucura":["portuguese"],"lousa":["portuguese"],"louvar":["portuguese"],"luar":["portuguese"],"lucidez":["portuguese"],"lucro":["portuguese"],"luneta":["portuguese"],"lustre":["portuguese"],"lutador":["portuguese"],"luva":["portuguese"],"macaco":["portuguese"],"macete":["portuguese"],"machado":["portuguese"],"macio":["portuguese"],"madeira":["portuguese"],"madrinha":["portuguese"],"magnata":["portuguese"],"magreza":["portuguese"],"maior":["portuguese"],"mais":["portuguese"],"malandro":["portuguese"],"malha":["portuguese"],"malote":["portuguese"],"maluco":["portuguese"],"mamilo":["portuguese"],"mamoeiro":["portuguese"],"mamute":["portuguese"],"manada":["portuguese"],"mancha":["portuguese"],"mandato":["portuguese"],"manequim":["portuguese"],"manhoso":["portuguese"],"manivela":["portuguese"],"manobrar":["portuguese"],"mansa":["portuguese"],"manter":["portuguese"],"manusear":["portuguese"],"mapeado":["portuguese"],"maquinar":["portuguese"],"marcador":["portuguese"],"maresia":["portuguese"],"marfim":["portuguese"],"margem":["portuguese"],"marinho":["portuguese"],"marmita":["portuguese"],"maroto":["portuguese"],"marquise":["portuguese"],"marreco":["portuguese"],"martelo":["portuguese"],"marujo":["portuguese"],"mascote":["portuguese"],"masmorra":["portuguese"],"massagem":["portuguese"],"mastigar":["portuguese"],"matagal":["portuguese"],"materno":["portuguese"],"matinal":["portuguese"],"matutar":["portuguese"],"maxilar":["portuguese"],"medalha":["portuguese"],"medida":["portuguese"],"medusa":["portuguese"],"megafone":["portuguese"],"meiga":["portuguese"],"melancia":["portuguese"],"melhor":["portuguese"],"membro":["portuguese"],"memorial":["portuguese"],"menino":["portuguese"],"menos":["portuguese"],"mensagem":["portuguese"],"mental":["portuguese"],"merecer":["portuguese"],"mergulho":["portuguese"],"mesada":["portuguese"],"mesclar":["portuguese"],"mesmo":["portuguese"],"mesquita":["portuguese"],"mestre":["portuguese"],"metade":["portuguese"],"meteoro":["portuguese"],"metragem":["portuguese"],"mexer":["portuguese"],"mexicano":["portuguese"],"micro":["portuguese"],"migalha":["portuguese"],"migrar":["portuguese"],"milagre":["portuguese"],"milenar":["portuguese"],"milhar":["portuguese"],"mimado":["portuguese"],"minerar":["portuguese"],"minhoca":["portuguese"],"ministro":["portuguese"],"minoria":["portuguese"],"miolo":["portuguese"],"mirante":["portuguese"],"mirtilo":["portuguese"],"misturar":["portuguese"],"mocidade":["portuguese"],"moderno":["portuguese"],"modular":["portuguese"],"moeda":["portuguese"],"moer":["portuguese"],"moinho":["portuguese"],"moita":["portuguese"],"moldura":["portuguese"],"moleza":["portuguese"],"molho":["portuguese"],"molinete":["portuguese"],"molusco":["portuguese"],"montanha":["portuguese"],"moqueca":["portuguese"],"morango":["portuguese"],"morcego":["portuguese"],"mordomo":["portuguese"],"morena":["portuguese"],"mosaico":["portuguese"],"mosquete":["portuguese"],"mostarda":["portuguese"],"motel":["portuguese"],"motim":["portuguese"],"moto":["portuguese"],"motriz":["portuguese"],"muda":["portuguese"],"muito":["portuguese"],"mulata":["portuguese"],"mulher":["portuguese"],"multar":["portuguese"],"mundial":["portuguese"],"munido":["portuguese"],"muralha":["portuguese"],"murcho":["portuguese"],"muscular":["portuguese"],"museu":["portuguese"],"musical":["portuguese"],"nacional":["portuguese"],"nadador":["portuguese"],"naja":["portuguese"],"namoro":["portuguese"],"narina":["portuguese"],"narrado":["portuguese"],"nascer":["portuguese"],"nativa":["portuguese"],"natureza":["portuguese"],"navalha":["portuguese"],"navegar":["portuguese"],"navio":["portuguese"],"neblina":["portuguese"],"nebuloso":["portuguese"],"negativa":["portuguese"],"negociar":["portuguese"],"negrito":["portuguese"],"nervoso":["portuguese"],"neta":["portuguese"],"neural":["portuguese"],"nevasca":["portuguese"],"nevoeiro":["portuguese"],"ninar":["portuguese"],"ninho":["portuguese"],"nitidez":["portuguese"],"nivelar":["portuguese"],"nobreza":["portuguese"],"noite":["portuguese"],"noiva":["portuguese"],"nomear":["portuguese"],"nominal":["portuguese"],"nordeste":["portuguese"],"nortear":["portuguese"],"notar":["portuguese"],"noticiar":["portuguese"],"noturno":["portuguese"],"novelo":["portuguese"],"novilho":["portuguese"],"novo":["portuguese"],"nublado":["portuguese"],"nudez":["portuguese"],"numeral":["portuguese"],"nupcial":["portuguese"],"nutrir":["portuguese"],"nuvem":["portuguese"],"obcecado":["portuguese"],"obedecer":["portuguese"],"objetivo":["portuguese"],"obrigado":["portuguese"],"obscuro":["portuguese"],"obstetra":["portuguese"],"obter":["portuguese"],"obturar":["portuguese"],"ocidente":["portuguese"],"ocioso":["portuguese"],"ocorrer":["portuguese"],"oculista":["portuguese"],"ocupado":["portuguese"],"ofegante":["portuguese"],"ofensiva":["portuguese"],"oferenda":["portuguese"],"oficina":["portuguese"],"ofuscado":["portuguese"],"ogiva":["portuguese"],"olaria":["portuguese"],"oleoso":["portuguese"],"olhar":["portuguese"],"oliveira":["portuguese"],"ombro":["portuguese"],"omelete":["portuguese"],"omisso":["portuguese"],"omitir":["portuguese"],"ondulado":["portuguese"],"oneroso":["portuguese"],"ontem":["portuguese"],"opcional":["portuguese"],"operador":["portuguese"],"oponente":["portuguese"],"oportuno":["portuguese"],"oposto":["portuguese"],"orar":["portuguese"],"orbitar":["portuguese"],"ordem":["portuguese"],"ordinal":["portuguese"],"orfanato":["portuguese"],"orgasmo":["portuguese"],"orgulho":["portuguese"],"oriental":["portuguese"],"origem":["portuguese"],"oriundo":["portuguese"],"orla":["portuguese"],"ortodoxo":["portuguese"],"orvalho":["portuguese"],"oscilar":["portuguese"],"ossada":["portuguese"],"osso":["portuguese"],"ostentar":["portuguese"],"otimismo":["portuguese"],"ousadia":["portuguese"],"outono":["portuguese"],"outubro":["portuguese"],"ouvido":["portuguese"],"ovelha":["portuguese"],"ovular":["portuguese"],"oxidar":["portuguese"],"oxigenar":["portuguese"],"pacato":["portuguese"],"paciente":["portuguese"],"pacote":["portuguese"],"pactuar":["portuguese"],"padaria":["portuguese"],"padrinho":["portuguese"],"pagar":["portuguese"],"pagode":["portuguese"],"painel":["portuguese"],"pairar":["portuguese"],"paisagem":["portuguese"],"palavra":["portuguese"],"palestra":["portuguese"],"palheta":["portuguese"],"palito":["portuguese"],"palmada":["portuguese"],"palpitar":["portuguese"],"pancada":["portuguese"],"panela":["portuguese"],"panfleto":["portuguese"],"panqueca":["portuguese"],"pantanal":["portuguese"],"papagaio":["portuguese"],"papelada":["portuguese"],"papiro":["portuguese"],"parafina":["portuguese"],"parcial":["portuguese"],"pardal":["portuguese"],"parede":["portuguese"],"partida":["portuguese"],"pasmo":["portuguese"],"passado":["portuguese"],"pastel":["portuguese"],"patamar":["portuguese"],"patente":["portuguese"],"patinar":["portuguese"],"patrono":["portuguese"],"paulada":["portuguese"],"pausar":["portuguese"],"peculiar":["portuguese"],"pedalar":["portuguese"],"pedestre":["portuguese"],"pediatra":["portuguese"],"pedra":["portuguese"],"pegada":["portuguese"],"peitoral":["portuguese"],"peixe":["portuguese"],"pele":["portuguese"],"pelicano":["portuguese"],"penca":["portuguese"],"pendurar":["portuguese"],"peneira":["portuguese"],"penhasco":["portuguese"],"pensador":["portuguese"],"pente":["portuguese"],"perceber":["portuguese"],"perfeito":["portuguese"],"pergunta":["portuguese"],"perito":["portuguese"],"permitir":["portuguese"],"perna":["portuguese"],"perplexo":["portuguese"],"persiana":["portuguese"],"pertence":["portuguese"],"peruca":["portuguese"],"pescado":["portuguese"],"pesquisa":["portuguese"],"pessoa":["portuguese"],"petiscar":["portuguese"],"piada":["portuguese"],"picado":["portuguese"],"piedade":["portuguese"],"pigmento":["portuguese"],"pilastra":["portuguese"],"pilhado":["portuguese"],"pilotar":["portuguese"],"pimenta":["portuguese"],"pincel":["portuguese"],"pinguim":["portuguese"],"pinha":["portuguese"],"pinote":["portuguese"],"pintar":["portuguese"],"pioneiro":["portuguese"],"pipoca":["portuguese"],"piquete":["portuguese"],"piranha":["portuguese"],"pires":["portuguese"],"pirueta":["portuguese"],"piscar":["portuguese"],"pistola":["portuguese"],"pitanga":["portuguese"],"pivete":["portuguese"],"planta":["portuguese"],"plaqueta":["portuguese"],"platina":["portuguese"],"plebeu":["portuguese"],"plumagem":["portuguese"],"pluvial":["portuguese"],"pneu":["portuguese"],"poda":["portuguese"],"poeira":["portuguese"],"poetisa":["portuguese"],"polegada":["portuguese"],"policiar":["portuguese"],"poluente":["portuguese"],"polvilho":["portuguese"],"pomar":["portuguese"],"pomba":["portuguese"],"ponderar":["portuguese"],"pontaria":["portuguese"],"populoso":["portuguese"],"porta":["portuguese"],"possuir":["portuguese"],"postal":["portuguese"],"pote":["portuguese"],"poupar":["portuguese"],"pouso":["portuguese"],"povoar":["portuguese"],"praia":["portuguese"],"prancha":["portuguese"],"prato":["portuguese"],"praxe":["portuguese"],"prece":["portuguese"],"predador":["portuguese"],"prefeito":["portuguese"],"premiar":["portuguese"],"prensar":["portuguese"],"preparar":["portuguese"],"presilha":["portuguese"],"pretexto":["portuguese"],"prevenir":["portuguese"],"prezar":["portuguese"],"primata":["portuguese"],"princesa":["portuguese"],"prisma":["portuguese"],"privado":["portuguese"],"processo":["portuguese"],"produto":["portuguese"],"profeta":["portuguese"],"proibido":["portuguese"],"projeto":["portuguese"],"prometer":["portuguese"],"propagar":["portuguese"],"prosa":["portuguese"],"protetor":["portuguese"],"provador":["portuguese"],"publicar":["portuguese"],"pudim":["portuguese"],"pular":["portuguese"],"pulmonar":["portuguese"],"pulseira":["portuguese"],"punhal":["portuguese"],"punir":["portuguese"],"pupilo":["portuguese"],"pureza":["portuguese"],"puxador":["portuguese"],"quadra":["portuguese"],"quantia":["portuguese"],"quarto":["portuguese"],"quase":["portuguese"],"quebrar":["portuguese"],"queda":["portuguese"],"queijo":["portuguese"],"quente":["portuguese"],"querido":["portuguese"],"quimono":["portuguese"],"quina":["portuguese"],"quiosque":["portuguese"],"rabanada":["portuguese"],"rabisco":["portuguese"],"rachar":["portuguese"],"racionar":["portuguese"],"radial":["portuguese"],"raiar":["portuguese"],"rainha":["portuguese"],"raio":["portuguese"],"raiva":["portuguese"],"rajada":["portuguese"],"ralado":["portuguese"],"ramal":["portuguese"],"ranger":["portuguese"],"ranhura":["portuguese"],"rapadura":["portuguese"],"rapel":["portuguese"],"rapidez":["portuguese"],"raposa":["portuguese"],"raquete":["portuguese"],"raridade":["portuguese"],"rasante":["portuguese"],"rascunho":["portuguese"],"rasgar":["portuguese"],"raspador":["portuguese"],"rasteira":["portuguese"],"rasurar":["portuguese"],"ratazana":["portuguese"],"ratoeira":["portuguese"],"realeza":["portuguese"],"reanimar":["portuguese"],"reaver":["portuguese"],"rebaixar":["portuguese"],"rebelde":["portuguese"],"rebolar":["portuguese"],"recado":["portuguese"],"recente":["portuguese"],"recheio":["portuguese"],"recibo":["portuguese"],"recordar":["portuguese"],"recrutar":["portuguese"],"recuar":["portuguese"],"rede":["portuguese"],"redimir":["portuguese"],"redonda":["portuguese"],"reduzida":["portuguese"],"reenvio":["portuguese"],"refinar":["portuguese"],"refletir":["portuguese"],"refogar":["portuguese"],"refresco":["portuguese"],"refugiar":["portuguese"],"regalia":["portuguese"],"regime":["portuguese"],"regra":["portuguese"],"reinado":["portuguese"],"reitor":["portuguese"],"rejeitar":["portuguese"],"relativo":["portuguese"],"remador":["portuguese"],"remendo":["portuguese"],"remorso":["portuguese"],"renovado":["portuguese"],"reparo":["portuguese"],"repelir":["portuguese"],"repleto":["portuguese"],"repolho":["portuguese"],"represa":["portuguese"],"repudiar":["portuguese"],"requerer":["portuguese"],"resenha":["portuguese"],"resfriar":["portuguese"],"resgatar":["portuguese"],"residir":["portuguese"],"resolver":["portuguese"],"respeito":["portuguese"],"ressaca":["portuguese"],"restante":["portuguese"],"resumir":["portuguese"],"retalho":["portuguese"],"reter":["portuguese"],"retirar":["portuguese"],"retomada":["portuguese"],"retratar":["portuguese"],"revelar":["portuguese"],"revisor":["portuguese"],"revolta":["portuguese"],"riacho":["portuguese"],"rica":["portuguese"],"rigidez":["portuguese"],"rigoroso":["portuguese"],"rimar":["portuguese"],"ringue":["portuguese"],"risada":["portuguese"],"risco":["portuguese"],"risonho":["portuguese"],"robalo":["portuguese"],"rochedo":["portuguese"],"rodada":["portuguese"],"rodeio":["portuguese"],"rodovia":["portuguese"],"roedor":["portuguese"],"roleta":["portuguese"],"romano":["portuguese"],"roncar":["portuguese"],"rosado":["portuguese"],"roseira":["portuguese"],"rosto":["portuguese"],"rota":["portuguese","turkish"],"roteiro":["portuguese"],"rotina":["portuguese"],"rotular":["portuguese"],"rouco":["portuguese"],"roupa":["portuguese"],"roxo":["portuguese"],"rubro":["portuguese"],"rugido":["portuguese"],"rugoso":["portuguese"],"ruivo":["portuguese"],"rumo":["portuguese"],"rupestre":["portuguese"],"russo":["portuguese"],"sabor":["portuguese"],"saciar":["portuguese"],"sacola":["portuguese"],"sacudir":["portuguese"],"sadio":["portuguese"],"safira":["portuguese"],"saga":["portuguese"],"sagrada":["portuguese"],"saibro":["portuguese"],"salada":["portuguese"],"saleiro":["portuguese"],"salgado":["portuguese"],"saliva":["portuguese"],"salpicar":["portuguese"],"salsicha":["portuguese"],"saltar":["portuguese"],"salvador":["portuguese"],"sambar":["portuguese"],"samurai":["portuguese"],"sanar":["portuguese"],"sanfona":["portuguese"],"sangue":["portuguese"],"sanidade":["portuguese"],"sapato":["portuguese"],"sarda":["portuguese"],"sargento":["portuguese"],"sarjeta":["portuguese"],"saturar":["portuguese"],"saudade":["portuguese"],"saxofone":["portuguese"],"sazonal":["portuguese"],"secar":["portuguese"],"secular":["portuguese"],"seda":["portuguese","turkish"],"sedento":["portuguese"],"sediado":["portuguese"],"sedoso":["portuguese"],"sedutor":["portuguese"],"segmento":["portuguese"],"segredo":["portuguese"],"segundo":["portuguese"],"seiva":["portuguese"],"seleto":["portuguese"],"selvagem":["portuguese"],"semanal":["portuguese"],"semente":["portuguese"],"senador":["portuguese"],"senhor":["portuguese"],"sensual":["portuguese"],"sentado":["portuguese"],"separado":["portuguese"],"sereia":["portuguese"],"seringa":["portuguese"],"serra":["portuguese"],"servo":["portuguese"],"setembro":["portuguese"],"setor":["portuguese"],"sigilo":["portuguese"],"silhueta":["portuguese"],"silicone":["portuguese"],"simetria":["portuguese"],"simpatia":["portuguese"],"simular":["portuguese"],"sinal":["portuguese"],"sincero":["portuguese"],"singular":["portuguese"],"sinopse":["portuguese"],"sintonia":["portuguese"],"sirene":["portuguese"],"siri":["portuguese"],"situado":["portuguese"],"soberano":["portuguese"],"sobra":["portuguese"],"socorro":["portuguese"],"sogro":["portuguese"],"soja":["portuguese"],"solda":["portuguese"],"soletrar":["portuguese"],"solteiro":["portuguese"],"sombrio":["portuguese"],"sonata":["portuguese"],"sondar":["portuguese"],"sonegar":["portuguese"],"sonhador":["portuguese"],"sono":["portuguese"],"soprano":["portuguese"],"soquete":["portuguese"],"sorrir":["portuguese"],"sorteio":["portuguese"],"sossego":["portuguese"],"sotaque":["portuguese"],"soterrar":["portuguese"],"sovado":["portuguese"],"sozinho":["portuguese"],"suavizar":["portuguese"],"subida":["portuguese"],"submerso":["portuguese"],"subsolo":["portuguese"],"subtrair":["portuguese"],"sucata":["portuguese"],"sucesso":["portuguese"],"suco":["portuguese"],"sudeste":["portuguese"],"sufixo":["portuguese"],"sugador":["portuguese"],"sugerir":["portuguese"],"sujeito":["portuguese"],"sulfato":["portuguese"],"sumir":["portuguese"],"suor":["portuguese"],"superior":["portuguese"],"suplicar":["portuguese"],"suposto":["portuguese"],"suprimir":["portuguese"],"surdina":["portuguese"],"surfista":["portuguese"],"surpresa":["portuguese"],"surreal":["portuguese"],"surtir":["portuguese"],"suspiro":["portuguese"],"sustento":["portuguese"],"tabela":["portuguese","turkish"],"tablete":["portuguese"],"tabuada":["portuguese"],"tacho":["portuguese"],"tagarela":["portuguese"],"talher":["portuguese"],"talo":["portuguese"],"talvez":["portuguese"],"tamanho":["portuguese"],"tamborim":["portuguese"],"tampa":["portuguese"],"tangente":["portuguese"],"tanto":["portuguese"],"tapar":["portuguese"],"tapioca":["portuguese"],"tardio":["portuguese"],"tarefa":["portuguese"],"tarja":["portuguese"],"tarraxa":["portuguese"],"tatuagem":["portuguese"],"taurino":["portuguese"],"taxativo":["portuguese"],"taxista":["portuguese"],"teatral":["portuguese"],"tecer":["portuguese"],"tecido":["portuguese"],"teclado":["portuguese"],"tedioso":["portuguese"],"teia":["portuguese"],"teimar":["portuguese"],"telefone":["portuguese"],"telhado":["portuguese"],"tempero":["portuguese"],"tenente":["portuguese"],"tensor":["portuguese"],"tentar":["portuguese"],"termal":["portuguese"],"terno":["portuguese"],"terreno":["portuguese"],"tese":["portuguese"],"tesoura":["portuguese"],"testado":["portuguese"],"teto":["portuguese"],"textura":["portuguese"],"texugo":["portuguese"],"tiara":["portuguese"],"tigela":["portuguese"],"tijolo":["portuguese"],"timbrar":["portuguese"],"timidez":["portuguese"],"tingido":["portuguese"],"tinteiro":["portuguese"],"tiragem":["portuguese"],"titular":["portuguese"],"toalha":["portuguese"],"tocha":["portuguese"],"tolerar":["portuguese"],"tolice":["portuguese"],"tomada":["portuguese"],"tomilho":["portuguese"],"tonel":["portuguese"],"tontura":["portuguese"],"topete":["portuguese"],"tora":["portuguese"],"torcido":["portuguese"],"torneio":["portuguese"],"torque":["portuguese"],"torrada":["portuguese"],"torto":["portuguese"],"tostar":["portuguese"],"touca":["portuguese"],"toupeira":["portuguese"],"toxina":["portuguese"],"trabalho":["portuguese"],"tracejar":["portuguese"],"tradutor":["portuguese"],"trafegar":["portuguese"],"trajeto":["portuguese"],"trama":["portuguese"],"trancar":["portuguese"],"trapo":["portuguese"],"traseiro":["portuguese"],"tratador":["portuguese"],"travar":["portuguese"],"treino":["portuguese"],"tremer":["portuguese"],"trepidar":["portuguese"],"trevo":["portuguese"],"triagem":["portuguese"],"tribo":["portuguese"],"triciclo":["portuguese"],"tridente":["portuguese"],"trilogia":["portuguese"],"trindade":["portuguese"],"triplo":["portuguese"],"triturar":["portuguese"],"triunfal":["portuguese"],"trocar":["portuguese"],"trombeta":["portuguese"],"trova":["portuguese"],"trunfo":["portuguese"],"truque":["portuguese"],"tubular":["portuguese"],"tucano":["portuguese"],"tudo":["portuguese"],"tulipa":["portuguese"],"tupi":["portuguese"],"turbo":["portuguese"],"turma":["portuguese"],"turquesa":["portuguese"],"tutelar":["portuguese"],"tutorial":["portuguese"],"uivar":["portuguese"],"umbigo":["portuguese"],"unha":["portuguese"],"unidade":["portuguese"],"uniforme":["portuguese"],"urologia":["portuguese"],"urso":["portuguese"],"urtiga":["portuguese"],"urubu":["portuguese"],"usado":["portuguese"],"usina":["portuguese"],"usufruir":["portuguese"],"vacina":["portuguese"],"vadiar":["portuguese"],"vagaroso":["portuguese"],"vaidoso":["portuguese"],"vala":["portuguese"],"valente":["portuguese"],"validade":["portuguese"],"valores":["portuguese"],"vantagem":["portuguese"],"vaqueiro":["portuguese"],"varanda":["portuguese"],"vareta":["portuguese"],"varrer":["portuguese"],"vascular":["portuguese"],"vasilha":["portuguese"],"vassoura":["portuguese"],"vazar":["portuguese"],"vazio":["portuguese"],"veado":["portuguese"],"vedar":["portuguese"],"vegetar":["portuguese"],"veicular":["portuguese"],"veleiro":["portuguese"],"velhice":["portuguese"],"veludo":["portuguese"],"vencedor":["portuguese"],"vendaval":["portuguese"],"venerar":["portuguese"],"ventre":["portuguese"],"verbal":["portuguese"],"verdade":["portuguese"],"vereador":["portuguese"],"vergonha":["portuguese"],"vermelho":["portuguese"],"verniz":["portuguese"],"versar":["portuguese"],"vertente":["portuguese"],"vespa":["portuguese"],"vestido":["portuguese"],"vetorial":["portuguese"],"viaduto":["portuguese"],"viagem":["portuguese"],"viajar":["portuguese"],"viatura":["portuguese"],"vibrador":["portuguese"],"videira":["portuguese"],"vidraria":["portuguese"],"viela":["portuguese"],"viga":["portuguese"],"vigente":["portuguese"],"vigiar":["portuguese"],"vigorar":["portuguese"],"vilarejo":["portuguese"],"vinco":["portuguese"],"vinheta":["portuguese"],"vinil":["portuguese"],"violeta":["portuguese"],"virada":["portuguese"],"virtude":["portuguese"],"visitar":["portuguese"],"visto":["portuguese"],"vitral":["portuguese"],"viveiro":["portuguese"],"vizinho":["portuguese"],"voador":["portuguese"],"voar":["portuguese"],"vogal":["portuguese"],"volante":["portuguese"],"voleibol":["portuguese"],"voltagem":["portuguese"],"volumoso":["portuguese"],"vontade":["portuguese"],"vulto":["portuguese"],"vuvuzela":["portuguese"],"xadrez":["portuguese"],"xarope":["portuguese"],"xeque":["portuguese"],"xeretar":["portuguese"],"xerife":["portuguese"],"xingar":["portuguese"],"zangado":["portuguese"],"zarpar":["portuguese"],"zebu":["portuguese"],"zelador":["portuguese"],"zombar":["portuguese"],"zoologia":["portuguese"],"zumbido":["portuguese"],"абзац":["russian"],"абонент":["russian"],"абсурд":["russian"],"авангард":["russian"],"авария":["russian"],"август":["russian"],"авиация":["russian"],"автор":["russian"],"агент":["russian"],"агитация":["russian"],"агрегат":["russian"],"адвокат":["russian"],"адмирал":["russian"],"адрес":["russian"],"азарт":["russian"],"азот":["russian"],"академия":["russian"],"аквариум":["russian"],"аксиома":["russian"],"акула":["russian"],"акцент":["russian"],"акция":["russian"],"аллея":["russian"],"алмаз":["russian"],"алтарь":["russian"],"альбом":["russian"],"альянс":["russian"],"амбиция":["russian"],"анализ":["russian"],"анекдот":["russian"],"анкета":["russian"],"ансамбль":["russian"],"антенна":["russian"],"апельсин":["russian"],"аппарат":["russian"],"аппетит":["russian"],"апрель":["russian"],"аптека":["russian"],"арбуз":["russian"],"аргумент":["russian"],"аренда":["russian"],"арест":["russian"],"армия":["russian"],"аромат":["russian"],"арсенал":["russian"],"артерия":["russian"],"артист":["russian"],"архив":["russian"],"аспирант":["russian"],"асфальт":["russian"],"атака":["russian"],"атомный":["russian"],"атрибут":["russian"],"аукцион":["russian"],"афиша":["russian"],"аэропорт":["russian"],"бабочка":["russian"],"бабушка":["russian"],"багаж":["russian"],"база":["russian"],"бактерия":["russian"],"баланс":["russian"],"балерина":["russian"],"балкон":["russian"],"бандит":["russian"],"банк":["russian"],"барабан":["russian"],"барон":["russian"],"барышня":["russian"],"барьер":["russian"],"бассейн":["russian"],"батарея":["russian"],"башмак":["russian"],"башня":["russian"],"бедный":["russian"],"беженец":["russian"],"бездна":["russian"],"белка":["russian"],"белый":["russian"],"бензин":["russian"],"берег":["russian"],"беседа":["russian"],"бешеный":["russian"],"билет":["russian"],"бинокль":["russian"],"биржа":["russian"],"битва":["russian"],"благо":["russian"],"блеск":["russian"],"близкий":["russian"],"блин":["russian"],"блок":["russian"],"блюдо":["russian"],"богатый":["russian"],"бодрый":["russian"],"боец":["russian"],"бокал":["russian"],"боковой":["russian"],"бокс":["russian"],"более":["russian"],"болото":["russian"],"болтать":["russian"],"большой":["russian"],"бомба":["russian"],"борт":["russian"],"борьба":["russian"],"босой":["russian"],"ботинок":["russian"],"бояться":["russian"],"брак":["russian"],"брать":["russian"],"бревно":["russian"],"бред":["russian"],"бригада":["russian"],"бродяга":["russian"],"броня":["russian"],"бросить":["russian"],"брызги":["russian"],"брюки":["russian"],"брюхо":["russian"],"бугор":["russian"],"будка":["russian"],"будни":["russian"],"будущее":["russian"],"буква":["russian"],"букет":["russian"],"бульвар":["russian"],"бумага":["russian"],"бунт":["russian"],"бурный":["russian"],"буря":["russian"],"бутылка":["russian"],"бухта":["russian"],"бывший":["russian"],"быстро":["russian"],"бытовой":["russian"],"быть":["russian"],"бюджет":["russian"],"бюро":["russian"],"бюст":["russian"],"вагон":["russian"],"важный":["russian"],"вакцина":["russian"],"валенок":["russian"],"вальс":["russian"],"валюта":["russian"],"ванная":["russian"],"варенье":["russian"],"вариант":["russian"],"вблизи":["russian"],"вверх":["russian"],"вводить":["russian"],"вдали":["russian"],"вдвое":["russian"],"вдова":["russian"],"вдоль":["russian"],"вдруг":["russian"],"ведро":["russian"],"ведущий":["russian"],"ведьма":["russian"],"вежливо":["russian"],"везде":["russian"],"веко":["russian"],"вексель":["russian"],"велеть":["russian"],"великий":["russian"],"венец":["russian"],"веник":["russian"],"веранда":["russian"],"верблюд":["russian"],"верить":["russian"],"верный":["russian"],"версия":["russian"],"вертеть":["russian"],"верхний":["russian"],"вершина":["russian"],"весело":["russian"],"весна":["russian"],"весомый":["russian"],"вести":["russian"],"весь":["russian"],"ветеран":["russian"],"ветхий":["russian"],"вечер":["russian"],"вечно":["russian"],"вешалка":["russian"],"вещество":["russian"],"взамен":["russian"],"взгляд":["russian"],"вздох":["russian"],"взнос":["russian"],"взойти":["russian"],"взор":["russian"],"взрыв":["russian"],"взять":["russian"],"видеть":["russian"],"видимо":["russian"],"визг":["russian"],"визит":["russian"],"вилка":["russian"],"вина":["russian"],"вирус":["russian"],"висок":["russian"],"витамин":["russian"],"витрина":["russian"],"вихрь":["russian"],"вишня":["russian"],"вкус":["russian"],"влага":["russian"],"владелец":["russian"],"власть":["russian"],"влево":["russian"],"влияние":["russian"],"вложить":["russian"],"вместе":["russian"],"внешний":["russian"],"вникать":["russian"],"внимание":["russian"],"вновь":["russian"],"внук":["russian"],"внутри":["russian"],"внучка":["russian"],"внушать":["russian"],"вовлечь":["russian"],"вовремя":["russian"],"вовсю":["russian"],"вода":["russian"],"водород":["russian"],"водяной":["russian"],"воевать":["russian"],"возврат":["russian"],"возглас":["russian"],"воздух":["russian"],"возить":["russian"],"возле":["russian"],"возня":["russian"],"возраст":["russian"],"война":["russian"],"войско":["russian"],"вокзал":["russian"],"волос":["russian"],"волчий":["russian"],"вольный":["russian"],"воля":["russian"],"вообще":["russian"],"вопль":["russian"],"вопрос":["russian"],"ворота":["russian"],"восемь":["russian"],"восток":["russian"],"вплоть":["russian"],"вполне":["russian"],"вправе":["russian"],"впредь":["russian"],"впрочем":["russian"],"врач":["russian"],"вредный":["russian"],"время":["russian"],"вручить":["russian"],"всадник":["russian"],"всегда":["russian"],"вскоре":["russian"],"вскрыть":["russian"],"всплеск":["russian"],"вспышка":["russian"],"встреча":["russian"],"всюду":["russian"],"всякий":["russian"],"второй":["russian"],"вход":["russian"],"вчера":["russian"],"выбор":["russian"],"вывод":["russian"],"выгнать":["russian"],"выдать":["russian"],"выехать":["russian"],"вызов":["russian"],"выйти":["russian"],"выкуп":["russian"],"вылезти":["russian"],"вымыть":["russian"],"выпасть":["russian"],"выпить":["russian"],"выплата":["russian"],"выпуск":["russian"],"вырасти":["russian"],"выручка":["russian"],"выслать":["russian"],"высокий":["russian"],"выставка":["russian"],"вышка":["russian"],"вязать":["russian"],"вялый":["russian"],"газета":["russian"],"газовый":["russian"],"галерея":["russian"],"галстук":["russian"],"гамма":["russian"],"гарантия":["russian"],"гармония":["russian"],"гарнизон":["russian"],"гастроли":["russian"],"гвардия":["russian"],"гвоздь":["russian"],"гектар":["russian"],"генерал":["russian"],"гений":["russian"],"геном":["russian"],"геолог":["russian"],"герб":["russian"],"герой":["russian"],"гибкий":["russian"],"гигант":["russian"],"гимн":["russian"],"гипотеза":["russian"],"гитара":["russian"],"главный":["russian"],"глагол":["russian"],"гладить":["russian"],"глаз":["russian"],"глина":["russian"],"глоток":["russian"],"глубокий":["russian"],"глупый":["russian"],"глухой":["russian"],"глыба":["russian"],"глядеть":["russian"],"гнев":["russian"],"гнездо":["russian"],"гнилой":["russian"],"годовой":["russian"],"голова":["russian"],"голубой":["russian"],"голый":["russian"],"гонорар":["russian"],"гордость":["russian"],"горизонт":["russian"],"горло":["russian"],"горный":["russian"],"город":["russian"],"горшок":["russian"],"горький":["russian"],"горючее":["russian"],"горячий":["russian"],"готовый":["russian"],"градус":["russian"],"грамм":["russian"],"граница":["russian"],"граф":["russian"],"гребень":["russian"],"гриб":["russian"],"гримаса":["russian"],"грозить":["russian"],"грохот":["russian"],"грош":["russian"],"грубый":["russian"],"грудь":["russian"],"груз":["russian"],"грунт":["russian"],"группа":["russian"],"груша":["russian"],"грязный":["russian"],"губа":["russian"],"гудок":["russian"],"гулкий":["russian"],"гулять":["russian"],"гусеница":["russian"],"густо":["russian"],"гусь":["russian"],"давление":["russian"],"давно":["russian"],"даже":["russian"],"дальний":["russian"],"данный":["russian"],"дарить":["russian"],"датчик":["russian"],"дать":["russian"],"дача":["russian"],"двадцать":["russian"],"дважды":["russian"],"дверь":["russian"],"двигать":["russian"],"движение":["russian"],"двойной":["russian"],"двор":["russian"],"дебют":["russian"],"девятый":["russian"],"дежурный":["russian"],"действие":["russian"],"декабрь":["russian"],"деление":["russian"],"дело":["russian"],"дельфин":["russian"],"день":["russian"],"дерево":["russian"],"держать":["russian"],"дерзкий":["russian"],"десять":["russian"],"деталь":["russian"],"детский":["russian"],"дефект":["russian"],"дефицит":["russian"],"деятель":["russian"],"джаз":["russian"],"джинсы":["russian"],"джунгли":["russian"],"диагноз":["russian"],"диалог":["russian"],"диапазон":["russian"],"диван":["russian"],"дивизия":["russian"],"дивный":["russian"],"диета":["russian"],"дизайн":["russian"],"дикарь":["russian"],"дилер":["russian"],"динамика":["russian"],"диплом":["russian"],"директор":["russian"],"дитя":["russian"],"длинный":["russian"],"дневник":["russian"],"добрый":["russian"],"добыча":["russian"],"доверие":["russian"],"догадка":["russian"],"догнать":["russian"],"дождь":["russian"],"доклад":["russian"],"доктор":["russian"],"документ":["russian"],"долго":["russian"],"должен":["russian"],"долина":["russian"],"донос":["russian"],"дорога":["russian"],"досада":["russian"],"доска":["russian"],"достать":["russian"],"досуг":["russian"],"доход":["russian"],"доцент":["russian"],"дощатый":["russian"],"драка":["russian"],"древний":["russian"],"дремать":["russian"],"дробный":["russian"],"дрова":["russian"],"дрожать":["russian"],"другой":["russian"],"дружба":["russian"],"дубовый":["russian"],"дуга":["russian"],"думать":["russian"],"дурной":["russian"],"духи":["russian"],"душный":["russian"],"дуэль":["russian"],"дуэт":["russian"],"дыра":["russian"],"дыхание":["russian"],"дюжина":["russian"],"дядя":["russian"],"едва":["russian"],"единый":["russian"],"ерунда":["russian"],"если":["russian"],"ехать":["russian"],"жадный":["russian"],"жажда":["russian"],"жалеть":["russian"],"жалоба":["russian"],"жанр":["russian"],"жареный":["russian"],"жаркий":["russian"],"жгучий":["russian"],"жевать":["russian"],"желание":["russian"],"желудок":["russian"],"жена":["russian"],"женщина":["russian"],"жертва":["russian"],"жест":["russian"],"жидкость":["russian"],"житель":["russian"],"жить":["russian"],"жрец":["russian"],"жулик":["russian"],"журнал":["russian"],"жуткий":["russian"],"забрать":["russian"],"забыть":["russian"],"завести":["russian"],"завод":["russian"],"завтра":["russian"],"загадка":["russian"],"загнать":["russian"],"заговор":["russian"],"задача":["russian"],"задеть":["russian"],"задний":["russian"],"задолго":["russian"],"заехать":["russian"],"заказ":["russian"],"закон":["russian"],"закрыть":["russian"],"закуска":["russian"],"залезть":["russian"],"залить":["russian"],"залп":["russian"],"замок":["russian"],"замуж":["russian"],"замысел":["russian"],"занавес":["russian"],"заново":["russian"],"занять":["russian"],"заодно":["russian"],"запись":["russian"],"запрос":["russian"],"запуск":["russian"],"запястье":["russian"],"заранее":["russian"],"заросль":["russian"],"зарплата":["russian"],"заря":["russian"],"засада":["russian"],"заслуга":["russian"],"заснуть":["russian"],"застать":["russian"],"затвор":["russian"],"затеять":["russian"],"затрата":["russian"],"затылок":["russian"],"захват":["russian"],"зачем":["russian"],"защита":["russian"],"заявить":["russian"],"заяц":["russian"],"звезда":["russian"],"звено":["russian"],"звонить":["russian"],"здесь":["russian"],"зелень":["russian"],"земля":["russian"],"зеркало":["russian"],"зерно":["russian"],"зима":["russian"],"злой":["russian"],"змея":["russian"],"знамя":["russian"],"знание":["russian"],"значит":["russian"],"золотой":["russian"],"зона":["russian"],"зонтик":["russian"],"зоопарк":["russian"],"зрачок":["russian"],"зрение":["russian"],"зритель":["russian"],"зубной":["russian"],"зубр":["russian"],"игла":["russian"],"идеал":["russian"],"идеолог":["russian"],"идея":["russian"],"идол":["russian"],"идти":["russian"],"изба":["russian"],"избить":["russian"],"избрать":["russian"],"избыток":["russian"],"извлечь":["russian"],"извне":["russian"],"изгиб":["russian"],"изгнать":["russian"],"издание":["russian"],"изделие":["russian"],"изнутри":["russian"],"изобилие":["russian"],"изоляция":["russian"],"изредка":["russian"],"изрядно":["russian"],"изучение":["russian"],"изъять":["russian"],"изящный":["russian"],"икона":["russian"],"икра":["russian"],"иллюзия":["russian"],"именно":["russian"],"иметь":["russian"],"имидж":["russian"],"империя":["russian"],"импульс":["russian"],"иначе":["russian"],"инвалид":["russian"],"индекс":["russian"],"индивид":["russian"],"инерция":["russian"],"инженер":["russian"],"иногда":["russian"],"иной":["russian"],"институт":["russian"],"интерес":["russian"],"интрига":["russian"],"интуиция":["russian"],"инфаркт":["russian"],"инцидент":["russian"],"ирония":["russian"],"искать":["russian"],"испуг":["russian"],"история":["russian"],"итог":["russian"],"июнь":["russian"],"кабель":["russian"],"кабинет":["russian"],"каблук":["russian"],"кавалер":["russian"],"кадр":["russian"],"каждый":["russian"],"кажется":["russian"],"казино":["russian"],"калитка":["russian"],"камень":["russian"],"камин":["russian"],"канал":["russian"],"кандидат":["russian"],"каникулы":["russian"],"канон":["russian"],"капитан":["russian"],"капля":["russian"],"капот":["russian"],"капуста":["russian"],"карандаш":["russian"],"карета":["russian"],"каркас":["russian"],"карман":["russian"],"картина":["russian"],"карьера":["russian"],"каска":["russian"],"кассета":["russian"],"кастрюля":["russian"],"каталог":["russian"],"катер":["russian"],"каток":["russian"],"катушка":["russian"],"кафедра":["russian"],"качество":["russian"],"каша":["russian"],"кашлять":["russian"],"каюта":["russian"],"квадрат":["russian"],"квартира":["russian"],"квота":["russian"],"кепка":["russian"],"кивнуть":["russian"],"километр":["russian"],"кино":["russian"],"киоск":["russian"],"кипяток":["russian"],"кирпич":["russian"],"кислота":["russian"],"кисть":["russian"],"клавиша":["russian"],"клапан":["russian"],"класс":["russian"],"клей":["russian"],"клетка":["russian"],"клиент":["russian"],"климат":["russian"],"клиника":["russian"],"кличка":["russian"],"клоун":["russian"],"клочок":["russian"],"клуб":["russian"],"клумба":["russian"],"ключ":["russian"],"книга":["russian"],"кнопка":["russian"],"кнут":["russian"],"княгиня":["russian"],"князь":["russian"],"кобура":["russian"],"когда":["russian"],"кодекс":["russian"],"кожа":["russian"],"коктейль":["russian"],"колено":["russian"],"коллега":["russian"],"колонна":["russian"],"колпак":["russian"],"кольцо":["russian"],"колючий":["russian"],"коляска":["russian"],"команда":["russian"],"комедия":["russian"],"комиссия":["russian"],"коммуна":["russian"],"комната":["russian"],"комок":["russian"],"компания":["russian"],"комфорт":["russian"],"конвейер":["russian"],"конгресс":["russian"],"конечно":["russian"],"конкурс":["russian"],"контроль":["russian"],"концерт":["russian"],"конь":["russian"],"конюшня":["russian"],"копать":["russian"],"копейка":["russian"],"копыто":["russian"],"корабль":["russian"],"корень":["russian"],"корзина":["russian"],"коридор":["russian"],"кормить":["russian"],"корпус":["russian"],"космос":["russian"],"костюм":["russian"],"косяк":["russian"],"котел":["russian"],"котлета":["russian"],"который":["russian"],"коттедж":["russian"],"кофе":["russian"],"кофта":["russian"],"кошка":["russian"],"кража":["russian"],"край":["russian"],"красный":["russian"],"краткий":["russian"],"кредит":["russian"],"крем":["russian"],"крепкий":["russian"],"кресло":["russian"],"кривой":["russian"],"кризис":["russian"],"кристалл":["russian"],"критерий":["russian"],"кричать":["russian"],"кровь":["russian"],"крокодил":["russian"],"кролик":["russian"],"кроме":["russian"],"крона":["russian"],"круг":["russian"],"кружка":["russian"],"крупный":["russian"],"крутой":["russian"],"крушение":["russian"],"крыло":["russian"],"крыша":["russian"],"крючок":["russian"],"кстати":["russian"],"кубик":["russian"],"куда":["russian"],"кузов":["russian"],"кукла":["russian"],"кулак":["russian"],"кулиса":["russian"],"культура":["russian"],"кумир":["russian"],"купе":["russian"],"купить":["russian"],"купол":["russian"],"купюра":["russian"],"курица":["russian"],"курорт":["russian"],"курс":["russian"],"куртка":["russian"],"кусок":["russian"],"куст":["russian"],"кухня":["russian"],"кушать":["russian"],"лабиринт":["russian"],"лавка":["russian"],"лагерь":["russian"],"ладно":["russian"],"ладонь":["russian"],"лапа":["russian"],"лауреат":["russian"],"лгать":["russian"],"лебедь":["russian"],"левый":["russian"],"легенда":["russian"],"легкий":["russian"],"ледяной":["russian"],"лежать":["russian"],"лезвие":["russian"],"лезть":["russian"],"лекция":["russian"],"ленивый":["russian"],"лента":["russian"],"лепесток":["russian"],"лесной":["russian"],"лестница":["russian"],"лететь":["russian"],"лето":["russian"],"лечить":["russian"],"лига":["russian"],"лидер":["russian"],"лиловый":["russian"],"лимон":["russian"],"линия":["russian"],"липкий":["russian"],"лист":["russian"],"литр":["russian"],"лихой":["russian"],"лицо":["russian"],"лишить":["russian"],"лишний":["russian"],"ловить":["russian"],"логика":["russian"],"лодка":["russian"],"ложь":["russian"],"лозунг":["russian"],"локоть":["russian"],"лопата":["russian"],"лошадь":["russian"],"лукавый":["russian"],"луна":["russian"],"лучший":["russian"],"лысый":["russian"],"льгота":["russian"],"любить":["russian"],"любой":["russian"],"людской":["russian"],"люстра":["russian"],"лютый":["russian"],"лягушка":["russian"],"магазин":["russian"],"магия":["russian"],"майор":["russian"],"майский":["russian"],"максимум":["russian"],"макушка":["russian"],"мало":["russian"],"мальчик":["russian"],"мама":["russian"],"манера":["russian"],"марка":["russian"],"март":["russian"],"маршрут":["russian"],"масса":["russian"],"мастер":["russian"],"масштаб":["russian"],"материал":["russian"],"матч":["russian"],"махать":["russian"],"машина":["russian"],"маяк":["russian"],"мебель":["russian"],"медаль":["russian"],"медведь":["russian"],"медицина":["russian"],"медь":["russian"],"между":["russian"],"мелкий":["russian"],"мелочь":["russian"],"мемуары":["russian"],"меньше":["russian"],"меню":["russian"],"менять":["russian"],"мера":["russian"],"мерцать":["russian"],"место":["russian"],"месяц":["russian"],"металл":["russian"],"метод":["russian"],"метр":["russian"],"механизм":["russian"],"меховой":["russian"],"мечтать":["russian"],"мешать":["russian"],"мешок":["russian"],"миграция":["russian"],"микрофон":["russian"],"милиция":["russian"],"миллион":["russian"],"милость":["russian"],"миля":["russian"],"мимо":["russian"],"минерал":["russian"],"министр":["russian"],"минута":["russian"],"мирный":["russian"],"миска":["russian"],"миссия":["russian"],"митинг":["russian"],"мишень":["russian"],"младший":["russian"],"мнение":["russian"],"мнимый":["russian"],"много":["russian"],"могучий":["russian"],"модель":["russian"],"может":["russian"],"мозг":["russian"],"мокрый":["russian"],"молекула":["russian"],"молния":["russian"],"молодой":["russian"],"молчать":["russian"],"момент":["russian"],"монета":["russian"],"монитор":["russian"],"монолог":["russian"],"монстр":["russian"],"монтаж":["russian"],"мораль":["russian"],"море":["russian"],"морковь":["russian"],"мороз":["russian"],"морщина":["russian"],"мостовая":["russian"],"мотать":["russian"],"мотив":["russian"],"мотор":["russian"],"мохнатый":["russian"],"мрамор":["russian"],"мрачный":["russian"],"мстить":["russian"],"мудрый":["russian"],"мужество":["russian"],"мужчина":["russian"],"музей":["russian"],"музыка":["russian"],"мундир":["russian"],"муравей":["russian"],"мусор":["russian"],"муха":["russian"],"мчаться":["russian"],"мысль":["russian"],"мыться":["russian"],"мышца":["russian"],"мышь":["russian"],"мюзикл":["russian"],"мягкий":["russian"],"мясо":["russian"],"набор":["russian"],"навык":["russian"],"наглый":["russian"],"нагрузка":["russian"],"надежда":["russian"],"надзор":["russian"],"надо":["russian"],"наедине":["russian"],"назад":["russian"],"название":["russian"],"назло":["russian"],"наивный":["russian"],"найти":["russian"],"наконец":["russian"],"налево":["russian"],"наличие":["russian"],"налог":["russian"],"намерен":["russian"],"нанести":["russian"],"напасть":["russian"],"например":["russian"],"народ":["russian"],"наследие":["russian"],"натура":["russian"],"наука":["russian"],"наутро":["russian"],"начать":["russian"],"небо":["russian"],"неважно":["russian"],"невеста":["russian"],"негодяй":["russian"],"недавно":["russian"],"неделя":["russian"],"недолго":["russian"],"недра":["russian"],"недуг":["russian"],"нежный":["russian"],"незачем":["russian"],"некто":["russian"],"нелепый":["russian"],"неловко":["russian"],"нельзя":["russian"],"немало":["russian"],"немой":["russian"],"неплохо":["russian"],"нервный":["russian"],"нередко":["russian"],"нестись":["russian"],"неудача":["russian"],"неужели":["russian"],"нефть":["russian"],"неясный":["russian"],"нигде":["russian"],"низкий":["russian"],"никакой":["russian"],"никогда":["russian"],"никуда":["russian"],"ничто":["russian"],"ничуть":["russian"],"ниша":["russian"],"нищий":["russian"],"новость":["russian"],"новый":["russian"],"нога":["russian"],"ноготь":["russian"],"ножницы":["russian"],"ноздря":["russian"],"номер":["russian"],"носить":["russian"],"носок":["russian"],"ночь":["russian"],"ноябрь":["russian"],"нрав":["russian"],"нуль":["russian"],"нынче":["russian"],"нырять":["russian"],"нюанс":["russian"],"няня":["russian"],"обаяние":["russian"],"обед":["russian"],"обезьяна":["russian"],"обещать":["russian"],"обжечь":["russian"],"обзор":["russian"],"обилие":["russian"],"обитать":["russian"],"область":["russian"],"облик":["russian"],"обложка":["russian"],"обмен":["russian"],"обморок":["russian"],"обожать":["russian"],"обои":["russian"],"оболочка":["russian"],"оборона":["russian"],"обочина":["russian"],"образ":["russian"],"обрести":["russian"],"обрыв":["russian"],"обувь":["russian"],"обучение":["russian"],"обход":["russian"],"общество":["russian"],"общий":["russian"],"объект":["russian"],"обыск":["russian"],"обычно":["russian"],"обязать":["russian"],"овощи":["russian"],"овраг":["russian"],"овца":["russian"],"оговорка":["russian"],"ограда":["russian"],"огурец":["russian"],"одежда":["russian"],"одеяло":["russian"],"один":["russian"],"однако":["russian"],"одолеть":["russian"],"ожидать":["russian"],"озеро":["russian"],"океан":["russian"],"окно":["russian"],"около":["russian"],"окоп":["russian"],"окраина":["russian"],"октябрь":["russian"],"опасный":["russian"],"опека":["russian"],"операция":["russian"],"описание":["russian"],"оплата":["russian"],"опора":["russian"],"оппонент":["russian"],"оптимизм":["russian"],"оптовый":["russian"],"опухоль":["russian"],"опыт":["russian"],"оратор":["russian"],"орбита":["russian"],"орган":["russian"],"орден":["russian"],"орел":["russian"],"оригинал":["russian"],"ориентир":["russian"],"оркестр":["russian"],"оружие":["russian"],"осенний":["russian"],"осколок":["russian"],"осмотр":["russian"],"остров":["russian"],"отбор":["russian"],"отбыть":["russian"],"отвлечь":["russian"],"отдать":["russian"],"отдел":["russian"],"отдых":["russian"],"отель":["russian"],"отец":["russian"],"отзыв":["russian"],"отказ":["russian"],"отклик":["russian"],"открыть":["russian"],"откуда":["russian"],"отличие":["russian"],"отныне":["russian"],"отойти":["russian"],"отпуск":["russian"],"отрасль":["russian"],"отросток":["russian"],"отрывок":["russian"],"отряд":["russian"],"отсек":["russian"],"отставка":["russian"],"отсюда":["russian"],"оттенок":["russian"],"оттого":["russian"],"отчего":["russian"],"отъезд":["russian"],"офис":["russian"],"офицер":["russian"],"охота":["russian"],"охрана":["russian"],"оценка":["russian"],"очаг":["russian"],"очень":["russian"],"очередь":["russian"],"очищать":["russian"],"ошибка":["russian"],"ощущение":["russian"],"павильон":["russian"],"падать":["russian"],"пазуха":["russian"],"пакет":["russian"],"палата":["russian"],"палец":["russian"],"палуба":["russian"],"пальто":["russian"],"память":["russian"],"панель":["russian"],"паника":["russian"],"пара":["russian"],"парень":["russian"],"пароход":["russian"],"партия":["russian"],"парус":["russian"],"паспорт":["russian"],"пассажир":["russian"],"пастух":["russian"],"патент":["russian"],"патрон":["russian"],"пауза":["russian"],"паук":["russian"],"паутина":["russian"],"пафос":["russian"],"пахнуть":["russian"],"пациент":["russian"],"пачка":["russian"],"певец":["russian"],"педагог":["russian"],"пейзаж":["russian"],"пенсия":["russian"],"пепел":["russian"],"первый":["russian"],"перед":["russian"],"период":["russian"],"перо":["russian"],"перрон":["russian"],"персонаж":["russian"],"перчатка":["russian"],"песня":["russian"],"песок":["russian"],"петля":["russian"],"петрушка":["russian"],"петух":["russian"],"пехота":["russian"],"печать":["russian"],"печень":["russian"],"пешком":["russian"],"пещера":["russian"],"пианист":["russian"],"пиджак":["russian"],"пилот":["russian"],"пионер":["russian"],"пирамида":["russian"],"пирожок":["russian"],"письмо":["russian"],"пища":["russian"],"плавание":["russian"],"плакать":["russian"],"пламя":["russian"],"план":["russian"],"пласт":["russian"],"платить":["russian"],"пленный":["russian"],"плечо":["russian"],"плита":["russian"],"плод":["russian"],"плоский":["russian"],"плотный":["russian"],"плохой":["russian"],"площадь":["russian"],"плыть":["russian"],"плюс":["russian"],"пляж":["russian"],"плясать":["russian"],"победа":["russian"],"повар":["russian"],"повод":["russian"],"повсюду":["russian"],"повязка":["russian"],"погода":["russian"],"погреб":["russian"],"подбор":["russian"],"подвиг":["russian"],"подделка":["russian"],"поджать":["russian"],"поднос":["russian"],"подпись":["russian"],"подруга":["russian"],"подход":["russian"],"подчас":["russian"],"подъезд":["russian"],"поединок":["russian"],"поезд":["russian"],"поесть":["russian"],"поехать":["russian"],"пожалуй":["russian"],"пожилой":["russian"],"позади":["russian"],"позвать":["russian"],"поздний":["russian"],"позиция":["russian"],"позор":["russian"],"поиск":["russian"],"поймать":["russian"],"пойти":["russian"],"поклон":["russian"],"покой":["russian"],"покрыть":["russian"],"полдень":["russian"],"полезный":["russian"],"ползти":["russian"],"полк":["russian"],"полный":["russian"],"половина":["russian"],"полтора":["russian"],"польза":["russian"],"поляна":["russian"],"помидор":["russian"],"помнить":["russian"],"помощь":["russian"],"попасть":["russian"],"поперек":["russian"],"поплыть":["russian"],"пополам":["russian"],"поправка":["russian"],"попугай":["russian"],"попытка":["russian"],"порог":["russian"],"портрет":["russian"],"порция":["russian"],"порыв":["russian"],"порядок":["russian"],"после":["russian"],"посол":["russian"],"посреди":["russian"],"постель":["russian"],"посуда":["russian"],"потом":["russian"],"похвала":["russian"],"похожий":["russian"],"поцелуй":["russian"],"почва":["russian"],"почему":["russian"],"пошлина":["russian"],"поэма":["russian"],"поэтому":["russian"],"право":["russian"],"праздник":["russian"],"практика":["russian"],"прах":["russian"],"преграда":["russian"],"предмет":["russian"],"прежде":["russian"],"прелесть":["russian"],"премия":["russian"],"препарат":["russian"],"пресса":["russian"],"прибыть":["russian"],"прижать":["russian"],"прийти":["russian"],"приказ":["russian"],"прилавок":["russian"],"пример":["russian"],"принять":["russian"],"природа":["russian"],"притом":["russian"],"прихожая":["russian"],"прицел":["russian"],"причина":["russian"],"приют":["russian"],"прогноз":["russian"],"продукт":["russian"],"проект":["russian"],"прожить":["russian"],"прокат":["russian"],"промысел":["russian"],"пропуск":["russian"],"просто":["russian"],"против":["russian"],"профиль":["russian"],"процесс":["russian"],"прочий":["russian"],"прошлый":["russian"],"прощать":["russian"],"пружина":["russian"],"прут":["russian"],"прыжок":["russian"],"прямой":["russian"],"птица":["russian"],"публика":["russian"],"пугать":["russian"],"пуговица":["russian"],"пузырь":["russian"],"пульт":["russian"],"пуля":["russian"],"пункт":["russian"],"пускать":["russian"],"пустой":["russian"],"путь":["russian"],"пухлый":["russian"],"пучок":["russian"],"пушистый":["russian"],"пушка":["russian"],"пчела":["russian"],"пшеница":["russian"],"пылать":["russian"],"пыль":["russian"],"пышный":["russian"],"пьеса":["russian"],"пятка":["russian"],"пятно":["russian"],"пятый":["russian"],"пятьсот":["russian"],"работа":["russian"],"равнина":["russian"],"ради":["russian"],"радость":["russian"],"радуга":["russian"],"разбить":["russian"],"развитие":["russian"],"разговор":["russian"],"раздел":["russian"],"различие":["russian"],"размер":["russian"],"разный":["russian"],"разрыв":["russian"],"разум":["russian"],"район":["russian"],"ракета":["russian"],"раковина":["russian"],"рамка":["russian"],"рано":["russian"],"рапорт":["russian"],"распад":["russian"],"рассказ":["russian"],"расти":["russian"],"расход":["russian"],"расцвет":["russian"],"рация":["russian"],"рвануть":["russian"],"рваться":["russian"],"реакция":["russian"],"ребро":["russian"],"реветь":["russian"],"редактор":["russian"],"редкий":["russian"],"реестр":["russian"],"режим":["russian"],"резать":["russian"],"резерв":["russian"],"резина":["russian"],"резко":["russian"],"резной":["russian"],"рейс":["russian"],"реклама":["russian"],"рекорд":["russian"],"религия":["russian"],"рельс":["russian"],"ремень":["russian"],"ремонт":["russian"],"реплика":["russian"],"репортаж":["russian"],"ресница":["russian"],"ресторан":["russian"],"реформа":["russian"],"рецепт":["russian"],"речь":["russian"],"решение":["russian"],"ржавый":["russian"],"риск":["russian"],"рисунок":["russian"],"ритуал":["russian"],"рифма":["russian"],"робко":["russian"],"робот":["russian"],"ровесник":["russian"],"ровно":["russian"],"родной":["russian"],"рождение":["russian"],"роза":["russian"],"розовый":["russian"],"розыск":["russian"],"роль":["russian"],"роман":["russian"],"роскошь":["russian"],"роспись":["russian"],"рост":["russian"],"рубашка":["russian"],"рубеж":["russian"],"рубить":["russian"],"рубрика":["russian"],"рудник":["russian"],"рука":["russian"],"рукопись":["russian"],"румяный":["russian"],"русло":["russian"],"рухнуть":["russian"],"ручей":["russian"],"ручной":["russian"],"рыба":["russian"],"рыжий":["russian"],"рынок":["russian"],"рыхлый":["russian"],"рыцарь":["russian"],"рычаг":["russian"],"рюкзак":["russian"],"рядом":["russian"],"садовый":["russian"],"сажать":["russian"],"салон":["russian"],"салфетка":["russian"],"салют":["russian"],"самец":["russian"],"самовар":["russian"],"самый":["russian"],"сани":["russian"],"санкция":["russian"],"сапог":["russian"],"сарай":["russian"],"сатира":["russian"],"сахар":["russian"],"сбить":["russian"],"сбоку":["russian"],"сборная":["russian"],"сбыт":["russian"],"свадьба":["russian"],"свалка":["russian"],"сварить":["russian"],"свежий":["russian"],"сверху":["russian"],"свет":["russian"],"свеча":["russian"],"свинья":["russian"],"свист":["russian"],"свитер":["russian"],"свобода":["russian"],"сводка":["russian"],"свой":["russian"],"свыше":["russian"],"связь":["russian"],"сдаться":["russian"],"сделать":["russian"],"сегмент":["russian"],"сегодня":["russian"],"седло":["russian"],"седой":["russian"],"седьмой":["russian"],"сезон":["russian"],"сейф":["russian"],"сейчас":["russian"],"секрет":["russian"],"сектор":["russian"],"секунда":["russian"],"семинар":["russian"],"семья":["russian"],"сенатор":["russian"],"сено":["russian"],"сенсация":["russian"],"сентябрь":["russian"],"сервис":["russian"],"сердце":["russian"],"середина":["russian"],"сержант":["russian"],"серия":["russian"],"серый":["russian"],"сессия":["russian"],"сесть":["russian"],"сетевой":["russian"],"сжатый":["russian"],"сжечь":["russian"],"сзади":["russian"],"сигнал":["russian"],"сиденье":["russian"],"сила":["russian"],"силуэт":["russian"],"сильный":["russian"],"символ":["russian"],"симпатия":["russian"],"симфония":["russian"],"синий":["russian"],"синтез":["russian"],"синяк":["russian"],"сирень":["russian"],"система":["russian"],"ситуация":["russian"],"сияние":["russian"],"сказать":["russian"],"скала":["russian"],"скамейка":["russian"],"скандал":["russian"],"скатерть":["russian"],"скачок":["russian"],"скважина":["russian"],"сквер":["russian"],"сквозь":["russian"],"скелет":["russian"],"скидка":["russian"],"склад":["russian"],"сколько":["russian"],"скорый":["russian"],"скосить":["russian"],"скот":["russian"],"скрипка":["russian"],"скудный":["russian"],"скука":["russian"],"слабый":["russian"],"слава":["russian"],"сладкий":["russian"],"слегка":["russian"],"след":["russian"],"слеза":["russian"],"слепой":["russian"],"слесарь":["russian"],"слишком":["russian"],"слово":["russian"],"слог":["russian"],"сложный":["russian"],"сломать":["russian"],"служба":["russian"],"слух":["russian"],"случай":["russian"],"слышать":["russian"],"слюна":["russian"],"смежный":["russian"],"смелый":["russian"],"сменить":["russian"],"смесь":["russian"],"сметана":["russian"],"смех":["russian"],"смола":["russian"],"смуглый":["russian"],"смутный":["russian"],"смущать":["russian"],"смысл":["russian"],"снайпер":["russian"],"снаряд":["russian"],"сначала":["russian"],"снег":["russian"],"снизу":["russian"],"сниться":["russian"],"сно��а":["russian"],"снять":["russian"],"собака":["russian"],"соблазн":["russian"],"собрание":["russian"],"событие":["russian"],"совесть":["russian"],"совсем":["russian"],"согласие":["russian"],"создать":["russian"],"сознание":["russian"],"созреть":["russian"],"сойтись":["russian"],"сокол":["russian"],"солдат":["russian"],"соленый":["russian"],"солнце":["russian"],"солома":["russian"],"сомнение":["russian"],"сонный":["russian"],"соперник":["russian"],"соратник":["russian"],"сорвать":["russian"],"сосед":["russian"],"сосиска":["russian"],"состав":["russian"],"сотня":["russian"],"соус":["russian"],"союз":["russian"],"спад":["russian"],"спальня":["russian"],"спасти":["russian"],"спектр":["russian"],"сперва":["russian"],"спешить":["russian"],"спина":["russian"],"спирт":["russian"],"список":["russian"],"спичка":["russian"],"сплав":["russian"],"спонсор":["russian"],"спор":["russian"],"способ":["russian"],"справка":["russian"],"спустя":["russian"],"спутник":["russian"],"сразу":["russian"],"средство":["russian"],"срок":["russian"],"срыв":["russian"],"ссора":["russian"],"ссылка":["russian"],"ставить":["russian"],"стадия":["russian"],"стакан":["russian"],"станция":["russian"],"старый":["russian"],"стая":["russian"],"стебель":["russian"],"стекло":["russian"],"стена":["russian"],"степень":["russian"],"стереть":["russian"],"стиль":["russian"],"стимул":["russian"],"стирать":["russian"],"стихи":["russian"],"стоить":["russian"],"стойка":["russian"],"стол":["russian"],"стонать":["russian"],"стопа":["russian"],"сторона":["russian"],"стоянка":["russian"],"страна":["russian"],"стричь":["russian"],"строгий":["russian"],"струя":["russian"],"студент":["russian"],"стук":["russian"],"ступня":["russian"],"стыдно":["russian"],"суббота":["russian"],"субъект":["russian"],"сувенир":["russian"],"сугроб":["russian"],"сугубо":["russian"],"судить":["russian"],"судно":["russian"],"судьба":["russian"],"суета":["russian"],"суметь":["russian"],"сумма":["russian"],"сумрак":["russian"],"сундук":["russian"],"супруг":["russian"],"суровый":["russian"],"сутки":["russian"],"сухой":["russian"],"суша":["russian"],"существо":["russian"],"сфера":["russian"],"схема":["russian"],"схожий":["russian"],"сценарий":["russian"],"счастье":["russian"],"считать":["russian"],"съезд":["russian"],"сыграть":["russian"],"сырой":["russian"],"сытый":["russian"],"сыщик":["russian"],"сюда":["russian"],"сюжет":["russian"],"сюрприз":["russian"],"тайна":["russian"],"также":["russian"],"такой":["russian"],"такси":["russian"],"тактика":["russian"],"талия":["russian"],"таможня":["russian"],"танец":["russian"],"таракан":["russian"],"тарелка":["russian"],"тариф":["russian"],"тащить":["russian"],"таять":["russian"],"тварь":["russian"],"театр":["russian"],"тезис":["russian"],"текст":["russian"],"текущий":["russian"],"телефон":["russian"],"тема":["russian"],"темнота":["russian"],"теневой":["russian"],"теннис":["russian"],"теория":["russian"],"теперь":["russian"],"тепло":["russian"],"терапия":["russian"],"терзать":["russian"],"термин":["russian"],"терпеть":["russian"],"терраса":["russian"],"терять":["russian"],"тесный":["russian"],"тетрадь":["russian"],"техника":["russian"],"течение":["russian"],"тигр":["russian"],"типовой":["russian"],"тираж":["russian"],"титул":["russian"],"тихий":["russian"],"ткань":["russian"],"товарищ":["russian"],"тоже":["russian"],"толпа":["russian"],"толстый":["russian"],"толчок":["russian"],"толщина":["russian"],"только":["russian"],"тонкий":["russian"],"тонна":["russian"],"топить":["russian"],"топор":["russian"],"торговля":["russian"],"тормоз":["russian"],"торчать":["russian"],"тотчас":["russian"],"точка":["russian"],"точно":["russian"],"тощий":["russian"],"трава":["russian"],"традиция":["russian"],"трактор":["russian"],"трамвай":["russian"],"траншея":["russian"],"трасса":["russian"],"тревога":["russian"],"трезвый":["russian"],"тренер":["russian"],"трепет":["russian"],"треск":["russian"],"третий":["russian"],"трещина":["russian"],"трибуна":["russian"],"тридцать":["russian"],"триста":["russian"],"триумф":["russian"],"трогать":["russian"],"тройка":["russian"],"тронуть":["russian"],"тропа":["russian"],"тротуар":["russian"],"трубка":["russian"],"труд":["russian"],"трюк":["russian"],"тряпка":["russian"],"туго":["russian"],"туловище":["russian"],"туман":["russian"],"тумбочка":["russian"],"тундра":["russian"],"тупик":["russian"],"турист":["russian"],"турнир":["russian"],"тусклый":["russian"],"туфля":["russian"],"туча":["russian"],"тысяча":["russian"],"тяга":["russian"],"тяжело":["russian"],"убежать":["russian"],"убогий":["russian"],"уборка":["russian"],"уважение":["russian"],"увезти":["russian"],"уволить":["russian"],"угадать":["russian"],"угол":["russian"],"угощать":["russian"],"угроза":["russian"],"угрюмый":["russian"],"удар":["russian"],"удачный":["russian"],"уделять":["russian"],"удивить":["russian"],"удобный":["russian"],"удочка":["russian"],"уезжать":["russian"],"ужин":["russian"],"узел":["russian"],"узкий":["russian"],"уйти":["russian"],"указание":["russian"],"уклон":["russian"],"украсть":["russian"],"укусить":["russian"],"улетать":["russian"],"улица":["russian"],"улыбка":["russian"],"умело":["russian"],"умение":["russian"],"умный":["russian"],"умолять":["russian"],"унести":["russian"],"унижать":["russian"],"унылый":["russian"],"упаковка":["russian"],"упасть":["russian"],"упорно":["russian"],"упрек":["russian"],"урна":["russian"],"уровень":["russian"],"урожай":["russian"],"уронить":["russian"],"усадьба":["russian"],"усатый":["russian"],"усвоить":["russian"],"усилие":["russian"],"условие":["russian"],"услуга":["russian"],"усмешка":["russian"],"успеть":["russian"],"устав":["russian"],"устоять":["russian"],"утечка":["russian"],"утешать":["russian"],"утро":["russian"],"уцелеть":["russian"],"участие":["russian"],"ученик":["russian"],"учесть":["russian"],"ущелье":["russian"],"ущерб":["russian"],"уютный":["russian"],"фабрика":["russian"],"фаворит":["russian"],"факел":["russian"],"факт":["russian"],"фамилия":["russian"],"фантазия":["russian"],"фасад":["russian"],"февраль":["russian"],"феномен":["russian"],"фермер":["russian"],"фигура":["russian"],"физика":["russian"],"филиал":["russian"],"философ":["russian"],"фильм":["russian"],"финал":["russian"],"флаг":["russian"],"флот":["russian"],"фойе":["russian"],"фокус":["russian"],"фонарь":["russian"],"фонд":["russian"],"фонтан":["russian"],"форма":["russian"],"форум":["russian"],"фото":["russian"],"фрагмент":["russian"],"фраза":["russian"],"фракция":["russian"],"фронт":["russian"],"фрукт":["russian"],"функция":["russian"],"фуражка":["russian"],"футбол":["russian"],"футляр":["russian"],"халат":["russian"],"хаос":["russian"],"характер":["russian"],"хата":["russian"],"хвалить":["russian"],"хватать":["russian"],"хвойный":["russian"],"хвост":["russian"],"химия":["russian"],"хирург":["russian"],"хитрый":["russian"],"хищник":["russian"],"хлеб":["russian"],"хлынуть":["russian"],"хмурый":["russian"],"ходить":["russian"],"хозяин":["russian"],"хоккей":["russian"],"холм":["russian"],"холст":["russian"],"хорошо":["russian"],"хотеть":["russian"],"храбрый":["russian"],"храм":["russian"],"хранить":["russian"],"хребет":["russian"],"хрен":["russian"],"хрипло":["russian"],"хроника":["russian"],"хрупкий":["russian"],"художник":["russian"],"худший":["russian"],"хулиган":["russian"],"хутор":["russian"],"царь":["russian"],"цветок":["russian"],"целевой":["russian"],"целиком":["russian"],"целое":["russian"],"цель":["russian"],"цензура":["russian"],"ценить":["russian"],"центр":["russian"],"цепной":["russian"],"цикл":["russian"],"цилиндр":["russian"],"цирк":["russian"],"цитата":["russian"],"цифра":["russian"],"чайник":["russian"],"часы":["russian"],"чашка":["russian"],"человек":["russian"],"челюсть":["russian"],"чемодан":["russian"],"чемпион":["russian"],"чепуха":["russian"],"червь":["russian"],"чердак":["russian"],"через":["russian"],"чернила":["russian"],"черта":["russian"],"чеснок":["russian"],"честно":["russian"],"четверть":["russian"],"четыре":["russian"],"число":["russian"],"чистый":["russian"],"читатель":["russian"],"чтение":["russian"],"чтобы":["russian"],"чувство":["russian"],"чудак":["russian"],"чудный":["russian"],"чудо":["russian"],"чужой":["russian"],"чулок":["russian"],"чума":["russian"],"чушь":["russian"],"чуять":["russian"],"шагать":["russian"],"шанс":["russian"],"шапка":["russian"],"шарик":["russian"],"шарф":["russian"],"шахматы":["russian"],"шашлык":["russian"],"шедевр":["russian"],"шептать":["russian"],"шерсть":["russian"],"шестой":["russian"],"шинель":["russian"],"ширина":["russian"],"шишка":["russian"],"шкаф":["russian"],"школа":["russian"],"шкура":["russian"],"шланг":["russian"],"шлем":["russian"],"шнур":["russian"],"шоколад":["russian"],"шорох":["russian"],"шоссе":["russian"],"шпион":["russian"],"шприц":["russian"],"штаб":["russian"],"штамм":["russian"],"штаны":["russian"],"штатный":["russian"],"штора":["russian"],"штраф":["russian"],"штурм":["russian"],"штык":["russian"],"шумно":["russian"],"шуршать":["russian"],"шутить":["russian"],"шутка":["russian"],"щедрый":["russian"],"щека":["russian"],"щенок":["russian"],"экзамен":["russian"],"экипаж":["russian"],"экономия":["russian"],"экран":["russian"],"эксперт":["russian"],"элемент":["russian"],"элитный":["russian"],"эмоция":["russian"],"энергия":["russian"],"эпизод":["russian"],"эпоха":["russian"],"эскиз":["russian"],"эстрада":["russian"],"этап":["russian"],"этика":["russian"],"этот":["russian"],"эфир":["russian"],"эффект":["russian"],"эшелон":["russian"],"юбилей":["russian"],"юбка":["russian"],"южный":["russian"],"юмор":["russian"],"юность":["russian"],"юрист":["russian"],"юстиция":["russian"],"яблоко":["russian"],"явление":["russian"],"ягода":["russian"],"ядро":["russian"],"язык":["russian"],"яйцо":["russian"],"якобы":["russian"],"якорь":["russian"],"январь":["russian"],"яркий":["russian"],"ярмарка":["russian"],"ярость":["russian"],"ясный":["russian"],"яхта":["russian"],"ячейка":["russian"],"ящик":["russian"],"ábaco":["spanish"],"abdomen":["spanish"],"abeja":["spanish"],"abierto":["spanish"],"abogado":["spanish"],"abono":["spanish"],"aborto":["spanish"],"abrazo":["spanish"],"abrir":["spanish"],"abuelo":["spanish"],"abuso":["spanish"],"acabar":["spanish"],"academia":["spanish"],"acceso":["spanish"],"acción":["spanish"],"aceite":["spanish"],"acelga":["spanish"],"acento":["spanish"],"aceptar":["spanish"],"ácido":["spanish"],"aclarar":["spanish"],"acné":["spanish"],"acoger":["spanish"],"acoso":["spanish"],"activo":["spanish"],"acto":["spanish"],"actriz":["spanish"],"actuar":["spanish"],"acudir":["spanish"],"acuerdo":["spanish"],"acusar":["spanish"],"adicto":["spanish"],"admitir":["spanish"],"adoptar":["spanish"],"adorno":["spanish"],"aduana":["spanish"],"adulto":["spanish"],"aéreo":["spanish"],"afectar":["spanish"],"afición":["spanish"],"afinar":["spanish"],"afirmar":["spanish"],"ágil":["spanish"],"agitar":["spanish"],"agonía":["spanish"],"agosto":["spanish"],"agotar":["spanish"],"agregar":["spanish"],"agrio":["spanish"],"agua":["spanish"],"agudo":["spanish"],"águila":["spanish"],"aguja":["spanish"],"ahogo":["spanish"],"ahorro":["spanish"],"aire":["spanish"],"aislar":["spanish"],"ajedrez":["spanish"],"ajeno":["spanish"],"ajuste":["spanish"],"alacrán":["spanish"],"alambre":["spanish"],"alarma":["spanish"],"alba":["spanish"],"álbum":["spanish"],"alcalde":["spanish"],"aldea":["spanish"],"alegre":["spanish"],"alejar":["spanish"],"alerta":["spanish"],"aleta":["spanish"],"alfiler":["spanish"],"alga":["spanish"],"algodón":["spanish"],"aliado":["spanish"],"aliento":["spanish"],"alivio":["spanish"],"alma":["spanish"],"almeja":["spanish"],"almíbar":["spanish"],"altar":["spanish"],"alteza":["spanish"],"altivo":["spanish"],"alto":["spanish"],"altura":["spanish"],"alumno":["spanish"],"alzar":["spanish"],"amable":["spanish"],"amante":["spanish"],"amapola":["spanish"],"amargo":["spanish"],"amasar":["spanish"],"ámbar":["spanish"],"ámbito":["spanish"],"ameno":["spanish"],"amigo":["spanish","turkish"],"amistad":["spanish"],"amor":["spanish"],"amparo":["spanish"],"amplio":["spanish"],"ancho":["spanish"],"anciano":["spanish"],"ancla":["spanish"],"andar":["spanish"],"andén":["spanish"],"anemia":["spanish"],"ángulo":["spanish"],"anillo":["spanish"],"ánimo":["spanish"],"anís":["spanish"],"anotar":["spanish"],"antena":["spanish"],"antiguo":["spanish"],"antojo":["spanish"],"anual":["spanish"],"anular":["spanish"],"anuncio":["spanish"],"añadir":["spanish"],"añejo":["spanish"],"año":["spanish"],"apagar":["spanish"],"aparato":["spanish"],"apetito":["spanish"],"apio":["spanish"],"aplicar":["spanish"],"apodo":["spanish"],"aporte":["spanish"],"apoyo":["spanish"],"aprender":["spanish"],"aprobar":["spanish"],"apuesta":["spanish"],"apuro":["spanish"],"arado":["spanish"],"araña":["spanish"],"arar":["spanish"],"árbitro":["spanish"],"árbol":["spanish"],"arbusto":["spanish"],"archivo":["spanish"],"arco":["spanish"],"arder":["spanish"],"ardilla":["spanish"],"arduo":["spanish"],"área":["spanish"],"árido":["spanish"],"aries":["spanish"],"armonía":["spanish"],"arnés":["spanish"],"aroma":["spanish","turkish"],"arpa":["spanish"],"arpón":["spanish"],"arreglo":["spanish"],"arroz":["spanish"],"arruga":["spanish"],"arte":["spanish"],"artista":["spanish"],"asa":["spanish"],"asado":["spanish"],"asalto":["spanish"],"ascenso":["spanish"],"asegurar":["spanish"],"aseo":["spanish"],"asesor":["spanish"],"asiento":["spanish"],"asilo":["spanish"],"asistir":["spanish"],"asno":["spanish"],"asombro":["spanish"],"áspero":["spanish"],"astilla":["spanish"],"astro":["spanish"],"astuto":["spanish"],"asumir":["spanish"],"asunto":["spanish"],"atajo":["spanish"],"ataque":["spanish"],"atar":["spanish"],"atento":["spanish"],"ateo":["spanish"],"ático":["spanish"],"atleta":["spanish"],"átomo":["spanish"],"atraer":["spanish"],"atroz":["spanish"],"atún":["spanish"],"audaz":["spanish"],"audio":["spanish"],"auge":["spanish"],"aula":["spanish"],"aumento":["spanish"],"ausente":["spanish"],"autor":["spanish"],"aval":["spanish"],"avance":["spanish"],"avaro":["spanish"],"ave":["spanish"],"avellana":["spanish"],"avena":["spanish"],"avestruz":["spanish"],"avión":["spanish"],"aviso":["spanish"],"ayer":["spanish"],"ayuda":["spanish"],"ayuno":["spanish"],"azafrán":["spanish"],"azar":["spanish"],"azote":["spanish"],"azúcar":["spanish"],"azufre":["spanish"],"azul":["spanish"],"baba":["spanish"],"babor":["spanish"],"bache":["spanish"],"bahía":["spanish"],"baile":["spanish"],"bajar":["spanish"],"balanza":["spanish"],"balcón":["spanish"],"balde":["spanish"],"bambú":["spanish"],"banco":["spanish"],"banda":["spanish"],"baño":["spanish"],"barba":["spanish"],"barco":["spanish"],"barniz":["spanish"],"barro":["spanish"],"báscula":["spanish"],"bastón":["spanish"],"basura":["spanish"],"batalla":["spanish"],"batería":["spanish"],"batir":["spanish"],"batuta":["spanish"],"baúl":["spanish"],"bazar":["spanish"],"bebé":["spanish"],"bebida":["spanish"],"bello":["spanish"],"besar":["spanish"],"beso":["spanish"],"bestia":["spanish"],"bicho":["spanish"],"bien":["spanish"],"bingo":["spanish"],"blanco":["spanish"],"bloque":["spanish"],"blusa":["spanish"],"boa":["spanish"],"bobina":["spanish"],"bobo":["spanish"],"boca":["spanish"],"bocina":["spanish"],"boda":["spanish"],"bodega":["spanish"],"boina":["spanish"],"bola":["spanish"],"bolero":["spanish","turkish"],"bolsa":["spanish"],"bomba":["spanish"],"bondad":["spanish"],"bonito":["spanish"],"bono":["spanish"],"bonsái":["spanish"],"borde":["spanish"],"borrar":["spanish"],"bosque":["spanish"],"bote":["spanish"],"botín":["spanish"],"bóveda":["spanish"],"bozal":["spanish"],"bravo":["spanish"],"brazo":["spanish"],"brecha":["spanish"],"breve":["spanish"],"brillo":["spanish"],"brinco":["spanish"],"brisa":["spanish"],"broca":["spanish"],"broma":["spanish"],"bronce":["spanish"],"brote":["spanish"],"bruja":["spanish"],"brusco":["spanish"],"bruto":["spanish"],"buceo":["spanish"],"bucle":["spanish"],"bueno":["spanish"],"buey":["spanish"],"bufanda":["spanish"],"bufón":["spanish"],"búho":["spanish"],"buitre":["spanish"],"bulto":["spanish"],"burbuja":["spanish"],"burla":["spanish"],"burro":["spanish"],"buscar":["spanish"],"butaca":["spanish"],"buzón":["spanish"],"caballo":["spanish"],"cabeza":["spanish"],"cabina":["spanish"],"cabra":["spanish"],"cacao":["spanish"],"cadáver":["spanish"],"cadena":["spanish"],"caer":["spanish"],"café":["spanish"],"caída":["spanish"],"caimán":["spanish"],"caja":["spanish"],"cajón":["spanish"],"cal":["spanish"],"calamar":["spanish"],"calcio":["spanish"],"caldo":["spanish"],"calidad":["spanish"],"calle":["spanish"],"calma":["spanish"],"calor":["spanish"],"calvo":["spanish"],"cama":["spanish"],"cambio":["spanish"],"camello":["spanish"],"camino":["spanish"],"campo":["spanish"],"cáncer":["spanish"],"candil":["spanish"],"canela":["spanish"],"canguro":["spanish"],"canica":["spanish"],"canto":["spanish"],"caña":["spanish"],"cañón":["spanish"],"caoba":["spanish"],"caos":["spanish"],"capaz":["spanish"],"capitán":["spanish"],"capote":["spanish"],"captar":["spanish"],"capucha":["spanish"],"cara":["spanish"],"carbón":["spanish"],"cárcel":["spanish"],"careta":["spanish"],"carga":["spanish"],"cariño":["spanish"],"carne":["spanish"],"carpeta":["spanish"],"carro":["spanish"],"carta":["spanish"],"casa":["spanish"],"casco":["spanish"],"casero":["spanish"],"caspa":["spanish"],"castor":["spanish"],"catorce":["spanish"],"catre":["spanish"],"caudal":["spanish"],"causa":["spanish"],"cazo":["spanish"],"cebolla":["spanish"],"ceder":["spanish"],"cedro":["spanish"],"celda":["spanish"],"célebre":["spanish"],"celoso":["spanish"],"célula":["spanish"],"cemento":["spanish"],"ceniza":["spanish"],"centro":["spanish"],"cerca":["spanish"],"cerdo":["spanish"],"cereza":["spanish"],"cero":["spanish"],"cerrar":["spanish"],"certeza":["spanish"],"césped":["spanish"],"cetro":["spanish"],"chacal":["spanish"],"chaleco":["spanish"],"champú":["spanish"],"chancla":["spanish"],"chapa":["spanish"],"charla":["spanish"],"chico":["spanish"],"chiste":["spanish"],"chivo":["spanish"],"choque":["spanish"],"choza":["spanish"],"chuleta":["spanish"],"chupar":["spanish"],"ciclón":["spanish"],"ciego":["spanish"],"cielo":["spanish"],"cien":["spanish"],"cierto":["spanish"],"cifra":["spanish"],"cigarro":["spanish"],"cima":["spanish"],"cinco":["spanish"],"cine":["spanish"],"cinta":["spanish"],"ciprés":["spanish"],"circo":["spanish"],"ciruela":["spanish"],"cisne":["spanish"],"cita":["spanish"],"ciudad":["spanish"],"clamor":["spanish"],"clan":["spanish"],"claro":["spanish"],"clase":["spanish"],"clave":["spanish"],"cliente":["spanish"],"clima":["spanish"],"clínica":["spanish"],"cobre":["spanish"],"cocción":["spanish"],"cochino":["spanish"],"cocina":["spanish"],"coco":["spanish"],"código":["spanish"],"codo":["spanish"],"cofre":["spanish"],"coger":["spanish"],"cohete":["spanish"],"cojín":["spanish"],"cojo":["spanish"],"cola":["spanish"],"colcha":["spanish"],"colegio":["spanish"],"colgar":["spanish"],"colina":["spanish"],"collar":["spanish"],"colmo":["spanish"],"columna":["spanish"],"combate":["spanish"],"comer":["spanish"],"comida":["spanish"],"cómodo":["spanish"],"compra":["spanish"],"conde":["spanish"],"conejo":["spanish"],"conga":["spanish"],"conocer":["spanish"],"consejo":["spanish"],"contar":["spanish"],"copa":["spanish"],"copia":["spanish"],"corazón":["spanish"],"corbata":["spanish"],"corcho":["spanish"],"cordón":["spanish"],"corona":["spanish"],"correr":["spanish"],"coser":["spanish"],"cosmos":["spanish"],"costa":["spanish"],"cráneo":["spanish"],"cráter":["spanish"],"crear":["spanish"],"crecer":["spanish"],"creído":["spanish"],"crema":["spanish"],"cría":["spanish"],"crimen":["spanish"],"cripta":["spanish"],"crisis":["spanish"],"cromo":["spanish"],"crónica":["spanish"],"croqueta":["spanish"],"crudo":["spanish"],"cruz":["spanish"],"cuadro":["spanish"],"cuarto":["spanish"],"cuatro":["spanish"],"cubo":["spanish"],"cubrir":["spanish"],"cuchara":["spanish"],"cuello":["spanish"],"cuento":["spanish"],"cuerda":["spanish"],"cuesta":["spanish"],"cueva":["spanish"],"cuidar":["spanish"],"culebra":["spanish"],"culpa":["spanish"],"culto":["spanish"],"cumbre":["spanish"],"cumplir":["spanish"],"cuna":["spanish"],"cuneta":["spanish"],"cuota":["spanish"],"cupón":["spanish"],"cúpula":["spanish"],"curar":["spanish"],"curioso":["spanish"],"curso":["spanish"],"curva":["spanish"],"cutis":["spanish"],"dama":["spanish"],"danza":["spanish"],"dar":["spanish"],"dardo":["spanish"],"dátil":["spanish"],"deber":["spanish"],"débil":["spanish"],"década":["spanish"],"decir":["spanish"],"dedo":["spanish"],"defensa":["spanish"],"definir":["spanish"],"dejar":["spanish"],"delfín":["spanish"],"delgado":["spanish"],"delito":["spanish"],"demora":["spanish"],"denso":["spanish"],"dental":["spanish"],"deporte":["spanish"],"derecho":["spanish"],"derrota":["spanish"],"desayuno":["spanish"],"deseo":["spanish"],"desfile":["spanish"],"desnudo":["spanish"],"destino":["spanish"],"desvío":["spanish"],"detalle":["spanish"],"detener":["spanish"],"deuda":["spanish"],"día":["spanish"],"diablo":["spanish"],"diadema":["spanish"],"diamante":["spanish"],"diana":["spanish"],"diario":["spanish"],"dibujo":["spanish"],"dictar":["spanish"],"diente":["spanish"],"dieta":["spanish"],"diez":["spanish"],"difícil":["spanish"],"digno":["spanish"],"dilema":["spanish"],"diluir":["spanish"],"dinero":["spanish"],"directo":["spanish"],"dirigir":["spanish"],"disco":["spanish"],"diseño":["spanish"],"disfraz":["spanish"],"diva":["spanish"],"divino":["spanish"],"doble":["spanish"],"doce":["spanish"],"dolor":["spanish"],"domingo":["spanish"],"don":["spanish"],"donar":["spanish"],"dorado":["spanish"],"dormir":["spanish"],"dorso":["spanish"],"dos":["spanish"],"dosis":["spanish"],"dragón":["spanish"],"droga":["spanish"],"ducha":["spanish"],"duda":["spanish"],"duelo":["spanish"],"dueño":["spanish"],"dulce":["spanish"],"dúo":["spanish"],"duque":["spanish"],"durar":["spanish"],"dureza":["spanish"],"duro":["spanish"],"ébano":["spanish"],"ebrio":["spanish"],"echar":["spanish"],"eco":["spanish"],"ecuador":["spanish"],"edad":["spanish"],"edición":["spanish"],"edificio":["spanish"],"editor":["spanish"],"educar":["spanish"],"efecto":["spanish"],"eficaz":["spanish"],"eje":["spanish"],"ejemplo":["spanish"],"elefante":["spanish"],"elegir":["spanish"],"elemento":["spanish"],"elevar":["spanish"],"elipse":["spanish"],"élite":["spanish"],"elixir":["spanish"],"elogio":["spanish"],"eludir":["spanish"],"embudo":["spanish"],"emitir":["spanish"],"emoción":["spanish"],"empate":["spanish"],"empeño":["spanish"],"empleo":["spanish"],"empresa":["spanish"],"enano":["spanish"],"encargo":["spanish"],"enchufe":["spanish"],"encía":["spanish"],"enemigo":["spanish"],"enero":["spanish"],"enfado":["spanish"],"enfermo":["spanish"],"engaño":["spanish"],"enigma":["spanish"],"enlace":["spanish"],"enorme":["spanish"],"enredo":["spanish"],"ensayo":["spanish"],"enseñar":["spanish"],"entero":["spanish"],"entrar":["spanish"],"envase":["spanish"],"envío":["spanish"],"época":["spanish"],"equipo":["spanish"],"erizo":["spanish"],"escala":["spanish"],"escena":["spanish"],"escolar":["spanish"],"escribir":["spanish"],"escudo":["spanish"],"esencia":["spanish"],"esfera":["spanish"],"esfuerzo":["spanish"],"espada":["spanish"],"espejo":["spanish"],"espía":["spanish"],"esposa":["spanish"],"espuma":["spanish"],"esquí":["spanish"],"estar":["spanish"],"este":["spanish"],"estilo":["spanish"],"estufa":["spanish"],"etapa":["spanish"],"eterno":["spanish"],"ética":["spanish"],"etnia":["spanish"],"evadir":["spanish"],"evaluar":["spanish"],"evento":["spanish"],"evitar":["spanish"],"exacto":["spanish"],"examen":["spanish"],"exceso":["spanish"],"excusa":["spanish"],"exento":["spanish"],"exigir":["spanish"],"exilio":["spanish"],"existir":["spanish"],"éxito":["spanish"],"experto":["spanish"],"explicar":["spanish"],"exponer":["spanish"],"extremo":["spanish"],"fábrica":["spanish"],"fábula":["spanish"],"fachada":["spanish"],"fácil":["spanish"],"factor":["spanish"],"faena":["spanish"],"faja":["spanish"],"falda":["spanish"],"fallo":["spanish"],"falso":["spanish"],"faltar":["spanish"],"fama":["spanish"],"familia":["spanish"],"famoso":["spanish"],"faraón":["spanish"],"farmacia":["spanish"],"farol":["spanish"],"farsa":["spanish"],"fase":["spanish"],"fatiga":["spanish"],"fauna":["spanish","turkish"],"favor":["spanish"],"fax":["spanish"],"febrero":["spanish"],"fecha":["spanish"],"feliz":["spanish"],"feo":["spanish"],"feria":["spanish"],"feroz":["spanish"],"fértil":["spanish"],"fervor":["spanish"],"festín":["spanish"],"fiable":["spanish"],"fianza":["spanish"],"fiar":["spanish"],"fibra":["spanish"],"ficción":["spanish"],"ficha":["spanish"],"fideo":["spanish"],"fiebre":["spanish"],"fiel":["spanish"],"fiera":["spanish"],"fiesta":["spanish"],"figura":["spanish"],"fijar":["spanish"],"fijo":["spanish"],"fila":["spanish"],"filete":["spanish"],"filial":["spanish"],"filtro":["spanish"],"fin":["spanish"],"finca":["spanish"],"fingir":["spanish"],"finito":["spanish"],"firma":["spanish"],"flaco":["spanish"],"flauta":["spanish"],"flecha":["spanish"],"flor":["spanish"],"flota":["spanish"],"fluir":["spanish"],"flujo":["spanish"],"flúor":["spanish"],"fobia":["spanish"],"foca":["spanish"],"fogata":["spanish"],"fogón":["spanish"],"folio":["spanish"],"folleto":["spanish"],"fondo":["spanish"],"forma":["spanish"],"forro":["spanish"],"fortuna":["spanish"],"forzar":["spanish"],"fosa":["spanish"],"foto":["spanish"],"fracaso":["spanish"],"frágil":["spanish"],"franja":["spanish"],"frase":["spanish"],"fraude":["spanish"],"freír":["spanish"],"freno":["spanish"],"fresa":["spanish"],"frío":["spanish"],"frito":["spanish"],"fruta":["spanish"],"fuego":["spanish"],"fuente":["spanish"],"fuerza":["spanish"],"fuga":["spanish"],"fumar":["spanish"],"función":["spanish"],"funda":["spanish"],"furgón":["spanish"],"furia":["spanish"],"fusil":["spanish"],"fútbol":["spanish"],"futuro":["spanish"],"gacela":["spanish"],"gafas":["spanish"],"gaita":["spanish"],"gajo":["spanish"],"gala":["spanish"],"galería":["spanish"],"gallo":["spanish"],"gamba":["spanish"],"ganar":["spanish"],"gancho":["spanish"],"ganga":["spanish"],"ganso":["spanish"],"garaje":["spanish"],"garza":["spanish"],"gasolina":["spanish"],"gastar":["spanish"],"gato":["spanish"],"gavilán":["spanish"],"gemelo":["spanish"],"gemir":["spanish"],"gen":["spanish"],"género":["spanish"],"genio":["spanish"],"gente":["spanish"],"geranio":["spanish"],"gerente":["spanish"],"germen":["spanish"],"gesto":["spanish"],"gigante":["spanish"],"gimnasio":["spanish"],"girar":["spanish"],"giro":["spanish"],"glaciar":["spanish"],"globo":["spanish"],"gloria":["spanish"],"gol":["spanish"],"golfo":["spanish"],"goloso":["spanish"],"golpe":["spanish"],"goma":["spanish"],"gordo":["spanish"],"gorila":["spanish"],"gorra":["spanish"],"gota":["spanish"],"goteo":["spanish"],"gozar":["spanish"],"grada":["spanish"],"gráfico":["spanish"],"grano":["spanish"],"grasa":["spanish"],"gratis":["spanish"],"grave":["spanish"],"grieta":["spanish"],"grillo":["spanish"],"gripe":["spanish"],"gris":["spanish"],"grito":["spanish"],"grosor":["spanish"],"grúa":["spanish"],"grueso":["spanish"],"grumo":["spanish"],"grupo":["spanish"],"guante":["spanish"],"guapo":["spanish"],"guardia":["spanish"],"guerra":["spanish"],"guía":["spanish"],"guiño":["spanish"],"guion":["spanish"],"guiso":["spanish"],"guitarra":["spanish"],"gusano":["spanish"],"gustar":["spanish"],"haber":["spanish","turkish"],"hábil":["spanish"],"hablar":["spanish"],"hacer":["spanish"],"hacha":["spanish"],"hada":["spanish"],"hallar":["spanish"],"hamaca":["spanish"],"harina":["spanish"],"haz":["spanish"],"hazaña":["spanish"],"hebilla":["spanish"],"hebra":["spanish"],"hecho":["spanish"],"helado":["spanish"],"helio":["spanish"],"hembra":["spanish"],"herir":["spanish"],"hermano":["spanish"],"héroe":["spanish"],"hervir":["spanish"],"hielo":["spanish"],"hierro":["spanish"],"hígado":["spanish"],"higiene":["spanish"],"hijo":["spanish"],"himno":["spanish"],"historia":["spanish"],"hocico":["spanish"],"hogar":["spanish"],"hoguera":["spanish"],"hoja":["spanish"],"hombre":["spanish"],"hongo":["spanish"],"honor":["spanish"],"honra":["spanish"],"hora":["spanish"],"hormiga":["spanish"],"horno":["spanish"],"hostil":["spanish"],"hoyo":["spanish"],"hueco":["spanish"],"huelga":["spanish"],"huerta":["spanish"],"hueso":["spanish"],"huevo":["spanish"],"huida":["spanish"],"huir":["spanish"],"humano":["spanish"],"húmedo":["spanish"],"humilde":["spanish"],"humo":["spanish"],"hundir":["spanish"],"huracán":["spanish"],"hurto":["spanish"],"icono":["spanish"],"ideal":["spanish"],"idioma":["spanish"],"ídolo":["spanish"],"iglesia":["spanish"],"iglú":["spanish"],"igual":["spanish"],"ilegal":["spanish"],"ilusión":["spanish"],"imagen":["spanish"],"imán":["spanish"],"imitar":["spanish"],"impar":["spanish"],"imperio":["spanish"],"imponer":["spanish"],"impulso":["spanish"],"incapaz":["spanish"],"índice":["spanish"],"inerte":["spanish"],"infiel":["spanish"],"informe":["spanish"],"ingenio":["spanish"],"inicio":["spanish"],"inmenso":["spanish"],"inmune":["spanish"],"innato":["spanish"],"insecto":["spanish"],"instante":["spanish"],"interés":["spanish"],"íntimo":["spanish"],"intuir":["spanish"],"inútil":["spanish"],"invierno":["spanish"],"ira":["spanish"],"iris":["spanish"],"ironía":["spanish"],"isla":["spanish"],"islote":["spanish"],"jabalí":["spanish"],"jabón":["spanish"],"jamón":["spanish"],"jarabe":["spanish"],"jardín":["spanish"],"jarra":["spanish"],"jaula":["spanish"],"jazmín":["spanish"],"jefe":["spanish"],"jeringa":["spanish"],"jinete":["spanish"],"jornada":["spanish"],"joroba":["spanish"],"joven":["spanish"],"joya":["spanish"],"juerga":["spanish"],"jueves":["spanish"],"juez":["spanish"],"jugador":["spanish"],"jugo":["spanish"],"juguete":["spanish"],"juicio":["spanish"],"junco":["spanish"],"jungla":["spanish"],"junio":["spanish"],"juntar":["spanish"],"júpiter":["spanish"],"jurar":["spanish"],"justo":["spanish"],"juvenil":["spanish"],"juzgar":["spanish"],"kilo":["spanish"],"koala":["spanish"],"labio":["spanish"],"lacio":["spanish"],"lacra":["spanish"],"lado":["spanish"],"ladrón":["spanish"],"lagarto":["spanish"],"lágrima":["spanish"],"laguna":["spanish"],"laico":["spanish"],"lamer":["spanish"],"lámina":["spanish"],"lámpara":["spanish"],"lana":["spanish"],"lancha":["spanish"],"langosta":["spanish"],"lanza":["spanish"],"lápiz":["spanish"],"largo":["spanish"],"larva":["spanish"],"lástima":["spanish"],"lata":["spanish"],"látex":["spanish"],"latir":["spanish"],"laurel":["spanish"],"lavar":["spanish"],"lazo":["spanish"],"leal":["spanish"],"lección":["spanish"],"leche":["spanish"],"lector":["spanish"],"leer":["spanish"],"legión":["spanish"],"legumbre":["spanish"],"lejano":["spanish"],"lengua":["spanish"],"lento":["spanish"],"leña":["spanish"],"león":["spanish"],"leopardo":["spanish"],"lesión":["spanish"],"letal":["spanish"],"letra":["spanish"],"leve":["spanish"],"leyenda":["spanish"],"libertad":["spanish"],"libro":["spanish"],"licor":["spanish"],"líder":["spanish"],"lidiar":["spanish"],"lienzo":["spanish"],"liga":["spanish"],"ligero":["spanish"],"lima":["spanish"],"límite":["spanish"],"limón":["spanish"],"limpio":["spanish"],"lince":["spanish"],"lindo":["spanish"],"línea":["spanish"],"lingote":["spanish"],"lino":["spanish"],"linterna":["spanish"],"líquido":["spanish"],"liso":["spanish"],"lista":["spanish"],"litera":["spanish"],"litio":["spanish"],"litro":["spanish"],"llaga":["spanish"],"llama":["spanish"],"llanto":["spanish"],"llave":["spanish"],"llegar":["spanish"],"llenar":["spanish"],"llevar":["spanish"],"llorar":["spanish"],"llover":["spanish"],"lluvia":["spanish"],"lobo":["spanish"],"loción":["spanish"],"loco":["spanish"],"locura":["spanish"],"lógica":["spanish"],"logro":["spanish"],"lombriz":["spanish"],"lomo":["spanish"],"lonja":["spanish"],"lote":["spanish"],"lucha":["spanish"],"lucir":["spanish"],"lugar":["spanish"],"lujo":["spanish"],"luna":["spanish"],"lunes":["spanish"],"lupa":["spanish"],"lustro":["spanish"],"luto":["spanish"],"luz":["spanish"],"maceta":["spanish"],"macho":["spanish"],"madera":["spanish"],"madre":["spanish"],"maduro":["spanish"],"maestro":["spanish"],"mafia":["spanish"],"magia":["spanish"],"mago":["spanish"],"maíz":["spanish"],"maldad":["spanish"],"maleta":["spanish"],"malla":["spanish"],"malo":["spanish"],"mamá":["spanish"],"mambo":["spanish"],"mamut":["spanish"],"manco":["spanish"],"mando":["spanish"],"manejar":["spanish"],"manga":["spanish"],"maniquí":["spanish"],"manjar":["spanish"],"mano":["spanish"],"manso":["spanish"],"manta":["spanish"],"mañana":["spanish"],"mapa":["spanish"],"máquina":["spanish"],"mar":["spanish"],"marco":["spanish"],"marea":["spanish"],"marfil":["spanish"],"margen":["spanish"],"marido":["spanish"],"mármol":["spanish"],"marrón":["spanish"],"martes":["spanish"],"marzo":["spanish"],"masa":["spanish"],"máscara":["spanish"],"masivo":["spanish"],"matar":["spanish"],"materia":["spanish"],"matiz":["spanish"],"matriz":["spanish"],"máximo":["spanish"],"mayor":["spanish"],"mazorca":["spanish"],"mecha":["spanish"],"medalla":["spanish"],"medio":["spanish"],"médula":["spanish"],"mejilla":["spanish"],"mejor":["spanish"],"melena":["spanish"],"melón":["spanish"],"memoria":["spanish"],"menor":["spanish"],"mensaje":["spanish"],"mente":["spanish"],"menú":["spanish"],"mercado":["spanish"],"merengue":["spanish"],"mérito":["spanish"],"mes":["spanish"],"mesón":["spanish"],"meta":["spanish"],"meter":["spanish"],"método":["spanish"],"metro":["spanish"],"mezcla":["spanish"],"miedo":["spanish"],"miel":["spanish"],"miembro":["spanish"],"miga":["spanish"],"mil":["spanish"],"milagro":["spanish"],"militar":["spanish"],"millón":["spanish"],"mimo":["spanish"],"mina":["spanish"],"minero":["spanish"],"mínimo":["spanish"],"minuto":["spanish"],"miope":["spanish"],"mirar":["spanish"],"misa":["spanish"],"miseria":["spanish"],"misil":["spanish"],"mismo":["spanish"],"mitad":["spanish"],"mito":["spanish"],"mochila":["spanish"],"moción":["spanish"],"moda":["spanish"],"modelo":["spanish"],"moho":["spanish"],"mojar":["spanish"],"molde":["spanish"],"moler":["spanish"],"molino":["spanish"],"momento":["spanish"],"momia":["spanish"],"monarca":["spanish"],"moneda":["spanish"],"monja":["spanish"],"monto":["spanish"],"moño":["spanish"],"morada":["spanish"],"morder":["spanish"],"moreno":["spanish"],"morir":["spanish"],"morro":["spanish"],"morsa":["spanish"],"mortal":["spanish"],"mosca":["spanish"],"mostrar":["spanish"],"motivo":["spanish"],"mover":["spanish"],"móvil":["spanish"],"mozo":["spanish"],"mucho":["spanish"],"mudar":["spanish"],"mueble":["spanish"],"muela":["spanish"],"muerte":["spanish"],"muestra":["spanish"],"mugre":["spanish"],"mujer":["spanish"],"mula":["spanish"],"muleta":["spanish"],"multa":["spanish"],"mundo":["spanish"],"muñeca":["spanish"],"mural":["spanish"],"muro":["spanish"],"músculo":["spanish"],"museo":["spanish"],"musgo":["spanish"],"música":["spanish"],"muslo":["spanish"],"nácar":["spanish"],"nación":["spanish"],"nadar":["spanish"],"naipe":["spanish"],"naranja":["spanish"],"nariz":["spanish"],"narrar":["spanish"],"nasal":["spanish"],"natal":["spanish"],"nativo":["spanish"],"natural":["spanish"],"náusea":["spanish"],"naval":["spanish"],"nave":["spanish"],"navidad":["spanish"],"necio":["spanish"],"néctar":["spanish"],"negar":["spanish"],"negocio":["spanish"],"negro":["spanish"],"neón":["spanish"],"nervio":["spanish"],"neto":["spanish"],"neutro":["spanish"],"nevar":["spanish"],"nevera":["spanish"],"nicho":["spanish"],"nido":["spanish"],"niebla":["spanish"],"nieto":["spanish"],"niñez":["spanish"],"niño":["spanish"],"nítido":["spanish"],"nivel":["spanish"],"nobleza":["spanish"],"noche":["spanish"],"nómina":["spanish"],"noria":["spanish"],"norma":["spanish"],"norte":["spanish"],"nota":["spanish"],"noticia":["spanish"],"novato":["spanish"],"novela":["spanish"],"novio":["spanish"],"nube":["spanish"],"nuca":["spanish"],"núcleo":["spanish"],"nudillo":["spanish"],"nudo":["spanish"],"nuera":["spanish"],"nueve":["spanish"],"nuez":["spanish"],"nulo":["spanish"],"número":["spanish"],"nutria":["spanish"],"oasis":["spanish"],"obeso":["spanish"],"obispo":["spanish"],"objeto":["spanish"],"obra":["spanish"],"obrero":["spanish"],"observar":["spanish"],"obtener":["spanish"],"obvio":["spanish"],"oca":["spanish"],"ocaso":["spanish"],"océano":["spanish"],"ochenta":["spanish"],"ocho":["spanish"],"ocio":["spanish"],"ocre":["spanish"],"octavo":["spanish"],"octubre":["spanish"],"oculto":["spanish"],"ocupar":["spanish"],"ocurrir":["spanish"],"odiar":["spanish"],"odio":["spanish"],"odisea":["spanish"],"oeste":["spanish"],"ofensa":["spanish"],"oferta":["spanish"],"oficio":["spanish"],"ofrecer":["spanish"],"ogro":["spanish"],"oído":["spanish"],"oír":["spanish"],"ojo":["spanish"],"ola":["spanish"],"oleada":["spanish"],"olfato":["spanish"],"olivo":["spanish"],"olla":["spanish"],"olmo":["spanish"],"olor":["spanish"],"olvido":["spanish"],"ombligo":["spanish"],"onda":["spanish"],"onza":["spanish"],"opaco":["spanish"],"opción":["spanish"],"ópera":["spanish"],"opinar":["spanish"],"oponer":["spanish"],"optar":["spanish"],"óptica":["spanish"],"opuesto":["spanish"],"oración":["spanish"],"orador":["spanish"],"oral":["spanish","turkish"],"órbita":["spanish"],"orca":["spanish"],"orden":["spanish"],"oreja":["spanish"],"órgano":["spanish"],"orgía":["spanish"],"orgullo":["spanish"],"oriente":["spanish"],"origen":["spanish"],"orilla":["spanish"],"oro":["spanish"],"orquesta":["spanish"],"oruga":["spanish"],"osadía":["spanish"],"oscuro":["spanish"],"osezno":["spanish"],"oso":["spanish"],"ostra":["spanish"],"otoño":["spanish"],"otro":["spanish"],"oveja":["spanish"],"óvulo":["spanish"],"óxido":["spanish"],"oxígeno":["spanish"],"oyente":["spanish"],"ozono":["spanish"],"pacto":["spanish"],"padre":["spanish"],"paella":["spanish"],"página":["spanish"],"pago":["spanish"],"país":["spanish"],"pájaro":["spanish"],"palabra":["spanish"],"palco":["spanish"],"paleta":["spanish"],"pálido":["spanish"],"palma":["spanish"],"paloma":["spanish"],"palpar":["spanish"],"pan":["spanish"],"panal":["spanish"],"pánico":["spanish"],"pantera":["spanish"],"pañuelo":["spanish"],"papá":["spanish"],"papel":["spanish"],"papilla":["spanish"],"paquete":["spanish"],"parar":["spanish"],"parcela":["spanish"],"pared":["spanish"],"parir":["spanish"],"paro":["spanish"],"párpado":["spanish"],"parque":["spanish"],"párrafo":["spanish"],"parte":["spanish"],"pasar":["spanish"],"paseo":["spanish"],"pasión":["spanish"],"paso":["spanish"],"pasta":["spanish"],"pata":["spanish"],"patio":["spanish"],"patria":["spanish"],"pausa":["spanish"],"pauta":["spanish"],"pavo":["spanish"],"payaso":["spanish"],"peatón":["spanish"],"pecado":["spanish"],"pecera":["spanish"],"pecho":["spanish"],"pedal":["spanish","turkish"],"pedir":["spanish"],"pegar":["spanish"],"peine":["spanish"],"pelar":["spanish"],"peldaño":["spanish"],"pelea":["spanish"],"peligro":["spanish"],"pellejo":["spanish"],"pelo":["spanish"],"peluca":["spanish"],"pena":["spanish","turkish"],"pensar":["spanish"],"peñón":["spanish"],"peón":["spanish"],"peor":["spanish"],"pepino":["spanish"],"pequeño":["spanish"],"pera":["spanish"],"percha":["spanish"],"perder":["spanish"],"pereza":["spanish"],"perfil":["spanish"],"perico":["spanish"],"perla":["spanish"],"permiso":["spanish"],"perro":["spanish"],"persona":["spanish"],"pesa":["spanish"],"pesca":["spanish"],"pésimo":["spanish"],"pestaña":["spanish"],"pétalo":["spanish"],"petróleo":["spanish"],"pez":["spanish"],"pezuña":["spanish"],"picar":["spanish"],"pichón":["spanish"],"pie":["spanish"],"piedra":["spanish"],"pierna":["spanish"],"pieza":["spanish"],"pijama":["spanish"],"pilar":["spanish"],"piloto":["spanish"],"pimienta":["spanish"],"pino":["spanish"],"pintor":["spanish"],"pinza":["spanish"],"piña":["spanish"],"piojo":["spanish"],"pipa":["spanish"],"pirata":["spanish"],"pisar":["spanish"],"piscina":["spanish"],"piso":["spanish"],"pista":["spanish"],"pitón":["spanish"],"pizca":["spanish"],"placa":["spanish"],"plan":["spanish"],"plata":["spanish"],"playa":["spanish"],"plaza":["spanish"],"pleito":["spanish"],"pleno":["spanish"],"plomo":["spanish"],"pluma":["spanish"],"plural":["spanish"],"pobre":["spanish"],"poco":["spanish"],"poder":["spanish"],"podio":["spanish"],"poema":["spanish"],"poesía":["spanish"],"poeta":["spanish"],"polen":["spanish","turkish"],"policía":["spanish"],"pollo":["spanish"],"polvo":["spanish"],"pomada":["spanish"],"pomelo":["spanish"],"pomo":["spanish"],"pompa":["spanish","turkish"],"poner":["spanish"],"porción":["spanish"],"portal":["spanish"],"posada":["spanish"],"poseer":["spanish"],"posible":["spanish"],"poste":["spanish"],"potencia":["spanish"],"potro":["spanish"],"pozo":["spanish"],"prado":["spanish"],"precoz":["spanish"],"pregunta":["spanish"],"premio":["spanish"],"prensa":["spanish"],"preso":["spanish"],"previo":["spanish"],"primo":["spanish"],"príncipe":["spanish"],"prisión":["spanish"],"privar":["spanish"],"proa":["spanish"],"probar":["spanish"],"proceso":["spanish"],"producto":["spanish"],"proeza":["spanish"],"profesor":["spanish"],"programa":["spanish"],"prole":["spanish"],"promesa":["spanish"],"pronto":["spanish"],"propio":["spanish"],"próximo":["spanish"],"prueba":["spanish"],"público":["spanish"],"puchero":["spanish"],"pudor":["spanish"],"pueblo":["spanish"],"puerta":["spanish"],"puesto":["spanish"],"pulga":["spanish"],"pulir":["spanish"],"pulmón":["spanish"],"pulpo":["spanish"],"pulso":["spanish"],"puma":["spanish"],"punto":["spanish"],"puñal":["spanish"],"puño":["spanish"],"pupa":["spanish"],"pupila":["spanish"],"puré":["spanish"],"quedar":["spanish"],"queja":["spanish"],"quemar":["spanish"],"querer":["spanish"],"queso":["spanish"],"quieto":["spanish"],"química":["spanish"],"quince":["spanish"],"quitar":["spanish"],"rábano":["spanish"],"rabia":["spanish"],"rabo":["spanish"],"ración":["spanish"],"radical":["spanish"],"raíz":["spanish"],"rama":["spanish"],"rampa":["spanish","turkish"],"rancho":["spanish"],"rango":["spanish"],"rapaz":["spanish"],"rápido":["spanish"],"rapto":["spanish"],"rasgo":["spanish"],"raspa":["spanish"],"rato":["spanish"],"rayo":["spanish"],"raza":["spanish"],"razón":["spanish"],"reacción":["spanish"],"realidad":["spanish"],"rebaño":["spanish"],"rebote":["spanish"],"recaer":["spanish"],"receta":["spanish"],"rechazo":["spanish"],"recoger":["spanish"],"recreo":["spanish"],"recto":["spanish"],"recurso":["spanish"],"red":["spanish"],"redondo":["spanish"],"reducir":["spanish"],"reflejo":["spanish"],"reforma":["spanish"],"refrán":["spanish"],"refugio":["spanish"],"regalo":["spanish"],"regir":["spanish"],"regla":["spanish"],"regreso":["spanish"],"rehén":["spanish"],"reino":["spanish"],"reír":["spanish"],"reja":["spanish"],"relato":["spanish"],"relevo":["spanish"],"relieve":["spanish"],"relleno":["spanish"],"reloj":["spanish"],"remar":["spanish"],"remedio":["spanish"],"remo":["spanish"],"rencor":["spanish"],"rendir":["spanish"],"renta":["spanish"],"reparto":["spanish"],"repetir":["spanish"],"reposo":["spanish"],"reptil":["spanish"],"res":["spanish"],"rescate":["spanish"],"resina":["spanish"],"respeto":["spanish"],"resto":["spanish"],"resumen":["spanish"],"retiro":["spanish"],"retorno":["spanish"],"retrato":["spanish"],"reunir":["spanish"],"revés":["spanish"],"revista":["spanish"],"rey":["spanish"],"rezar":["spanish"],"rico":["spanish"],"riego":["spanish"],"rienda":["spanish"],"riesgo":["spanish"],"rifa":["spanish"],"rígido":["spanish"],"rigor":["spanish"],"rincón":["spanish"],"riñón":["spanish"],"río":["spanish"],"riqueza":["spanish"],"risa":["spanish"],"ritmo":["spanish"],"rito":["spanish"],"rizo":["spanish"],"roble":["spanish"],"roce":["spanish"],"rociar":["spanish"],"rodar":["spanish"],"rodeo":["spanish"],"rodilla":["spanish"],"roer":["spanish"],"rojizo":["spanish"],"rojo":["spanish"],"romero":["spanish"],"romper":["spanish"],"ron":["spanish"],"ronco":["spanish"],"ronda":["spanish"],"ropa":["spanish"],"ropero":["spanish"],"rosa":["spanish"],"rosca":["spanish"],"rostro":["spanish"],"rotar":["spanish"],"rubí":["spanish"],"rubor":["spanish"],"rudo":["spanish"],"rueda":["spanish"],"rugir":["spanish"],"ruido":["spanish"],"ruina":["spanish"],"ruleta":["spanish"],"rulo":["spanish","turkish"],"rumbo":["spanish"],"rumor":["spanish"],"ruptura":["spanish"],"ruta":["spanish"],"rutina":["spanish"],"sábado":["spanish"],"saber":["spanish"],"sabio":["spanish"],"sable":["spanish"],"sacar":["spanish"],"sagaz":["spanish"],"sagrado":["spanish"],"sala":["spanish"],"saldo":["spanish"],"salero":["spanish"],"salir":["spanish"],"salmón":["spanish"],"salón":["spanish"],"salsa":["spanish"],"salto":["spanish"],"salud":["spanish"],"salvar":["spanish"],"samba":["spanish"],"sanción":["spanish"],"sandía":["spanish"],"sanear":["spanish"],"sangre":["spanish"],"sanidad":["spanish"],"sano":["spanish"],"santo":["spanish"],"sapo":["spanish"],"saque":["spanish"],"sardina":["spanish"],"sartén":["spanish"],"sastre":["spanish"],"satán":["spanish"],"sauna":["spanish"],"saxofón":["spanish"],"sección":["spanish"],"seco":["spanish"],"secreto":["spanish"],"secta":["spanish"],"sed":["spanish"],"seguir":["spanish"],"seis":["spanish"],"sello":["spanish"],"selva":["spanish"],"semana":["spanish"],"semilla":["spanish"],"senda":["spanish"],"sensor":["spanish"],"señal":["spanish"],"señor":["spanish"],"separar":["spanish"],"sepia":["spanish"],"sequía":["spanish"],"ser":["spanish"],"serie":["spanish"],"sermón":["spanish"],"servir":["spanish"],"sesenta":["spanish"],"sesión":["spanish"],"seta":["spanish"],"setenta":["spanish"],"severo":["spanish"],"sexo":["spanish"],"sexto":["spanish"],"sidra":["spanish"],"siesta":["spanish"],"siete":["spanish"],"siglo":["spanish"],"signo":["spanish"],"sílaba":["spanish"],"silbar":["spanish"],"silencio":["spanish"],"silla":["spanish"],"símbolo":["spanish"],"simio":["spanish"],"sirena":["spanish"],"sistema":["spanish"],"sitio":["spanish"],"situar":["spanish"],"sobre":["spanish"],"socio":["spanish"],"sodio":["spanish"],"sol":["spanish"],"solapa":["spanish"],"soldado":["spanish"],"soledad":["spanish"],"sólido":["spanish"],"soltar":["spanish"],"solución":["spanish"],"sombra":["spanish"],"sondeo":["spanish"],"sonido":["spanish"],"sonoro":["spanish"],"sonrisa":["spanish"],"sopa":["spanish"],"soplar":["spanish"],"soporte":["spanish"],"sordo":["spanish"],"sorpresa":["spanish"],"sorteo":["spanish"],"sostén":["spanish"],"sótano":["spanish"],"suave":["spanish"],"subir":["spanish"],"suceso":["spanish"],"sudor":["spanish"],"suegra":["spanish"],"suelo":["spanish"],"sueño":["spanish"],"suerte":["spanish"],"sufrir":["spanish"],"sujeto":["spanish"],"sultán":["spanish"],"sumar":["spanish"],"superar":["spanish"],"suplir":["spanish"],"suponer":["spanish"],"supremo":["spanish"],"sur":["spanish"],"surco":["spanish"],"sureño":["spanish"],"surgir":["spanish"],"susto":["spanish"],"sutil":["spanish"],"tabaco":["spanish"],"tabique":["spanish"],"tabla":["spanish"],"tabú":["spanish"],"taco":["spanish"],"tacto":["spanish"],"tajo":["spanish"],"talar":["spanish"],"talco":["spanish"],"talento":["spanish"],"talla":["spanish"],"talón":["spanish"],"tamaño":["spanish"],"tambor":["spanish"],"tango":["spanish"],"tanque":["spanish"],"tapa":["spanish"],"tapete":["spanish"],"tapia":["spanish"],"tapón":["spanish"],"taquilla":["spanish"],"tarde":["spanish"],"tarea":["spanish"],"tarifa":["spanish"],"tarjeta":["spanish"],"tarot":["spanish"],"tarro":["spanish"],"tarta":["spanish"],"tatuaje":["spanish"],"tauro":["spanish"],"taza":["spanish"],"tazón":["spanish"],"teatro":["spanish"],"techo":["spanish"],"tecla":["spanish"],"técnica":["spanish"],"tejado":["spanish"],"tejer":["spanish"],"tejido":["spanish"],"tela":["spanish"],"teléfono":["spanish"],"tema":["spanish"],"temor":["spanish"],"templo":["spanish"],"tenaz":["spanish"],"tender":["spanish"],"tener":["spanish"],"tenis":["spanish"],"tenso":["spanish"],"teoría":["spanish"],"terapia":["spanish"],"terco":["spanish"],"término":["spanish"],"ternura":["spanish"],"terror":["spanish"],"tesis":["spanish"],"tesoro":["spanish"],"testigo":["spanish"],"tetera":["spanish"],"texto":["spanish"],"tez":["spanish"],"tibio":["spanish"],"tiburón":["spanish"],"tiempo":["spanish"],"tienda":["spanish"],"tierra":["spanish"],"tieso":["spanish"],"tigre":["spanish"],"tijera":["spanish"],"tilde":["spanish"],"timbre":["spanish"],"tímido":["spanish"],"timo":["spanish"],"tinta":["spanish"],"tío":["spanish"],"típico":["spanish"],"tipo":["spanish"],"tira":["spanish"],"tirón":["spanish"],"titán":["spanish"],"títere":["spanish"],"título":["spanish"],"tiza":["spanish"],"toalla":["spanish"],"tobillo":["spanish"],"tocar":["spanish"],"tocino":["spanish"],"todo":["spanish"],"toga":["spanish"],"toldo":["spanish"],"tomar":["spanish","turkish"],"tono":["spanish"],"tonto":["spanish"],"topar":["spanish"],"tope":["spanish"],"toque":["spanish"],"tórax":["spanish"],"torero":["spanish"],"tormenta":["spanish"],"torneo":["spanish"],"toro":["spanish"],"torpedo":["spanish"],"torre":["spanish"],"torso":["spanish"],"tortuga":["spanish"],"tos":["spanish"],"tosco":["spanish"],"toser":["spanish"],"tóxico":["spanish"],"trabajo":["spanish"],"tractor":["spanish"],"traer":["spanish"],"tráfico":["spanish"],"trago":["spanish"],"traje":["spanish"],"tramo":["spanish"],"trance":["spanish"],"trato":["spanish"],"trauma":["spanish"],"trazar":["spanish"],"trébol":["spanish"],"tregua":["spanish"],"treinta":["spanish"],"tren":["spanish"],"trepar":["spanish"],"tres":["spanish"],"tribu":["spanish"],"trigo":["spanish"],"tripa":["spanish"],"triste":["spanish"],"triunfo":["spanish"],"trofeo":["spanish"],"trompa":["spanish"],"tronco":["spanish"],"tropa":["spanish"],"trote":["spanish"],"trozo":["spanish"],"truco":["spanish"],"trueno":["spanish"],"trufa":["spanish"],"tubería":["spanish"],"tubo":["spanish"],"tuerto":["spanish"],"tumba":["spanish"],"tumor":["spanish"],"túnel":["spanish"],"túnica":["spanish"],"turbina":["spanish"],"turismo":["spanish"],"turno":["spanish"],"tutor":["spanish"],"ubicar":["spanish"],"úlcera":["spanish"],"umbral":["spanish"],"unidad":["spanish"],"unir":["spanish"],"universo":["spanish"],"uno":["spanish"],"untar":["spanish"],"uña":["spanish"],"urbano":["spanish"],"urbe":["spanish"],"urgente":["spanish"],"urna":["spanish"],"usar":["spanish"],"usuario":["spanish"],"útil":["spanish"],"utopía":["spanish"],"uva":["spanish"],"vaca":["spanish"],"vacío":["spanish"],"vacuna":["spanish"],"vagar":["spanish"],"vago":["spanish"],"vaina":["spanish"],"vajilla":["spanish"],"vale":["spanish"],"válido":["spanish"],"valle":["spanish"],"valor":["spanish"],"válvula":["spanish"],"vampiro":["spanish"],"vara":["spanish"],"variar":["spanish"],"varón":["spanish"],"vaso":["spanish"],"vecino":["spanish"],"vector":["spanish"],"vehículo":["spanish"],"veinte":["spanish"],"vejez":["spanish"],"vela":["spanish"],"velero":["spanish"],"veloz":["spanish"],"vena":["spanish"],"vencer":["spanish"],"venda":["spanish"],"veneno":["spanish"],"vengar":["spanish"],"venir":["spanish"],"venta":["spanish"],"venus":["spanish"],"ver":["spanish"],"verano":["spanish"],"verbo":["spanish"],"verde":["spanish"],"vereda":["spanish"],"verja":["spanish"],"verso":["spanish"],"verter":["spanish"],"vía":["spanish"],"viaje":["spanish"],"vibrar":["spanish"],"vicio":["spanish"],"víctima":["spanish"],"vida":["spanish"],"vídeo":["spanish"],"vidrio":["spanish"],"viejo":["spanish"],"viernes":["spanish"],"vigor":["spanish"],"vil":["spanish"],"villa":["spanish"],"vinagre":["spanish"],"vino":["spanish"],"viñedo":["spanish"],"violín":["spanish"],"viral":["spanish"],"virgo":["spanish"],"virtud":["spanish"],"visor":["spanish"],"víspera":["spanish"],"vista":["spanish"],"vitamina":["spanish"],"viudo":["spanish"],"vivaz":["spanish"],"vivero":["spanish"],"vivir":["spanish"],"vivo":["spanish"],"volcán":["spanish"],"volumen":["spanish"],"volver":["spanish"],"voraz":["spanish"],"votar":["spanish"],"voto":["spanish"],"voz":["spanish"],"vuelo":["spanish"],"vulgar":["spanish"],"yacer":["spanish"],"yate":["spanish"],"yegua":["spanish"],"yema":["spanish"],"yerno":["spanish"],"yeso":["spanish"],"yodo":["spanish"],"yoga":["spanish"],"yogur":["spanish"],"zafiro":["spanish"],"zanja":["spanish"],"zapato":["spanish"],"zarza":["spanish"],"zona":["spanish"],"zorro":["spanish"],"zumo":["spanish"],"zurdo":["spanish"],"abajur":["turkish"],"abaküs":["turkish"],"abartı":["turkish"],"abdal":["turkish"],"abdest":["turkish"],"abiye":["turkish"],"abluka":["turkish"],"abone":["turkish"],"absorbe":["turkish"],"absürt":["turkish"],"acayip":["turkish"],"acele":["turkish"],"acemi":["turkish"],"açıkgöz":["turkish"],"adalet":["turkish"],"adam":["turkish"],"adezyon":["turkish"],"adisyon":["turkish"],"adliye":["turkish"],"adres":["turkish"],"afacan":["turkish"],"afili":["turkish"],"afiş":["turkish"],"afiyet":["turkish"],"aforizm":["turkish"],"afra":["turkish"],"ağaç":["turkish"],"ağır":["turkish"],"ahbap":["turkish"],"ahkam":["turkish"],"ahlak":["turkish"],"ahtapot":["turkish"],"aidat":["turkish"],"aile":["turkish"],"ajan":["turkish"],"akademi":["turkish"],"akarsu":["turkish"],"akbaş":["turkish"],"akciğer":["turkish"],"akdeniz":["turkish"],"akıbet":["turkish"],"akıl":["turkish"],"akıntı":["turkish"],"akide":["turkish"],"akrep":["turkish"],"akrobasi":["turkish"],"aksiyon":["turkish"],"akşam":["turkish"],"aktif":["turkish"],"aktör":["turkish"],"aktris":["turkish"],"akustik":["turkish"],"alaca":["turkish"],"albüm":["turkish"],"alçak":["turkish"],"aldanma":["turkish"],"aleni":["turkish"],"alet":["turkish"],"alfabe":["turkish"],"algılama":["turkish"],"alıngan":["turkish"],"alkış":["turkish"],"alkol":["turkish"],"alpay":["turkish"],"alperen":["turkish"],"altın":["turkish"],"altüst":["turkish"],"altyapı":["turkish"],"alyuvar":["turkish"],"amade":["turkish"],"amatör":["turkish"],"amazon":["turkish"],"ambalaj":["turkish"],"amblem":["turkish"],"ambulans":["turkish"],"amca":["turkish"],"amel":["turkish"],"amir":["turkish"],"amiyane":["turkish"],"amorti":["turkish"],"ampul":["turkish"],"anadolu":["turkish"],"anahtar":["turkish"],"anakonda":["turkish"],"anaokul":["turkish"],"anapara":["turkish"],"anarşi":["turkish"],"anatomi":["turkish"],"anayasa":["turkish"],"anekdot":["turkish"],"anestezi":["turkish"],"angaje":["turkish"],"anka":["turkish"],"anket":["turkish"],"anlamlı":["turkish"],"anne":["turkish"],"anomali":["turkish"],"anonim":["turkish"],"anten":["turkish"],"antlaşma":["turkish"],"apse":["turkish"],"araba":["turkish"],"aracı":["turkish"],"araf":["turkish"],"arbede":["turkish"],"arda":["turkish"],"arefe":["turkish"],"argo":["turkish"],"argüman":["turkish"],"arkadaş":["turkish"],"armoni":["turkish"],"arsa":["turkish"],"arsız":["turkish"],"artı":["turkish"],"aruz":["turkish"],"asansör":["turkish"],"asayiş":["turkish"],"asgari":["turkish"],"asil":["turkish"],"asker":["turkish"],"askı":["turkish"],"aslan":["turkish"],"asosyal":["turkish"],"astsubay":["turkish"],"asya":["turkish"],"aşçı":["turkish"],"aşırı":["turkish"],"aşure":["turkish"],"atabey":["turkish"],"ataman":["turkish"],"ateş":["turkish"],"atmaca":["turkish"],"atmosfer":["turkish"],"atölye":["turkish"],"avcı":["turkish"],"avdet":["turkish"],"avize":["turkish"],"avlu":["turkish"],"avokado":["turkish"],"avrupa":["turkish"],"avukat":["turkish"],"ayaz":["turkish"],"ayçiçeği":["turkish"],"aydın":["turkish"],"aygıt":["turkish"],"ayna":["turkish"],"ayran":["turkish"],"ayrıntı":["turkish"],"azim":["turkish"],"baca":["turkish"],"bagaj":["turkish"],"bağlantı":["turkish"],"bahadır":["turkish"],"bahçe":["turkish"],"baki":["turkish"],"bakkal":["turkish"],"baklava":["turkish"],"bakteri":["turkish"],"balçık":["turkish"],"balina":["turkish"],"balo":["turkish"],"balta":["turkish"],"bant":["turkish"],"banyo":["turkish"],"bardak":["turkish"],"barış":["turkish"],"başbuğ":["turkish"],"başıboş":["turkish"],"başkan":["turkish"],"başlık":["turkish"],"bavul":["turkish"],"bayındır":["turkish"],"baykuş":["turkish"],"bazlama":["turkish"],"bedel":["turkish"],"begüm":["turkish"],"bekçi":["turkish"],"bekle":["turkish"],"belge":["turkish"],"belki":["turkish"],"bencil":["turkish"],"benek":["turkish"],"bengi":["turkish"],"berjer":["turkish"],"berk":["turkish"],"berrak":["turkish"],"beşik":["turkish"],"beyin":["turkish"],"beyoğlu":["turkish"],"bıçak":["turkish"],"biberiye":["turkish"],"bidon":["turkish"],"bihaber":["turkish"],"bikini":["turkish"],"bilezik":["turkish"],"bilinç":["turkish"],"bilye":["turkish"],"bina":["turkish"],"binbaşı":["turkish"],"binyıl":["turkish"],"bisiklet":["turkish"],"bisküvi":["turkish"],"bitki":["turkish"],"bizzat":["turkish"],"bodrum":["turkish"],"boğaz":["turkish"],"bohça":["turkish"],"boncuk":["turkish"],"bonfile":["turkish"],"borsa":["turkish"],"boru":["turkish"],"bostan":["turkish"],"boşboğaz":["turkish"],"botanik":["turkish"],"boya":["turkish"],"boykot":["turkish"],"boynuz":["turkish"],"bozgun":["turkish"],"bozkır":["turkish"],"bölüm":["turkish"],"börek":["turkish"],"buçuk":["turkish"],"bugün":["turkish"],"buğday":["turkish"],"buhar":["turkish"],"buhran":["turkish"],"bulvar":["turkish"],"buram":["turkish"],"burçak":["turkish"],"burs":["turkish"],"burun":["turkish"],"buzdağı":["turkish"],"buzkıran":["turkish"],"bücür":["turkish"],"büfe":["turkish"],"bülten":["turkish"],"bütçe":["turkish"],"bütün":["turkish"],"büyük":["turkish"],"cacık":["turkish"],"cadı":["turkish"],"cahil":["turkish"],"cambaz":["turkish"],"canhıraş":["turkish"],"casus":["turkish"],"cazibe":["turkish"],"cehalet":["turkish"],"cehennem":["turkish"],"ceket":["turkish"],"cemre":["turkish"],"cenin":["turkish"],"cennet":["turkish"],"cepken":["turkish"],"cerrah":["turkish"],"cesur":["turkish"],"cetvel":["turkish"],"cevher":["turkish"],"ceylan":["turkish"],"cılız":["turkish"],"cıva":["turkish"],"cilt":["turkish"],"cisim":["turkish"],"ciyak":["turkish"],"coğrafya":["turkish"],"cömert":["turkish"],"cumba":["turkish"],"cüzdan":["turkish"],"çabucak":["turkish"],"çadır":["turkish"],"çağdaş":["turkish"],"çağlayan":["turkish"],"çağrı":["turkish"],"çakmak":["turkish"],"çalışkan":["turkish"],"çamaşır":["turkish"],"çapa":["turkish"],"çaput":["turkish"],"çarık":["turkish"],"çarpan":["turkish"],"çarşaf":["turkish"],"çayhane":["turkish"],"çekirdek":["turkish"],"çelebi":["turkish"],"çember":["turkish"],"çenet":["turkish"],"çengel":["turkish"],"çerçeve":["turkish"],"çerez":["turkish"],"çeşit":["turkish"],"çeşme":["turkish"],"çete":["turkish"],"çevre":["turkish"],"çeyiz":["turkish"],"çeyrek":["turkish"],"çığır":["turkish"],"çılgın":["turkish"],"çıngırak":["turkish"],"çift":["turkish"],"çiğdem":["turkish"],"çikolata":["turkish"],"çilek":["turkish"],"çimen":["turkish"],"çivi":["turkish"],"çoban":["turkish"],"çocuk":["turkish"],"çokgen":["turkish"],"çomak":["turkish"],"çorba":["turkish"],"çözelti":["turkish"],"çubuk":["turkish"],"çukur":["turkish"],"çuval":["turkish"],"çürük":["turkish"],"dağbaşı":["turkish"],"dağılım":["turkish"],"daktilo":["turkish"],"daldırış":["turkish"],"dalga":["turkish"],"dalkavuk":["turkish"],"damak":["turkish"],"damıtma":["turkish"],"damla":["turkish"],"dana":["turkish"],"dandik":["turkish"],"danışman":["turkish"],"daniska":["turkish"],"dantel":["turkish"],"dargeçit":["turkish"],"darphane":["turkish"],"davet":["turkish"],"dayı":["turkish"],"defter":["turkish"],"değer":["turkish"],"değirmen":["turkish"],"dehşet":["turkish"],"delgeç":["turkish"],"demir":["turkish"],"deneyim":["turkish"],"denge":["turkish"],"depo":["turkish"],"deprem":["turkish"],"derdest":["turkish"],"dere":["turkish"],"derhal":["turkish"],"derman":["turkish"],"dernek":["turkish"],"derviş":["turkish"],"desen":["turkish"],"destan":["turkish"],"dışarı":["turkish"],"dışbükey":["turkish"],"dijital":["turkish"],"dikbaşlı":["turkish"],"dilekçe":["turkish"],"dimağ":["turkish"],"dinamik":["turkish"],"dindar":["turkish"],"dinleme":["turkish"],"dinozor":["turkish"],"dipçik":["turkish"],"dipnot":["turkish"],"direniş":["turkish"],"dirsek":["turkish"],"disiplin":["turkish"],"divriği":["turkish"],"dizüstü":["turkish"],"dobra":["turkish"],"dodurga":["turkish"],"doğalgaz":["turkish"],"doküman":["turkish"],"dolap":["turkish"],"donanım":["turkish"],"dondurma":["turkish"],"donör":["turkish"],"doruk":["turkish"],"dosdoğru":["turkish"],"dost":["turkish"],"dosya":["turkish"],"dozer":["turkish"],"döküm":["turkish"],"dönence":["turkish"],"dörtyol":["turkish"],"dövme":["turkish"],"dram":["turkish"],"dublaj":["turkish"],"durum":["turkish"],"duvak":["turkish"],"duyarga":["turkish"],"duyma":["turkish"],"duyuru":["turkish"],"düğme":["turkish"],"düğüm":["turkish"],"dükkan":["turkish"],"dünür":["turkish"],"düpedüz":["turkish"],"dürbün":["turkish"],"düşünür":["turkish"],"düzayak":["turkish"],"düzeltme":["turkish"],"ebeveyn":["turkish"],"ebru":["turkish"],"ecel":["turkish"],"ecnebi":["turkish"],"ecza":["turkish"],"edat":["turkish"],"edilgen":["turkish"],"efendi":["turkish"],"efor":["turkish"],"efsane":["turkish"],"egemen":["turkish"],"egzersiz":["turkish"],"eğrelti":["turkish"],"ekarte":["turkish"],"ekip":["turkish"],"eklem":["turkish"],"ekmek":["turkish"],"ekol":["turkish"],"ekonomi":["turkish"],"ekose":["turkish"],"ekran":["turkish"],"ekvator":["turkish"],"elaman":["turkish"],"elastik":["turkish"],"elbet":["turkish"],"elbise":["turkish"],"elçi":["turkish"],"eldiven":["turkish"],"elebaşı":["turkish"],"eleştiri":["turkish"],"elma":["turkish"],"eloğlu":["turkish"],"elveda":["turkish"],"emare":["turkish"],"emekçi":["turkish"],"emisyon":["turkish"],"emniyet":["turkish"],"empati":["turkish"],"emsal":["turkish"],"emzik":["turkish"],"endüstri":["turkish"],"enerji":["turkish"],"engebe":["turkish"],"enişte":["turkish"],"enkaz":["turkish"],"entari":["turkish"],"entegre":["turkish"],"entrika":["turkish"],"enzim":["turkish"],"erdem":["turkish"],"ergen":["turkish"],"erguvan":["turkish"],"erkek":["turkish"],"erozyon":["turkish"],"ertesi":["turkish"],"erzak":["turkish"],"esaret":["turkish"],"esenlik":["turkish"],"eser":["turkish"],"eski":["turkish"],"esnek":["turkish"],"eşarp":["turkish"],"eşofman":["turkish"],"eşraf":["turkish"],"eşya":["turkish"],"eşzaman":["turkish"],"etik":["turkish"],"etken":["turkish"],"etkinlik":["turkish"],"etüt":["turkish"],"evet":["turkish"],"evire":["turkish"],"evrak":["turkish"],"evrim":["turkish"],"eyalet":["turkish"],"eyvah":["turkish"],"ezber":["turkish"],"fabrika":["turkish"],"fanus":["turkish"],"fason":["turkish"],"fasulye":["turkish"],"fatih":["turkish"],"fatura":["turkish"],"fayans":["turkish"],"fayton":["turkish"],"fazıl":["turkish"],"fazilet":["turkish"],"felsefe":["turkish"],"fener":["turkish"],"feribot":["turkish"],"fersah":["turkish"],"fesih":["turkish"],"feveran":["turkish"],"feza":["turkish"],"fıçı":["turkish"],"fıldır":["turkish"],"fındık":["turkish"],"fırça":["turkish"],"fırsat":["turkish"],"fırtına":["turkish"],"fıtık":["turkish"],"fidan":["turkish"],"fidye":["turkish"],"figür":["turkish"],"fihrist":["turkish"],"fikir":["turkish"],"fildişi":["turkish"],"filtre":["turkish"],"fincan":["turkish"],"firuze":["turkish"],"fitil":["turkish"],"fiyaka":["turkish"],"fizik":["turkish"],"flaş":["turkish"],"flüt":["turkish"],"fosil":["turkish"],"fren":["turkish"],"fukara":["turkish"],"futbol":["turkish"],"garabet":["turkish"],"gariban":["turkish"],"garnitür":["turkish"],"gazi":["turkish"],"gece":["turkish"],"gedik":["turkish"],"gelenek":["turkish"],"gelin":["turkish"],"gemi":["turkish"],"genç":["turkish"],"geniş":["turkish"],"geometri":["turkish"],"gerçek":["turkish"],"gevrek":["turkish"],"gezegen":["turkish"],"gezgin":["turkish"],"geziyolu":["turkish"],"gıcık":["turkish"],"gıda":["turkish"],"gıybet":["turkish"],"girdap":["turkish"],"girişim":["turkish"],"gitar":["turkish"],"giyecek":["turkish"],"giysi":["turkish"],"gizem":["turkish"],"gofret":["turkish"],"goril":["turkish"],"göbek":["turkish"],"göçebe":["turkish"],"göğüs":["turkish"],"gökdelen":["turkish"],"gökmen":["turkish"],"gökyüzü":["turkish"],"gölge":["turkish"],"gömlek":["turkish"],"gönül":["turkish"],"görenek":["turkish"],"görkemli":["turkish"],"görsel":["turkish"],"gösteri":["turkish"],"gövde":["turkish"],"gözaltı":["turkish"],"gözcü":["turkish"],"gözdağı":["turkish"],"gözleme":["turkish"],"gözyaşı":["turkish"],"grup":["turkish"],"gurbet":["turkish"],"gusül":["turkish"],"gübre":["turkish"],"güfte":["turkish"],"gümüş":["turkish"],"günaydın":["turkish"],"güncel":["turkish"],"gündüz":["turkish"],"güneş":["turkish"],"günyüzü":["turkish"],"gürbüz":["turkish"],"güvercin":["turkish"],"güzel":["turkish"],"hacamat":["turkish"],"hacim":["turkish"],"hademe":["turkish"],"hafız":["turkish"],"hafriyat":["turkish"],"hafta":["turkish"],"hakan":["turkish"],"hakem":["turkish"],"hakikat":["turkish"],"haksever":["turkish"],"halı":["turkish"],"hançer":["turkish"],"hane":["turkish"],"hapis":["turkish"],"hapşırık":["turkish"],"harf":["turkish"],"haseki":["turkish"],"hasret":["turkish"],"hatun":["turkish"],"havuç":["turkish"],"haylaz":["turkish"],"haysiyet":["turkish"],"hayvan":["turkish"],"hedef":["turkish"],"hemen":["turkish"],"hemfikir":["turkish"],"hendek":["turkish"],"hepsi":["turkish"],"hergele":["turkish"],"herhangi":["turkish"],"hesap":["turkish"],"heyecan":["turkish"],"heykel":["turkish"],"hezimet":["turkish"],"hıçkırık":["turkish"],"hızölçer":["turkish"],"hicviye":["turkish"],"hikaye":["turkish"],"hikmet":["turkish"],"hile":["turkish"],"hisse":["turkish"],"hobi":["turkish"],"hoca":["turkish"],"horlama":["turkish"],"hoşbeş":["turkish"],"hoşgörü":["turkish"],"hoyrat":["turkish"],"hörgüç":["turkish"],"höyük":["turkish"],"hudut":["turkish"],"hukuk":["turkish"],"hunhar":["turkish"],"hurda":["turkish"],"huysuz":["turkish"],"huzur":["turkish"],"hücum":["turkish"],"hükümet":["turkish"],"hünkar":["turkish"],"hüviyet":["turkish"],"ırmak":["turkish"],"ısıölçer":["turkish"],"ısıtıcı":["turkish"],"ıspanak":["turkish"],"ısrar":["turkish"],"ışıldak":["turkish"],"ızdırap":["turkish"],"ızgara":["turkish"],"ibadet":["turkish"],"icat":["turkish"],"içbükey":["turkish"],"içecek":["turkish"],"içgüdü":["turkish"],"içsel":["turkish"],"idman":["turkish"],"iftihar":["turkish"],"iğne":["turkish"],"ihanet":["turkish"],"ihbar":["turkish"],"ihdas":["turkish"],"ihmal":["turkish"],"ihracat":["turkish"],"ihsan":["turkish"],"ikilem":["turkish"],"ikindi":["turkish"],"ikircik":["turkish"],"iklim":["turkish"],"iksir":["turkish"],"iktibas":["turkish"],"ilaç":["turkish"],"ilçe":["turkish"],"ileri":["turkish"],"iletişim":["turkish"],"ilgi":["turkish"],"ilhak":["turkish"],"ilkbahar":["turkish"],"ilkokul":["turkish"],"ilmek":["turkish"],"imkan":["turkish"],"imleç":["turkish"],"imsak":["turkish"],"imtihan":["turkish"],"imza":["turkish"],"ince":["turkish"],"inkar":["turkish"],"inşa":["turkish"],"ipek":["turkish"],"ipucu":["turkish"],"irade":["turkish"],"irfan":["turkish"],"irmik":["turkish"],"isabet":["turkish"],"iskele":["turkish"],"israf":["turkish"],"isyan":["turkish"],"işçi":["turkish"],"işgal":["turkish"],"işgüzar":["turkish"],"işlem":["turkish"],"itibar":["turkish"],"itiraf":["turkish"],"ivedi":["turkish"],"ivme":["turkish"],"iyileşme":["turkish"],"iyimser":["turkish"],"izbandut":["turkish"],"izci":["turkish"],"izdiham":["turkish"],"izin":["turkish"],"jakoben":["turkish"],"jandarma":["turkish"],"jargon":["turkish"],"kabadayı":["turkish"],"kablo":["turkish"],"kabus":["turkish"],"kaçamak":["turkish"],"kadeh":["turkish"],"kadın":["turkish"],"kadraj":["turkish"],"kafa":["turkish"],"kafkas":["turkish"],"kağıt":["turkish"],"kağnı":["turkish"],"kahkaha":["turkish"],"kahraman":["turkish"],"kahvaltı":["turkish"],"kakül":["turkish"],"kaldırım":["turkish"],"kale":["turkish"],"kalibre":["turkish"],"kalkan":["turkish"],"kalpak":["turkish"],"kamış":["turkish"],"kamyon":["turkish"],"kanat":["turkish"],"kandaş":["turkish"],"kanepe":["turkish"],"kanser":["turkish"],"kanun":["turkish"],"kaos":["turkish"],"kapı":["turkish"],"kaplıca":["turkish"],"kaptan":["turkish"],"karanlık":["turkish"],"kardeş":["turkish"],"karga":["turkish"],"karınca":["turkish"],"karmaşa":["turkish"],"karşıt":["turkish"],"kasırga":["turkish"],"kask":["turkish"],"kasvet":["turkish"],"katkı":["turkish"],"katman":["turkish"],"kavram":["turkish"],"kaygan":["turkish"],"kaynakça":["turkish"],"kayyum":["turkish"],"kedi":["turkish"],"kehanet":["turkish"],"kekik":["turkish"],"kelebek":["turkish"],"kenar":["turkish"],"kerkenez":["turkish"],"kerpiç":["turkish"],"kesirli":["turkish"],"kesmece":["turkish"],"kestane":["turkish"],"keşkek":["turkish"],"ketçap":["turkish"],"keyfiyet":["turkish"],"kıble":["turkish"],"kıdemli":["turkish"],"kılavuz":["turkish"],"kılçık":["turkish"],"kılıf":["turkish"],"kıraç":["turkish"],"kırmızı":["turkish"],"kırsal":["turkish"],"kısayol":["turkish"],"kısım":["turkish"],"kıskanç":["turkish"],"kısmet":["turkish"],"kışla":["turkish"],"kıvanç":["turkish"],"kıvılcım":["turkish"],"kıvrık":["turkish"],"kıyafet":["turkish"],"kıymetli":["turkish"],"kızak":["turkish"],"kızılcık":["turkish"],"kibar":["turkish"],"kinaye":["turkish"],"kira":["turkish"],"kiremit":["turkish"],"kirli":["turkish"],"kirpik":["turkish"],"kişisel":["turkish"],"kitap":["turkish"],"koçbaşı":["turkish"],"kodaman":["turkish"],"koğuş":["turkish"],"kokteyl":["turkish"],"kolaycı":["turkish"],"kolbastı":["turkish"],"kolonya":["turkish"],"koltuk":["turkish"],"kolye":["turkish"],"kombine":["turkish"],"komedyen":["turkish"],"komiser":["turkish"],"komposto":["turkish"],"komşu":["turkish"],"komuta":["turkish"],"konak":["turkish"],"konfor":["turkish"],"koni":["turkish"],"konsül":["turkish"],"kopya":["turkish"],"korkusuz":["turkish"],"korna":["turkish"],"korse":["turkish"],"korunak":["turkish"],"korvet":["turkish"],"kostüm":["turkish"],"koşul":["turkish"],"koyu":["turkish"],"kozmik":["turkish"],"köfte":["turkish"],"kökensel":["turkish"],"köprücük":["turkish"],"köpük":["turkish"],"kördüğüm":["turkish"],"körfez":["turkish"],"köstebek":["turkish"],"köşegen":["turkish"],"kötü":["turkish"],"kravat":["turkish"],"kriter":["turkish"],"kuantum":["turkish"],"kudurma":["turkish"],"kuluçka":["turkish"],"kulübe":["turkish"],"kumanya":["turkish"],"kumbara":["turkish"],"kumlu":["turkish"],"kumpir":["turkish"],"kumral":["turkish"],"kundura":["turkish"],"kupa":["turkish"],"kupkuru":["turkish"],"kuramsal":["turkish"],"kurbağa":["turkish"],"kurdele":["turkish"],"kurgu":["turkish"],"kurmay":["turkish"],"kurşun":["turkish"],"kurtuluş":["turkish"],"kurultay":["turkish"],"kurye":["turkish"],"kusursuz":["turkish"],"kuşak":["turkish"],"kuşbaşı":["turkish"],"kuşkulu":["turkish"],"kutlama":["turkish"],"kutsal":["turkish"],"kutup":["turkish"],"kuver":["turkish"],"kuyruk":["turkish"],"kuzey":["turkish"],"kuzgun":["turkish"],"küçük":["turkish"],"külçe":["turkish"],"külfet":["turkish"],"külliye":["turkish"],"kültürel":["turkish"],"kümes":["turkish"],"künefe":["turkish"],"küresel":["turkish"],"kütle":["turkish"],"lahana":["turkish"],"lahmacun":["turkish"],"lamba":["turkish"],"lansman":["turkish"],"lavaş":["turkish"],"layık":["turkish"],"leğen":["turkish"],"levent":["turkish"],"leziz":["turkish"],"lezzet":["turkish"],"lider":["turkish"],"likide":["turkish"],"liman":["turkish"],"liste":["turkish"],"litre":["turkish"],"liyakat":["turkish"],"lodos":["turkish"],"lokanta":["turkish"],"lokman":["turkish"],"lokum":["turkish"],"lunapark":["turkish"],"lütfen":["turkish"],"lüzum":["turkish"],"nokta":["turkish"],"mabet":["turkish"],"macera":["turkish"],"macun":["turkish"],"madalya":["turkish"],"madde":["turkish"],"madem":["turkish"],"mağara":["turkish"],"mağdur":["turkish"],"mağfiret":["turkish"],"mağlup":["turkish"],"mahalle":["turkish"],"mahcup":["turkish"],"mahir":["turkish"],"mahkeme":["turkish"],"mahlas":["turkish"],"mahrum":["turkish"],"mahsul":["turkish"],"makas":["turkish"],"makbuz":["turkish"],"makine":["turkish"],"makro":["turkish"],"maksat":["turkish"],"makul":["turkish"],"maliye":["turkish"],"manav":["turkish"],"mangal":["turkish"],"manidar":["turkish"],"manken":["turkish"],"mantık":["turkish"],"manzara":["turkish"],"mareşal":["turkish"],"margarin":["turkish"],"marifet":["turkish"],"marmelat":["turkish"],"masaüstü":["turkish"],"masmavi":["turkish"],"masraf":["turkish"],"masum":["turkish"],"matah":["turkish"],"materyal":["turkish"],"matrak":["turkish"],"maval":["turkish"],"mavra":["turkish"],"maydanoz":["turkish"],"mayhoş":["turkish"],"maytap":["turkish"],"mazbata":["turkish"],"mazeret":["turkish"],"mazlum":["turkish"],"mazot":["turkish"],"mazur":["turkish"],"meblağ":["turkish"],"mebus":["turkish"],"mecaz":["turkish"],"mecbur":["turkish"],"meclis":["turkish"],"mecmua":["turkish"],"mecnun":["turkish"],"meçhul":["turkish"],"medeni":["turkish"],"mehtap":["turkish"],"mekanik":["turkish"],"melodi":["turkish"],"meltem":["turkish"],"memur":["turkish"],"mendil":["turkish"],"menekşe":["turkish"],"menteşe":["turkish"],"meraklı":["turkish"],"mercek":["turkish"],"merdiven":["turkish"],"merhaba":["turkish"],"merinos":["turkish"],"merkez":["turkish"],"mermi":["turkish"],"mert":["turkish"],"mesafe":["turkish"],"mesele":["turkish"],"mesken":["turkish"],"meslek":["turkish"],"meşale":["turkish"],"meşgul":["turkish"],"meşhur":["turkish"],"metafor":["turkish"],"metin":["turkish"],"metre":["turkish"],"mevcut":["turkish"],"mevkidaş":["turkish"],"meydan":["turkish"],"meyil":["turkish"],"meyve":["turkish"],"meziyet":["turkish"],"mezun":["turkish"],"mıknatıs":["turkish"],"mısra":["turkish"],"mızıka":["turkish"],"miğfer":["turkish"],"mihrak":["turkish"],"miktar":["turkish"],"milat":["turkish"],"milli":["turkish"],"mimar":["turkish"],"minare":["turkish"],"mineral":["turkish"],"minik":["turkish"],"minyon":["turkish"],"mirliva":["turkish"],"misafir":["turkish"],"miskin":["turkish"],"miting":["turkish"],"miyop":["turkish"],"mizah":["turkish"],"mobilya":["turkish"],"monitör":["turkish"],"morötesi":["turkish"],"motive":["turkish"],"mozaik":["turkish"],"muavin":["turkish"],"mucize":["turkish"],"muhafız":["turkish"],"muhteşem":["turkish"],"mukayese":["turkish"],"mumya":["turkish"],"musluk":["turkish"],"muşamba":["turkish"],"mutabık":["turkish"],"mutfak":["turkish"],"mutlu":["turkish"],"muzaffer":["turkish"],"muzdarip":["turkish"],"mübarek":["turkish"],"mücadele":["turkish"],"müdür":["turkish"],"müfredat":["turkish"],"müftü":["turkish"],"mühendis":["turkish"],"mühim":["turkish"],"mühlet":["turkish"],"mükemmel":["turkish"],"mülk":["turkish"],"mümkün":["turkish"],"mümtaz":["turkish"],"müsrif":["turkish"],"müstesna":["turkish"],"müşahit":["turkish"],"müşteri":["turkish"],"mütercim":["turkish"],"müthiş":["turkish"],"müze":["turkish"],"müzik":["turkish"],"nabız":["turkish"],"nadas":["turkish"],"nadir":["turkish"],"nahoş":["turkish"],"nakarat":["turkish"],"nakış":["turkish"],"nalbur":["turkish"],"namlu":["turkish"],"namus":["turkish"],"nankör":["turkish"],"nargile":["turkish"],"narkoz":["turkish"],"nasıl":["turkish"],"nasip":["turkish"],"naylon":["turkish"],"nazar":["turkish"],"nazım":["turkish"],"nazik":["turkish"],"neden":["turkish"],"nefes":["turkish"],"negatif":["turkish"],"neon":["turkish"],"neptün":["turkish"],"nerede":["turkish"],"nesil":["turkish"],"nesnel":["turkish"],"neşeli":["turkish"],"netice":["turkish"],"nevresim":["turkish"],"neyse":["turkish"],"neyzen":["turkish"],"nezaket":["turkish"],"nezih":["turkish"],"nezle":["turkish"],"nicel":["turkish"],"nilüfer":["turkish"],"nimet":["turkish"],"nisan":["turkish"],"nispet":["turkish"],"nitekim":["turkish"],"nizam":["turkish"],"nohut":["turkish"],"noksan":["turkish"],"nostalji":["turkish"],"noter":["turkish"],"nöbet":["turkish"],"numara":["turkish"],"numune":["turkish"],"nutuk":["turkish"],"nüfus":["turkish"],"obabaşı":["turkish"],"obez":["turkish"],"obje":["turkish"],"ocak":["turkish"],"odun":["turkish"],"ofansif":["turkish"],"ofis":["turkish"],"oğlak":["turkish"],"oğuz":["turkish"],"okçu":["turkish"],"oklava":["turkish"],"oksijen":["turkish"],"okul":["turkish"],"okumuş":["turkish"],"okutman":["turkish"],"okuyucu":["turkish"],"okyanus":["turkish"],"olağan":["turkish"],"olanak":["turkish"],"olası":["turkish"],"olay":["turkish"],"olgun":["turkish"],"olimpik":["turkish"],"olumlu":["turkish"],"omlet":["turkish"],"omurga":["turkish"],"onarım":["turkish"],"onursal":["turkish"],"optik":["turkish"],"orantı":["turkish"],"ordu":["turkish"],"organik":["turkish"],"orijin":["turkish"],"orkide":["turkish"],"orman":["turkish"],"orta":["turkish"],"oruç":["turkish"],"otağ":["turkish"],"otantik":["turkish"],"otel":["turkish"],"otoban":["turkish"],"otogar":["turkish"],"otomobil":["turkish"],"otonom":["turkish"],"otopark":["turkish"],"otorite":["turkish"],"otoyol":["turkish"],"oturum":["turkish"],"oyuk":["turkish"],"oyuncak":["turkish"],"ozan":["turkish"],"ödeme":["turkish"],"ödenek":["turkish"],"ödev":["turkish"],"ödül":["turkish"],"ödünç":["turkish"],"öfke":["turkish"],"öğlen":["turkish"],"öğrenci":["turkish"],"öğün":["turkish"],"öğütücü":["turkish"],"öksürük":["turkish"],"ölçme":["turkish"],"ölçü":["turkish"],"ölümsüz":["turkish"],"ömür":["turkish"],"önayak":["turkish"],"öncü":["turkish"],"önder":["turkish"],"önem":["turkish"],"önerge":["turkish"],"öngörü":["turkish"],"önlük":["turkish"],"önsezi":["turkish"],"öpücük":["turkish"],"ördek":["turkish"],"örgü":["turkish"],"örtbas":["turkish"],"örtme":["turkish"],"örtü":["turkish"],"örümcek":["turkish"],"örüntü":["turkish"],"öteberi":["turkish"],"öteki":["turkish"],"övünç":["turkish"],"öykü":["turkish"],"öyleyse":["turkish"],"özçekim":["turkish"],"özdeyiş":["turkish"],"özel":["turkish"],"özenti":["turkish"],"özerk":["turkish"],"özgürlük":["turkish"],"özlem":["turkish"],"özlü":["turkish"],"özne":["turkish"],"özsever":["turkish"],"özümseme":["turkish"],"özür":["turkish"],"özveri":["turkish"],"pabuç":["turkish"],"padişah":["turkish"],"palamut":["turkish"],"palmiye":["turkish"],"palto":["turkish"],"palyaço":["turkish"],"pamuk":["turkish"],"panayır":["turkish"],"pancar":["turkish"],"panik":["turkish"],"panjur":["turkish"],"pankart":["turkish"],"pano":["turkish"],"pansuman":["turkish"],"pantolon":["turkish"],"panzehir":["turkish"],"papatya":["turkish"],"papyon":["turkish"],"paraşüt":["turkish"],"parça":["turkish"],"pardösü":["turkish"],"parfüm":["turkish"],"parıltı":["turkish"],"parkur":["turkish"],"parmak":["turkish"],"parodi":["turkish"],"parsel":["turkish"],"partner":["turkish"],"pasaport":["turkish"],"pasif":["turkish"],"paskalya":["turkish"],"pastırma":["turkish"],"paşa":["turkish"],"patates":["turkish"],"paten":["turkish"],"patika":["turkish"],"patlıcan":["turkish"],"patolog":["turkish"],"payanda":["turkish"],"paydaş":["turkish"],"payidar":["turkish"],"paylaşma":["turkish"],"paytak":["turkish"],"peçete":["turkish"],"peder":["turkish"],"pehlivan":["turkish"],"pekala":["turkish"],"pekmez":["turkish"],"pelerin":["turkish"],"pelikan":["turkish"],"pelüş":["turkish"],"pembe":["turkish"],"pencere":["turkish"],"pense":["turkish"],"perçin":["turkish"],"perde":["turkish"],"pergel":["turkish"],"perişan":["turkish"],"peron":["turkish"],"personel":["turkish"],"perşembe":["turkish"],"peruk":["turkish"],"pervane":["turkish"],"pespaye":["turkish"],"pestil":["turkish"],"peşin":["turkish"],"petek":["turkish"],"petrol":["turkish"],"petunya":["turkish"],"peynir":["turkish"],"peyzaj":["turkish"],"pınar":["turkish"],"pırasa":["turkish"],"pırlanta":["turkish"],"pide":["turkish"],"pikap":["turkish"],"pilav":["turkish"],"piliç":["turkish"],"pipet":["turkish"],"pipo":["turkish"],"piramit":["turkish"],"pirinç":["turkish"],"pirzola":["turkish"],"pist":["turkish"],"pişik":["turkish"],"pişman":["turkish"],"piyasa":["turkish"],"piyes":["turkish"],"plaj":["turkish"],"plaket":["turkish"],"planlama":["turkish"],"platform":["turkish"],"plazma":["turkish"],"podyum":["turkish"],"poğaça":["turkish"],"polat":["turkish"],"politika":["turkish"],"popüler":["turkish"],"porselen":["turkish"],"portakal":["turkish"],"poster":["turkish"],"poşet":["turkish"],"poyraz":["turkish"],"pozitif":["turkish"],"pranga":["turkish"],"pratik":["turkish"],"prenses":["turkish"],"prim":["turkish"],"profil":["turkish"],"proje":["turkish"],"protokol":["turkish"],"puan":["turkish"],"pudra":["turkish"],"pusula":["turkish"],"püre":["turkish"],"pürüz":["turkish"],"püstül":["turkish"],"püsür":["turkish"],"racon":["turkish"],"radikal":["turkish"],"radyo":["turkish"],"rafadan":["turkish"],"rafine":["turkish"],"rağbet":["turkish"],"rahat":["turkish"],"rahle":["turkish"],"rakam":["turkish"],"raket":["turkish"],"rakip":["turkish"],"rakun":["turkish"],"ralli":["turkish"],"randevu":["turkish"],"ranza":["turkish"],"rapor":["turkish"],"rastgele":["turkish"],"rasyonel":["turkish"],"razı":["turkish"],"realite":["turkish"],"reçine":["turkish"],"refah":["turkish"],"referans":["turkish"],"refik":["turkish"],"rehber":["turkish"],"rehin":["turkish"],"reis":["turkish"],"rekabet":["turkish"],"reklam":["turkish"],"rekor":["turkish"],"rektör":["turkish"],"renk":["turkish"],"resim":["turkish"],"resmen":["turkish"],"restoran":["turkish"],"retorik":["turkish"],"revaç":["turkish"],"reyon":["turkish"],"rezalet":["turkish"],"rezerv":["turkish"],"rezil":["turkish"],"rıhtım":["turkish"],"rıza":["turkish"],"ritim":["turkish"],"ritüel":["turkish"],"rivayet":["turkish"],"roman":["turkish"],"rozet":["turkish"],"röportaj":["turkish"],"rötar":["turkish"],"ruble":["turkish"],"ruhban":["turkish"],"ruhsat":["turkish"],"rulet":["turkish"],"runik":["turkish"],"rutin":["turkish"],"rutubet":["turkish"],"rüşvet":["turkish"],"rütbe":["turkish"],"rüya":["turkish"],"rüzgar":["turkish"],"sabah":["turkish"],"sabıka":["turkish"],"sabit":["turkish"],"sabun":["turkish"],"saçma":["turkish"],"sade":["turkish"],"sadık":["turkish"],"safahat":["turkish"],"safdil":["turkish"],"safkan":["turkish"],"sağanak":["turkish"],"sağduyu":["turkish"],"sağlam":["turkish"],"saha":["turkish"],"sahiden":["turkish"],"sahne":["turkish"],"sakal":["turkish"],"sakız":["turkish"],"sakin":["turkish"],"saklama":["turkish"],"saksağan":["turkish"],"salamura":["turkish"],"salça":["turkish"],"salgı":["turkish"],"salınım":["turkish"],"salkım":["turkish"],"saltanat":["turkish"],"sanatçı":["turkish"],"sancak":["turkish"],"sandalye":["turkish"],"saniye":["turkish"],"saplantı":["turkish"],"sapsız":["turkish"],"saray":["turkish"],"sarışın":["turkish"],"sarkık":["turkish"],"sarmaşık":["turkish"],"satır":["turkish"],"savaşım":["turkish"],"savunma":["turkish"],"saydam":["turkish"],"sayfa":["turkish"],"saygın":["turkish"],"sayısal":["turkish"],"sebep":["turkish"],"seçenek":["turkish"],"seçim":["turkish"],"seçkin":["turkish"],"seçmen":["turkish"],"sedir":["turkish"],"sedye":["turkish"],"sefer":["turkish"],"sehpa":["turkish"],"sekizgen":["turkish"],"selektör":["turkish"],"selvi":["turkish"],"semavi":["turkish"],"sembol":["turkish"],"seminer":["turkish"],"senaryo":["turkish"],"sendika":["turkish"],"senkron":["turkish"],"sensör":["turkish"],"sentez":["turkish"],"sepet":["turkish"],"seramik":["turkish"],"serbest":["turkish"],"serdar":["turkish"],"seremoni":["turkish"],"sergi":["turkish"],"serhat":["turkish"],"serin":["turkish"],"sermaye":["turkish"],"serpuş":["turkish"],"sersem":["turkish"],"serüven":["turkish"],"sesli":["turkish"],"sesteş":["turkish"],"sevap":["turkish"],"seviye":["turkish"],"seyahat":["turkish"],"seyirci":["turkish"],"sezon":["turkish"],"sıcak":["turkish"],"sıfat":["turkish"],"sıhhi":["turkish"],"sınanma":["turkish"],"sınır":["turkish"],"sıradan":["turkish"],"sırdaş":["turkish"],"sırma":["turkish"],"sırtüstü":["turkish"],"sızgıt":["turkish"],"siftah":["turkish"],"sigorta":["turkish"],"sihirbaz":["turkish"],"silah":["turkish"],"silecek":["turkish"],"silindir":["turkish"],"simetri":["turkish"],"simge":["turkish"],"simit":["turkish"],"sincap":["turkish"],"sindirim":["turkish"],"sinema":["turkish"],"sinirli":["turkish"],"sipariş":["turkish"],"sirke":["turkish"],"siroz":["turkish"],"sistem":["turkish"],"sivilce":["turkish"],"siyasi":["turkish"],"soba":["turkish"],"sofra":["turkish"],"soğuk":["turkish"],"sohbet":["turkish"],"sokak":["turkish"],"solfej":["turkish"],"solunum":["turkish"],"somut":["turkish"],"sonbahar":["turkish"],"sonraki":["turkish"],"sonsuz":["turkish"],"sorunsuz":["turkish"],"sosyete":["turkish"],"soyağacı":["turkish"],"soydaş":["turkish"],"soygun":["turkish"],"soytarı":["turkish"],"söğüş":["turkish"],"sömürge":["turkish"],"sönük":["turkish"],"söylem":["turkish"],"sözcük":["turkish"],"sözde":["turkish"],"spatula":["turkish"],"spektrum":["turkish"],"spiker":["turkish"],"sporcu":["turkish"],"sprey":["turkish"],"stabil":["turkish"],"statü":["turkish"],"stok":["turkish"],"stopaj":["turkish"],"strateji":["turkish"],"subay":["turkish"],"sucuk":["turkish"],"suçüstü":["turkish"],"suhulet":["turkish"],"sulama":["turkish"],"sungur":["turkish"],"sunucu":["turkish"],"surat":["turkish"],"susam":["turkish"],"suskun":["turkish"],"sükse":["turkish"],"sükut":["turkish"],"sülale":["turkish"],"sünger":["turkish"],"süpürge":["turkish"],"sürahi":["turkish"],"süreç":["turkish"],"sürgün":["turkish"],"sürüm":["turkish"],"süsleme":["turkish"],"sütanne":["turkish"],"sütlaç":["turkish"],"sütun":["turkish"],"süvari":["turkish"],"şahane":["turkish"],"şahbaz":["turkish"],"şahit":["turkish"],"şahsiyet":["turkish"],"şakıma":["turkish"],"şaklaban":["turkish"],"şakrak":["turkish"],"şamar":["turkish"],"şampiyon":["turkish"],"şanslı":["turkish"],"şantiye":["turkish"],"şapka":["turkish"],"şarkıcı":["turkish"],"şartname":["turkish"],"şaşırma":["turkish"],"şaşkın":["turkish"],"şatafat":["turkish"],"şayet":["turkish"],"şebeke":["turkish"],"şefkat":["turkish"],"şeftali":["turkish"],"şehir":["turkish"],"şehvet":["turkish"],"şeker":["turkish"],"şekil":["turkish"],"şelale":["turkish"],"şema":["turkish"],"şemsiye":["turkish"],"şerbet":["turkish"],"şeref":["turkish"],"şerit":["turkish"],"şımarık":["turkish"],"şıpıdık":["turkish"],"şifre":["turkish"],"şimdi":["turkish"],"şimşek":["turkish"],"şipşak":["turkish"],"şirin":["turkish"],"şişe":["turkish"],"şişirme":["turkish"],"şofben":["turkish"],"şöhret":["turkish"],"şölen":["turkish"],"şüphe":["turkish"],"tabaka":["turkish"],"tabure":["turkish"],"tadilat":["turkish"],"taharet":["turkish"],"tahıl":["turkish"],"tahkim":["turkish"],"tahlil":["turkish"],"tahmin":["turkish"],"tahrifat":["turkish"],"tahsilat":["turkish"],"tahta":["turkish"],"taklit":["turkish"],"takoz":["turkish"],"taksici":["turkish"],"taktik":["turkish"],"takvim":["turkish"],"talebe":["turkish"],"talip":["turkish"],"tamamen":["turkish"],"tamirci":["turkish"],"tamtakır":["turkish"],"tandır":["turkish"],"tanecik":["turkish"],"tanıtım":["turkish"],"tanrı":["turkish"],"tansiyon":["turkish"],"tapan":["turkish"],"tapınak":["turkish"],"taptaze":["turkish"],"tapu":["turkish"],"tarafgir":["turkish"],"tarhana":["turkish"],"tarım":["turkish"],"tarih":["turkish"],"tarla":["turkish"],"tartak":["turkish"],"tarumar":["turkish"],"tasarım":["turkish"],"tasdik":["turkish"],"taslak":["turkish"],"tastamam":["turkish"],"taşeron":["turkish"],"taşınmaz":["turkish"],"taşra":["turkish"],"tatava":["turkish"],"tatbikat":["turkish"],"tatil":["turkish"],"tatlı":["turkish"],"tavsiye":["turkish"],"tavşan":["turkish"],"tavuk":["turkish"],"taze":["turkish"],"taziye":["turkish"],"tazminat":["turkish"],"tebeşir":["turkish"],"tebrik":["turkish"],"tecrübe":["turkish"],"teçhizat":["turkish"],"tedarik":["turkish"],"tedbir":["turkish"],"teftiş":["turkish"],"teğet":["turkish"],"teğmen":["turkish"],"tehdit":["turkish"],"tehlike":["turkish"],"tekdüze":["turkish"],"tekerlek":["turkish"],"tekme":["turkish"],"teknik":["turkish"],"tekrar":["turkish"],"telef":["turkish"],"telsiz":["turkish"],"telve":["turkish"],"temas":["turkish"],"tembel":["turkish"],"temiz":["turkish"],"temkin":["turkish"],"temsilci":["turkish"],"tendon":["turkish"],"teneke":["turkish"],"tenha":["turkish"],"tenkit":["turkish"],"tepegöz":["turkish"],"tepki":["turkish"],"terazi":["turkish"],"terbiye":["turkish"],"tercih":["turkish"],"tereyağı":["turkish"],"terfi":["turkish"],"terim":["turkish"],"terminal":["turkish"],"tersane":["turkish"],"tertip":["turkish"],"tesadüf":["turkish"],"tescil":["turkish"],"tesir":["turkish"],"teslimat":["turkish"],"tespit":["turkish"],"testere":["turkish"],"teşekkür":["turkish"],"teşhir":["turkish"],"teşrif":["turkish"],"teşvik":["turkish"],"teyze":["turkish"],"tezahür":["turkish"],"tezgah":["turkish"],"tıbbi":["turkish"],"tıkaç":["turkish"],"tıkışık":["turkish"],"tıknaz":["turkish"],"tılsım":["turkish"],"tıpkı":["turkish"],"tıraş":["turkish"],"tırışka":["turkish"],"tırmanış":["turkish"],"tırnak":["turkish"],"tırpan":["turkish"],"tıslama":["turkish"],"ticaret":["turkish"],"tilki":["turkish"],"tiryaki":["turkish"],"titreşim":["turkish"],"tohum":["turkish"],"tokat":["turkish"],"tolere":["turkish"],"tombak":["turkish"],"tomurcuk":["turkish"],"topaç":["turkish"],"toplum":["turkish"],"toprak":["turkish"],"toptan":["turkish"],"toraman":["turkish"],"torpido":["turkish"],"tortu":["turkish"],"tosbağa":["turkish"],"toynak":["turkish"],"tören":["turkish"],"trafik":["turkish"],"trajedi":["turkish"],"tramvay":["turkish"],"tribün":["turkish"],"triko":["turkish"],"tugay":["turkish"],"tuğla":["turkish"],"tuğrul":["turkish"],"tuhaf":["turkish"],"tulumba":["turkish"],"tunç":["turkish"],"turan":["turkish"],"turkuaz":["turkish"],"turnusol":["turkish"],"turşu":["turkish"],"turuncu":["turkish"],"tutanak":["turkish"],"tutkal":["turkish"],"tutsak":["turkish"],"tutum":["turkish"],"tuyuğ":["turkish"],"tuzlu":["turkish"],"tüccar":["turkish"],"tüfek":["turkish"],"tükenmez":["turkish"],"tülbent":["turkish"],"tümleç":["turkish"],"tünel":["turkish"],"türbin":["turkish"],"türev":["turkish"],"türk":["turkish"],"tüzük":["turkish"],"ucube":["turkish"],"ucuz":["turkish"],"uçak":["turkish"],"uçurtma":["turkish"],"ufuk":["turkish"],"uğrak":["turkish"],"uğur":["turkish"],"ukala":["turkish"],"ulaşım":["turkish"],"ulema":["turkish"],"ulus":["turkish"],"ulvi":["turkish"],"umursama":["turkish"],"umut":["turkish"],"unutkan":["turkish"],"uslu":["turkish"],"ustabaşı":["turkish"],"ustura":["turkish"],"usul":["turkish"],"utangaç":["turkish"],"uyanık":["turkish"],"uyarı":["turkish"],"uydu":["turkish"],"uygar":["turkish"],"uygulama":["turkish"],"uykusuz":["turkish"],"uysal":["turkish"],"uyuşma":["turkish"],"uzantı":["turkish"],"uzay":["turkish"],"uzgören":["turkish"],"uzlaşma":["turkish"],"uzman":["turkish"],"uzun":["turkish"],"ücra":["turkish"],"ücret":["turkish"],"üçbudak":["turkish"],"üçgen":["turkish"],"üçkağıt":["turkish"],"üçleme":["turkish"],"üfürük":["turkish"],"ülke":["turkish"],"ümit":["turkish"],"üniforma":["turkish"],"ünite":["turkish"],"ünlem":["turkish"],"üretken":["turkish"],"ürün":["turkish"],"üslup":["turkish"],"üstel":["turkish"],"üstün":["turkish"],"üşengeç":["turkish"],"üşüme":["turkish"],"ütopya":["turkish"],"üvey":["turkish"],"üzengi":["turkish"],"üzgün":["turkish"],"üzüm":["turkish"],"vaka":["turkish"],"vakfiye":["turkish"],"vakıf":["turkish"],"vakit":["turkish"],"vakum":["turkish"],"vapur":["turkish"],"varil":["turkish"],"varlık":["turkish"],"varsayım":["turkish"],"varyemez":["turkish"],"vasıta":["turkish"],"vasiyet":["turkish"],"vatandaş":["turkish"],"vazife":["turkish"],"vazo":["turkish"],"veciz":["turkish"],"vefa":["turkish"],"vehim":["turkish"],"veliaht":["turkish"],"veresiye":["turkish"],"verimli":["turkish"],"verkaç":["turkish"],"vernik":["turkish"],"vertigo":["turkish"],"vesait":["turkish"],"vesika":["turkish"],"vestiyer":["turkish"],"veznedar":["turkish"],"vicdan":["turkish"],"vilayet":["turkish"],"virane":["turkish"],"virgül":["turkish"],"vişne":["turkish"],"vites":["turkish"],"vokal":["turkish"],"volkan":["turkish"],"vurma":["turkish"],"vurucu":["turkish"],"vücut":["turkish"],"yabancı":["turkish"],"yabgu":["turkish"],"yağış":["turkish"],"yağlı":["turkish"],"yağmur":["turkish"],"yakamoz":["turkish"],"yakın":["turkish"],"yaklaşık":["turkish"],"yalçın":["turkish"],"yalıtım":["turkish"],"yaman":["turkish"],"yanardağ":["turkish"],"yangın":["turkish"],"yanıt":["turkish"],"yankı":["turkish"],"yanlış":["turkish"],"yansıma":["turkish"],"yapay":["turkish"],"yapboz":["turkish"],"yapımcı":["turkish"],"yaprak":["turkish"],"yaratık":["turkish"],"yarbay":["turkish"],"yardım":["turkish"],"yargıç":["turkish"],"yarıçap":["turkish"],"yasemin":["turkish"],"yastık":["turkish"],"yaşam":["turkish"],"yatak":["turkish"],"yatırım":["turkish"],"yavru":["turkish"],"yaygara":["turkish"],"yayıncı":["turkish"],"yayla":["turkish"],"yazılım":["turkish"],"yekpare":["turkish"],"yekvücut":["turkish"],"yelkovan":["turkish"],"yelpaze":["turkish"],"yemek":["turkish"],"yemiş":["turkish"],"yengeç":["turkish"],"yeniçeri":["turkish"],"yeraltı":["turkish"],"yerküre":["turkish"],"yerleşke":["turkish"],"yeryüzü":["turkish"],"yeşil":["turkish"],"yetenek":["turkish"],"yetkili":["turkish"],"yığınak":["turkish"],"yıkama":["turkish"],"yılbaşı":["turkish"],"yıldırım":["turkish"],"yılkı":["turkish"],"yılmaz":["turkish"],"yırtıcı":["turkish"],"yiğit":["turkish"],"yoğurt":["turkish"],"yokuş":["turkish"],"yolcu":["turkish"],"yoldaş":["turkish"],"yolgeçen":["turkish"],"yolkesen":["turkish"],"yolüstü":["turkish"],"yordam":["turkish"],"yorgan":["turkish"],"yorumcu":["turkish"],"yosun":["turkish"],"yöndeş":["turkish"],"yönetim":["turkish"],"yönlü":["turkish"],"yöntem":["turkish"],"yöresel":["turkish"],"yörünge":["turkish"],"yufka":["turkish"],"yukarı":["turkish"],"yumruk":["turkish"],"yumurta":["turkish"],"yuvarlak":["turkish"],"yücelme":["turkish"],"yükçeker":["turkish"],"yüklem":["turkish"],"yüksek":["turkish"],"yürek":["turkish"],"yürütme":["turkish"],"yüzde":["turkish"],"yüzeysel":["turkish"],"yüzgeç":["turkish"],"yüzüstü":["turkish"],"yüzyıl":["turkish"],"zabıta":["turkish"],"zafer":["turkish"],"zahmet":["turkish"],"zambak":["turkish"],"zaptiye":["turkish"],"zarafet":["turkish"],"zaruret":["turkish"],"zeka":["turkish"],"zekice":["turkish"],"zemberek":["turkish"],"zemin":["turkish"],"zencefil":["turkish"],"zeplin":["turkish"],"zeytin":["turkish"],"zıbın":["turkish"],"zılgıt":["turkish"],"zımbırtı":["turkish"],"zımpara":["turkish"],"zıpkın":["turkish"],"zigon":["turkish"],"zihinsel":["turkish"],"zihniyet":["turkish"],"zincir":["turkish"],"zindan":["turkish"],"zirzop":["turkish"],"ziyaret":["turkish"],"ziynet":["turkish"],"zoraki":["turkish"],"zorlu":["turkish"],"zorunlu":["turkish"],"züğürt":["turkish"],"zümre":["turkish"]}
-},{}],132:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 module.exports=["abacate","abaixo","abalar","abater","abduzir","abelha","aberto","abismo","abotoar","abranger","abreviar","abrigar","abrupto","absinto","absoluto","absurdo","abutre","acabado","acalmar","acampar","acanhar","acaso","aceitar","acelerar","acenar","acervo","acessar","acetona","achatar","acidez","acima","acionado","acirrar","aclamar","aclive","acolhida","acomodar","acoplar","acordar","acumular","acusador","adaptar","adega","adentro","adepto","adequar","aderente","adesivo","adeus","adiante","aditivo","adjetivo","adjunto","admirar","adorar","adquirir","adubo","adverso","advogado","aeronave","afastar","aferir","afetivo","afinador","afivelar","aflito","afluente","afrontar","agachar","agarrar","agasalho","agenciar","agilizar","agiota","agitado","agora","agradar","agreste","agrupar","aguardar","agulha","ajoelhar","ajudar","ajustar","alameda","alarme","alastrar","alavanca","albergue","albino","alcatra","aldeia","alecrim","alegria","alertar","alface","alfinete","algum","alheio","aliar","alicate","alienar","alinhar","aliviar","almofada","alocar","alpiste","alterar","altitude","alucinar","alugar","aluno","alusivo","alvo","amaciar","amador","amarelo","amassar","ambas","ambiente","ameixa","amenizar","amido","amistoso","amizade","amolador","amontoar","amoroso","amostra","amparar","ampliar","ampola","anagrama","analisar","anarquia","anatomia","andaime","anel","anexo","angular","animar","anjo","anomalia","anotado","ansioso","anterior","anuidade","anunciar","anzol","apagador","apalpar","apanhado","apego","apelido","apertada","apesar","apetite","apito","aplauso","aplicada","apoio","apontar","aposta","aprendiz","aprovar","aquecer","arame","aranha","arara","arcada","ardente","areia","arejar","arenito","aresta","argiloso","argola","arma","arquivo","arraial","arrebate","arriscar","arroba","arrumar","arsenal","arterial","artigo","arvoredo","asfaltar","asilado","aspirar","assador","assinar","assoalho","assunto","astral","atacado","atadura","atalho","atarefar","atear","atender","aterro","ateu","atingir","atirador","ativo","atoleiro","atracar","atrevido","atriz","atual","atum","auditor","aumentar","aura","aurora","autismo","autoria","autuar","avaliar","avante","avaria","avental","avesso","aviador","avisar","avulso","axila","azarar","azedo","azeite","azulejo","babar","babosa","bacalhau","bacharel","bacia","bagagem","baiano","bailar","baioneta","bairro","baixista","bajular","baleia","baliza","balsa","banal","bandeira","banho","banir","banquete","barato","barbado","baronesa","barraca","barulho","baseado","bastante","batata","batedor","batida","batom","batucar","baunilha","beber","beijo","beirada","beisebol","beldade","beleza","belga","beliscar","bendito","bengala","benzer","berimbau","berlinda","berro","besouro","bexiga","bezerro","bico","bicudo","bienal","bifocal","bifurcar","bigorna","bilhete","bimestre","bimotor","biologia","biombo","biosfera","bipolar","birrento","biscoito","bisneto","bispo","bissexto","bitola","bizarro","blindado","bloco","bloquear","boato","bobagem","bocado","bocejo","bochecha","boicotar","bolada","boletim","bolha","bolo","bombeiro","bonde","boneco","bonita","borbulha","borda","boreal","borracha","bovino","boxeador","branco","brasa","braveza","breu","briga","brilho","brincar","broa","brochura","bronzear","broto","bruxo","bucha","budismo","bufar","bule","buraco","busca","busto","buzina","cabana","cabelo","cabide","cabo","cabrito","cacau","cacetada","cachorro","cacique","cadastro","cadeado","cafezal","caiaque","caipira","caixote","cajado","caju","calafrio","calcular","caldeira","calibrar","calmante","calota","camada","cambista","camisa","camomila","campanha","camuflar","canavial","cancelar","caneta","canguru","canhoto","canivete","canoa","cansado","cantar","canudo","capacho","capela","capinar","capotar","capricho","captador","capuz","caracol","carbono","cardeal","careca","carimbar","carneiro","carpete","carreira","cartaz","carvalho","casaco","casca","casebre","castelo","casulo","catarata","cativar","caule","causador","cautelar","cavalo","caverna","cebola","cedilha","cegonha","celebrar","celular","cenoura","censo","centeio","cercar","cerrado","certeiro","cerveja","cetim","cevada","chacota","chaleira","chamado","chapada","charme","chatice","chave","chefe","chegada","cheiro","cheque","chicote","chifre","chinelo","chocalho","chover","chumbo","chutar","chuva","cicatriz","ciclone","cidade","cidreira","ciente","cigana","cimento","cinto","cinza","ciranda","circuito","cirurgia","citar","clareza","clero","clicar","clone","clube","coado","coagir","cobaia","cobertor","cobrar","cocada","coelho","coentro","coeso","cogumelo","coibir","coifa","coiote","colar","coleira","colher","colidir","colmeia","colono","coluna","comando","combinar","comentar","comitiva","comover","complexo","comum","concha","condor","conectar","confuso","congelar","conhecer","conjugar","consumir","contrato","convite","cooperar","copeiro","copiador","copo","coquetel","coragem","cordial","corneta","coronha","corporal","correio","cortejo","coruja","corvo","cosseno","costela","cotonete","couro","couve","covil","cozinha","cratera","cravo","creche","credor","creme","crer","crespo","criada","criminal","crioulo","crise","criticar","crosta","crua","cruzeiro","cubano","cueca","cuidado","cujo","culatra","culminar","culpar","cultura","cumprir","cunhado","cupido","curativo","curral","cursar","curto","cuspir","custear","cutelo","damasco","datar","debater","debitar","deboche","debulhar","decalque","decimal","declive","decote","decretar","dedal","dedicado","deduzir","defesa","defumar","degelo","degrau","degustar","deitado","deixar","delator","delegado","delinear","delonga","demanda","demitir","demolido","dentista","depenado","depilar","depois","depressa","depurar","deriva","derramar","desafio","desbotar","descanso","desenho","desfiado","desgaste","desigual","deslize","desmamar","desova","despesa","destaque","desviar","detalhar","detentor","detonar","detrito","deusa","dever","devido","devotado","dezena","diagrama","dialeto","didata","difuso","digitar","dilatado","diluente","diminuir","dinastia","dinheiro","diocese","direto","discreta","disfarce","disparo","disquete","dissipar","distante","ditador","diurno","diverso","divisor","divulgar","dizer","dobrador","dolorido","domador","dominado","donativo","donzela","dormente","dorsal","dosagem","dourado","doutor","drenagem","drible","drogaria","duelar","duende","dueto","duplo","duquesa","durante","duvidoso","eclodir","ecoar","ecologia","edificar","edital","educado","efeito","efetivar","ejetar","elaborar","eleger","eleitor","elenco","elevador","eliminar","elogiar","embargo","embolado","embrulho","embutido","emenda","emergir","emissor","empatia","empenho","empinado","empolgar","emprego","empurrar","emulador","encaixe","encenado","enchente","encontro","endeusar","endossar","enfaixar","enfeite","enfim","engajado","engenho","englobar","engomado","engraxar","enguia","enjoar","enlatar","enquanto","enraizar","enrolado","enrugar","ensaio","enseada","ensino","ensopado","entanto","enteado","entidade","entortar","entrada","entulho","envergar","enviado","envolver","enxame","enxerto","enxofre","enxuto","epiderme","equipar","ereto","erguido","errata","erva","ervilha","esbanjar","esbelto","escama","escola","escrita","escuta","esfinge","esfolar","esfregar","esfumado","esgrima","esmalte","espanto","espelho","espiga","esponja","espreita","espumar","esquerda","estaca","esteira","esticar","estofado","estrela","estudo","esvaziar","etanol","etiqueta","euforia","europeu","evacuar","evaporar","evasivo","eventual","evidente","evoluir","exagero","exalar","examinar","exato","exausto","excesso","excitar","exclamar","executar","exemplo","exibir","exigente","exonerar","expandir","expelir","expirar","explanar","exposto","expresso","expulsar","externo","extinto","extrato","fabricar","fabuloso","faceta","facial","fada","fadiga","faixa","falar","falta","familiar","fandango","fanfarra","fantoche","fardado","farelo","farinha","farofa","farpa","fartura","fatia","fator","favorita","faxina","fazenda","fechado","feijoada","feirante","felino","feminino","fenda","feno","fera","feriado","ferrugem","ferver","festejar","fetal","feudal","fiapo","fibrose","ficar","ficheiro","figurado","fileira","filho","filme","filtrar","firmeza","fisgada","fissura","fita","fivela","fixador","fixo","flacidez","flamingo","flanela","flechada","flora","flutuar","fluxo","focal","focinho","fofocar","fogo","foguete","foice","folgado","folheto","forjar","formiga","forno","forte","fosco","fossa","fragata","fralda","frango","frasco","fraterno","freira","frente","fretar","frieza","friso","fritura","fronha","frustrar","fruteira","fugir","fulano","fuligem","fundar","fungo","funil","furador","furioso","futebol","gabarito","gabinete","gado","gaiato","gaiola","gaivota","galega","galho","galinha","galocha","ganhar","garagem","garfo","gargalo","garimpo","garoupa","garrafa","gasoduto","gasto","gata","gatilho","gaveta","gazela","gelado","geleia","gelo","gemada","gemer","gemido","generoso","gengiva","genial","genoma","genro","geologia","gerador","germinar","gesso","gestor","ginasta","gincana","gingado","girafa","girino","glacial","glicose","global","glorioso","goela","goiaba","golfe","golpear","gordura","gorjeta","gorro","gostoso","goteira","governar","gracejo","gradual","grafite","gralha","grampo","granada","gratuito","graveto","graxa","grego","grelhar","greve","grilo","grisalho","gritaria","grosso","grotesco","grudado","grunhido","gruta","guache","guarani","guaxinim","guerrear","guiar","guincho","guisado","gula","guloso","guru","habitar","harmonia","haste","haver","hectare","herdar","heresia","hesitar","hiato","hibernar","hidratar","hiena","hino","hipismo","hipnose","hipoteca","hoje","holofote","homem","honesto","honrado","hormonal","hospedar","humorado","iate","ideia","idoso","ignorado","igreja","iguana","ileso","ilha","iludido","iluminar","ilustrar","imagem","imediato","imenso","imersivo","iminente","imitador","imortal","impacto","impedir","implante","impor","imprensa","impune","imunizar","inalador","inapto","inativo","incenso","inchar","incidir","incluir","incolor","indeciso","indireto","indutor","ineficaz","inerente","infantil","infestar","infinito","inflamar","informal","infrator","ingerir","inibido","inicial","inimigo","injetar","inocente","inodoro","inovador","inox","inquieto","inscrito","inseto","insistir","inspetor","instalar","insulto","intacto","integral","intimar","intocado","intriga","invasor","inverno","invicto","invocar","iogurte","iraniano","ironizar","irreal","irritado","isca","isento","isolado","isqueiro","italiano","janeiro","jangada","janta","jararaca","jardim","jarro","jasmim","jato","javali","jazida","jejum","joaninha","joelhada","jogador","joia","jornal","jorrar","jovem","juba","judeu","judoca","juiz","julgador","julho","jurado","jurista","juro","justa","labareda","laboral","lacre","lactante","ladrilho","lagarta","lagoa","laje","lamber","lamentar","laminar","lampejo","lanche","lapidar","lapso","laranja","lareira","largura","lasanha","lastro","lateral","latido","lavanda","lavoura","lavrador","laxante","lazer","lealdade","lebre","legado","legendar","legista","leigo","leiloar","leitura","lembrete","leme","lenhador","lentilha","leoa","lesma","leste","letivo","letreiro","levar","leveza","levitar","liberal","libido","liderar","ligar","ligeiro","limitar","limoeiro","limpador","linda","linear","linhagem","liquidez","listagem","lisura","litoral","livro","lixa","lixeira","locador","locutor","lojista","lombo","lona","longe","lontra","lorde","lotado","loteria","loucura","lousa","louvar","luar","lucidez","lucro","luneta","lustre","lutador","luva","macaco","macete","machado","macio","madeira","madrinha","magnata","magreza","maior","mais","malandro","malha","malote","maluco","mamilo","mamoeiro","mamute","manada","mancha","mandato","manequim","manhoso","manivela","manobrar","mansa","manter","manusear","mapeado","maquinar","marcador","maresia","marfim","margem","marinho","marmita","maroto","marquise","marreco","martelo","marujo","mascote","masmorra","massagem","mastigar","matagal","materno","matinal","matutar","maxilar","medalha","medida","medusa","megafone","meiga","melancia","melhor","membro","memorial","menino","menos","mensagem","mental","merecer","mergulho","mesada","mesclar","mesmo","mesquita","mestre","metade","meteoro","metragem","mexer","mexicano","micro","migalha","migrar","milagre","milenar","milhar","mimado","minerar","minhoca","ministro","minoria","miolo","mirante","mirtilo","misturar","mocidade","moderno","modular","moeda","moer","moinho","moita","moldura","moleza","molho","molinete","molusco","montanha","moqueca","morango","morcego","mordomo","morena","mosaico","mosquete","mostarda","motel","motim","moto","motriz","muda","muito","mulata","mulher","multar","mundial","munido","muralha","murcho","muscular","museu","musical","nacional","nadador","naja","namoro","narina","narrado","nascer","nativa","natureza","navalha","navegar","navio","neblina","nebuloso","negativa","negociar","negrito","nervoso","neta","neural","nevasca","nevoeiro","ninar","ninho","nitidez","nivelar","nobreza","noite","noiva","nomear","nominal","nordeste","nortear","notar","noticiar","noturno","novelo","novilho","novo","nublado","nudez","numeral","nupcial","nutrir","nuvem","obcecado","obedecer","objetivo","obrigado","obscuro","obstetra","obter","obturar","ocidente","ocioso","ocorrer","oculista","ocupado","ofegante","ofensiva","oferenda","oficina","ofuscado","ogiva","olaria","oleoso","olhar","oliveira","ombro","omelete","omisso","omitir","ondulado","oneroso","ontem","opcional","operador","oponente","oportuno","oposto","orar","orbitar","ordem","ordinal","orfanato","orgasmo","orgulho","oriental","origem","oriundo","orla","ortodoxo","orvalho","oscilar","ossada","osso","ostentar","otimismo","ousadia","outono","outubro","ouvido","ovelha","ovular","oxidar","oxigenar","pacato","paciente","pacote","pactuar","padaria","padrinho","pagar","pagode","painel","pairar","paisagem","palavra","palestra","palheta","palito","palmada","palpitar","pancada","panela","panfleto","panqueca","pantanal","papagaio","papelada","papiro","parafina","parcial","pardal","parede","partida","pasmo","passado","pastel","patamar","patente","patinar","patrono","paulada","pausar","peculiar","pedalar","pedestre","pediatra","pedra","pegada","peitoral","peixe","pele","pelicano","penca","pendurar","peneira","penhasco","pensador","pente","perceber","perfeito","pergunta","perito","permitir","perna","perplexo","persiana","pertence","peruca","pescado","pesquisa","pessoa","petiscar","piada","picado","piedade","pigmento","pilastra","pilhado","pilotar","pimenta","pincel","pinguim","pinha","pinote","pintar","pioneiro","pipoca","piquete","piranha","pires","pirueta","piscar","pistola","pitanga","pivete","planta","plaqueta","platina","plebeu","plumagem","pluvial","pneu","poda","poeira","poetisa","polegada","policiar","poluente","polvilho","pomar","pomba","ponderar","pontaria","populoso","porta","possuir","postal","pote","poupar","pouso","povoar","praia","prancha","prato","praxe","prece","predador","prefeito","premiar","prensar","preparar","presilha","pretexto","prevenir","prezar","primata","princesa","prisma","privado","processo","produto","profeta","proibido","projeto","prometer","propagar","prosa","protetor","provador","publicar","pudim","pular","pulmonar","pulseira","punhal","punir","pupilo","pureza","puxador","quadra","quantia","quarto","quase","quebrar","queda","queijo","quente","querido","quimono","quina","quiosque","rabanada","rabisco","rachar","racionar","radial","raiar","rainha","raio","raiva","rajada","ralado","ramal","ranger","ranhura","rapadura","rapel","rapidez","raposa","raquete","raridade","rasante","rascunho","rasgar","raspador","rasteira","rasurar","ratazana","ratoeira","realeza","reanimar","reaver","rebaixar","rebelde","rebolar","recado","recente","recheio","recibo","recordar","recrutar","recuar","rede","redimir","redonda","reduzida","reenvio","refinar","refletir","refogar","refresco","refugiar","regalia","regime","regra","reinado","reitor","rejeitar","relativo","remador","remendo","remorso","renovado","reparo","repelir","repleto","repolho","represa","repudiar","requerer","resenha","resfriar","resgatar","residir","resolver","respeito","ressaca","restante","resumir","retalho","reter","retirar","retomada","retratar","revelar","revisor","revolta","riacho","rica","rigidez","rigoroso","rimar","ringue","risada","risco","risonho","robalo","rochedo","rodada","rodeio","rodovia","roedor","roleta","romano","roncar","rosado","roseira","rosto","rota","roteiro","rotina","rotular","rouco","roupa","roxo","rubro","rugido","rugoso","ruivo","rumo","rupestre","russo","sabor","saciar","sacola","sacudir","sadio","safira","saga","sagrada","saibro","salada","saleiro","salgado","saliva","salpicar","salsicha","saltar","salvador","sambar","samurai","sanar","sanfona","sangue","sanidade","sapato","sarda","sargento","sarjeta","saturar","saudade","saxofone","sazonal","secar","secular","seda","sedento","sediado","sedoso","sedutor","segmento","segredo","segundo","seiva","seleto","selvagem","semanal","semente","senador","senhor","sensual","sentado","separado","sereia","seringa","serra","servo","setembro","setor","sigilo","silhueta","silicone","simetria","simpatia","simular","sinal","sincero","singular","sinopse","sintonia","sirene","siri","situado","soberano","sobra","socorro","sogro","soja","solda","soletrar","solteiro","sombrio","sonata","sondar","sonegar","sonhador","sono","soprano","soquete","sorrir","sorteio","sossego","sotaque","soterrar","sovado","sozinho","suavizar","subida","submerso","subsolo","subtrair","sucata","sucesso","suco","sudeste","sufixo","sugador","sugerir","sujeito","sulfato","sumir","suor","superior","suplicar","suposto","suprimir","surdina","surfista","surpresa","surreal","surtir","suspiro","sustento","tabela","tablete","tabuada","tacho","tagarela","talher","talo","talvez","tamanho","tamborim","tampa","tangente","tanto","tapar","tapioca","tardio","tarefa","tarja","tarraxa","tatuagem","taurino","taxativo","taxista","teatral","tecer","tecido","teclado","tedioso","teia","teimar","telefone","telhado","tempero","tenente","tensor","tentar","termal","terno","terreno","tese","tesoura","testado","teto","textura","texugo","tiara","tigela","tijolo","timbrar","timidez","tingido","tinteiro","tiragem","titular","toalha","tocha","tolerar","tolice","tomada","tomilho","tonel","tontura","topete","tora","torcido","torneio","torque","torrada","torto","tostar","touca","toupeira","toxina","trabalho","tracejar","tradutor","trafegar","trajeto","trama","trancar","trapo","traseiro","tratador","travar","treino","tremer","trepidar","trevo","triagem","tribo","triciclo","tridente","trilogia","trindade","triplo","triturar","triunfal","trocar","trombeta","trova","trunfo","truque","tubular","tucano","tudo","tulipa","tupi","turbo","turma","turquesa","tutelar","tutorial","uivar","umbigo","unha","unidade","uniforme","urologia","urso","urtiga","urubu","usado","usina","usufruir","vacina","vadiar","vagaroso","vaidoso","vala","valente","validade","valores","vantagem","vaqueiro","varanda","vareta","varrer","vascular","vasilha","vassoura","vazar","vazio","veado","vedar","vegetar","veicular","veleiro","velhice","veludo","vencedor","vendaval","venerar","ventre","verbal","verdade","vereador","vergonha","vermelho","verniz","versar","vertente","vespa","vestido","vetorial","viaduto","viagem","viajar","viatura","vibrador","videira","vidraria","viela","viga","vigente","vigiar","vigorar","vilarejo","vinco","vinheta","vinil","violeta","virada","virtude","visitar","visto","vitral","viveiro","vizinho","voador","voar","vogal","volante","voleibol","voltagem","volumoso","vontade","vulto","vuvuzela","xadrez","xarope","xeque","xeretar","xerife","xingar","zangado","zarpar","zebu","zelador","zombar","zoologia","zumbido"]
-},{}],133:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 module.exports=["абзац","абонент","абсурд","авангард","авария","август","авиация","автор","агент","агитация","агрегат","адвокат","адмирал","адрес","азарт","азот","академия","аквариум","аксиома","акула","акцент","акция","аллея","алмаз","алтарь","альбом","альянс","амбиция","анализ","анекдот","анкета","ансамбль","антенна","апельсин","аппарат","аппетит","апрель","аптека","арбуз","аргумент","аренда","арест","армия","аромат","арсенал","артерия","артист","архив","аспирант","асфальт","атака","атомный","атрибут","аукцион","афиша","аэропорт","бабочка","бабушка","багаж","база","бактерия","баланс","балерина","балкон","бандит","банк","барабан","барон","барышня","барьер","бассейн","батарея","башмак","башня","бедный","беженец","бездна","белка","белый","бензин","берег","беседа","бешеный","билет","бинокль","биржа","битва","благо","блеск","близкий","блин","блок","блюдо","богатый","бодрый","боец","бокал","боковой","бокс","более","болото","болтать","большой","бомба","борт","борьба","босой","ботинок","бояться","брак","брать","бревно","бред","бригада","бродяга","броня","бросить","брызги","брюки","брюхо","бугор","будка","будни","будущее","буква","букет","бульвар","бумага","бунт","бурный","буря","бутылка","бухта","бывший","быстро","бытовой","быть","бюджет","бюро","бюст","вагон","важный","вакцина","валенок","вальс","валюта","ванная","варенье","вариант","вблизи","вверх","вводить","вдали","вдвое","вдова","вдоль","вдруг","ведро","ведущий","ведьма","вежливо","везде","веко","вексель","велеть","великий","венец","веник","веранда","верблюд","верить","верный","версия","вертеть","верхний","вершина","весело","весна","весомый","вести","весь","ветеран","ветхий","вечер","вечно","вешалка","вещество","взамен","взгляд","вздох","взнос","взойти","взор","взрыв","взять","видеть","видимо","визг","визит","вилка","вина","вирус","висок","витамин","витрина","вихрь","вишня","вкус","влага","владелец","власть","влево","влияние","вложить","вместе","внешний","вникать","внимание","вновь","внук","внутри","внучка","внушать","вовлечь","вовремя","вовсю","вода","водород","водяной","воевать","возврат","возглас","воздух","возить","возле","возня","возраст","война","войско","вокзал","волос","волчий","вольный","воля","вообще","вопль","вопрос","ворота","восемь","восток","вплоть","вполне","вправе","впредь","впрочем","врач","вредный","время","вручить","всадник","всегда","вскоре","вскрыть","всплеск","вспышка","встреча","всюду","всякий","второй","вход","вчера","выбор","вывод","выгнать","выдать","выехать","вызов","выйти","выкуп","вылезти","вымыть","выпасть","выпить","выплата","выпуск","вырасти","выручка","выслать","высокий","выставка","вышка","вязать","вялый","газета","газовый","галерея","галстук","гамма","гарантия","гармония","гарнизон","гастроли","гвардия","гвоздь","гектар","генерал","гений","геном","геолог","герб","герой","гибкий","гигант","гимн","гипотеза","гитара","главный","глагол","гладить","глаз","глина","глоток","глубокий","глупый","глухой","глыба","глядеть","гнев","гнездо","гнилой","годовой","голова","голубой","голый","гонорар","гордость","горизонт","горло","горный","город","горшок","горький","горючее","горячий","готовый","градус","грамм","граница","граф","гребень","гриб","гримаса","грозить","грохот","грош","грубый","грудь","груз","грунт","группа","груша","грязный","губа","гудок","гулкий","гулять","гусеница","густо","гусь","давление","давно","даже","дальний","данный","дарить","датчик","дать","дача","двадцать","дважды","дверь","двигать","движение","двойной","двор","дебют","девятый","дежурный","действие","декабрь","деление","дело","дельфин","день","дерево","держать","дерзкий","десять","деталь","детский","дефект","дефицит","деятель","джаз","джинсы","джунгли","диагноз","диалог","диапазон","диван","дивизия","дивный","диета","дизайн","дикарь","дилер","динамика","диплом","директор","дитя","длинный","дневник","добрый","добыча","доверие","догадка","догнать","дождь","доклад","доктор","документ","долго","должен","долина","донос","дорога","досада","доска","достать","досуг","доход","доцент","дощатый","драка","древний","дремать","дробный","дрова","дрожать","другой","дружба","дубовый","дуга","думать","дурной","духи","душный","дуэль","дуэт","дыра","дыхание","дюжина","дядя","едва","единый","ерунда","если","ехать","жадный","жажда","жалеть","жалоба","жанр","жареный","жаркий","жгучий","жевать","желание","желудок","жена","женщина","жертва","жест","жидкость","житель","жить","жрец","жулик","журнал","жуткий","забрать","забыть","завести","завод","завтра","загадка","загнать","заговор","задача","задеть","задний","задолго","заехать","заказ","закон","закрыть","закуска","залезть","залить","залп","замок","замуж","замысел","занавес","заново","занять","заодно","запись","запрос","запуск","запястье","заранее","заросль","зарплата","заря","засада","заслуга","заснуть","застать","затвор","затеять","затрата","затылок","захват","зачем","защита","заявить","заяц","звезда","звено","звонить","здесь","зелень","земля","зеркало","зерно","зима","злой","змея","знамя","знание","значит","золотой","зона","зонтик","зоопарк","зрачок","зрение","зритель","зубной","зубр","игла","идеал","идеолог","идея","идол","идти","изба","избить","избрать","избыток","извлечь","извне","изгиб","изгнать","издание","изделие","изнутри","изобилие","изоляция","изредка","изрядно","изучение","изъять","изящный","икона","икра","иллюзия","именно","иметь","имидж","империя","импульс","иначе","инвалид","индекс","индивид","инерция","инженер","иногда","иной","институт","интерес","интрига","интуиция","инфаркт","инцидент","ирония","искать","испуг","история","итог","июнь","кабель","кабинет","каблук","кавалер","кадр","каждый","кажется","казино","калитка","камень","камин","канал","кандидат","каникулы","канон","капитан","капля","капот","капуста","карандаш","карета","каркас","карман","картина","карьера","каска","кассета","кастрюля","каталог","катер","каток","катушка","кафедра","качество","каша","кашлять","каюта","квадрат","квартира","квота","кепка","кивнуть","километр","кино","киоск","кипяток","кирпич","кислота","кисть","клавиша","клапан","класс","клей","клетка","клиент","климат","клиника","кличка","клоун","клочок","клуб","клумба","ключ","книга","кнопка","кнут","княгиня","князь","кобура","когда","кодекс","кожа","коктейль","колено","коллега","колонна","колпак","кольцо","колючий","коляска","команда","комедия","комиссия","коммуна","комната","комок","компания","комфорт","конвейер","конгресс","конечно","конкурс","контроль","концерт","конь","конюшня","копать","копейка","копыто","корабль","корень","корзина","коридор","кормить","корпус","космос","костюм","косяк","котел","котлета","который","коттедж","кофе","кофта","кошка","кража","край","красный","краткий","кредит","крем","крепкий","кресло","кривой","кризис","кристалл","критерий","кричать","кровь","крокодил","кролик","кроме","крона","круг","кружка","крупный","крутой","крушение","крыло","крыша","крючок","кстати","кубик","куда","кузов","кукла","кулак","кулиса","культура","кумир","купе","купить","купол","купюра","курица","курорт","курс","куртка","кусок","куст","кухня","кушать","лабиринт","лавка","лагерь","ладно","ладонь","лапа","лауреат","лгать","лебедь","левый","легенда","легкий","ледяной","лежать","лезвие","лезть","лекция","ленивый","лента","лепесток","лесной","лестница","лететь","лето","лечить","лига","лидер","лиловый","лимон","линия","липкий","лист","литр","лихой","лицо","лишить","лишний","ловить","логика","лодка","ложь","лозунг","локоть","лопата","лошадь","лукавый","луна","лучший","лысый","льгота","любить","любой","людской","люстра","лютый","лягушка","магазин","магия","майор","майский","максимум","макушка","мало","мальчик","мама","манера","марка","март","маршрут","масса","мастер","масштаб","материал","матч","махать","машина","маяк","мебель","медаль","медведь","медицина","медь","между","мелкий","мелочь","мемуары","меньше","меню","менять","мера","мерцать","место","месяц","металл","метод","метр","механизм","меховой","мечтать","мешать","мешок","миграция","микрофон","милиция","миллион","милость","миля","мимо","минерал","министр","минута","мирный","миска","миссия","митинг","мишень","младший","мнение","мнимый","много","могучий","модель","может","мозг","мокрый","молекула","молния","молодой","молчать","момент","монета","монитор","монолог","монстр","монтаж","мораль","море","морковь","мороз","морщина","мостовая","мотать","мотив","мотор","мохнатый","мрамор","мрачный","мстить","мудрый","мужество","мужчина","музей","музыка","мундир","муравей","мусор","муха","мчаться","мысль","мыться","мышца","мышь","мюзикл","мягкий","мясо","набор","навык","наглый","нагрузка","надежда","надзор","надо","наедине","назад","название","назло","наивный","найти","наконец","налево","наличие","налог","намерен","нанести","напасть","например","народ","наследие","натура","наука","наутро","начать","небо","неважно","невеста","негодяй","недавно","неделя","недолго","недра","недуг","нежный","незачем","некто","нелепый","неловко","нельзя","немало","немой","неплохо","нервный","нередко","нестись","неудача","неужели","нефть","неясный","нигде","низкий","никакой","никогда","никуда","ничто","ничуть","ниша","нищий","новость","новый","нога","ноготь","ножницы","ноздря","номер","носить","носок","ночь","ноябрь","нрав","нуль","нынче","нырять","нюанс","няня","обаяние","обед","обезьяна","обещать","обжечь","обзор","обилие","обитать","область","облик","обложка","обмен","обморок","обожать","обои","оболочка","оборона","обочина","образ","обрести","обрыв","обувь","обучение","обход","общество","общий","объект","обыск","обычно","обязать","овощи","овраг","овца","оговорка","ограда","огурец","одежда","одеяло","один","однако","одолеть","ожидать","озеро","океан","окно","около","окоп","окраина","октябрь","опасный","опека","операция","описание","оплата","опора","оппонент","оптимизм","оптовый","опухоль","опыт","оратор","орбита","орган","орден","орел","оригинал","ориентир","оркестр","оружие","осенний","осколок","осмотр","остров","отбор","отбыть","отвлечь","отдать","отдел","отдых","отель","отец","отзыв","отказ","отклик","открыть","откуда","отличие","отныне","отойти","отпуск","отрасль","отросток","отрывок","отряд","отсек","отставка","отсюда","оттенок","оттого","отчего","отъезд","офис","офицер","охота","охрана","оценка","очаг","очень","очередь","очищать","ошибка","ощущение","павильон","падать","пазуха","пакет","палата","палец","палуба","пальто","память","панель","паника","пара","парень","пароход","партия","парус","паспорт","пассажир","пастух","патент","патрон","пауза","паук","паутина","пафос","пахнуть","пациент","пачка","певец","педагог","пейзаж","пенсия","пепел","первый","перед","период","перо","перрон","персонаж","перчатка","песня","песок","петля","петрушка","петух","пехота","печать","печень","пешком","пещера","пианист","пиджак","пилот","пионер","пирамида","пирожок","письмо","пища","плавание","плакать","пламя","план","пласт","платить","пленный","плечо","плита","плод","плоский","плотный","плохой","площадь","плыть","плюс","пляж","плясать","победа","повар","повод","повсюду","повязка","погода","погреб","подбор","подвиг","подделка","поджать","поднос","подпись","подруга","подход","подчас","подъезд","поединок","поезд","поесть","поехать","пожалуй","пожилой","позади","позвать","поздний","позиция","позор","поиск","поймать","пойти","поклон","покой","покрыть","полдень","полезный","ползти","полк","полный","половина","полтора","польза","поляна","помидор","помнить","помощь","попасть","поперек","поплыть","пополам","поправка","попугай","попытка","порог","портрет","порция","порыв","порядок","после","посол","посреди","постель","посуда","потом","похвала","похожий","поцелуй","почва","почему","пошлина","поэма","поэтому","право","праздник","практика","прах","преграда","предмет","прежде","прелесть","премия","препарат","пресса","прибыть","прижать","прийти","приказ","прилавок","пример","принять","природа","притом","прихожая","прицел","причина","приют","прогноз","продукт","проект","прожить","прокат","промысел","пропуск","просто","против","профиль","процесс","прочий","прошлый","прощать","пружина","прут","прыжок","прямой","птица","публика","пугать","пуговица","пузырь","пульт","пуля","пункт","пускать","пустой","путь","пухлый","пучок","пушистый","пушка","пчела","пшеница","пылать","пыль","пышный","пьеса","пятка","пятно","пятый","пятьсот","работа","равнина","ради","радость","радуга","разбить","развитие","разговор","раздел","различие","размер","разный","разрыв","разум","район","ракета","раковина","рамка","рано","рапорт","распад","рассказ","расти","расход","расцвет","рация","рвануть","рваться","реакция","ребро","реветь","редактор","редкий","реестр","режим","резать","резерв","резина","резко","резной","рейс","реклама","рекорд","религия","рельс","ремень","ремонт","реплика","репортаж","ресница","ресторан","реформа","рецепт","речь","решение","ржавый","риск","рисунок","ритуал","рифма","робко","робот","ровесник","ровно","родной","рождение","роза","розовый","розыск","роль","роман","роскошь","роспись","рост","рубашка","рубеж","рубить","рубрика","рудник","рука","рукопись","румяный","русло","рухнуть","ручей","ручной","рыба","рыжий","рынок","рыхлый","рыцарь","рычаг","рюкзак","рядом","садовый","сажать","салон","салфетка","салют","самец","самовар","самый","сани","санкция","сапог","сарай","сатира","сахар","сбить","сбоку","сборная","сбыт","свадьба","свалка","сварить","свежий","сверху","свет","свеча","свинья","свист","свитер","свобода","сводка","свой","свыше","связь","сдаться","сделать","сегмент","сегодня","седло","седой","седьмой","сезон","сейф","сейчас","секрет","сектор","секунда","семинар","семья","сенатор","сено","сенсация","сентябрь","сервис","сердце","середина","сержант","серия","серый","сессия","сесть","сетевой","сжатый","сжечь","сзади","сигнал","сиденье","сила","силуэт","сильный","символ","симпатия","симфония","синий","синтез","синяк","сирень","система","ситуация","сияние","сказать","скала","скамейка","скандал","скатерть","скачок","скважина","сквер","сквозь","скелет","скидка","склад","сколько","скорый","скосить","скот","скрипка","скудный","скука","слабый","слава","сладкий","слегка","след","слеза","слепой","слесарь","слишком","слово","слог","сложный","сломать","служба","слух","случай","слышать","слюна","смежный","смелый","сменить","смесь","сметана","смех","смола","смуглый","смутный","смущать","смысл","снайпер","снаряд","сначала","снег","снизу","сниться","сно��а","снять","собака","соблазн","собрание","событие","совесть","совсем","согласие","создать","сознание","созреть","сойтись","сокол","солдат","соленый","солнце","солома","сомнение","сонный","соперник","соратник","сорвать","сосед","сосиска","состав","сотня","соус","союз","спад","спальня","спасти","спектр","сперва","спешить","спина","спирт","список","спичка","сплав","спонсор","спор","способ","справка","спустя","спутник","сразу","средство","срок","срыв","ссора","ссылка","ставить","стадия","стакан","станция","старый","стая","стебель","стекло","стена","степень","стереть","стиль","стимул","стирать","стихи","стоить","стойка","стол","стонать","стопа","сторона","стоянка","страна","стричь","строгий","струя","студент","стук","ступня","стыдно","суббота","субъект","сувенир","сугроб","сугубо","судить","судно","судьба","суета","суметь","сумма","сумрак","сундук","супруг","суровый","сутки","сухой","суша","существо","сфера","схема","схожий","сценарий","счастье","считать","съезд","сыграть","сырой","сытый","сыщик","сюда","сюжет","сюрприз","тайна","также","такой","такси","тактика","талия","таможня","танец","таракан","тарелка","тариф","тащить","таять","тварь","театр","тезис","текст","текущий","телефон","тема","темнота","теневой","теннис","теория","теперь","тепло","терапия","терзать","термин","терпеть","терраса","терять","тесный","тетрадь","техника","течение","тигр","типовой","тираж","титул","тихий","ткань","товарищ","тоже","толпа","толстый","толчок","толщина","только","тонкий","тонна","топить","топор","торговля","тормоз","торчать","тотчас","точка","точно","тощий","трава","традиция","трактор","трамвай","траншея","трасса","тревога","трезвый","тренер","трепет","треск","третий","трещина","трибуна","тридцать","триста","триумф","трогать","тройка","тронуть","тропа","тротуар","трубка","труд","трюк","тряпка","туго","туловище","туман","тумбочка","тундра","тупик","турист","турнир","тусклый","туфля","туча","тысяча","тяга","тяжело","убежать","убогий","уборка","уважение","увезти","уволить","угадать","угол","угощать","угроза","угрюмый","удар","удачный","уделять","удивить","удобный","удочка","уезжать","ужин","узел","узкий","уйти","указание","уклон","украсть","укусить","улетать","улица","улыбка","умело","умение","умный","умолять","унести","унижать","унылый","упаковка","упасть","упорно","упрек","урна","уровень","урожай","уронить","усадьба","усатый","усвоить","усилие","условие","услуга","усмешка","успеть","устав","устоять","утечка","утешать","утро","уцелеть","участие","ученик","учесть","ущелье","ущерб","уютный","фабрика","фаворит","факел","факт","фамилия","фантазия","фасад","февраль","феномен","фермер","фигура","физика","филиал","философ","фильм","финал","флаг","флот","фойе","фокус","фонарь","фонд","фонтан","форма","форум","фото","фрагмент","фраза","фракция","фронт","фрукт","функция","фуражка","футбол","футляр","халат","хаос","характер","хата","хвалить","хватать","хвойный","хвост","химия","хирург","хитрый","хищник","хлеб","хлынуть","хмурый","ходить","хозяин","хоккей","холм","холст","хорошо","хотеть","храбрый","храм","хранить","хребет","хрен","хрипло","хроника","хрупкий","художник","худший","хулиган","хутор","царь","цветок","целевой","целиком","целое","цель","цензура","ценить","центр","цепной","цикл","цилиндр","цирк","цитата","цифра","чайник","часы","чашка","человек","челюсть","чемодан","чемпион","чепуха","червь","чердак","через","чернила","черта","чеснок","честно","четверть","четыре","число","чистый","читатель","чтение","чтобы","чувство","чудак","чудный","чудо","чужой","чулок","чума","чушь","чуять","шагать","шанс","шапка","шарик","шарф","шахматы","шашлык","шедевр","шептать","шерсть","шестой","шинель","ширина","шишка","шкаф","школа","шкура","шланг","шлем","шнур","шоколад","шорох","шоссе","шпион","шприц","штаб","штамм","штаны","штатный","штора","штраф","штурм","штык","шумно","шуршать","шутить","шутка","щедрый","щека","щенок","экзамен","экипаж","экономия","экран","эксперт","элемент","элитный","эмоция","энергия","эпизод","эпоха","эскиз","эстрада","этап","этика","этот","эфир","эффект","эшелон","юбилей","юбка","южный","юмор","юность","юрист","юстиция","яблоко","явление","ягода","ядро","язык","яйцо","якобы","якорь","январь","яркий","ярмарка","ярость","ясный","яхта","ячейка","ящик"]
-},{}],134:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 module.exports=["ábaco","abdomen","abeja","abierto","abogado","abono","aborto","abrazo","abrir","abuelo","abuso","acabar","academia","acceso","acción","aceite","acelga","acento","aceptar","ácido","aclarar","acné","acoger","acoso","activo","acto","actriz","actuar","acudir","acuerdo","acusar","adicto","admitir","adoptar","adorno","aduana","adulto","aéreo","afectar","afición","afinar","afirmar","ágil","agitar","agonía","agosto","agotar","agregar","agrio","agua","agudo","águila","aguja","ahogo","ahorro","aire","aislar","ajedrez","ajeno","ajuste","alacrán","alambre","alarma","alba","álbum","alcalde","aldea","alegre","alejar","alerta","aleta","alfiler","alga","algodón","aliado","aliento","alivio","alma","almeja","almíbar","altar","alteza","altivo","alto","altura","alumno","alzar","amable","amante","amapola","amargo","amasar","ámbar","ámbito","ameno","amigo","amistad","amor","amparo","amplio","ancho","anciano","ancla","andar","andén","anemia","ángulo","anillo","ánimo","anís","anotar","antena","antiguo","antojo","anual","anular","anuncio","añadir","añejo","año","apagar","aparato","apetito","apio","aplicar","apodo","aporte","apoyo","aprender","aprobar","apuesta","apuro","arado","araña","arar","árbitro","árbol","arbusto","archivo","arco","arder","ardilla","arduo","área","árido","aries","armonía","arnés","aroma","arpa","arpón","arreglo","arroz","arruga","arte","artista","asa","asado","asalto","ascenso","asegurar","aseo","asesor","asiento","asilo","asistir","asno","asombro","áspero","astilla","astro","astuto","asumir","asunto","atajo","ataque","atar","atento","ateo","ático","atleta","átomo","atraer","atroz","atún","audaz","audio","auge","aula","aumento","ausente","autor","aval","avance","avaro","ave","avellana","avena","avestruz","avión","aviso","ayer","ayuda","ayuno","azafrán","azar","azote","azúcar","azufre","azul","baba","babor","bache","bahía","baile","bajar","balanza","balcón","balde","bambú","banco","banda","baño","barba","barco","barniz","barro","báscula","bastón","basura","batalla","batería","batir","batuta","baúl","bazar","bebé","bebida","bello","besar","beso","bestia","bicho","bien","bingo","blanco","bloque","blusa","boa","bobina","bobo","boca","bocina","boda","bodega","boina","bola","bolero","bolsa","bomba","bondad","bonito","bono","bonsái","borde","borrar","bosque","bote","botín","bóveda","bozal","bravo","brazo","brecha","breve","brillo","brinco","brisa","broca","broma","bronce","brote","bruja","brusco","bruto","buceo","bucle","bueno","buey","bufanda","bufón","búho","buitre","bulto","burbuja","burla","burro","buscar","butaca","buzón","caballo","cabeza","cabina","cabra","cacao","cadáver","cadena","caer","café","caída","caimán","caja","cajón","cal","calamar","calcio","caldo","calidad","calle","calma","calor","calvo","cama","cambio","camello","camino","campo","cáncer","candil","canela","canguro","canica","canto","caña","cañón","caoba","caos","capaz","capitán","capote","captar","capucha","cara","carbón","cárcel","careta","carga","cariño","carne","carpeta","carro","carta","casa","casco","casero","caspa","castor","catorce","catre","caudal","causa","cazo","cebolla","ceder","cedro","celda","célebre","celoso","célula","cemento","ceniza","centro","cerca","cerdo","cereza","cero","cerrar","certeza","césped","cetro","chacal","chaleco","champú","chancla","chapa","charla","chico","chiste","chivo","choque","choza","chuleta","chupar","ciclón","ciego","cielo","cien","cierto","cifra","cigarro","cima","cinco","cine","cinta","ciprés","circo","ciruela","cisne","cita","ciudad","clamor","clan","claro","clase","clave","cliente","clima","clínica","cobre","cocción","cochino","cocina","coco","código","codo","cofre","coger","cohete","cojín","cojo","cola","colcha","colegio","colgar","colina","collar","colmo","columna","combate","comer","comida","cómodo","compra","conde","conejo","conga","conocer","consejo","contar","copa","copia","corazón","corbata","corcho","cordón","corona","correr","coser","cosmos","costa","cráneo","cráter","crear","crecer","creído","crema","cría","crimen","cripta","crisis","cromo","crónica","croqueta","crudo","cruz","cuadro","cuarto","cuatro","cubo","cubrir","cuchara","cuello","cuento","cuerda","cuesta","cueva","cuidar","culebra","culpa","culto","cumbre","cumplir","cuna","cuneta","cuota","cupón","cúpula","curar","curioso","curso","curva","cutis","dama","danza","dar","dardo","dátil","deber","débil","década","decir","dedo","defensa","definir","dejar","delfín","delgado","delito","demora","denso","dental","deporte","derecho","derrota","desayuno","deseo","desfile","desnudo","destino","desvío","detalle","detener","deuda","día","diablo","diadema","diamante","diana","diario","dibujo","dictar","diente","dieta","diez","difícil","digno","dilema","diluir","dinero","directo","dirigir","disco","diseño","disfraz","diva","divino","doble","doce","dolor","domingo","don","donar","dorado","dormir","dorso","dos","dosis","dragón","droga","ducha","duda","duelo","dueño","dulce","dúo","duque","durar","dureza","duro","ébano","ebrio","echar","eco","ecuador","edad","edición","edificio","editor","educar","efecto","eficaz","eje","ejemplo","elefante","elegir","elemento","elevar","elipse","élite","elixir","elogio","eludir","embudo","emitir","emoción","empate","empeño","empleo","empresa","enano","encargo","enchufe","encía","enemigo","enero","enfado","enfermo","engaño","enigma","enlace","enorme","enredo","ensayo","enseñar","entero","entrar","envase","envío","época","equipo","erizo","escala","escena","escolar","escribir","escudo","esencia","esfera","esfuerzo","espada","espejo","espía","esposa","espuma","esquí","estar","este","estilo","estufa","etapa","eterno","ética","etnia","evadir","evaluar","evento","evitar","exacto","examen","exceso","excusa","exento","exigir","exilio","existir","éxito","experto","explicar","exponer","extremo","fábrica","fábula","fachada","fácil","factor","faena","faja","falda","fallo","falso","faltar","fama","familia","famoso","faraón","farmacia","farol","farsa","fase","fatiga","fauna","favor","fax","febrero","fecha","feliz","feo","feria","feroz","fértil","fervor","festín","fiable","fianza","fiar","fibra","ficción","ficha","fideo","fiebre","fiel","fiera","fiesta","figura","fijar","fijo","fila","filete","filial","filtro","fin","finca","fingir","finito","firma","flaco","flauta","flecha","flor","flota","fluir","flujo","flúor","fobia","foca","fogata","fogón","folio","folleto","fondo","forma","forro","fortuna","forzar","fosa","foto","fracaso","frágil","franja","frase","fraude","freír","freno","fresa","frío","frito","fruta","fuego","fuente","fuerza","fuga","fumar","función","funda","furgón","furia","fusil","fútbol","futuro","gacela","gafas","gaita","gajo","gala","galería","gallo","gamba","ganar","gancho","ganga","ganso","garaje","garza","gasolina","gastar","gato","gavilán","gemelo","gemir","gen","género","genio","gente","geranio","gerente","germen","gesto","gigante","gimnasio","girar","giro","glaciar","globo","gloria","gol","golfo","goloso","golpe","goma","gordo","gorila","gorra","gota","goteo","gozar","grada","gráfico","grano","grasa","gratis","grave","grieta","grillo","gripe","gris","grito","grosor","grúa","grueso","grumo","grupo","guante","guapo","guardia","guerra","guía","guiño","guion","guiso","guitarra","gusano","gustar","haber","hábil","hablar","hacer","hacha","hada","hallar","hamaca","harina","haz","hazaña","hebilla","hebra","hecho","helado","helio","hembra","herir","hermano","héroe","hervir","hielo","hierro","hígado","higiene","hijo","himno","historia","hocico","hogar","hoguera","hoja","hombre","hongo","honor","honra","hora","hormiga","horno","hostil","hoyo","hueco","huelga","huerta","hueso","huevo","huida","huir","humano","húmedo","humilde","humo","hundir","huracán","hurto","icono","ideal","idioma","ídolo","iglesia","iglú","igual","ilegal","ilusión","imagen","imán","imitar","impar","imperio","imponer","impulso","incapaz","índice","inerte","infiel","informe","ingenio","inicio","inmenso","inmune","innato","insecto","instante","interés","íntimo","intuir","inútil","invierno","ira","iris","ironía","isla","islote","jabalí","jabón","jamón","jarabe","jardín","jarra","jaula","jazmín","jefe","jeringa","jinete","jornada","joroba","joven","joya","juerga","jueves","juez","jugador","jugo","juguete","juicio","junco","jungla","junio","juntar","júpiter","jurar","justo","juvenil","juzgar","kilo","koala","labio","lacio","lacra","lado","ladrón","lagarto","lágrima","laguna","laico","lamer","lámina","lámpara","lana","lancha","langosta","lanza","lápiz","largo","larva","lástima","lata","látex","latir","laurel","lavar","lazo","leal","lección","leche","lector","leer","legión","legumbre","lejano","lengua","lento","leña","león","leopardo","lesión","letal","letra","leve","leyenda","libertad","libro","licor","líder","lidiar","lienzo","liga","ligero","lima","límite","limón","limpio","lince","lindo","línea","lingote","lino","linterna","líquido","liso","lista","litera","litio","litro","llaga","llama","llanto","llave","llegar","llenar","llevar","llorar","llover","lluvia","lobo","loción","loco","locura","lógica","logro","lombriz","lomo","lonja","lote","lucha","lucir","lugar","lujo","luna","lunes","lupa","lustro","luto","luz","maceta","macho","madera","madre","maduro","maestro","mafia","magia","mago","maíz","maldad","maleta","malla","malo","mamá","mambo","mamut","manco","mando","manejar","manga","maniquí","manjar","mano","manso","manta","mañana","mapa","máquina","mar","marco","marea","marfil","margen","marido","mármol","marrón","martes","marzo","masa","máscara","masivo","matar","materia","matiz","matriz","máximo","mayor","mazorca","mecha","medalla","medio","médula","mejilla","mejor","melena","melón","memoria","menor","mensaje","mente","menú","mercado","merengue","mérito","mes","mesón","meta","meter","método","metro","mezcla","miedo","miel","miembro","miga","mil","milagro","militar","millón","mimo","mina","minero","mínimo","minuto","miope","mirar","misa","miseria","misil","mismo","mitad","mito","mochila","moción","moda","modelo","moho","mojar","molde","moler","molino","momento","momia","monarca","moneda","monja","monto","moño","morada","morder","moreno","morir","morro","morsa","mortal","mosca","mostrar","motivo","mover","móvil","mozo","mucho","mudar","mueble","muela","muerte","muestra","mugre","mujer","mula","muleta","multa","mundo","muñeca","mural","muro","músculo","museo","musgo","música","muslo","nácar","nación","nadar","naipe","naranja","nariz","narrar","nasal","natal","nativo","natural","náusea","naval","nave","navidad","necio","néctar","negar","negocio","negro","neón","nervio","neto","neutro","nevar","nevera","nicho","nido","niebla","nieto","niñez","niño","nítido","nivel","nobleza","noche","nómina","noria","norma","norte","nota","noticia","novato","novela","novio","nube","nuca","núcleo","nudillo","nudo","nuera","nueve","nuez","nulo","número","nutria","oasis","obeso","obispo","objeto","obra","obrero","observar","obtener","obvio","oca","ocaso","océano","ochenta","ocho","ocio","ocre","octavo","octubre","oculto","ocupar","ocurrir","odiar","odio","odisea","oeste","ofensa","oferta","oficio","ofrecer","ogro","oído","oír","ojo","ola","oleada","olfato","olivo","olla","olmo","olor","olvido","ombligo","onda","onza","opaco","opción","ópera","opinar","oponer","optar","óptica","opuesto","oración","orador","oral","órbita","orca","orden","oreja","órgano","orgía","orgullo","oriente","origen","orilla","oro","orquesta","oruga","osadía","oscuro","osezno","oso","ostra","otoño","otro","oveja","óvulo","óxido","oxígeno","oyente","ozono","pacto","padre","paella","página","pago","país","pájaro","palabra","palco","paleta","pálido","palma","paloma","palpar","pan","panal","pánico","pantera","pañuelo","papá","papel","papilla","paquete","parar","parcela","pared","parir","paro","párpado","parque","párrafo","parte","pasar","paseo","pasión","paso","pasta","pata","patio","patria","pausa","pauta","pavo","payaso","peatón","pecado","pecera","pecho","pedal","pedir","pegar","peine","pelar","peldaño","pelea","peligro","pellejo","pelo","peluca","pena","pensar","peñón","peón","peor","pepino","pequeño","pera","percha","perder","pereza","perfil","perico","perla","permiso","perro","persona","pesa","pesca","pésimo","pestaña","pétalo","petróleo","pez","pezuña","picar","pichón","pie","piedra","pierna","pieza","pijama","pilar","piloto","pimienta","pino","pintor","pinza","piña","piojo","pipa","pirata","pisar","piscina","piso","pista","pitón","pizca","placa","plan","plata","playa","plaza","pleito","pleno","plomo","pluma","plural","pobre","poco","poder","podio","poema","poesía","poeta","polen","policía","pollo","polvo","pomada","pomelo","pomo","pompa","poner","porción","portal","posada","poseer","posible","poste","potencia","potro","pozo","prado","precoz","pregunta","premio","prensa","preso","previo","primo","príncipe","prisión","privar","proa","probar","proceso","producto","proeza","profesor","programa","prole","promesa","pronto","propio","próximo","prueba","público","puchero","pudor","pueblo","puerta","puesto","pulga","pulir","pulmón","pulpo","pulso","puma","punto","puñal","puño","pupa","pupila","puré","quedar","queja","quemar","querer","queso","quieto","química","quince","quitar","rábano","rabia","rabo","ración","radical","raíz","rama","rampa","rancho","rango","rapaz","rápido","rapto","rasgo","raspa","rato","rayo","raza","razón","reacción","realidad","rebaño","rebote","recaer","receta","rechazo","recoger","recreo","recto","recurso","red","redondo","reducir","reflejo","reforma","refrán","refugio","regalo","regir","regla","regreso","rehén","reino","reír","reja","relato","relevo","relieve","relleno","reloj","remar","remedio","remo","rencor","rendir","renta","reparto","repetir","reposo","reptil","res","rescate","resina","respeto","resto","resumen","retiro","retorno","retrato","reunir","revés","revista","rey","rezar","rico","riego","rienda","riesgo","rifa","rígido","rigor","rincón","riñón","río","riqueza","risa","ritmo","rito","rizo","roble","roce","rociar","rodar","rodeo","rodilla","roer","rojizo","rojo","romero","romper","ron","ronco","ronda","ropa","ropero","rosa","rosca","rostro","rotar","rubí","rubor","rudo","rueda","rugir","ruido","ruina","ruleta","rulo","rumbo","rumor","ruptura","ruta","rutina","sábado","saber","sabio","sable","sacar","sagaz","sagrado","sala","saldo","salero","salir","salmón","salón","salsa","salto","salud","salvar","samba","sanción","sandía","sanear","sangre","sanidad","sano","santo","sapo","saque","sardina","sartén","sastre","satán","sauna","saxofón","sección","seco","secreto","secta","sed","seguir","seis","sello","selva","semana","semilla","senda","sensor","señal","señor","separar","sepia","sequía","ser","serie","sermón","servir","sesenta","sesión","seta","setenta","severo","sexo","sexto","sidra","siesta","siete","siglo","signo","sílaba","silbar","silencio","silla","símbolo","simio","sirena","sistema","sitio","situar","sobre","socio","sodio","sol","solapa","soldado","soledad","sólido","soltar","solución","sombra","sondeo","sonido","sonoro","sonrisa","sopa","soplar","soporte","sordo","sorpresa","sorteo","sostén","sótano","suave","subir","suceso","sudor","suegra","suelo","sueño","suerte","sufrir","sujeto","sultán","sumar","superar","suplir","suponer","supremo","sur","surco","sureño","surgir","susto","sutil","tabaco","tabique","tabla","tabú","taco","tacto","tajo","talar","talco","talento","talla","talón","tamaño","tambor","tango","tanque","tapa","tapete","tapia","tapón","taquilla","tarde","tarea","tarifa","tarjeta","tarot","tarro","tarta","tatuaje","tauro","taza","tazón","teatro","techo","tecla","técnica","tejado","tejer","tejido","tela","teléfono","tema","temor","templo","tenaz","tender","tener","tenis","tenso","teoría","terapia","terco","término","ternura","terror","tesis","tesoro","testigo","tetera","texto","tez","tibio","tiburón","tiempo","tienda","tierra","tieso","tigre","tijera","tilde","timbre","tímido","timo","tinta","tío","típico","tipo","tira","tirón","titán","títere","título","tiza","toalla","tobillo","tocar","tocino","todo","toga","toldo","tomar","tono","tonto","topar","tope","toque","tórax","torero","tormenta","torneo","toro","torpedo","torre","torso","tortuga","tos","tosco","toser","tóxico","trabajo","tractor","traer","tráfico","trago","traje","tramo","trance","trato","trauma","trazar","trébol","tregua","treinta","tren","trepar","tres","tribu","trigo","tripa","triste","triunfo","trofeo","trompa","tronco","tropa","trote","trozo","truco","trueno","trufa","tubería","tubo","tuerto","tumba","tumor","túnel","túnica","turbina","turismo","turno","tutor","ubicar","úlcera","umbral","unidad","unir","universo","uno","untar","uña","urbano","urbe","urgente","urna","usar","usuario","útil","utopía","uva","vaca","vacío","vacuna","vagar","vago","vaina","vajilla","vale","válido","valle","valor","válvula","vampiro","vara","variar","varón","vaso","vecino","vector","vehículo","veinte","vejez","vela","velero","veloz","vena","vencer","venda","veneno","vengar","venir","venta","venus","ver","verano","verbo","verde","vereda","verja","verso","verter","vía","viaje","vibrar","vicio","víctima","vida","vídeo","vidrio","viejo","viernes","vigor","vil","villa","vinagre","vino","viñedo","violín","viral","virgo","virtud","visor","víspera","vista","vitamina","viudo","vivaz","vivero","vivir","vivo","volcán","volumen","volver","voraz","votar","voto","voz","vuelo","vulgar","yacer","yate","yegua","yema","yerno","yeso","yodo","yoga","yogur","zafiro","zanja","zapato","zarza","zona","zorro","zumo","zurdo"]
-},{}],135:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 module.exports=["abajur","abaküs","abartı","abdal","abdest","abiye","abluka","abone","absorbe","absürt","acayip","acele","acemi","açıkgöz","adalet","adam","adezyon","adisyon","adliye","adres","afacan","afili","afiş","afiyet","aforizm","afra","ağaç","ağır","ahbap","ahkam","ahlak","ahtapot","aidat","aile","ajan","akademi","akarsu","akbaş","akciğer","akdeniz","akıbet","akıl","akıntı","akide","akrep","akrobasi","aksiyon","akşam","aktif","aktör","aktris","akustik","alaca","albüm","alçak","aldanma","aleni","alet","alfabe","algılama","alıngan","alkış","alkol","alpay","alperen","altın","altüst","altyapı","alyuvar","amade","amatör","amazon","ambalaj","amblem","ambulans","amca","amel","amigo","amir","amiyane","amorti","ampul","anadolu","anahtar","anakonda","anaokul","anapara","anarşi","anatomi","anayasa","anekdot","anestezi","angaje","anka","anket","anlamlı","anne","anomali","anonim","anten","antlaşma","apse","araba","aracı","araf","arbede","arda","arefe","arena","argo","argüman","arkadaş","armoni","aroma","arsa","arsız","artı","artist","aruz","asansör","asayiş","asfalt","asgari","asil","asker","askı","aslan","asosyal","astsubay","asya","aşçı","aşırı","aşure","atabey","ataman","ateş","atmaca","atmosfer","atom","atölye","avcı","avdet","avize","avlu","avokado","avrupa","avukat","ayaz","ayçiçeği","aydın","aygıt","ayna","ayran","ayrıntı","azim","baca","bagaj","bağlantı","bahadır","bahçe","baki","bakkal","baklava","bakteri","balçık","balina","balo","balta","bant","banyo","bardak","barış","başbuğ","başıboş","başkan","başlık","bavul","bayındır","baykuş","bazlama","bedel","begüm","bekçi","bekle","belge","belki","bencil","benek","bengi","benzer","berjer","berk","bermuda","berrak","beşik","beton","beyin","beyoğlu","bıçak","biberiye","bidon","biftek","bihaber","bikini","bilezik","bilinç","bilye","bina","binbaşı","binyıl","bisiklet","bisküvi","bitki","bizzat","bodrum","boğaz","bohça","bolero","boncuk","bonfile","borsa","boru","bostan","boşboğaz","botanik","boya","boykot","boynuz","bozgun","bozkır","bölüm","börek","buçuk","bugün","buğday","buhar","buhran","bulvar","buram","burçak","burs","burun","butik","buzdağı","buzkıran","bücür","büfe","bülten","bütçe","bütün","büyük","cacık","cadı","cahil","cambaz","canhıraş","casus","cazibe","cehalet","cehennem","ceket","cemre","cenin","cennet","cepken","cerrah","cesur","cetvel","cevher","ceylan","cılız","cıva","cilt","cisim","ciyak","coğrafya","cömert","cumba","cüzdan","çabucak","çadır","çağdaş","çağlayan","çağrı","çakmak","çalışkan","çamaşır","çapa","çaput","çarık","çarpan","çarşaf","çayhane","çekirdek","çelebi","çember","çenet","çengel","çerçeve","çerez","çeşit","çeşme","çete","çevre","çeyiz","çeyrek","çığır","çılgın","çıngırak","çift","çiğdem","çikolata","çilek","çimen","çivi","çoban","çocuk","çokgen","çomak","çorba","çözelti","çubuk","çukur","çuval","çürük","dağbaşı","dağılım","daktilo","daldırış","dalga","dalkavuk","damak","damıtma","damla","dana","dandik","danışman","daniska","dantel","dargeçit","darphane","davet","dayı","defter","değer","değirmen","dehşet","delgeç","demir","deneyim","denge","depo","deprem","derdest","dere","derhal","derman","dernek","derviş","desen","destan","dışarı","dışbükey","dijital","dikbaşlı","dilekçe","dimağ","dinamik","dindar","dinleme","dinozor","dipçik","dipnot","direniş","dirsek","disiplin","disk","divriği","dizüstü","dobra","dodurga","doğalgaz","doktor","doküman","dolap","donanım","dondurma","donör","doruk","dosdoğru","dost","dosya","dozer","döküm","dönence","dörtyol","dövme","dram","dublaj","durum","duvak","duyarga","duyma","duyuru","düğme","düğüm","dükkan","dünür","düpedüz","dürbün","düşünür","düzayak","düzeltme","ebeveyn","ebru","ecel","ecnebi","ecza","edat","edilgen","efendi","efor","efsane","egemen","egzersiz","eğrelti","ekarte","ekip","eklem","ekmek","ekol","ekonomi","ekose","ekran","ekvator","elaman","elastik","elbet","elbise","elçi","eldiven","elebaşı","eleştiri","elma","eloğlu","elveda","emare","emekçi","emisyon","emniyet","empati","emsal","emzik","endüstri","enerji","engebe","engin","enişte","enkaz","entari","entegre","entrika","enzim","erdem","ergen","erguvan","erkek","erozyon","ertesi","erzak","esaret","esenlik","eser","eski","esnek","eşarp","eşofman","eşraf","eşya","eşzaman","etik","etken","etkinlik","etüt","evet","evire","evrak","evrim","eyalet","eyvah","ezber","fabrika","fanatik","fanus","fason","fasulye","fatih","fatura","fauna","favori","fayans","fayton","fazıl","fazilet","federal","felsefe","fener","feribot","fersah","fesih","festival","feveran","feza","fıçı","fıldır","fındık","fırça","fırsat","fırtına","fıtık","fidan","fidye","figür","fihrist","fikir","fildişi","filo","filtre","fincan","firuze","fitil","fiyaka","fizik","flaş","flüt","fosil","fren","fukara","futbol","garabet","gariban","garnitür","gazi","gece","gedik","gelenek","gelin","gemi","genç","geniş","geometri","gerçek","gevrek","gezegen","gezgin","geziyolu","gıcık","gıda","gıybet","girdap","girişim","gitar","giyecek","giysi","gizem","gofret","goril","göbek","göçebe","göğüs","gökdelen","gökmen","gökyüzü","gölge","gömlek","gönül","görenek","görkemli","görsel","gösteri","gövde","gözaltı","gözcü","gözdağı","gözleme","gözyaşı","grup","gurbet","gusül","gübre","güfte","gümüş","günaydın","güncel","gündüz","güneş","günyüzü","gürbüz","güvercin","güzel","haber","hacamat","hacim","hademe","hafız","hafriyat","hafta","hakan","hakem","hakikat","haksever","halı","hançer","hane","hangar","hapis","hapşırık","harf","haseki","hasret","hatun","havuç","haylaz","haysiyet","hayvan","hedef","hektar","hemen","hemfikir","hendek","hepsi","hergele","herhangi","hesap","heyecan","heykel","hezimet","hıçkırık","hızölçer","hicviye","hikaye","hikmet","hile","hisse","hobi","hoca","horlama","hormon","hoşbeş","hoşgörü","hoyrat","hörgüç","höyük","hudut","hukuk","hunhar","hurda","huysuz","huzur","hücum","hükümet","hünkar","hüviyet","ırmak","ısıölçer","ısıtıcı","ıspanak","ısrar","ışıldak","ızdırap","ızgara","ibadet","icat","içbükey","içecek","içgüdü","içsel","idman","iftihar","iğne","ihanet","ihbar","ihdas","ihmal","ihracat","ihsan","ikilem","ikindi","ikircik","iklim","iksir","iktibas","ilaç","ilçe","ileri","iletişim","ilgi","ilhak","ilkbahar","ilkokul","ilmek","imkan","imleç","imsak","imtihan","imza","ince","inkar","inşa","ipek","ipucu","irade","irfan","irmik","isabet","iskele","israf","isyan","işçi","işgal","işgüzar","işlem","itibar","itiraf","ivedi","ivme","iyileşme","iyimser","izbandut","izci","izdiham","izin","jakoben","jandarma","jargon","kabadayı","kablo","kabus","kaçamak","kadeh","kadın","kadraj","kafa","kafkas","kağıt","kağnı","kahkaha","kahraman","kahvaltı","kakül","kaldırım","kale","kalibre","kalkan","kalpak","kamış","kamyon","kanat","kandaş","kanepe","kanser","kanun","kaos","kapı","kaplıca","kaptan","karanlık","kardeş","karga","karınca","karmaşa","karşıt","kasırga","kask","kasvet","katkı","katman","kavram","kaygan","kaynakça","kayyum","kedi","kehanet","kekik","kelebek","kenar","kerkenez","kerpiç","kesirli","kesmece","kestane","keşkek","ketçap","keyfiyet","kıble","kıdemli","kılavuz","kılçık","kılıf","kıraç","kırmızı","kırsal","kısayol","kısım","kıskanç","kısmet","kışla","kıvanç","kıvılcım","kıvrık","kıyafet","kıymetli","kızak","kızılcık","kibar","kinaye","kira","kiremit","kirli","kirpik","kişisel","kitap","koçbaşı","kodaman","koğuş","kokteyl","kolaycı","kolbastı","kolonya","koltuk","kolye","kombine","komedyen","komiser","komposto","komşu","komuta","konak","konfor","koni","konsül","kopya","korkusuz","korna","korse","korunak","korvet","kostüm","koşul","koyu","kozmik","köfte","kökensel","köprücük","köpük","kördüğüm","körfez","köstebek","köşegen","kötü","kravat","kriter","kuantum","kudurma","kuluçka","kulübe","kumanya","kumbara","kumlu","kumpir","kumral","kundura","kupa","kupkuru","kuramsal","kurbağa","kurdele","kurgu","kurmay","kurşun","kurtuluş","kurultay","kurye","kusursuz","kuşak","kuşbaşı","kuşkulu","kutlama","kutsal","kutup","kuver","kuyruk","kuzey","kuzgun","küçük","külçe","külfet","külliye","kültürel","kümes","künefe","küresel","kütle","lahana","lahmacun","lamba","lansman","lavaş","layık","leğen","levent","leziz","lezzet","lider","likide","liman","liste","litre","liyakat","lodos","lokanta","lokman","lokum","lunapark","lütfen","lüzum","nokta","mabet","macera","macun","madalya","madde","madem","mağara","mağdur","mağfiret","mağlup","mahalle","mahcup","mahir","mahkeme","mahlas","mahrum","mahsul","makas","makbuz","makine","makro","maksat","makul","maliye","manav","mangal","manidar","manken","mantık","manzara","mareşal","margarin","marifet","market","marmelat","masaüstü","masmavi","masraf","masum","matah","materyal","matrak","maval","mavra","maydanoz","mayhoş","maytap","mazbata","mazeret","mazlum","mazot","mazur","meblağ","mebus","mecaz","mecbur","meclis","mecmua","mecnun","meçhul","medeni","mehtap","mekanik","melodi","meltem","memur","mendil","menekşe","menteşe","meraklı","mercek","merdiven","merhaba","merinos","merkez","mermi","mert","mesafe","mesele","mesken","meslek","meşale","meşgul","meşhur","metafor","metin","metre","mevcut","mevkidaş","meydan","meyil","meyve","meziyet","mezun","mıknatıs","mısra","mızıka","miğfer","mihrak","mikrofon","miktar","milat","milli","mimar","minare","mineral","minik","minyon","mirliva","misafir","miskin","miting","miyop","mizah","mobilya","model","monitör","morötesi","motive","motor","mozaik","muavin","mucize","muhafız","muhteşem","mukayese","mumya","musluk","muşamba","mutabık","mutfak","mutlu","muzaffer","muzdarip","mübarek","mücadele","müdür","müfredat","müftü","mühendis","mühim","mühlet","mükemmel","mülk","mümkün","mümtaz","müsrif","müstesna","müşahit","müşteri","mütercim","müthiş","müze","müzik","nabız","nadas","nadir","nahoş","nakarat","nakış","nalbur","namlu","namus","nankör","nargile","narkoz","nasıl","nasip","naylon","nazar","nazım","nazik","neden","nefes","negatif","neon","neptün","nerede","nesil","nesnel","neşeli","netice","nevresim","neyse","neyzen","nezaket","nezih","nezle","nicel","nilüfer","nimet","nisan","nispet","nitekim","nizam","nohut","noksan","normal","nostalji","noter","nöbet","numara","numune","nutuk","nüfus","obabaşı","obez","obje","ocak","odun","ofansif","ofis","oğlak","oğuz","okçu","oklava","oksijen","okul","okumuş","okutman","okuyucu","okyanus","olağan","olanak","olası","olay","olgun","olimpik","olumlu","omlet","omurga","onarım","onursal","opera","optik","oral","orantı","ordu","organik","orijin","orkide","orman","orta","oruç","otağ","otantik","otel","otoban","otogar","otomobil","otonom","otopark","otorite","otoyol","oturum","oyuk","oyuncak","ozan","ödeme","ödenek","ödev","ödül","ödünç","öfke","öğlen","öğrenci","öğün","öğütücü","öksürük","ölçme","ölçü","ölümsüz","ömür","önayak","öncü","önder","önem","önerge","öngörü","önlük","önsezi","öpücük","ördek","örgü","örtbas","örtme","örtü","örümcek","örüntü","öteberi","öteki","övünç","öykü","öyleyse","özçekim","özdeyiş","özel","özenti","özerk","özgürlük","özlem","özlü","özne","özsever","özümseme","özür","özveri","pabuç","padişah","palamut","palmiye","palto","palyaço","pamuk","panayır","pancar","panda","panel","panik","panjur","pankart","pano","pansuman","pantolon","panzehir","papatya","papyon","paraşüt","parça","pardösü","parfüm","parıltı","parkur","parmak","parodi","parsel","partner","pasaport","pasif","paskalya","pastırma","paşa","patates","paten","patika","patlıcan","patolog","patron","payanda","paydaş","payidar","paylaşma","paytak","peçete","pedal","peder","pehlivan","pekala","pekmez","pelerin","pelikan","pelüş","pembe","pena","pencere","pense","perçin","perde","pergel","perişan","peron","personel","perşembe","peruk","pervane","pespaye","pestil","peşin","petek","petrol","petunya","peynir","peyzaj","pınar","pırasa","pırlanta","pide","pikap","piknik","pilav","piliç","pilot","pipet","pipo","piramit","pirinç","pirzola","pist","pişik","pişman","piyasa","piyes","plaj","plaket","planlama","platform","plazma","podyum","poğaça","polat","polen","politika","pompa","popüler","porselen","portakal","posa","poster","poşet","poyraz","pozitif","pranga","pratik","prenses","prim","problem","profil","program","proje","protokol","prova","puan","pudra","pusula","püre","pürüz","püstül","püsür","racon","radar","radikal","radyo","rafadan","rafine","rağbet","rahat","rahle","rakam","raket","rakip","rakun","ralli","rampa","randevu","ranza","rapor","rastgele","rasyonel","razı","realite","reçine","refah","referans","refik","reform","rehber","rehin","reis","rekabet","reklam","rekor","rektör","renk","resim","resmen","restoran","retorik","revaç","revize","reyon","rezalet","rezerv","rezil","rıhtım","rıza","ritim","ritüel","rivayet","robot","roman","rota","rozet","röportaj","rötar","ruble","ruhban","ruhsat","rulet","rulo","runik","rutin","rutubet","rüşvet","rütbe","rüya","rüzgar","sabah","sabıka","sabit","sabun","saçma","sade","sadık","safahat","safdil","safkan","sağanak","sağduyu","sağlam","saha","sahiden","sahne","sakal","sakız","sakin","saklama","saksağan","salamura","salça","salgı","salınım","salkım","salon","saltanat","sanatçı","sancak","sandalye","saniye","saplantı","sapsız","saray","sarışın","sarkık","sarmaşık","satır","savaşım","savunma","saydam","sayfa","saygın","sayısal","sebep","seçenek","seçim","seçkin","seçmen","seda","sedir","sedye","sefer","sehpa","sekizgen","selektör","selvi","semavi","sembol","seminer","senaryo","sendika","senkron","sensör","sentez","sepet","seramik","serbest","serdar","seremoni","sergi","serhat","serin","sermaye","serpuş","sersem","serüven","servis","sesli","sesteş","sevap","seviye","seyahat","seyirci","sezon","sıcak","sıfat","sıhhi","sınanma","sınır","sıradan","sırdaş","sırma","sırtüstü","sızgıt","siftah","sigorta","sihirbaz","silah","silecek","silindir","simetri","simge","simit","sincap","sindirim","sinema","sinirli","sipariş","sirke","siroz","sistem","sivilce","siyasi","slogan","soba","sofra","soğuk","sohbet","sokak","solfej","solunum","somut","sonbahar","sonraki","sonsuz","sorunsuz","sosyete","soyağacı","soydaş","soygun","soytarı","söğüş","sömürge","sönük","söylem","sözcük","sözde","spatula","spektrum","spiker","spiral","sponsor","sporcu","sprey","stabil","statü","stok","stopaj","strateji","subay","sucuk","suçüstü","suhulet","sulama","sungur","sunucu","surat","susam","suskun","sükse","sükut","sülale","sünger","süpürge","sürahi","süreç","sürgün","sürüm","süsleme","sütanne","sütlaç","sütun","süvari","şahane","şahbaz","şahit","şahsiyet","şakıma","şaklaban","şakrak","şamar","şampiyon","şanslı","şantiye","şapka","şarkıcı","şartname","şaşırma","şaşkın","şatafat","şayet","şebeke","şefkat","şeftali","şehir","şehvet","şeker","şekil","şelale","şema","şemsiye","şerbet","şeref","şerit","şımarık","şıpıdık","şifre","şimdi","şimşek","şipşak","şirin","şişe","şişirme","şofben","şöhret","şölen","şüphe","tabaka","tabela","tabure","tadilat","taharet","tahıl","tahkim","tahlil","tahmin","tahrifat","tahsilat","tahta","taklit","takoz","taksici","taktik","takvim","talebe","talip","tamamen","tamirci","tampon","tamtakır","tandır","tanecik","tanıtım","tanrı","tansiyon","tapan","tapınak","taptaze","tapu","tarafgir","tarhana","tarım","tarih","tarla","tartak","tarumar","tasarım","tasdik","taslak","tastamam","taşeron","taşınmaz","taşra","tatava","tatbikat","tatil","tatlı","tavsiye","tavşan","tavuk","taze","taziye","tazminat","tebeşir","tebrik","tecrübe","teçhizat","tedarik","tedbir","teftiş","teğet","teğmen","tehdit","tehlike","tekdüze","tekerlek","tekme","teknik","tekrar","telef","telsiz","telve","temas","tembel","temiz","temkin","tempo","temsilci","tendon","teneke","tenha","tenkit","tepegöz","tepki","terazi","terbiye","tercih","tereyağı","terfi","terim","terminal","tersane","tertip","tesadüf","tescil","tesir","teslimat","tespit","testere","teşekkür","teşhir","teşrif","teşvik","teyze","tezahür","tezgah","tıbbi","tıkaç","tıkışık","tıknaz","tılsım","tıpkı","tıraş","tırışka","tırmanış","tırnak","tırpan","tıslama","ticaret","tilki","tiryaki","titreşim","tohum","tokat","tolere","tomar","tombak","tomurcuk","topaç","toplum","toprak","toptan","toraman","torpido","tortu","tosbağa","toynak","tören","trafik","trajedi","tramvay","transfer","tribün","triko","tugay","tuğla","tuğrul","tuhaf","tulumba","tunç","turan","turkuaz","turnusol","turşu","turuncu","tutanak","tutkal","tutsak","tutum","tuyuğ","tuzlu","tüccar","tüfek","tükenmez","tülbent","tümleç","tünel","türbin","türev","türk","tüzük","ucube","ucuz","uçak","uçurtma","ufuk","uğrak","uğur","ukala","ulaşım","ulema","ulus","ulvi","umursama","umut","unutkan","uslu","ustabaşı","ustura","usul","utangaç","uyanık","uyarı","uydu","uygar","uygulama","uykusuz","uysal","uyuşma","uzantı","uzay","uzgören","uzlaşma","uzman","uzun","ücra","ücret","üçbudak","üçgen","üçkağıt","üçleme","üfürük","ülke","ümit","üniforma","ünite","ünlem","üretken","ürün","üslup","üstel","üstün","üşengeç","üşüme","ütopya","üvey","üzengi","üzgün","üzüm","vagon","vaka","vakfiye","vakıf","vakit","vakum","vapur","varil","varlık","varsayım","varyemez","vasıta","vasiyet","vatandaş","vazife","vazo","veciz","vefa","vehim","veliaht","veresiye","verimli","verkaç","vernik","vertigo","vesait","vesika","vestiyer","veznedar","vicdan","vilayet","virane","virgül","vişne","vites","vokal","volkan","vurma","vurucu","vücut","yabancı","yabgu","yağış","yağlı","yağmur","yakamoz","yakın","yaklaşık","yalçın","yalıtım","yaman","yanardağ","yangın","yanıt","yankı","yanlış","yansıma","yapay","yapboz","yapımcı","yaprak","yaratık","yarbay","yardım","yargıç","yarıçap","yasemin","yastık","yaşam","yatak","yatırım","yavru","yaygara","yayıncı","yayla","yazılım","yekpare","yekvücut","yelkovan","yelpaze","yemek","yemiş","yengeç","yeniçeri","yeraltı","yerküre","yerleşke","yeryüzü","yeşil","yetenek","yetkili","yığınak","yıkama","yılbaşı","yıldırım","yılkı","yılmaz","yırtıcı","yiğit","yoğurt","yokuş","yolcu","yoldaş","yolgeçen","yolkesen","yolüstü","yordam","yorgan","yorumcu","yosun","yöndeş","yönetim","yönlü","yöntem","yöresel","yörünge","yufka","yukarı","yumruk","yumurta","yuvarlak","yücelme","yükçeker","yüklem","yüksek","yürek","yürütme","yüzde","yüzeysel","yüzgeç","yüzüstü","yüzyıl","zabıta","zafer","zahmet","zambak","zaptiye","zarafet","zaruret","zeka","zekice","zemberek","zemin","zencefil","zeplin","zeytin","zıbın","zılgıt","zımbırtı","zımpara","zıpkın","zigon","zihinsel","zihniyet","zincir","zindan","zirzop","ziyaret","ziynet","zoraki","zorlu","zorunlu","züğürt","zümre"]
-},{}],136:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // browserify by default only pulls in files that are hard coded in requires
@@ -26675,7 +27215,7 @@ try {
 }
 catch (err) { }
 
-},{"./wordlists/chinese_simplified.json":138,"./wordlists/chinese_traditional.json":139,"./wordlists/czech.json":140,"./wordlists/english.json":141,"./wordlists/french.json":142,"./wordlists/italian.json":143,"./wordlists/japanese.json":144,"./wordlists/korean.json":145,"./wordlists/portuguese.json":146,"./wordlists/spanish.json":147}],137:[function(require,module,exports){
+},{"./wordlists/chinese_simplified.json":152,"./wordlists/chinese_traditional.json":153,"./wordlists/czech.json":154,"./wordlists/english.json":155,"./wordlists/french.json":156,"./wordlists/italian.json":157,"./wordlists/japanese.json":158,"./wordlists/korean.json":159,"./wordlists/portuguese.json":160,"./wordlists/spanish.json":161}],151:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -26851,7 +27391,7 @@ var _wordlists_2 = require("./_wordlists");
 exports.wordlists = _wordlists_2.wordlists;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./_wordlists":136,"@noble/hashes/pbkdf2":59,"@noble/hashes/sha256":61,"@noble/hashes/sha512":62,"@noble/hashes/utils":63,"buffer":185}],138:[function(require,module,exports){
+},{"./_wordlists":150,"@noble/hashes/pbkdf2":73,"@noble/hashes/sha256":75,"@noble/hashes/sha512":76,"@noble/hashes/utils":77,"buffer":203}],152:[function(require,module,exports){
 module.exports=[
     "的",
     "一",
@@ -28903,7 +29443,7 @@ module.exports=[
     "歇"
 ]
 
-},{}],139:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 module.exports=[
     "的",
     "一",
@@ -30955,7 +31495,7 @@ module.exports=[
     "歇"
 ]
 
-},{}],140:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 module.exports=[
     "abdikace",
     "abeceda",
@@ -33007,7 +33547,7 @@ module.exports=[
     "zvyk"
 ]
 
-},{}],141:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 module.exports=[
     "abandon",
     "ability",
@@ -35059,7 +35599,7 @@ module.exports=[
     "zoo"
 ]
 
-},{}],142:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 module.exports=[
     "abaisser",
     "abandon",
@@ -37111,7 +37651,7 @@ module.exports=[
     "zoologie"
 ]
 
-},{}],143:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 module.exports=[
     "abaco",
     "abbaglio",
@@ -39163,7 +39703,7 @@ module.exports=[
     "zuppa"
 ]
 
-},{}],144:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 module.exports=[
     "あいこくしん",
     "あいさつ",
@@ -41215,7 +41755,7 @@ module.exports=[
     "われる"
 ]
 
-},{}],145:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 module.exports=[
     "가격",
     "가끔",
@@ -43267,7 +43807,7 @@ module.exports=[
     "힘껏"
 ]
 
-},{}],146:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 module.exports=[
     "abacate",
     "abaixo",
@@ -45319,7 +45859,7 @@ module.exports=[
     "zumbido"
 ]
 
-},{}],147:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 module.exports=[
     "ábaco",
     "abdomen",
@@ -47371,7 +47911,7 @@ module.exports=[
     "zurdo"
 ]
 
-},{}],148:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -47407,7 +47947,7 @@ module.exports = async (imports) => {
   return instance.exports;
 };
 
-},{}],149:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 var assert = require('nanoassert')
 var b4a = require('b4a')
 
@@ -47543,7 +48083,7 @@ Blake2b.prototype.setPartialHash = function (ph) {
 
 function noop () {}
 
-},{"./blake2b":148,"b4a":97,"nanoassert":414}],150:[function(require,module,exports){
+},{"./blake2b":162,"b4a":111,"nanoassert":432}],164:[function(require,module,exports){
 var assert = require('nanoassert')
 var b2wasm = require('blake2b-wasm')
 
@@ -47868,7 +48408,1412 @@ b2wasm.ready(function (err) {
   }
 })
 
-},{"blake2b-wasm":149,"nanoassert":414}],151:[function(require,module,exports){
+},{"blake2b-wasm":163,"nanoassert":432}],165:[function(require,module,exports){
+const { EventEmitter } = require('events')
+const sodium = require('sodium-universal')
+const crypto = require('hypercore-crypto')
+const b4a = require('b4a')
+const c = require('compact-encoding')
+
+const {
+  Invite,
+  ResponsePayload,
+  InviteRequest,
+  InviteResponse,
+  InviteData,
+  InviteReceipt,
+  PersistedRequest,
+  AuthData
+} = require('./lib/messages')
+
+const {
+  PAIRING_REJECTED,
+  INVITE_USED,
+  INVITE_EXPIRED
+} = require('./lib/errors')
+
+const [
+  NS_SIGNATURE,
+  NS_TOKEN,
+  NS_INVITE_ID,
+  NS_REQUEST_ID,
+  NS_SESSION,
+  NS_SESSION_KEY,
+  NS_ENCRYPT,
+  NS_NONCE
+] = crypto.namespace('blind-pairing', 8)
+
+class CandidateRequest extends EventEmitter {
+  constructor (invite, userData, opts = {}) {
+    super()
+
+    if (b4a.isBuffer(invite)) {
+      invite = c.decode(Invite, invite)
+    }
+
+    this.discoveryKey = invite.discoveryKey
+    this.seed = invite.seed
+
+    this.keyPair = crypto.keyPair(this.seed)
+    this.inviteId = deriveInviteId(this.keyPair.publicKey)
+    this.userData = userData
+
+    this.token = deriveToken(this.keyPair.publicKey, userData)
+    this.session = opts.session || createSessionToken(this.token)
+    this.id = deriveRequestId(this.session)
+
+    this.payload = createAuth(this.userData, this.keyPair, this.session)
+
+    this._encoded = null
+
+    // set in reply
+    this.auth = null
+  }
+
+  static from (buf) {
+    const info = c.decode(PersistedRequest, buf)
+    const { seed, discoveryKey, userData } = info
+    const request = new CandidateRequest({ discoveryKey, seed }, userData)
+
+    // clear completed request
+    if (info.key) {
+      request.key = info.key
+      request.token = null
+      request.payload = null
+    }
+
+    return request
+  }
+
+  handleResponse (payload) {
+    if (b4a.isBuffer(payload)) {
+      payload = this._decodeResponse(payload)
+    }
+
+    try {
+      this._openResponse(payload)
+    } catch (err) {
+      this.emit('rejected', err)
+      return null
+    }
+
+    this._onAccept()
+
+    return this.auth
+  }
+
+  _openResponse (payload) {
+    try {
+      const response = openReply(payload, this.payload.session, this.keyPair.publicKey)
+      this.response = c.decode(ResponsePayload, response)
+    } catch (e) {
+      throw new Error('Could not decrypt reply.')
+    }
+
+    const { status, key, encryptionKey, additional } = this.response
+
+    if (status !== 0) {
+      switch (status) {
+        case 1:
+          throw PAIRING_REJECTED()
+
+        case 2:
+          throw INVITE_USED()
+
+        case 3:
+          throw INVITE_EXPIRED()
+      }
+    }
+
+    if (b4a.compare(crypto.discoveryKey(key), this.discoveryKey)) {
+      throw new Error('Invite response does not match discoveryKey')
+    }
+
+    if (additional && !crypto.verify(additional.data, additional.signature, this.keyPair.publicKey)) {
+      throw new Error('Additional data failed verification')
+    }
+
+    this.auth = { key, encryptionKey, data: additional ? additional.data : null }
+  }
+
+  _onAccept () {
+    this.emit('accepted', this.auth)
+    this.destroy()
+  }
+
+  _decodeResponse (buf) {
+    try {
+      const { payload } = c.decode(InviteResponse, buf)
+      return payload
+    } catch {
+      throw new Error('Could not decode response.')
+    }
+  }
+
+  destroy () {
+    this.token = null
+    this.payload = null
+
+    this.emit('destroyed')
+  }
+
+  encode () {
+    if (!this._encoded) this._encoded = c.encode(InviteRequest, this)
+    return this._encoded
+  }
+}
+
+class MemberRequest {
+  constructor (inviteId, requestData) {
+    this.inviteId = inviteId
+    this.requestData = requestData
+
+    this._opened = false
+    this._confirmed = false
+    this._denied = false
+
+    // set by transport
+    this.discoveryKey = null
+
+    // set in open
+    this.publicKey = null
+    this.userData = null
+    this.session = null
+    this.id = null
+    this.receipt = null
+
+    // set in confirm/respond
+    this._payload = null
+    this.response = null
+  }
+
+  static from (req) {
+    if (b4a.isBuffer(req)) {
+      return MemberRequest.from(c.decode(InviteRequest, req))
+    }
+
+    return new MemberRequest(
+      req.inviteId,
+      req.payload
+    )
+  }
+
+  confirm ({ key, encryptionKey, additional }) {
+    if (this._confirmed || this._denied || !this._opened) return
+    this._confirmed = true
+
+    const payload = c.encode(ResponsePayload, { status: 0, key, encryptionKey, additional })
+    this._payload = createReply(payload, this.session, this.publicKey)
+
+    this._respond()
+  }
+
+  deny ({ status = 1 } = {}) {
+    if (this._confirmed || this._denied) return
+    this._denied = true
+
+    if (!status) return
+
+    const payload = c.encode(ResponsePayload, {
+      status,
+      key: null,
+      encryptionKey: null,
+      additional: null
+    })
+    this._payload = createReply(payload, this.session, this.publicKey)
+
+    this._respond()
+  }
+
+  respond () {
+    return {
+      id: this.id,
+      payload: this._payload
+    }
+  }
+
+  _respond () {
+    this.response = c.encode(InviteResponse, this.respond())
+  }
+
+  open (publicKey) {
+    if (this._opened && b4a.equals(this.publicKey, publicKey)) return this.userData
+
+    try {
+      this.receipt = openAuth(this.requestData, publicKey)
+      const { userData, session } = c.decode(InviteReceipt, this.receipt)
+
+      this.userData = userData
+      this.session = session
+      this.token = deriveToken(publicKey, userData)
+      this.id = deriveRequestId(this.session)
+    } catch (e) {
+      throw new Error('Failed to open invite with provided key')
+    }
+
+    this.publicKey = publicKey
+    this._opened = true
+
+    return this.userData
+  }
+}
+
+module.exports.CandidateRequest = CandidateRequest
+module.exports.MemberRequest = MemberRequest
+module.exports.createInvite = createInvite
+module.exports.decodeInvite = decodeInvite
+module.exports.verifyReceipt = verifyReceipt
+module.exports.createReceipt = createReceipt
+module.exports.Invite = Invite
+
+function createReceipt (invite, userData) {
+  const req = new CandidateRequest(invite, userData) // yolo, refactor
+  const receipt = openAuth(req.payload, req.keyPair.publicKey)
+  return { id: deriveInviteId(req.keyPair.publicKey), receipt }
+}
+
+function verifyReceipt (receipt, publicKey) {
+  if (b4a.isBuffer(receipt)) {
+    receipt = c.decode(InviteReceipt, receipt)
+  }
+
+  const { session, signature, userData } = receipt
+  const signData = c.encode(AuthData, { userData, session })
+
+  if (!verifySignature(signData, signature, publicKey)) return null
+
+  return userData
+}
+
+function deriveInviteId (publicKey) {
+  return crypto.hash([NS_INVITE_ID, publicKey])
+}
+
+function deriveKey (publicKey) {
+  const out = b4a.allocUnsafe(sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES)
+  return crypto.hash([NS_ENCRYPT, publicKey], out)
+}
+
+function deriveNonce (publicKey, sessionToken) {
+  const out = b4a.allocUnsafe(sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES)
+  return crypto.hash([NS_NONCE, publicKey, sessionToken], out)
+}
+
+function deriveToken (publicKey, userData) {
+  return crypto.hash([NS_TOKEN, publicKey, userData])
+}
+
+function createSessionToken (token) {
+  return crypto.hash([NS_SESSION, token])
+}
+
+function deriveRequestId (sessionToken) {
+  return crypto.hash([NS_REQUEST_ID, sessionToken])
+}
+
+function createInvite (key, opts = {}) {
+  const {
+    discoveryKey = crypto.discoveryKey(key),
+    expires = 0,
+    seed = crypto.randomBytes(32),
+    sensitive = false,
+    data,
+    testInvitation = false
+  } = opts
+
+  const keyPair = crypto.keyPair(seed)
+  const additional = data
+    ? {
+        data,
+        signature: crypto.sign(data, keyPair.secretKey)
+      }
+    : null
+
+  return {
+    id: deriveInviteId(keyPair.publicKey),
+    invite: c.encode(Invite, { seed, discoveryKey, expires, sensitive, testInvitation }),
+    seed,
+    publicKey: keyPair.publicKey,
+    additional,
+    discoveryKey,
+    expires,
+    sensitive,
+    testInvitation
+  }
+}
+
+function decodeInvite (invite) {
+  const data = c.decode(Invite, invite)
+  return {
+    id: deriveInviteId(crypto.keyPair(data.seed).publicKey),
+    ...data
+  }
+}
+
+function encrypt (data, nonce, secretKey) {
+  const output = b4a.allocUnsafe(data.byteLength + sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES)
+  sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(output, data, nonce, null, nonce, secretKey)
+  return output
+}
+
+function decrypt (data, nonce, secretKey) {
+  const output = b4a.allocUnsafe(data.byteLength - sodium.crypto_aead_xchacha20poly1305_ietf_ABYTES)
+  sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(output, null, data, nonce, nonce, secretKey)
+  return output
+}
+
+function createAuth (userData, invitationKeyPair, session) {
+  const secret = deriveKey(invitationKeyPair.publicKey)
+
+  const nonce = deriveNonce(invitationKeyPair.publicKey, session)
+  const signData = c.encode(AuthData, { userData, session })
+  const signature = createSignature(signData, invitationKeyPair.secretKey)
+
+  const inviteData = c.encode(InviteData, { userData, signature })
+  const data = encrypt(inviteData, nonce, secret)
+
+  return {
+    session,
+    data
+  }
+}
+
+function openAuth (payload, invitationKey) {
+  const secret = deriveKey(invitationKey)
+
+  const { session, data } = payload
+
+  const nonce = deriveNonce(invitationKey, session)
+
+  let plaintext
+  try {
+    plaintext = decrypt(data, nonce, secret)
+  } catch {
+    // todo stronger check
+    throw new Error('Decryption failed.')
+  }
+
+  const { userData, signature } = c.decode(InviteData, plaintext)
+  const receipt = { session, signature, userData }
+
+  if (!verifyReceipt(receipt, invitationKey)) {
+    throw new Error('Invalid reply')
+  }
+
+  return c.encode(InviteReceipt, { session, signature, userData })
+}
+
+function createReply (payload, sessionToken, invitationKey) {
+  const sessionKey = crypto.hash([NS_SESSION_KEY, invitationKey, sessionToken])
+  const secret = deriveKey(sessionKey)
+  const nonce = deriveNonce(sessionKey, sessionToken)
+
+  return encrypt(payload, nonce, secret)
+}
+
+function openReply (data, sessionToken, invitationKey) {
+  const sessionKey = crypto.hash([NS_SESSION_KEY, invitationKey, sessionToken])
+  const secret = deriveKey(sessionKey)
+  const nonce = deriveNonce(sessionKey, sessionToken)
+
+  return decrypt(data, nonce, secret)
+}
+
+function createSignature (data, secretKey) {
+  const signature = b4a.allocUnsafe(sodium.crypto_sign_BYTES)
+  const namespaced = b4a.allocUnsafe(32 + data.byteLength)
+
+  namespaced.set(NS_SIGNATURE, 0)
+  namespaced.set(data, 32)
+
+  sodium.crypto_sign_detached(signature, namespaced, secretKey)
+
+  return signature
+}
+
+function verifySignature (data, signature, publicKey) {
+  const namespaced = b4a.allocUnsafe(32 + data.byteLength)
+
+  namespaced.set(NS_SIGNATURE, 0)
+  namespaced.set(data, 32)
+
+  return sodium.crypto_sign_verify_detached(signature, namespaced, publicKey)
+}
+
+},{"./lib/errors":166,"./lib/messages":167,"b4a":111,"compact-encoding":217,"events":296,"hypercore-crypto":343,"sodium-universal":603}],166:[function(require,module,exports){
+module.exports = class PairingError extends Error {
+  constructor (msg, code, fn = PairingError) {
+    super(`${code}: ${msg}`)
+    this.code = code
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, fn)
+    }
+  }
+
+  get name () {
+    return 'PairingError'
+  }
+
+  static PAIRING_REJECTED (msg = 'Pairing was rejected') {
+    return new PairingError(msg, 'PAIRING_REJECTED', PairingError.PAIRING_REJECTED)
+  }
+
+  static INVITE_USED (msg = 'Invite has been used') {
+    return new PairingError(msg, 'INVITE_USED', PairingError.INVITE_USED)
+  }
+
+  static INVITE_EXPIRED (msg = 'Invite has expireds') {
+    return new PairingError(msg, 'INVITE_EXPIRED', PairingError.INVITE_EXPIRED)
+  }
+}
+
+},{}],167:[function(require,module,exports){
+const c = require('compact-encoding')
+
+const Invite = {
+  preencode (state, i) {
+    state.end++ // version
+    state.end++ // flags
+    c.fixed32.preencode(state, i.seed)
+    if (i.discoveryKey) c.fixed32.preencode(state, i.discoveryKey)
+    if (i.expires) c.uint32.preencode(state, Math.floor(i.expires / 1000)) // store as secs
+  },
+  encode (state, i) {
+    c.uint.encode(state, 1) // version
+    c.uint.encode(state, (i.discoveryKey ? 1 : 0) | (i.expires ? 2 : 0) | (i.sensitive ? 4 : 0) | (i.testInvitation ? 8 : 0))
+    c.fixed32.encode(state, i.seed)
+    if (i.discoveryKey) c.fixed32.encode(state, i.discoveryKey)
+    if (i.expires) c.uint32.encode(state, Math.floor(i.expires / 1000))
+  },
+  decode (state) {
+    const version = c.uint.decode(state)
+    if (version !== 1) {
+      throw new Error('Unknown invite version')
+    }
+
+    const flags = c.uint.decode(state)
+
+    return {
+      seed: c.fixed32.decode(state),
+      discoveryKey: (flags & 1) ? c.fixed32.decode(state) : null,
+      expires: (flags & 2) ? c.uint32.decode(state) * 1000 : 0,
+      sensitive: (flags & 4) !== 0,
+      testInvitation: (flags & 8) !== 0
+    }
+  }
+}
+
+const RequestPayload = {
+  preencode (state, p) {
+    c.buffer.preencode(state, p.session)
+    c.buffer.preencode(state, p.data)
+  },
+  encode (state, p) {
+    c.buffer.encode(state, p.session)
+    c.buffer.encode(state, p.data)
+  },
+  decode (state) {
+    return {
+      session: c.buffer.decode(state),
+      data: c.buffer.decode(state)
+    }
+  }
+}
+
+const ResponseStatus = c.uint
+
+const AdditionalData = {
+  preencode (state, m) {
+    c.buffer.preencode(state, m.data)
+    c.fixed64.preencode(state, m.signature)
+  },
+  encode (state, m) {
+    c.buffer.encode(state, m.data)
+    c.fixed64.encode(state, m.signature)
+  },
+  decode (state) {
+    return {
+      data: c.buffer.decode(state),
+      signature: c.fixed64.decode(state)
+    }
+  }
+}
+
+const ResponsePayload = {
+  preencode (state, p) {
+    ResponseStatus.preencode(state, p.status)
+    if (p.status !== 0) return
+
+    let flags = 0
+    if (p.encryptionKey) flags |= 1
+    if (p.additional) flags |= 2
+    c.uint.preencode(state, flags) // flags
+
+    c.fixed32.preencode(state, p.key)
+    if (p.encryptionKey) c.fixed32.preencode(state, p.encryptionKey)
+    if (p.additional) AdditionalData.preencode(state, p.additional)
+  },
+  encode (state, p) {
+    ResponseStatus.encode(state, p.status)
+    if (p.status !== 0) return
+
+    let flags = 0
+    if (p.encryptionKey) flags |= 1
+    if (p.additional) flags |= 2
+    c.uint.encode(state, flags)
+
+    c.fixed32.encode(state, p.key)
+    if (p.encryptionKey) c.fixed32.encode(state, p.encryptionKey)
+    if (p.additional) AdditionalData.encode(state, p.additional)
+  },
+  decode (state) {
+    const status = ResponseStatus.decode(state)
+
+    if (status !== 0) {
+      return {
+        status,
+        key: null,
+        encryptionKey: null,
+        additional: null
+      }
+    }
+
+    const flags = c.uint.decode(state)
+    const key = c.fixed32.decode(state)
+    const encryptionKey = (flags & 1) !== 0 ? c.fixed32.decode(state) : null
+    const additional = (flags & 2) !== 0 ? AdditionalData.decode(state) : null
+
+    return {
+      status: 0,
+      key,
+      encryptionKey,
+      additional
+    }
+  }
+}
+
+const InviteRequest = {
+  preencode (state, i) {
+    c.fixed32.preencode(state, i.inviteId)
+    RequestPayload.preencode(state, i.payload)
+  },
+  encode (state, i) {
+    c.fixed32.encode(state, i.inviteId)
+    RequestPayload.encode(state, i.payload)
+  },
+  decode (state) {
+    return {
+      inviteId: c.fixed32.decode(state),
+      payload: RequestPayload.decode(state)
+    }
+  }
+}
+
+const InviteResponse = {
+  preencode (state, i) {
+    c.fixed32.preencode(state, i.id)
+    c.buffer.preencode(state, i.payload)
+  },
+  encode (state, i) {
+    c.fixed32.encode(state, i.id)
+    c.buffer.encode(state, i.payload)
+  },
+  decode (state) {
+    return {
+      id: c.fixed32.decode(state),
+      payload: c.buffer.decode(state)
+    }
+  }
+}
+
+const InviteData = {
+  preencode (state, i) {
+    c.fixed64.preencode(state, i.signature)
+    c.buffer.preencode(state, i.userData)
+  },
+  encode (state, i) {
+    c.fixed64.encode(state, i.signature)
+    c.buffer.encode(state, i.userData)
+  },
+  decode (state) {
+    return {
+      signature: c.fixed64.decode(state),
+      userData: c.buffer.decode(state)
+    }
+  }
+}
+
+const InviteReceipt = {
+  preencode (state, i) {
+    c.fixed32.preencode(state, i.session)
+    c.fixed64.preencode(state, i.signature)
+    c.buffer.preencode(state, i.userData)
+  },
+  encode (state, i) {
+    c.fixed32.encode(state, i.session)
+    c.fixed64.encode(state, i.signature)
+    c.buffer.encode(state, i.userData)
+  },
+  decode (state) {
+    return {
+      session: c.fixed32.decode(state),
+      signature: c.fixed64.decode(state),
+      userData: c.buffer.decode(state)
+    }
+  }
+}
+
+const AuthData = {
+  preencode (state, i) {
+    c.buffer.preencode(state, i.session)
+    c.buffer.preencode(state, i.userData)
+  },
+  encode (state, i) {
+    c.buffer.encode(state, i.session)
+    c.buffer.encode(state, i.userData)
+  },
+  decode (state) {
+    return {
+      session: c.buffer.decode(state),
+      userData: c.buffer.decode(state)
+    }
+  }
+}
+
+module.exports = {
+  Invite,
+  ResponsePayload,
+  InviteRequest,
+  InviteResponse,
+  InviteData,
+  InviteReceipt,
+  AuthData
+}
+
+},{"compact-encoding":217}],168:[function(require,module,exports){
+const crypto = require('hypercore-crypto')
+const b4a = require('b4a')
+const safetyCatch = require('safety-catch')
+const ReadyResource = require('ready-resource')
+const Xache = require('xache')
+const { MemberRequest, CandidateRequest, createInvite, decodeInvite, verifyReceipt, Invite } = require('blind-pairing-core')
+const Protomux = require('protomux')
+const c = require('compact-encoding')
+const debounce = require('debounceify')
+const isOptions = require('is-options')
+
+const [NS_EPHEMERAL, NS_REPLY, NS_DISCOVERY] = crypto.namespace('blind-pairing/dht', 3)
+
+const DEFAULT_POLL = 7 * 60 * 1000
+const PEER_INTERVAL = 1000
+
+class TimeoutPromise {
+  constructor (ms) {
+    this.ms = ms
+    this.resolve = null
+    this.timeout = null
+    this.destroyed = false
+    this.suspended = false
+
+    this._resolveBound = this._resolve.bind(this)
+    this._ontimerBound = this._ontimer.bind(this)
+  }
+
+  wait () {
+    if (this.destroyed) return Promise.resolve()
+    if (this.resolve) this._resolve()
+    return new Promise(this._ontimerBound)
+  }
+
+  suspend () {
+    this.suspended = true
+    if (this.timeout !== null) clearTimeout(this.timeout)
+    this.timeout = null
+  }
+
+  resume () {
+    this.suspended = false
+    if (this.resolve) this._resolve()
+  }
+
+  destroy () {
+    this.destroyed = true
+    if (this.resolve) this._resolve()
+  }
+
+  _ontimer (resolve) {
+    this.resolve = resolve
+    if (!this.suspended) this.timeout = setTimeout(this._resolveBound, this.ms)
+  }
+
+  _resolve () {
+    if (this.timeout !== null) clearTimeout(this.timeout)
+
+    const resolve = this.resolve
+    this.timeout = null
+    this.resolve = null
+
+    resolve()
+  }
+}
+
+class BlindPairing extends ReadyResource {
+  constructor (swarm, { poll = DEFAULT_POLL, onincoming = noop } = {}) {
+    super()
+
+    this.swarm = swarm
+    this.poll = poll
+    this.active = new Map()
+    this.suspended = false
+
+    this._onincoming = onincoming
+    this._onconnectionBound = this._onconnection.bind(this)
+    this._refreshBound = this.refresh.bind(this)
+    this._refreshing = null
+
+    this.swarm.on('connection', this._onconnectionBound)
+    this.swarm.dht.on('network-change', this._refreshBound)
+  }
+
+  static Invite = Invite
+
+  static createInvite (key, opts) {
+    return createInvite(key, opts)
+  }
+
+  static decodeInvite (invite) {
+    return decodeInvite(invite)
+  }
+
+  static verifyReceipt (receipt, publicKey) {
+    return verifyReceipt(receipt, publicKey)
+  }
+
+  static createRequest (invite, userData) {
+    return new CandidateRequest(invite, userData)
+  }
+
+  async suspend () {
+    if (this.suspended) return
+    this.suspended = true
+
+    const all = []
+
+    for (const ref of this.active.values()) {
+      if (ref.candidate) all.push(ref.candidate._suspend())
+      if (ref.member) all.push(ref.member._suspend())
+    }
+
+    await Promise.allSettled(all)
+  }
+
+  resume () {
+    if (!this.suspended) return
+    this.suspended = false
+    this.refresh().catch(safetyCatch) // no need to wait for the refreshes
+  }
+
+  async refresh () {
+    if (this._refreshing) {
+      await this._refreshing
+      return
+    }
+
+    if (this.closing || this.suspended) return
+
+    const r = this._refreshing = this._refresh()
+
+    try {
+      await r
+    } finally {
+      if (r === this._refreshing) this._refreshing = null
+    }
+  }
+
+  async _refresh () {
+    if (this.closing || this.suspended) return
+
+    const all = []
+
+    for (const ref of this.active.values()) {
+      if (ref.candidate) all.push(ref.candidate.refresh())
+      if (ref.member) all.push(ref.member.refresh())
+    }
+
+    await Promise.allSettled(all)
+  }
+
+  addMember (opts) {
+    return new Member(this, opts)
+  }
+
+  addCandidate (request, opts) {
+    if (isOptions(request)) return this.addCandidate(null, request)
+    if (!request) request = new CandidateRequest(opts.invite, opts.userData)
+    return new Candidate(this, request, opts)
+  }
+
+  async _close () {
+    this.swarm.removeListener('connection', this._onconnectionBound)
+    this.swarm.dht.removeListener('network-change', this._refreshBound)
+
+    const all = []
+
+    for (const conn of this.swarm.connections) {
+      const mux = getMuxer(conn)
+      mux.unpair({ protocol: 'blind-pairing' })
+      for (const ref of this.active.values()) mux.unpair({ protocol: 'blind-pairing', id: ref.discoveryKey })
+    }
+
+    for (const ref of this.active.values()) {
+      if (ref.member) all.push(ref.member.close())
+      if (ref.candidate) all.push(ref.candidate.close())
+      if (ref.discovery) all.push(ref.discovery.destroy())
+    }
+
+    await Promise.allSettled(all)
+  }
+
+  _randomPoll () {
+    return randomInterval(this.poll)
+  }
+
+  _add (discoveryKey) {
+    const id = b4a.toString(discoveryKey, 'hex')
+    const t = this.active.get(id)
+    if (t) return t
+
+    const fresh = {
+      id,
+      discoveryKey,
+      member: null,
+      candidate: null,
+      channels: new Set(),
+      alwaysServer: false,
+      alwaysClient: false,
+      discovery: null
+    }
+
+    this.active.set(id, fresh)
+    return fresh
+  }
+
+  _swarm (ref) {
+    const server = ref.alwaysServer || !!ref.member
+    const client = ref.alwaysClient || !!ref.candidate
+
+    if (ref.discovery && ref.discovery.isServer === server && ref.discovery.isClient === client) {
+      return
+    }
+
+    if (ref.discovery) ref.discovery.destroy().catch(safetyCatch)
+
+    // just a sanity check, not needed but doesnt hurt
+    if (!server && !client) return
+
+    ref.discovery = this.swarm.join(ref.discoveryKey, { server, client })
+    this._attachToSwarm(ref)
+  }
+
+  _attachToSwarm (ref) {
+    for (const conn of this.swarm.connections) {
+      const mux = getMuxer(conn)
+      this._attachToMuxer(mux, ref.discoveryKey, ref)
+    }
+  }
+
+  _gc (ref) {
+    if (ref.member || ref.candidate) {
+      if (ref.discovery) this._swarm(ref) // in case it needs updating...
+      return false
+    }
+    this.active.delete(ref.id)
+    for (const ch of ref.channels) ch.close()
+    for (const conn of this.swarm.connections) {
+      const mux = getMuxer(conn)
+      mux.unpair({ protocol: 'blind-pairing', id: ref.discoveryKey })
+    }
+    if (ref.discovery) ref.discovery.destroy().catch(safetyCatch)
+    return true
+  }
+
+  _onconnection (conn) {
+    const mux = getMuxer(conn)
+
+    mux.pair({ protocol: 'blind-pairing' }, this._onincoming)
+
+    for (const ref of this.active.values()) {
+      this._attachToMuxer(mux, ref.discoveryKey, ref)
+    }
+  }
+
+  _attachToMuxer (mux, discoveryKey, ref) {
+    if (!ref) ref = this._add(discoveryKey)
+
+    const ch = mux.createChannel({
+      protocol: 'blind-pairing',
+      id: discoveryKey,
+      messages: [
+        { encoding: c.buffer, onmessage: (req) => this._onpairingrequest(ch, ref, req) },
+        { encoding: c.buffer, onmessage: (res) => this._onpairingresponse(ch, ref, res) }
+      ],
+      onclose: () => {
+        ref.channels.delete(ch)
+        if (ref.candidate) ref.candidate.visited.delete(ch)
+      }
+    })
+
+    if (ch === null) return
+
+    ch.open()
+    mux.pair({ protocol: 'blind-pairing', id: discoveryKey }, () => this._attachToMuxer(mux, discoveryKey, null))
+    ref.channels.add(ch)
+
+    if (ref.candidate) ref.candidate.broadcast()
+  }
+
+  async _onpairingrequest (ch, ref, req) {
+    if (!ref.member) return
+
+    const request = await ref.member._addRequest(req)
+    if (!request) return
+
+    ch.messages[1].send(request.response)
+  }
+
+  async _onpairingresponse (ch, ref, res) {
+    if (!ref.candidate) return
+
+    await ref.candidate._addResponse(res, false)
+  }
+}
+
+class Member extends ReadyResource {
+  constructor (blind, { announce = true, discoveryKey, onadd = noop } = {}) {
+    super()
+
+    if (!discoveryKey) {
+      throw new Error('Must provide discoveryKey')
+    }
+
+    const ref = blind._add(discoveryKey)
+
+    if (ref.member) {
+      throw new Error('Active member already exist')
+    }
+
+    ref.member = this
+
+    this._pendingRequests = new Map()
+
+    this.blind = blind
+    this.dht = blind.swarm.dht
+    this.discoveryKey = discoveryKey
+    this.pairingDiscoveryKey = deriveDiscoveryKey(discoveryKey)
+    this.timeout = new TimeoutPromise(blind._randomPoll())
+    this.pairing = null
+    this.skip = new Xache({ maxSize: 512 })
+    this.ref = ref
+    this.onadd = onadd
+
+    this._activeQuery = null
+    this._activePoll = null
+    this._closestNodes = null
+    this._autoAnnounce = announce
+
+    this.ready()
+  }
+
+  announce () {
+    if (this.pairing) return this.pairing
+
+    this.blind._swarm(this.ref)
+    this.pairing = this._run()
+    this.pairing.catch(safetyCatch)
+
+    return this.pairing
+  }
+
+  async flushed () {
+    if (!this.ref.discovery) return
+    return this.ref.discovery.flushed()
+  }
+
+  _open () {
+    if (this._autoAnnounce) this.announce()
+    else this.blind._attachToSwarm(this.ref)
+  }
+
+  _suspend () {
+    this.timeout.suspend()
+    return this._abort()
+  }
+
+  async _abort () {
+    if (this._activeQuery) this._activeQuery.destroy()
+    while (this._activePoll !== null) await this._activePoll
+  }
+
+  async refresh () {
+    await this._abort()
+    this.timeout.resume()
+  }
+
+  async _close () {
+    this.ref.member = null
+    this.blind._gc(this.ref)
+    this.timeout.destroy()
+    await this._abort()
+
+    try {
+      await this.pairing
+    } catch {
+      // ignore errors since we teardown
+    }
+  }
+
+  async _run () {
+    while (!this.closing) {
+      this._activePoll = this._poll()
+      await this._activePoll
+      this._activePoll = null
+      await this.timeout.wait()
+    }
+  }
+
+  async _poll () {
+    const visited = new Set()
+    let alwaysClient = false
+
+    if (this._activeQuery) this._activeQuery.destroy()
+
+    const query = this._activeQuery = this.dht.lookup(this.pairingDiscoveryKey, { closestNodes: this._closestNodes })
+
+    try {
+      for await (const data of this._activeQuery) {
+        if (this.closing || this.blind.suspended) return
+
+        for (const peer of data.peers) {
+          const id = b4a.toString(peer.publicKey, 'hex')
+
+          if (visited.has(id) || this.skip.get(id)) continue
+          visited.add(id)
+
+          try {
+            if (await this._add(peer.publicKey, id)) alwaysClient = true
+          } catch (err) {
+            safetyCatch(err)
+          }
+
+          if (this.closing || this.blind.suspended) return
+
+          if (alwaysClient && !this.ref.alwaysClient) {
+            this.ref.alwaysClient = true
+            this.blind._swarm(this.ref)
+          }
+        }
+      }
+    } catch {
+      // do nothing
+    } finally {
+      const nodes = this._activeQuery.closestNodes
+      if (this._activeQuery === query) this._activeQuery = null
+      if (nodes && nodes.length > 0) this._closestNodes = nodes
+    }
+
+    if (alwaysClient) this._revertClientAfterFlush() // safe to do in bg
+  }
+
+  async _revertClientAfterFlush () {
+    try {
+      await this.blind.swarm.flush()
+    } catch {
+      return
+    }
+    if (this.closing || this.blind.suspended) return
+
+    this.ref.alwaysClient = false
+    this.blind._swarm(this.ref)
+  }
+
+  async _addRequest (value) {
+    let request = null
+    try {
+      request = MemberRequest.from(value)
+    } catch {
+      return null
+    }
+
+    request.discoveryKey = this.discoveryKey
+
+    const session = b4a.toString(request.requestData.session, 'hex')
+
+    if (!this._pendingRequests.has(session)) {
+      this._pendingRequests.set(session, {
+        request,
+        promise: this.onadd(request)
+      })
+    }
+
+    // load existing request if it exists
+    const pending = this._pendingRequests.get(session)
+
+    try {
+      await pending.promise
+    } catch (e) {
+      safetyCatch(e)
+      return null
+    }
+
+    this._pendingRequests.delete(session)
+
+    if (!pending.request.response) return null
+
+    return pending.request
+  }
+
+  async _add (publicKey, id) {
+    const node = await this.dht.mutableGet(publicKey, { latest: false })
+    if (!node) return false
+
+    this.skip.set(id, true)
+
+    const request = await this._addRequest(node.value)
+    if (!request) return false
+
+    const replyKeyPair = deriveReplyKeyPair(request.token)
+    await this.dht.mutablePut(replyKeyPair, request.response)
+
+    return true
+  }
+}
+
+class Candidate extends ReadyResource {
+  constructor (blind, request, { discoveryKey = request.discoveryKey, onadd = noop } = {}) {
+    super()
+
+    const ref = blind._add(discoveryKey)
+    if (ref.candidate) {
+      throw new Error('Active candidate already exist')
+    }
+
+    ref.candidate = this
+
+    this.blind = blind
+    this.discoveryKey = discoveryKey
+    this.pairingDiscoveryKey = deriveDiscoveryKey(discoveryKey)
+    this.dht = blind.swarm.dht
+    this.request = request
+    this.token = request.token
+    this.timeout = new TimeoutPromise(blind._randomPoll())
+    this.announced = false
+    this.gcing = null
+    this.ref = ref
+    this.paired = null
+    this.pairing = null
+    this.onadd = onadd
+
+    this.signal = null
+    this.visited = new Set()
+    this.broadcast = debounce(this._broadcast.bind(this))
+
+    this._activePoll = null
+
+    this.ready()
+  }
+
+  _open () {
+    this.blind._swarm(this.ref)
+    this.pairing = this._run()
+    this.broadcast()
+  }
+
+  _suspend () {
+    this.timeout.suspend()
+    // no good way to suspend the mut gets atm unfortunately so we just rely on the polls timing out
+  }
+
+  async refresh () {
+    while (this._activePoll !== null) await this._activePoll
+    this.announced = false
+    this.timeout.resume()
+  }
+
+  async _close () {
+    this.ref.candidate = null
+    this.blind._gc(this.ref)
+    this.timeout.destroy()
+    this.visited.clear()
+    await this.pairing
+    // gc never throws
+    if (this.gcing) await this.gcing
+  }
+
+  async _addResponse (value, gc) {
+    if (this.paired) return
+
+    const paired = this.request.handleResponse(value)
+    if (!paired) return
+
+    this.paired = paired
+    if (this.signal) this.signal.destroy()
+
+    if ((gc || this.announced) && !this.gcing) this.gcing = this._gc() // gc in the background
+    await this.onadd(paired)
+    this.timeout.destroy()
+  }
+
+  async _run () {
+    while (!this._done()) {
+      this._activePoll = this._poll()
+      await this._activePoll
+      this._activePoll = null
+      if (this._done()) break
+      await this.timeout.wait()
+    }
+
+    this.close().catch(safetyCatch)
+    return this.paired
+  }
+
+  _done () {
+    return !!(this.closing || this.paired)
+  }
+
+  async _announce () {
+    const eph = deriveEphemeralKeyPair(this.token)
+
+    await this.dht.mutablePut(eph, this.request.encode())
+    if (this._done()) return
+
+    await this.dht.announce(this.pairingDiscoveryKey, eph).finished()
+    if (this._done()) return
+
+    if (!this.paired) {
+      this.ref.alwaysServer = true
+      this.blind._swarm(this.ref)
+    }
+
+    this.emit('announce')
+  }
+
+  async _gc () {
+    const eph = deriveEphemeralKeyPair(this.token)
+
+    try {
+      await this.dht.unannounce(this.pairingDiscoveryKey, eph)
+    } catch (err) {
+      safetyCatch(err) // just gc, whatevs
+    }
+  }
+
+  _sendRequest (ch) {
+    ch.messages[0].send(this.request.encode())
+    this.visited.add(ch)
+  }
+
+  async _broadcast () {
+    for (const channel of this.closestPeers()) {
+      this.signal = new TimeoutPromise(randomInterval(PEER_INTERVAL))
+      if (channel) this._sendRequest(channel)
+
+      await this.signal.wait() // resolves on destroy
+
+      if (this.paired || this.suspended) break
+    }
+  }
+
+  * closestPeers () {
+    while (!this.paired) {
+      let closest = Infinity
+      let channel = null
+
+      for (const ch of this.ref.channels) {
+        if (this.visited.has(ch)) continue
+
+        try {
+          const { rtt } = ch._mux.stream.rawStream
+
+          console.log({rtt})
+          
+          // Handle undefined RTT in browser environment - use 0 as fallback
+          const fixed_rtt = (rtt !== undefined && rtt !== null) ? rtt : 0
+          
+          if ( fixed_rtt < closest) {
+            closest = fixed_rtt
+            channel = ch
+          }
+        } catch (error) {
+          // If RTT access fails completely, (haven't but still) still use the channel with fallback RTT of 0
+          if (0 < closest) {
+            closest = 0
+            channel = ch
+          }
+        }
+      }
+
+      if (!channel) return
+
+      yield channel
+    }
+  }
+
+  async _poll () {
+    try {
+      const value = await this._getReply()
+      if (this._done() || this.blind.suspended) return
+
+      if (value) {
+        await this._addResponse(value, true)
+        if (this._done() || this.blind.suspended) return
+      }
+
+      if (!this.announced) {
+        this.announced = true
+        await this._announce()
+      }
+    } catch {
+      // can run in bg, should never crash it
+    }
+  }
+
+  async _getReply () {
+    const { publicKey } = deriveReplyKeyPair(this.token)
+    const node = await this.dht.mutableGet(publicKey, { latest: false })
+    if (!node) return null
+    return node.value
+  }
+}
+
+module.exports = BlindPairing
+
+function noop () {}
+
+function deriveReplyKeyPair (token) {
+  return crypto.keyPair(crypto.hash([NS_REPLY, token]))
+}
+
+function deriveEphemeralKeyPair (token) {
+  return crypto.keyPair(crypto.hash([NS_EPHEMERAL, token]))
+}
+
+function deriveDiscoveryKey (discoveryKey) {
+  return crypto.hash([NS_DISCOVERY, discoveryKey])
+}
+
+function getMuxer (stream) {
+  if (stream.userData) return stream.userData
+  const protocol = Protomux.from(stream)
+  stream.setKeepAlive(5000)
+  stream.userData = protocol
+  return protocol
+}
+
+function randomInterval (n) {
+  return n + (n * 0.5 * Math.random()) | 0
+}
+},{"b4a":111,"blind-pairing-core":165,"compact-encoding":217,"debounceify":256,"hypercore-crypto":343,"is-options":409,"protomux":485,"ready-resource":526,"safety-catch":530,"xache":646}],169:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -51418,7 +53363,7 @@ b2wasm.ready(function (err) {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{"buffer":153}],152:[function(require,module,exports){
+},{"buffer":171}],170:[function(require,module,exports){
 var r;
 
 module.exports = function rand(len) {
@@ -51485,9 +53430,9 @@ if (typeof self === 'object') {
   }
 }
 
-},{"crypto":153}],153:[function(require,module,exports){
+},{"crypto":171}],171:[function(require,module,exports){
 
-},{}],154:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 // based on the aes implimentation in triple sec
 // https://github.com/keybase/triplesec
 // which is in turn based on the one from crypto-js
@@ -51717,7 +53662,7 @@ AES.prototype.scrub = function () {
 
 module.exports.AES = AES
 
-},{"safe-buffer":511}],155:[function(require,module,exports){
+},{"safe-buffer":529}],173:[function(require,module,exports){
 var aes = require('./aes')
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('cipher-base')
@@ -51836,7 +53781,7 @@ StreamCipher.prototype.setAAD = function setAAD (buf) {
 
 module.exports = StreamCipher
 
-},{"./aes":154,"./ghash":159,"./incr32":160,"buffer-xor":184,"cipher-base":195,"inherits":389,"safe-buffer":511}],156:[function(require,module,exports){
+},{"./aes":172,"./ghash":177,"./incr32":178,"buffer-xor":202,"cipher-base":213,"inherits":407,"safe-buffer":529}],174:[function(require,module,exports){
 var ciphers = require('./encrypter')
 var deciphers = require('./decrypter')
 var modes = require('./modes/list.json')
@@ -51851,7 +53796,7 @@ exports.createDecipher = exports.Decipher = deciphers.createDecipher
 exports.createDecipheriv = exports.Decipheriv = deciphers.createDecipheriv
 exports.listCiphers = exports.getCiphers = getCiphers
 
-},{"./decrypter":157,"./encrypter":158,"./modes/list.json":168}],157:[function(require,module,exports){
+},{"./decrypter":175,"./encrypter":176,"./modes/list.json":186}],175:[function(require,module,exports){
 var AuthCipher = require('./authCipher')
 var Buffer = require('safe-buffer').Buffer
 var MODES = require('./modes')
@@ -51977,7 +53922,7 @@ function createDecipher (suite, password) {
 exports.createDecipher = createDecipher
 exports.createDecipheriv = createDecipheriv
 
-},{"./aes":154,"./authCipher":155,"./modes":167,"./streamCipher":170,"cipher-base":195,"evp_bytestokey":279,"inherits":389,"safe-buffer":511}],158:[function(require,module,exports){
+},{"./aes":172,"./authCipher":173,"./modes":185,"./streamCipher":188,"cipher-base":213,"evp_bytestokey":297,"inherits":407,"safe-buffer":529}],176:[function(require,module,exports){
 var MODES = require('./modes')
 var AuthCipher = require('./authCipher')
 var Buffer = require('safe-buffer').Buffer
@@ -52093,7 +54038,7 @@ function createCipher (suite, password) {
 exports.createCipheriv = createCipheriv
 exports.createCipher = createCipher
 
-},{"./aes":154,"./authCipher":155,"./modes":167,"./streamCipher":170,"cipher-base":195,"evp_bytestokey":279,"inherits":389,"safe-buffer":511}],159:[function(require,module,exports){
+},{"./aes":172,"./authCipher":173,"./modes":185,"./streamCipher":188,"cipher-base":213,"evp_bytestokey":297,"inherits":407,"safe-buffer":529}],177:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 var ZEROES = Buffer.alloc(16, 0)
 
@@ -52184,7 +54129,7 @@ GHASH.prototype.final = function (abl, bl) {
 
 module.exports = GHASH
 
-},{"safe-buffer":511}],160:[function(require,module,exports){
+},{"safe-buffer":529}],178:[function(require,module,exports){
 function incr32 (iv) {
   var len = iv.length
   var item
@@ -52201,7 +54146,7 @@ function incr32 (iv) {
 }
 module.exports = incr32
 
-},{}],161:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 var xor = require('buffer-xor')
 
 exports.encrypt = function (self, block) {
@@ -52220,7 +54165,7 @@ exports.decrypt = function (self, block) {
   return xor(out, pad)
 }
 
-},{"buffer-xor":184}],162:[function(require,module,exports){
+},{"buffer-xor":202}],180:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 var xor = require('buffer-xor')
 
@@ -52255,7 +54200,7 @@ exports.encrypt = function (self, data, decrypt) {
   return out
 }
 
-},{"buffer-xor":184,"safe-buffer":511}],163:[function(require,module,exports){
+},{"buffer-xor":202,"safe-buffer":529}],181:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 
 function encryptByte (self, byteParam, decrypt) {
@@ -52299,7 +54244,7 @@ exports.encrypt = function (self, chunk, decrypt) {
   return out
 }
 
-},{"safe-buffer":511}],164:[function(require,module,exports){
+},{"safe-buffer":529}],182:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 
 function encryptByte (self, byteParam, decrypt) {
@@ -52326,7 +54271,7 @@ exports.encrypt = function (self, chunk, decrypt) {
   return out
 }
 
-},{"safe-buffer":511}],165:[function(require,module,exports){
+},{"safe-buffer":529}],183:[function(require,module,exports){
 var xor = require('buffer-xor')
 var Buffer = require('safe-buffer').Buffer
 var incr32 = require('../incr32')
@@ -52358,7 +54303,7 @@ exports.encrypt = function (self, chunk) {
   return xor(chunk, pad)
 }
 
-},{"../incr32":160,"buffer-xor":184,"safe-buffer":511}],166:[function(require,module,exports){
+},{"../incr32":178,"buffer-xor":202,"safe-buffer":529}],184:[function(require,module,exports){
 exports.encrypt = function (self, block) {
   return self._cipher.encryptBlock(block)
 }
@@ -52367,7 +54312,7 @@ exports.decrypt = function (self, block) {
   return self._cipher.decryptBlock(block)
 }
 
-},{}],167:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 var modeModules = {
   ECB: require('./ecb'),
   CBC: require('./cbc'),
@@ -52387,7 +54332,7 @@ for (var key in modes) {
 
 module.exports = modes
 
-},{"./cbc":161,"./cfb":162,"./cfb1":163,"./cfb8":164,"./ctr":165,"./ecb":166,"./list.json":168,"./ofb":169}],168:[function(require,module,exports){
+},{"./cbc":179,"./cfb":180,"./cfb1":181,"./cfb8":182,"./ctr":183,"./ecb":184,"./list.json":186,"./ofb":187}],186:[function(require,module,exports){
 module.exports={
   "aes-128-ecb": {
     "cipher": "AES",
@@ -52580,7 +54525,7 @@ module.exports={
   }
 }
 
-},{}],169:[function(require,module,exports){
+},{}],187:[function(require,module,exports){
 (function (Buffer){(function (){
 var xor = require('buffer-xor')
 
@@ -52600,7 +54545,7 @@ exports.encrypt = function (self, chunk) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"buffer-xor":184}],170:[function(require,module,exports){
+},{"buffer":203,"buffer-xor":202}],188:[function(require,module,exports){
 var aes = require('./aes')
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('cipher-base')
@@ -52629,7 +54574,7 @@ StreamCipher.prototype._final = function () {
 
 module.exports = StreamCipher
 
-},{"./aes":154,"cipher-base":195,"inherits":389,"safe-buffer":511}],171:[function(require,module,exports){
+},{"./aes":172,"cipher-base":213,"inherits":407,"safe-buffer":529}],189:[function(require,module,exports){
 var DES = require('browserify-des')
 var aes = require('browserify-aes/browser')
 var aesModes = require('browserify-aes/modes')
@@ -52698,7 +54643,7 @@ exports.createDecipher = exports.Decipher = createDecipher
 exports.createDecipheriv = exports.Decipheriv = createDecipheriv
 exports.listCiphers = exports.getCiphers = getCiphers
 
-},{"browserify-aes/browser":156,"browserify-aes/modes":167,"browserify-des":172,"browserify-des/modes":173,"evp_bytestokey":279}],172:[function(require,module,exports){
+},{"browserify-aes/browser":174,"browserify-aes/modes":185,"browserify-des":190,"browserify-des/modes":191,"evp_bytestokey":297}],190:[function(require,module,exports){
 var CipherBase = require('cipher-base')
 var des = require('des.js')
 var inherits = require('inherits')
@@ -52750,7 +54695,7 @@ DES.prototype._final = function () {
   return Buffer.from(this._des.final())
 }
 
-},{"cipher-base":195,"des.js":240,"inherits":389,"safe-buffer":511}],173:[function(require,module,exports){
+},{"cipher-base":213,"des.js":258,"inherits":407,"safe-buffer":529}],191:[function(require,module,exports){
 exports['des-ecb'] = {
   key: 8,
   iv: 0
@@ -52776,7 +54721,7 @@ exports['des-ede'] = {
   iv: 0
 }
 
-},{}],174:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -52816,12 +54761,12 @@ crt.getr = getr;
 
 module.exports = crt;
 
-},{"bn.js":151,"randombytes":493,"safe-buffer":511}],175:[function(require,module,exports){
+},{"bn.js":169,"randombytes":511,"safe-buffer":529}],193:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./browser/algorithms.json');
 
-},{"./browser/algorithms.json":176}],176:[function(require,module,exports){
+},{"./browser/algorithms.json":194}],194:[function(require,module,exports){
 module.exports={
   "sha224WithRSAEncryption": {
     "sign": "rsa",
@@ -52975,7 +54920,7 @@ module.exports={
   }
 }
 
-},{}],177:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 module.exports={
   "1.3.132.0.10": "secp256k1",
   "1.3.132.0.33": "p224",
@@ -52985,7 +54930,7 @@ module.exports={
   "1.3.132.0.35": "p521"
 }
 
-},{}],178:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -53079,7 +55024,7 @@ module.exports = {
   createVerify: createVerify
 };
 
-},{"./algorithms.json":176,"./sign":179,"./verify":180,"create-hash":233,"inherits":389,"readable-stream":507,"safe-buffer":511}],179:[function(require,module,exports){
+},{"./algorithms.json":194,"./sign":197,"./verify":198,"create-hash":251,"inherits":407,"readable-stream":525,"safe-buffer":529}],197:[function(require,module,exports){
 'use strict';
 
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
@@ -53231,7 +55176,7 @@ module.exports = sign;
 module.exports.getKey = getKey;
 module.exports.makeKey = makeKey;
 
-},{"./curves.json":177,"bn.js":151,"browserify-rsa":174,"create-hmac":235,"elliptic":252,"parse-asn1":452,"safe-buffer":511}],180:[function(require,module,exports){
+},{"./curves.json":195,"bn.js":169,"browserify-rsa":192,"create-hmac":253,"elliptic":270,"parse-asn1":470,"safe-buffer":529}],198:[function(require,module,exports){
 'use strict';
 
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
@@ -53319,7 +55264,7 @@ function checkValue(b, q) {
 
 module.exports = verify;
 
-},{"./curves.json":177,"bn.js":151,"elliptic":252,"parse-asn1":452,"safe-buffer":511}],181:[function(require,module,exports){
+},{"./curves.json":195,"bn.js":169,"elliptic":270,"parse-asn1":470,"safe-buffer":529}],199:[function(require,module,exports){
 (function (Buffer){(function (){
 function allocUnsafe (size) {
   if (typeof size !== 'number') {
@@ -53340,7 +55285,7 @@ function allocUnsafe (size) {
 module.exports = allocUnsafe
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185}],182:[function(require,module,exports){
+},{"buffer":203}],200:[function(require,module,exports){
 (function (Buffer){(function (){
 var bufferFill = require('buffer-fill')
 var allocUnsafe = require('buffer-alloc-unsafe')
@@ -53376,7 +55321,7 @@ module.exports = function alloc (size, fill, encoding) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"buffer-alloc-unsafe":181,"buffer-fill":183}],183:[function(require,module,exports){
+},{"buffer":203,"buffer-alloc-unsafe":199,"buffer-fill":201}],201:[function(require,module,exports){
 (function (Buffer){(function (){
 /* Node.js 6.4.0 and up has full support */
 var hasFullSupport = (function () {
@@ -53493,7 +55438,7 @@ function fill (buffer, val, start, end, encoding) {
 module.exports = fill
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185}],184:[function(require,module,exports){
+},{"buffer":203}],202:[function(require,module,exports){
 (function (Buffer){(function (){
 module.exports = function xor (a, b) {
   var length = Math.min(a.length, b.length)
@@ -53507,7 +55452,7 @@ module.exports = function xor (a, b) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185}],185:[function(require,module,exports){
+},{"buffer":203}],203:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -55288,7 +57233,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":118,"buffer":185,"ieee754":388}],186:[function(require,module,exports){
+},{"base64-js":132,"buffer":203,"ieee754":406}],204:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -55300,7 +57245,7 @@ var $reflectApply = require('./reflectApply');
 /** @type {import('./actualApply')} */
 module.exports = $reflectApply || bind.call($call, $apply);
 
-},{"./functionApply":188,"./functionCall":189,"./reflectApply":191,"function-bind":285}],187:[function(require,module,exports){
+},{"./functionApply":206,"./functionCall":207,"./reflectApply":209,"function-bind":303}],205:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -55312,19 +57257,19 @@ module.exports = function applyBind() {
 	return actualApply(bind, $apply, arguments);
 };
 
-},{"./actualApply":186,"./functionApply":188,"function-bind":285}],188:[function(require,module,exports){
+},{"./actualApply":204,"./functionApply":206,"function-bind":303}],206:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./functionApply')} */
 module.exports = Function.prototype.apply;
 
-},{}],189:[function(require,module,exports){
+},{}],207:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./functionCall')} */
 module.exports = Function.prototype.call;
 
-},{}],190:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -55341,13 +57286,13 @@ module.exports = function callBindBasic(args) {
 	return $actualApply(bind, $call, args);
 };
 
-},{"./actualApply":186,"./functionCall":189,"es-errors/type":275,"function-bind":285}],191:[function(require,module,exports){
+},{"./actualApply":204,"./functionCall":207,"es-errors/type":293,"function-bind":303}],209:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./reflectApply')} */
 module.exports = typeof Reflect !== 'undefined' && Reflect && Reflect.apply;
 
-},{}],192:[function(require,module,exports){
+},{}],210:[function(require,module,exports){
 'use strict';
 
 var setFunctionLength = require('set-function-length');
@@ -55373,7 +57318,7 @@ if ($defineProperty) {
 	module.exports.apply = applyBind;
 }
 
-},{"call-bind-apply-helpers":190,"call-bind-apply-helpers/applyBind":187,"es-define-property":269,"set-function-length":514}],193:[function(require,module,exports){
+},{"call-bind-apply-helpers":208,"call-bind-apply-helpers/applyBind":205,"es-define-property":287,"set-function-length":532}],211:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -55394,7 +57339,7 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 	return intrinsic;
 };
 
-},{"call-bind-apply-helpers":190,"get-intrinsic":286}],194:[function(require,module,exports){
+},{"call-bind-apply-helpers":208,"get-intrinsic":304}],212:[function(require,module,exports){
 const assert = require('nanoassert')
 
 module.exports = Chacha20
@@ -55531,7 +57476,7 @@ function QR (obj, a, b, c, d) {
   obj[b] = rotl(obj[b], 7)
 }
 
-},{"nanoassert":414}],195:[function(require,module,exports){
+},{"nanoassert":432}],213:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -55700,7 +57645,7 @@ CipherBase.prototype._toString = function (value, enc, fin) {
 
 module.exports = CipherBase;
 
-},{"inherits":389,"safe-buffer":511,"stream":592,"string_decoder":608}],196:[function(require,module,exports){
+},{"inherits":407,"safe-buffer":529,"stream":610,"string_decoder":626}],214:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = codecs
@@ -55798,7 +57743,7 @@ function createString (type) {
   }
 }
 
-},{"b4a":97}],197:[function(require,module,exports){
+},{"b4a":111}],215:[function(require,module,exports){
 const c = require('compact-encoding')
 
 const port = c.uint16
@@ -55964,12 +57909,12 @@ module.exports = {
   ipAddress
 }
 
-},{"compact-encoding":199}],198:[function(require,module,exports){
+},{"compact-encoding":217}],216:[function(require,module,exports){
 const LE = exports.LE = (new Uint8Array(new Uint16Array([0xff]).buffer))[0] === 0xff
 
 exports.BE = !LE
 
-},{}],199:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 const b4a = require('b4a')
 
 const { BE } = require('./endian')
@@ -56737,7 +58682,7 @@ function validateUint (n) {
   if ((n >= 0) === false /* Handles NaN as well */) throw new Error('uint must be positive')
 }
 
-},{"./endian":198,"./lexint":200,"./raw":201,"b4a":97}],200:[function(require,module,exports){
+},{"./endian":216,"./lexint":218,"./raw":219,"b4a":111}],218:[function(require,module,exports){
 module.exports = {
   preencode,
   encode,
@@ -56853,7 +58798,7 @@ function decode (state) {
   return (rem * Math.pow(2, exp - 11)) + max
 }
 
-},{}],201:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 const b4a = require('b4a')
 
 const { BE } = require('./endian')
@@ -57028,7 +58973,7 @@ exports.ndjson = {
   }
 }
 
-},{"./endian":198,"b4a":97}],202:[function(require,module,exports){
+},{"./endian":216,"b4a":111}],220:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 
 module.exports = class CoreCoupler {
@@ -57098,7 +59043,7 @@ module.exports = class CoreCoupler {
   }
 }
 
-},{"safety-catch":512}],203:[function(require,module,exports){
+},{"safety-catch":530}],221:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -57207,7 +59152,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-},{"buffer":185}],204:[function(require,module,exports){
+},{"buffer":203}],222:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 const crypto = require('hypercore-crypto')
 const sodium = require('sodium-universal')
@@ -57800,55 +59745,55 @@ function getStorageRoot (id) {
   return CORES_DIR + '/' + id.slice(0, 2) + '/' + id.slice(2, 4) + '/' + id
 }
 
-},{"b4a":97,"hypercore":329,"hypercore-crypto":325,"hypercore-id-encoding":327,"read-write-mutexify":495,"ready-resource":508,"safety-catch":512,"sodium-universal":223,"xache":628}],205:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":220,"./crypto_verify":221,"./internal/poly1305":226,"dup":21,"nanoassert":414}],206:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"./crypto_verify":221,"dup":22,"nanoassert":414,"sha512-universal":527}],207:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"./crypto_generichash":208,"./crypto_hash":209,"./crypto_scalarmult":214,"./crypto_secretbox":215,"./crypto_stream":219,"./randombytes":228,"dup":23,"nanoassert":414,"xsalsa20":629}],208:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"blake2b":150,"dup":24}],209:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"nanoassert":414,"sha512-universal":527}],210:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26,"nanoassert":414,"sha256-universal":523}],211:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"./randombytes":228,"blake2b":150,"dup":27,"nanoassert":414}],212:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./crypto_generichash":208,"./crypto_scalarmult":214,"./randombytes":228,"dup":28,"nanoassert":414}],213:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./crypto_verify":221,"./internal/poly1305":226,"dup":29,"nanoassert":414}],214:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"./internal/ed25519":224,"dup":30}],215:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"./crypto_onetimeauth":213,"./crypto_stream":219,"dup":31,"nanoassert":414}],216:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":220,"./helpers":222,"./internal/hchacha20":225,"./internal/poly1305":226,"./randombytes":228,"dup":32,"nanoassert":414}],217:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"siphash24":537}],218:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./crypto_hash":209,"./crypto_hash.js":209,"./crypto_scalarmult.js":214,"./crypto_verify":221,"./internal/ed25519":224,"./randombytes":228,"dup":34,"nanoassert":414}],219:[function(require,module,exports){
+},{"b4a":111,"hypercore":347,"hypercore-crypto":343,"hypercore-id-encoding":345,"read-write-mutexify":513,"ready-resource":526,"safety-catch":530,"sodium-universal":241,"xache":646}],223:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"xsalsa20":629}],220:[function(require,module,exports){
+},{"./crypto_stream_chacha20":238,"./crypto_verify":239,"./internal/poly1305":244,"dup":35,"nanoassert":432}],224:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"chacha20-universal":194,"dup":36,"nanoassert":414}],221:[function(require,module,exports){
+},{"./crypto_verify":239,"dup":36,"nanoassert":432,"sha512-universal":545}],225:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"dup":37}],222:[function(require,module,exports){
+},{"./crypto_generichash":226,"./crypto_hash":227,"./crypto_scalarmult":232,"./crypto_secretbox":233,"./crypto_stream":237,"./randombytes":246,"dup":37,"nanoassert":432,"xsalsa20":647}],226:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"./crypto_verify":221,"dup":38,"nanoassert":414}],223:[function(require,module,exports){
+},{"blake2b":164,"dup":38}],227:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"./crypto_aead":205,"./crypto_auth":206,"./crypto_box":207,"./crypto_generichash":208,"./crypto_hash":209,"./crypto_hash_sha256":210,"./crypto_kdf":211,"./crypto_kx":212,"./crypto_onetimeauth":213,"./crypto_scalarmult":214,"./crypto_secretbox":215,"./crypto_secretstream":216,"./crypto_shorthash":217,"./crypto_sign":218,"./crypto_stream":219,"./crypto_stream_chacha20":220,"./crypto_verify":221,"./helpers":222,"./memory":227,"./randombytes":228,"dup":39}],224:[function(require,module,exports){
+},{"dup":39,"nanoassert":432,"sha512-universal":545}],228:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],225:[function(require,module,exports){
+},{"dup":40,"nanoassert":432,"sha256-universal":541}],229:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"../memory":227,"dup":41,"nanoassert":414}],226:[function(require,module,exports){
+},{"./randombytes":246,"blake2b":164,"dup":41,"nanoassert":432}],230:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"dup":42}],227:[function(require,module,exports){
+},{"./crypto_generichash":226,"./crypto_scalarmult":232,"./randombytes":246,"dup":42,"nanoassert":432}],231:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],228:[function(require,module,exports){
+},{"./crypto_verify":239,"./internal/poly1305":244,"dup":43,"nanoassert":432}],232:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"dup":44,"nanoassert":414}],229:[function(require,module,exports){
+},{"./internal/ed25519":242,"dup":44}],233:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./crypto_onetimeauth":231,"./crypto_stream":237,"dup":45,"nanoassert":432}],234:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./crypto_stream_chacha20":238,"./helpers":240,"./internal/hchacha20":243,"./internal/poly1305":244,"./randombytes":246,"dup":46,"nanoassert":432}],235:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47,"siphash24":555}],236:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"./crypto_hash":227,"./crypto_hash.js":227,"./crypto_scalarmult.js":232,"./crypto_verify":239,"./internal/ed25519":242,"./randombytes":246,"dup":48,"nanoassert":432}],237:[function(require,module,exports){
+arguments[4][49][0].apply(exports,arguments)
+},{"dup":49,"xsalsa20":647}],238:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"chacha20-universal":212,"dup":50,"nanoassert":432}],239:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],240:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./crypto_verify":239,"dup":52,"nanoassert":432}],241:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"./crypto_aead":223,"./crypto_auth":224,"./crypto_box":225,"./crypto_generichash":226,"./crypto_hash":227,"./crypto_hash_sha256":228,"./crypto_kdf":229,"./crypto_kx":230,"./crypto_onetimeauth":231,"./crypto_scalarmult":232,"./crypto_secretbox":233,"./crypto_secretstream":234,"./crypto_shorthash":235,"./crypto_sign":236,"./crypto_stream":237,"./crypto_stream_chacha20":238,"./crypto_verify":239,"./helpers":240,"./memory":245,"./randombytes":246,"dup":53}],242:[function(require,module,exports){
+arguments[4][54][0].apply(exports,arguments)
+},{"dup":54}],243:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../memory":245,"dup":55,"nanoassert":432}],244:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"dup":56}],245:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],246:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58,"nanoassert":432}],247:[function(require,module,exports){
 /**
  * The JavaScript implementation of CRC32 is a version of the slice-by-16 algorithm
  * as implemented by Stephan Brumme, see https://github.com/stbrumme/crc32.
@@ -57907,7 +59852,7 @@ exports.crc32 = function crc32 (buffer) {
   return ~crc >>> 0
 }
 
-},{"./lookup":230}],230:[function(require,module,exports){
+},{"./lookup":248}],248:[function(require,module,exports){
 const lookup = new Array(16)
 
 for (let i = 0; i < 16; i++) {
@@ -57932,7 +59877,7 @@ for (let i = 0; i <= 0xff; i++) {
 
 module.exports = lookup
 
-},{}],231:[function(require,module,exports){
+},{}],249:[function(require,module,exports){
 (function (Buffer){(function (){
 var elliptic = require('elliptic')
 var BN = require('bn.js')
@@ -58060,9 +60005,9 @@ function formatReturnValue (bn, enc, len) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"bn.js":232,"buffer":185,"elliptic":252}],232:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"buffer":153,"dup":78}],233:[function(require,module,exports){
+},{"bn.js":250,"buffer":203,"elliptic":270}],250:[function(require,module,exports){
+arguments[4][92][0].apply(exports,arguments)
+},{"buffer":171,"dup":92}],251:[function(require,module,exports){
 'use strict'
 var inherits = require('inherits')
 var MD5 = require('md5.js')
@@ -58094,14 +60039,14 @@ module.exports = function createHash (alg) {
   return new Hash(sha(alg))
 }
 
-},{"cipher-base":195,"inherits":389,"md5.js":406,"ripemd160":510,"sha.js":516}],234:[function(require,module,exports){
+},{"cipher-base":213,"inherits":407,"md5.js":424,"ripemd160":528,"sha.js":534}],252:[function(require,module,exports){
 var MD5 = require('md5.js')
 
 module.exports = function (buffer) {
   return new MD5().update(buffer).digest()
 }
 
-},{"md5.js":406}],235:[function(require,module,exports){
+},{"md5.js":424}],253:[function(require,module,exports){
 'use strict'
 var inherits = require('inherits')
 var Legacy = require('./legacy')
@@ -58165,7 +60110,7 @@ module.exports = function createHmac (alg, key) {
   return new Hmac(alg, key)
 }
 
-},{"./legacy":236,"cipher-base":195,"create-hash/md5":234,"inherits":389,"ripemd160":510,"safe-buffer":511,"sha.js":516}],236:[function(require,module,exports){
+},{"./legacy":254,"cipher-base":213,"create-hash/md5":252,"inherits":407,"ripemd160":528,"safe-buffer":529,"sha.js":534}],254:[function(require,module,exports){
 'use strict'
 var inherits = require('inherits')
 var Buffer = require('safe-buffer').Buffer
@@ -58213,7 +60158,7 @@ Hmac.prototype._final = function () {
 }
 module.exports = Hmac
 
-},{"cipher-base":195,"inherits":389,"safe-buffer":511}],237:[function(require,module,exports){
+},{"cipher-base":213,"inherits":407,"safe-buffer":529}],255:[function(require,module,exports){
 'use strict';
 
 // eslint-disable-next-line no-multi-assign
@@ -58318,7 +60263,7 @@ exports.constants = {
 	POINT_CONVERSION_HYBRID: 6
 };
 
-},{"browserify-cipher":171,"browserify-sign":178,"browserify-sign/algos":175,"create-ecdh":231,"create-hash":233,"create-hmac":235,"diffie-hellman":246,"pbkdf2":453,"public-encrypt":468,"randombytes":493,"randomfill":494}],238:[function(require,module,exports){
+},{"browserify-cipher":189,"browserify-sign":196,"browserify-sign/algos":193,"create-ecdh":249,"create-hash":251,"create-hmac":253,"diffie-hellman":264,"pbkdf2":471,"public-encrypt":486,"randombytes":511,"randomfill":512}],256:[function(require,module,exports){
 module.exports = function debounce (worker, context = null) {
   debounced.running = null
   return debounced
@@ -58345,7 +60290,7 @@ module.exports = function debounce (worker, context = null) {
   }
 }
 
-},{}],239:[function(require,module,exports){
+},{}],257:[function(require,module,exports){
 'use strict';
 
 var $defineProperty = require('es-define-property');
@@ -58403,7 +60348,7 @@ module.exports = function defineDataProperty(
 	}
 };
 
-},{"es-define-property":269,"es-errors/syntax":274,"es-errors/type":275,"gopd":292}],240:[function(require,module,exports){
+},{"es-define-property":287,"es-errors/syntax":292,"es-errors/type":293,"gopd":310}],258:[function(require,module,exports){
 'use strict';
 
 exports.utils = require('./des/utils');
@@ -58412,7 +60357,7 @@ exports.DES = require('./des/des');
 exports.CBC = require('./des/cbc');
 exports.EDE = require('./des/ede');
 
-},{"./des/cbc":241,"./des/cipher":242,"./des/des":243,"./des/ede":244,"./des/utils":245}],241:[function(require,module,exports){
+},{"./des/cbc":259,"./des/cipher":260,"./des/des":261,"./des/ede":262,"./des/utils":263}],259:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -58479,7 +60424,7 @@ proto._update = function _update(inp, inOff, out, outOff) {
   }
 };
 
-},{"inherits":389,"minimalistic-assert":409}],242:[function(require,module,exports){
+},{"inherits":407,"minimalistic-assert":427}],260:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -58623,7 +60568,7 @@ Cipher.prototype._finalDecrypt = function _finalDecrypt() {
   return this._unpad(out);
 };
 
-},{"minimalistic-assert":409}],243:[function(require,module,exports){
+},{"minimalistic-assert":427}],261:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -58775,7 +60720,7 @@ DES.prototype._decrypt = function _decrypt(state, lStart, rStart, out, off) {
   utils.rip(l, r, out, off);
 };
 
-},{"./cipher":242,"./utils":245,"inherits":389,"minimalistic-assert":409}],244:[function(require,module,exports){
+},{"./cipher":260,"./utils":263,"inherits":407,"minimalistic-assert":427}],262:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -58831,7 +60776,7 @@ EDE.prototype._update = function _update(inp, inOff, out, outOff) {
 EDE.prototype._pad = DES.prototype._pad;
 EDE.prototype._unpad = DES.prototype._unpad;
 
-},{"./cipher":242,"./des":243,"inherits":389,"minimalistic-assert":409}],245:[function(require,module,exports){
+},{"./cipher":260,"./des":261,"inherits":407,"minimalistic-assert":427}],263:[function(require,module,exports){
 'use strict';
 
 exports.readUInt32BE = function readUInt32BE(bytes, off) {
@@ -59089,7 +61034,7 @@ exports.padSplit = function padSplit(num, size, group) {
   return out.join(' ');
 };
 
-},{}],246:[function(require,module,exports){
+},{}],264:[function(require,module,exports){
 (function (Buffer){(function (){
 var generatePrime = require('./lib/generatePrime')
 var primes = require('./lib/primes.json')
@@ -59135,7 +61080,7 @@ exports.DiffieHellmanGroup = exports.createDiffieHellmanGroup = exports.getDiffi
 exports.createDiffieHellman = exports.DiffieHellman = createDiffieHellman
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./lib/dh":247,"./lib/generatePrime":248,"./lib/primes.json":249,"buffer":185}],247:[function(require,module,exports){
+},{"./lib/dh":265,"./lib/generatePrime":266,"./lib/primes.json":267,"buffer":203}],265:[function(require,module,exports){
 (function (Buffer){(function (){
 var BN = require('bn.js');
 var MillerRabin = require('miller-rabin');
@@ -59303,7 +61248,7 @@ function formatReturnValue(bn, enc) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./generatePrime":248,"bn.js":250,"buffer":185,"miller-rabin":407,"randombytes":493}],248:[function(require,module,exports){
+},{"./generatePrime":266,"bn.js":268,"buffer":203,"miller-rabin":425,"randombytes":511}],266:[function(require,module,exports){
 var randomBytes = require('randombytes');
 module.exports = findPrime;
 findPrime.simpleSieve = simpleSieve;
@@ -59410,7 +61355,7 @@ function findPrime(bits, gen) {
 
 }
 
-},{"bn.js":250,"miller-rabin":407,"randombytes":493}],249:[function(require,module,exports){
+},{"bn.js":268,"miller-rabin":425,"randombytes":511}],267:[function(require,module,exports){
 module.exports={
     "modp1": {
         "gen": "02",
@@ -59445,9 +61390,9 @@ module.exports={
         "prime": "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"
     }
 }
-},{}],250:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"buffer":153,"dup":78}],251:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
+arguments[4][92][0].apply(exports,arguments)
+},{"buffer":171,"dup":92}],269:[function(require,module,exports){
 'use strict';
 
 var callBind = require('call-bind-apply-helpers');
@@ -59479,7 +61424,7 @@ module.exports = desc && typeof desc.get === 'function'
 		}
 		: false;
 
-},{"call-bind-apply-helpers":190,"gopd":292}],252:[function(require,module,exports){
+},{"call-bind-apply-helpers":208,"gopd":310}],270:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -59494,7 +61439,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":268,"./elliptic/curve":255,"./elliptic/curves":258,"./elliptic/ec":259,"./elliptic/eddsa":262,"./elliptic/utils":266,"brorand":152}],253:[function(require,module,exports){
+},{"../package.json":286,"./elliptic/curve":273,"./elliptic/curves":276,"./elliptic/ec":277,"./elliptic/eddsa":280,"./elliptic/utils":284,"brorand":170}],271:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -59877,7 +61822,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../utils":266,"bn.js":267}],254:[function(require,module,exports){
+},{"../utils":284,"bn.js":285}],272:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -60314,7 +62259,7 @@ Point.prototype.eqXToP = function eqXToP(x) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../utils":266,"./base":253,"bn.js":267,"inherits":389}],255:[function(require,module,exports){
+},{"../utils":284,"./base":271,"bn.js":285,"inherits":407}],273:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -60324,7 +62269,7 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":253,"./edwards":254,"./mont":256,"./short":257}],256:[function(require,module,exports){
+},{"./base":271,"./edwards":272,"./mont":274,"./short":275}],274:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -60504,7 +62449,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../utils":266,"./base":253,"bn.js":267,"inherits":389}],257:[function(require,module,exports){
+},{"../utils":284,"./base":271,"bn.js":285,"inherits":407}],275:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -61444,7 +63389,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../utils":266,"./base":253,"bn.js":267,"inherits":389}],258:[function(require,module,exports){
+},{"../utils":284,"./base":271,"bn.js":285,"inherits":407}],276:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -61652,7 +63597,7 @@ defineCurve('secp256k1', {
   ],
 });
 
-},{"./curve":255,"./precomputed/secp256k1":265,"./utils":266,"hash.js":298}],259:[function(require,module,exports){
+},{"./curve":273,"./precomputed/secp256k1":283,"./utils":284,"hash.js":316}],277:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -61932,7 +63877,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../curves":258,"../utils":266,"./key":260,"./signature":261,"bn.js":267,"brorand":152,"hmac-drbg":311}],260:[function(require,module,exports){
+},{"../curves":276,"../utils":284,"./key":278,"./signature":279,"bn.js":285,"brorand":170,"hmac-drbg":329}],278:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -62055,7 +64000,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../utils":266,"bn.js":267}],261:[function(require,module,exports){
+},{"../utils":284,"bn.js":285}],279:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -62233,7 +64178,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../utils":266,"bn.js":267}],262:[function(require,module,exports){
+},{"../utils":284,"bn.js":285}],280:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -62356,7 +64301,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../curves":258,"../utils":266,"./key":263,"./signature":264,"hash.js":298}],263:[function(require,module,exports){
+},{"../curves":276,"../utils":284,"./key":281,"./signature":282,"hash.js":316}],281:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -62453,7 +64398,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../utils":266}],264:[function(require,module,exports){
+},{"../utils":284}],282:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -62521,7 +64466,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../utils":266,"bn.js":267}],265:[function(require,module,exports){
+},{"../utils":284,"bn.js":285}],283:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -63303,7 +65248,7 @@ module.exports = {
   },
 };
 
-},{}],266:[function(require,module,exports){
+},{}],284:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -63427,9 +65372,9 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":267,"minimalistic-assert":409,"minimalistic-crypto-utils":410}],267:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"buffer":153,"dup":78}],268:[function(require,module,exports){
+},{"bn.js":285,"minimalistic-assert":427,"minimalistic-crypto-utils":428}],285:[function(require,module,exports){
+arguments[4][92][0].apply(exports,arguments)
+},{"buffer":171,"dup":92}],286:[function(require,module,exports){
 module.exports={
   "name": "elliptic",
   "version": "6.6.1",
@@ -63487,7 +65432,7 @@ module.exports={
   }
 }
 
-},{}],269:[function(require,module,exports){
+},{}],287:[function(require,module,exports){
 'use strict';
 
 /** @type {import('.')} */
@@ -63503,55 +65448,55 @@ if ($defineProperty) {
 
 module.exports = $defineProperty;
 
-},{}],270:[function(require,module,exports){
+},{}],288:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./eval')} */
 module.exports = EvalError;
 
-},{}],271:[function(require,module,exports){
+},{}],289:[function(require,module,exports){
 'use strict';
 
 /** @type {import('.')} */
 module.exports = Error;
 
-},{}],272:[function(require,module,exports){
+},{}],290:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./range')} */
 module.exports = RangeError;
 
-},{}],273:[function(require,module,exports){
+},{}],291:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./ref')} */
 module.exports = ReferenceError;
 
-},{}],274:[function(require,module,exports){
+},{}],292:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./syntax')} */
 module.exports = SyntaxError;
 
-},{}],275:[function(require,module,exports){
+},{}],293:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./type')} */
 module.exports = TypeError;
 
-},{}],276:[function(require,module,exports){
+},{}],294:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./uri')} */
 module.exports = URIError;
 
-},{}],277:[function(require,module,exports){
+},{}],295:[function(require,module,exports){
 'use strict';
 
 /** @type {import('.')} */
 module.exports = Object;
 
-},{}],278:[function(require,module,exports){
+},{}],296:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -64050,7 +65995,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],279:[function(require,module,exports){
+},{}],297:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 var MD5 = require('md5.js')
 
@@ -64097,7 +66042,7 @@ function EVP_BytesToKey (password, salt, keyBits, ivLen) {
 
 module.exports = EVP_BytesToKey
 
-},{"md5.js":406,"safe-buffer":511}],280:[function(require,module,exports){
+},{"md5.js":424,"safe-buffer":529}],298:[function(require,module,exports){
 module.exports = class FixedFIFO {
   constructor (hwm) {
     if (!(hwm > 0) || ((hwm - 1) & hwm) !== 0) throw new Error('Max size for a FixedFIFO should be a power of two')
@@ -64138,7 +66083,7 @@ module.exports = class FixedFIFO {
   }
 }
 
-},{}],281:[function(require,module,exports){
+},{}],299:[function(require,module,exports){
 const FixedFIFO = require('./fixed-size')
 
 module.exports = class FastFIFO {
@@ -64188,7 +66133,7 @@ module.exports = class FastFIFO {
   }
 }
 
-},{"./fixed-size":280}],282:[function(require,module,exports){
+},{"./fixed-size":298}],300:[function(require,module,exports){
 exports.fullRoots = function (index, result) {
   if (index & 1) throw new Error('You can only look up roots for depth(0) blocks')
   if (!result) result = []
@@ -64531,7 +66476,7 @@ Iterator.prototype.fullRoot = function (index) {
   return true
 }
 
-},{}],283:[function(require,module,exports){
+},{}],301:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -64602,7 +66547,7 @@ module.exports = function forEach(list, iterator, thisArg) {
     }
 };
 
-},{"is-callable":390}],284:[function(require,module,exports){
+},{"is-callable":408}],302:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -64688,14 +66633,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],285:[function(require,module,exports){
+},{}],303:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":284}],286:[function(require,module,exports){
+},{"./implementation":302}],304:[function(require,module,exports){
 'use strict';
 
 var undefined;
@@ -65075,7 +67020,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return value;
 };
 
-},{"call-bind-apply-helpers/functionApply":188,"call-bind-apply-helpers/functionCall":189,"es-define-property":269,"es-errors":271,"es-errors/eval":270,"es-errors/range":272,"es-errors/ref":273,"es-errors/syntax":274,"es-errors/type":275,"es-errors/uri":276,"es-object-atoms":277,"function-bind":285,"get-proto":289,"get-proto/Object.getPrototypeOf":287,"get-proto/Reflect.getPrototypeOf":288,"gopd":292,"has-symbols":294,"hasown":310,"math-intrinsics/abs":398,"math-intrinsics/floor":399,"math-intrinsics/max":401,"math-intrinsics/min":402,"math-intrinsics/pow":403,"math-intrinsics/round":404,"math-intrinsics/sign":405}],287:[function(require,module,exports){
+},{"call-bind-apply-helpers/functionApply":206,"call-bind-apply-helpers/functionCall":207,"es-define-property":287,"es-errors":289,"es-errors/eval":288,"es-errors/range":290,"es-errors/ref":291,"es-errors/syntax":292,"es-errors/type":293,"es-errors/uri":294,"es-object-atoms":295,"function-bind":303,"get-proto":307,"get-proto/Object.getPrototypeOf":305,"get-proto/Reflect.getPrototypeOf":306,"gopd":310,"has-symbols":312,"hasown":328,"math-intrinsics/abs":416,"math-intrinsics/floor":417,"math-intrinsics/max":419,"math-intrinsics/min":420,"math-intrinsics/pow":421,"math-intrinsics/round":422,"math-intrinsics/sign":423}],305:[function(require,module,exports){
 'use strict';
 
 var $Object = require('es-object-atoms');
@@ -65083,13 +67028,13 @@ var $Object = require('es-object-atoms');
 /** @type {import('./Object.getPrototypeOf')} */
 module.exports = $Object.getPrototypeOf || null;
 
-},{"es-object-atoms":277}],288:[function(require,module,exports){
+},{"es-object-atoms":295}],306:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./Reflect.getPrototypeOf')} */
 module.exports = (typeof Reflect !== 'undefined' && Reflect.getPrototypeOf) || null;
 
-},{}],289:[function(require,module,exports){
+},{}],307:[function(require,module,exports){
 'use strict';
 
 var reflectGetProto = require('./Reflect.getPrototypeOf');
@@ -65118,19 +67063,19 @@ module.exports = reflectGetProto
 			}
 			: null;
 
-},{"./Object.getPrototypeOf":287,"./Reflect.getPrototypeOf":288,"dunder-proto/get":251}],290:[function(require,module,exports){
+},{"./Object.getPrototypeOf":305,"./Reflect.getPrototypeOf":306,"dunder-proto/get":269}],308:[function(require,module,exports){
 module.exports = {
   RTCPeerConnection: window.RTCPeerConnection,
   RTCIceCandidate: window.RTCIceCandidate
 }
 
-},{}],291:[function(require,module,exports){
+},{}],309:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./gOPD')} */
 module.exports = Object.getOwnPropertyDescriptor;
 
-},{}],292:[function(require,module,exports){
+},{}],310:[function(require,module,exports){
 'use strict';
 
 /** @type {import('.')} */
@@ -65147,7 +67092,7 @@ if ($gOPD) {
 
 module.exports = $gOPD;
 
-},{"./gOPD":291}],293:[function(require,module,exports){
+},{"./gOPD":309}],311:[function(require,module,exports){
 'use strict';
 
 var $defineProperty = require('es-define-property');
@@ -65171,7 +67116,7 @@ hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBu
 
 module.exports = hasPropertyDescriptors;
 
-},{"es-define-property":269}],294:[function(require,module,exports){
+},{"es-define-property":287}],312:[function(require,module,exports){
 'use strict';
 
 var origSymbol = typeof Symbol !== 'undefined' && Symbol;
@@ -65187,7 +67132,7 @@ module.exports = function hasNativeSymbols() {
 	return hasSymbolSham();
 };
 
-},{"./shams":295}],295:[function(require,module,exports){
+},{"./shams":313}],313:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./shams')} */
@@ -65234,7 +67179,7 @@ module.exports = function hasSymbols() {
 	return true;
 };
 
-},{}],296:[function(require,module,exports){
+},{}],314:[function(require,module,exports){
 'use strict';
 
 var hasSymbols = require('has-symbols/shams');
@@ -65244,7 +67189,7 @@ module.exports = function hasToStringTagShams() {
 	return hasSymbols() && !!Symbol.toStringTag;
 };
 
-},{"has-symbols/shams":295}],297:[function(require,module,exports){
+},{"has-symbols/shams":313}],315:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -65384,7 +67329,7 @@ HashBase.prototype._digest = function () {
 
 module.exports = HashBase
 
-},{"inherits":389,"safe-buffer":511,"stream":592}],298:[function(require,module,exports){
+},{"inherits":407,"safe-buffer":529,"stream":610}],316:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -65401,7 +67346,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":299,"./hash/hmac":300,"./hash/ripemd":301,"./hash/sha":302,"./hash/utils":309}],299:[function(require,module,exports){
+},{"./hash/common":317,"./hash/hmac":318,"./hash/ripemd":319,"./hash/sha":320,"./hash/utils":327}],317:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -65495,7 +67440,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"./utils":309,"minimalistic-assert":409}],300:[function(require,module,exports){
+},{"./utils":327,"minimalistic-assert":427}],318:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -65544,7 +67489,7 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"./utils":309,"minimalistic-assert":409}],301:[function(require,module,exports){
+},{"./utils":327,"minimalistic-assert":427}],319:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -65692,7 +67637,7 @@ var sh = [
   8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
 ];
 
-},{"./common":299,"./utils":309}],302:[function(require,module,exports){
+},{"./common":317,"./utils":327}],320:[function(require,module,exports){
 'use strict';
 
 exports.sha1 = require('./sha/1');
@@ -65701,7 +67646,7 @@ exports.sha256 = require('./sha/256');
 exports.sha384 = require('./sha/384');
 exports.sha512 = require('./sha/512');
 
-},{"./sha/1":303,"./sha/224":304,"./sha/256":305,"./sha/384":306,"./sha/512":307}],303:[function(require,module,exports){
+},{"./sha/1":321,"./sha/224":322,"./sha/256":323,"./sha/384":324,"./sha/512":325}],321:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -65777,7 +67722,7 @@ SHA1.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":299,"../utils":309,"./common":308}],304:[function(require,module,exports){
+},{"../common":317,"../utils":327,"./common":326}],322:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -65809,7 +67754,7 @@ SHA224.prototype._digest = function digest(enc) {
 };
 
 
-},{"../utils":309,"./256":305}],305:[function(require,module,exports){
+},{"../utils":327,"./256":323}],323:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -65916,7 +67861,7 @@ SHA256.prototype._digest = function digest(enc) {
     return utils.split32(this.h, 'big');
 };
 
-},{"../common":299,"../utils":309,"./common":308,"minimalistic-assert":409}],306:[function(require,module,exports){
+},{"../common":317,"../utils":327,"./common":326,"minimalistic-assert":427}],324:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -65953,7 +67898,7 @@ SHA384.prototype._digest = function digest(enc) {
     return utils.split32(this.h.slice(0, 12), 'big');
 };
 
-},{"../utils":309,"./512":307}],307:[function(require,module,exports){
+},{"../utils":327,"./512":325}],325:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -66285,7 +68230,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../common":299,"../utils":309,"minimalistic-assert":409}],308:[function(require,module,exports){
+},{"../common":317,"../utils":327,"minimalistic-assert":427}],326:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -66336,7 +68281,7 @@ function g1_256(x) {
 }
 exports.g1_256 = g1_256;
 
-},{"../utils":309}],309:[function(require,module,exports){
+},{"../utils":327}],327:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -66616,7 +68561,7 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":389,"minimalistic-assert":409}],310:[function(require,module,exports){
+},{"inherits":407,"minimalistic-assert":427}],328:[function(require,module,exports){
 'use strict';
 
 var call = Function.prototype.call;
@@ -66626,7 +68571,7 @@ var bind = require('function-bind');
 /** @type {import('.')} */
 module.exports = bind.call(call, $hasOwn);
 
-},{"function-bind":285}],311:[function(require,module,exports){
+},{"function-bind":303}],329:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -66741,7 +68686,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"hash.js":298,"minimalistic-assert":409,"minimalistic-crypto-utils":410}],312:[function(require,module,exports){
+},{"hash.js":316,"minimalistic-assert":427,"minimalistic-crypto-utils":428}],330:[function(require,module,exports){
 const { RTCPeerConnection, RTCIceCandidate } = require('get-webrtc')
 const Protomux = require('protomux')
 const c = require('compact-encoding')
@@ -66829,7 +68774,7 @@ function onicecandidate (e) {
   if (e.candidate) this._ice.send({ ice: e.candidate })
 }
 
-},{"./lib/web-stream.js":313,"compact-encoding":199,"get-webrtc":290,"protomux":467,"safety-catch":512}],313:[function(require,module,exports){
+},{"./lib/web-stream.js":331,"compact-encoding":217,"get-webrtc":308,"protomux":485,"safety-catch":530}],331:[function(require,module,exports){
 const { Duplex } = require('streamx')
 const b4a = require('b4a')
 
@@ -66945,7 +68890,7 @@ function toBuffer (data) {
   return typeof data === 'string' ? b4a.from(data) : data
 }
 
-},{"b4a":97,"streamx":607}],314:[function(require,module,exports){
+},{"b4a":111,"streamx":625}],332:[function(require,module,exports){
 const codecs = require('codecs')
 const { Readable } = require('streamx')
 const mutexify = require('mutexify/promise')
@@ -68802,7 +70747,7 @@ async function isLinked (batch, block) {
 
 module.exports = Hyperbee
 
-},{"./iterators/diff":315,"./iterators/history":316,"./iterators/local":317,"./iterators/range":318,"./lib/extension":319,"./lib/messages":320,"b4a":97,"codecs":196,"debounceify":238,"hypercore-errors":326,"mutexify/promise":413,"rache":477,"ready-resource":508,"resolve-reject-promise":509,"safety-catch":512,"streamx":607,"unslab":619}],315:[function(require,module,exports){
+},{"./iterators/diff":333,"./iterators/history":334,"./iterators/local":335,"./iterators/range":336,"./lib/extension":337,"./lib/messages":338,"b4a":111,"codecs":214,"debounceify":256,"hypercore-errors":344,"mutexify/promise":431,"rache":495,"ready-resource":526,"resolve-reject-promise":527,"safety-catch":530,"streamx":625,"unslab":637}],333:[function(require,module,exports){
 const b4a = require('b4a')
 
 class SubTree {
@@ -69022,7 +70967,7 @@ function cmp (a, b) {
   return b4a.compare(a, b)
 }
 
-},{"b4a":97}],316:[function(require,module,exports){
+},{"b4a":111}],334:[function(require,module,exports){
 module.exports = class HistoryIterator {
   constructor (batch, opts = {}) {
     this.batch = batch
@@ -69081,7 +71026,7 @@ function lt (opts, version) {
   return lt < 0 ? lt + version : lt
 }
 
-},{}],317:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 module.exports = class LocalBlocksIterator {
   constructor (batch, opts = {}) {
     this.batch = batch
@@ -69130,7 +71075,7 @@ function lt (opts, version) {
   return lt < 0 ? lt + version : lt
 }
 
-},{}],318:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = class RangeIterator {
@@ -69301,7 +71246,7 @@ module.exports = class RangeIterator {
   }
 }
 
-},{"b4a":97}],319:[function(require,module,exports){
+},{"b4a":111}],337:[function(require,module,exports){
 const { Extension } = require('./messages')
 
 // const MAX_ACTIVE = 32
@@ -69454,7 +71399,7 @@ function decode (buf) {
 
 function noop () {}
 
-},{"./messages":320}],320:[function(require,module,exports){
+},{"./messages":338}],338:[function(require,module,exports){
 // This file is auto generated by the protocol-buffers compiler
 
 /* eslint-disable quotes */
@@ -70412,7 +72357,7 @@ function defined (val) {
   return val !== null && val !== undefined && (typeof val !== 'number' || !isNaN(val))
 }
 
-},{"b4a":97,"protocol-buffers-encodings":466}],321:[function(require,module,exports){
+},{"b4a":111,"protocol-buffers-encodings":484}],339:[function(require,module,exports){
 const mutexify = require('mutexify')
 const b4a = require('b4a')
 
@@ -70636,7 +72581,7 @@ class Hyperblobs {
 
 module.exports = Hyperblobs
 
-},{"./lib/monitor":322,"./lib/streams":324,"b4a":97,"mutexify":412}],322:[function(require,module,exports){
+},{"./lib/monitor":340,"./lib/streams":342,"b4a":111,"mutexify":430}],340:[function(require,module,exports){
 const EventEmitter = require('events')
 const speedometer = require('speedometer')
 
@@ -70730,7 +72675,7 @@ function toFixed (n) {
   return Math.round(n * 100) / 100
 }
 
-},{"events":278,"speedometer":591}],323:[function(require,module,exports){
+},{"events":296,"speedometer":609}],341:[function(require,module,exports){
 // should move to hypercore itself
 
 const MAX_READAHEAD_TARGET = 0.05 // aim to buffer 5% always
@@ -70799,7 +72744,7 @@ module.exports = class Prefetcher {
   }
 }
 
-},{}],324:[function(require,module,exports){
+},{}],342:[function(require,module,exports){
 const { Readable, Writable } = require('streamx')
 const { BLOCK_NOT_AVAILABLE } = require('hypercore-errors')
 const Prefetcher = require('./prefetcher')
@@ -70944,7 +72889,7 @@ module.exports = {
 
 function noop () {}
 
-},{"./prefetcher":323,"hypercore-errors":326,"streamx":607}],325:[function(require,module,exports){
+},{"./prefetcher":341,"hypercore-errors":344,"streamx":625}],343:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const c = require('compact-encoding')
 const b4a = require('b4a')
@@ -71131,7 +73076,7 @@ function range (count) {
   return arr
 }
 
-},{"b4a":97,"compact-encoding":199,"sodium-universal":585}],326:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"sodium-universal":603}],344:[function(require,module,exports){
 const IdEnc = require('hypercore-id-encoding')
 
 module.exports = class HypercoreError extends Error {
@@ -71248,7 +73193,7 @@ module.exports = class HypercoreError extends Error {
   }
 }
 
-},{"hypercore-id-encoding":327}],327:[function(require,module,exports){
+},{"hypercore-id-encoding":345}],345:[function(require,module,exports){
 const z32 = require('z32')
 const b4a = require('b4a')
 
@@ -71294,11 +73239,11 @@ function isValid (any) {
   }
 }
 
-},{"b4a":97,"z32":631}],328:[function(require,module,exports){
+},{"b4a":111,"z32":649}],346:[function(require,module,exports){
 // explicitly exposed as hypercore/errors
 module.exports = require('hypercore-errors')
 
-},{"hypercore-errors":326}],329:[function(require,module,exports){
+},{"hypercore-errors":344}],347:[function(require,module,exports){
 const { EventEmitter } = require('events')
 const RAF = require('random-access-file')
 const isOptions = require('is-options')
@@ -72449,7 +74394,7 @@ function isValidIndex (index) {
   return index === 0 || index > 0
 }
 
-},{"./lib/batch":331,"./lib/block-encryption":334,"./lib/core":338,"./lib/download":339,"./lib/info":341,"./lib/replicator":349,"./lib/streams":350,"./lib/verifier":351,"@hyperswarm/secret-stream":46,"b4a":97,"compact-encoding":199,"events":278,"hypercore-crypto":325,"hypercore-errors":326,"hypercore-id-encoding":327,"is-options":391,"protomux":467,"random-access-file":480,"safety-catch":512,"unslab":619,"xache":628,"z32":631}],330:[function(require,module,exports){
+},{"./lib/batch":349,"./lib/block-encryption":352,"./lib/core":356,"./lib/download":357,"./lib/info":359,"./lib/replicator":367,"./lib/streams":368,"./lib/verifier":369,"@hyperswarm/secret-stream":60,"b4a":111,"compact-encoding":217,"events":296,"hypercore-crypto":343,"hypercore-errors":344,"hypercore-id-encoding":345,"is-options":409,"protomux":485,"random-access-file":498,"safety-catch":530,"unslab":637,"xache":646,"z32":649}],348:[function(require,module,exports){
 const hypercoreCrypto = require('hypercore-crypto')
 const flat = require('flat-tree')
 const c = require('compact-encoding')
@@ -72580,7 +74525,7 @@ function readFullStorage (storage) {
   })
 }
 
-},{"b4a":97,"compact-encoding":199,"flat-tree":282,"hypercore-crypto":325}],331:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"flat-tree":300,"hypercore-crypto":343}],349:[function(require,module,exports){
 const { BLOCK_NOT_AVAILABLE, SESSION_CLOSED } = require('hypercore-errors')
 const EventEmitter = require('events')
 const c = require('compact-encoding')
@@ -73013,7 +74958,7 @@ module.exports = class HypercoreBatch extends EventEmitter {
   }
 }
 
-},{"b4a":97,"compact-encoding":199,"events":278,"hypercore-errors":326,"safety-catch":512}],332:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"events":296,"hypercore-errors":344,"safety-catch":530}],350:[function(require,module,exports){
 const c = require('compact-encoding')
 const { oplog } = require('./messages')
 
@@ -73070,7 +75015,7 @@ module.exports = class BigHeader {
   }
 }
 
-},{"./messages":343,"compact-encoding":199}],333:[function(require,module,exports){
+},{"./messages":361,"compact-encoding":217}],351:[function(require,module,exports){
 const BigSparseArray = require('big-sparse-array')
 const b4a = require('b4a')
 const quickbit = require('./compat').quickbit
@@ -73568,7 +75513,7 @@ function ceilTo (n, multiple = 1) {
   return n + multiple - remainder
 }
 
-},{"./compat":337,"b4a":97,"big-sparse-array":119}],334:[function(require,module,exports){
+},{"./compat":355,"b4a":111,"big-sparse-array":133}],352:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const c = require('compact-encoding')
 const b4a = require('b4a')
@@ -73645,7 +75590,7 @@ module.exports = class BlockEncryption {
   }
 }
 
-},{"./caps":336,"b4a":97,"compact-encoding":199,"sodium-universal":370}],335:[function(require,module,exports){
+},{"./caps":354,"b4a":111,"compact-encoding":217,"sodium-universal":388}],353:[function(require,module,exports){
 const b4a = require('b4a')
 const { WRITE_FAILED } = require('hypercore-errors')
 
@@ -73710,7 +75655,7 @@ module.exports = class BlockStore {
   }
 }
 
-},{"b4a":97,"hypercore-errors":326}],336:[function(require,module,exports){
+},{"b4a":111,"hypercore-errors":344}],354:[function(require,module,exports){
 const crypto = require('hypercore-crypto')
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
@@ -73758,7 +75703,7 @@ exports.treeSignableCompat = function (hash, length, fork, noHeader) {
   return state.buffer
 }
 
-},{"b4a":97,"compact-encoding":199,"hypercore-crypto":325,"sodium-universal":370}],337:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"hypercore-crypto":343,"sodium-universal":388}],355:[function(require,module,exports){
 // Export the appropriate version of `quickbit-universal` as the plain import
 // may resolve to an older version in some environments
 let quickbit = require('quickbit-universal')
@@ -73772,7 +75717,7 @@ if (
 }
 exports.quickbit = quickbit
 
-},{"quickbit-universal":476,"quickbit-universal/fallback":476}],338:[function(require,module,exports){
+},{"quickbit-universal":494,"quickbit-universal/fallback":494}],356:[function(require,module,exports){
 const hypercoreCrypto = require('hypercore-crypto')
 const b4a = require('b4a')
 const unslab = require('unslab')
@@ -74880,7 +76825,7 @@ function minimumSegmentEnd (start, src, dst) {
   return a < b ? a : b
 }
 
-},{"./audit":330,"./big-header":332,"./bitfield":333,"./block-store":335,"./info":341,"./merkle-tree":342,"./messages":343,"./mutex":345,"./oplog":346,"./remote-bitfield":348,"./verifier":351,"b4a":97,"hypercore-crypto":325,"hypercore-errors":326,"unslab":619}],339:[function(require,module,exports){
+},{"./audit":348,"./big-header":350,"./bitfield":351,"./block-store":353,"./info":359,"./merkle-tree":360,"./messages":361,"./mutex":363,"./oplog":364,"./remote-bitfield":366,"./verifier":369,"b4a":111,"hypercore-crypto":343,"hypercore-errors":344,"unslab":637}],357:[function(require,module,exports){
 module.exports = class Download {
   constructor (req) {
     this.req = req
@@ -74904,7 +76849,7 @@ module.exports = class Download {
 
 function noop () {}
 
-},{}],340:[function(require,module,exports){
+},{}],358:[function(require,module,exports){
 const TICKS = 16
 
 module.exports = class HotswapQueue {
@@ -74966,7 +76911,7 @@ function hasInflight (block, peer) {
   return false
 }
 
-},{}],341:[function(require,module,exports){
+},{}],359:[function(require,module,exports){
 module.exports = class Info {
   constructor (opts = {}) {
     this.key = opts.key
@@ -75021,7 +76966,7 @@ module.exports = class Info {
   }
 }
 
-},{}],342:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 const flat = require('flat-tree')
 const crypto = require('hypercore-crypto')
 const c = require('compact-encoding')
@@ -76425,7 +78370,7 @@ function unslabNode (node) {
   return node
 }
 
-},{"./caps":336,"b4a":97,"compact-encoding":199,"flat-tree":282,"hypercore-crypto":325,"hypercore-errors":326,"unslab":619,"xache":628}],343:[function(require,module,exports){
+},{"./caps":354,"b4a":111,"compact-encoding":217,"flat-tree":300,"hypercore-crypto":343,"hypercore-errors":344,"unslab":637,"xache":646}],361:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 const { DEFAULT_NAMESPACE } = require('./caps')
@@ -77496,7 +79441,7 @@ exports.multiSignature = {
   }
 }
 
-},{"./caps":336,"b4a":97,"compact-encoding":199,"hypercore-errors":326,"unslab":619}],344:[function(require,module,exports){
+},{"./caps":354,"b4a":111,"compact-encoding":217,"hypercore-errors":344,"unslab":637}],362:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 const flat = require('flat-tree')
@@ -77622,7 +79567,7 @@ function compressUpgrade (p, nodes) {
   return u
 }
 
-},{"./messages":343,"b4a":97,"compact-encoding":199,"flat-tree":282}],345:[function(require,module,exports){
+},{"./messages":361,"b4a":111,"compact-encoding":217,"flat-tree":300}],363:[function(require,module,exports){
 module.exports = class Mutex {
   constructor () {
     this.locked = false
@@ -77663,7 +79608,7 @@ module.exports = class Mutex {
   }
 }
 
-},{}],346:[function(require,module,exports){
+},{}],364:[function(require,module,exports){
 const cenc = require('compact-encoding')
 const b4a = require('b4a')
 const { crc32 } = require('crc-universal')
@@ -78016,7 +79961,7 @@ module.exports = class Oplog {
   }
 }
 
-},{"b4a":97,"compact-encoding":199,"crc-universal":229,"hypercore-errors":326}],347:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"crc-universal":247,"hypercore-errors":344}],365:[function(require,module,exports){
 const FIFO = require('fast-fifo')
 
 module.exports = class ReceiverQueue {
@@ -78089,7 +80034,7 @@ module.exports = class ReceiverQueue {
   }
 }
 
-},{"fast-fifo":281}],348:[function(require,module,exports){
+},{"fast-fifo":299}],366:[function(require,module,exports){
 const BigSparseArray = require('big-sparse-array')
 const quickbit = require('./compat').quickbit
 
@@ -78437,7 +80382,7 @@ module.exports = class RemoteBitfield {
   }
 }
 
-},{"./compat":337,"big-sparse-array":119}],349:[function(require,module,exports){
+},{"./compat":355,"big-sparse-array":133}],367:[function(require,module,exports){
 /* DEV DOCS
   Every hypercore has one Replicator object managing its connections to other peers.
   There is one Peer object per peer connected to the Hypercore.
@@ -81026,7 +82971,7 @@ function incrementRx (stats1, stats2) {
   stats2.rx++
 }
 
-},{"./caps":336,"./hotswap-queue":340,"./messages":343,"./receiver-queue":347,"./remote-bitfield":348,"b4a":97,"flat-tree":282,"hypercore-errors":326,"random-array-iterator":492,"safety-catch":512}],350:[function(require,module,exports){
+},{"./caps":354,"./hotswap-queue":358,"./messages":361,"./receiver-queue":365,"./remote-bitfield":366,"b4a":111,"flat-tree":300,"hypercore-errors":344,"random-array-iterator":510,"safety-catch":530}],368:[function(require,module,exports){
 const { Writable, Readable } = require('streamx')
 
 class ReadStream extends Readable {
@@ -81158,7 +83103,7 @@ class ByteStream extends Readable {
 
 exports.ByteStream = ByteStream
 
-},{"streamx":607}],351:[function(require,module,exports){
+},{"streamx":625}],369:[function(require,module,exports){
 const defaultCrypto = require('hypercore-crypto')
 const b4a = require('b4a')
 const c = require('compact-encoding')
@@ -81465,55 +83410,55 @@ function proofToVersion1 (proof) {
   }
 }
 
-},{"./caps":336,"./messages":343,"./multisig":344,"b4a":97,"compact-encoding":199,"flat-tree":282,"hypercore-crypto":325,"hypercore-errors":326,"unslab":619}],352:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":367,"./crypto_verify":368,"./internal/poly1305":373,"dup":21,"nanoassert":414}],353:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"./crypto_verify":368,"dup":22,"nanoassert":414,"sha512-universal":527}],354:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"./crypto_generichash":355,"./crypto_hash":356,"./crypto_scalarmult":361,"./crypto_secretbox":362,"./crypto_stream":366,"./randombytes":375,"dup":23,"nanoassert":414,"xsalsa20":629}],355:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"blake2b":150,"dup":24}],356:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"nanoassert":414,"sha512-universal":527}],357:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26,"nanoassert":414,"sha256-universal":523}],358:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"./randombytes":375,"blake2b":150,"dup":27,"nanoassert":414}],359:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./crypto_generichash":355,"./crypto_scalarmult":361,"./randombytes":375,"dup":28,"nanoassert":414}],360:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./crypto_verify":368,"./internal/poly1305":373,"dup":29,"nanoassert":414}],361:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"./internal/ed25519":371,"dup":30}],362:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"./crypto_onetimeauth":360,"./crypto_stream":366,"dup":31,"nanoassert":414}],363:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":367,"./helpers":369,"./internal/hchacha20":372,"./internal/poly1305":373,"./randombytes":375,"dup":32,"nanoassert":414}],364:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"siphash24":537}],365:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./crypto_hash":356,"./crypto_hash.js":356,"./crypto_scalarmult.js":361,"./crypto_verify":368,"./internal/ed25519":371,"./randombytes":375,"dup":34,"nanoassert":414}],366:[function(require,module,exports){
+},{"./caps":354,"./messages":361,"./multisig":362,"b4a":111,"compact-encoding":217,"flat-tree":300,"hypercore-crypto":343,"hypercore-errors":344,"unslab":637}],370:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"xsalsa20":629}],367:[function(require,module,exports){
+},{"./crypto_stream_chacha20":385,"./crypto_verify":386,"./internal/poly1305":391,"dup":35,"nanoassert":432}],371:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"chacha20-universal":194,"dup":36,"nanoassert":414}],368:[function(require,module,exports){
+},{"./crypto_verify":386,"dup":36,"nanoassert":432,"sha512-universal":545}],372:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"dup":37}],369:[function(require,module,exports){
+},{"./crypto_generichash":373,"./crypto_hash":374,"./crypto_scalarmult":379,"./crypto_secretbox":380,"./crypto_stream":384,"./randombytes":393,"dup":37,"nanoassert":432,"xsalsa20":647}],373:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"./crypto_verify":368,"dup":38,"nanoassert":414}],370:[function(require,module,exports){
+},{"blake2b":164,"dup":38}],374:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"./crypto_aead":352,"./crypto_auth":353,"./crypto_box":354,"./crypto_generichash":355,"./crypto_hash":356,"./crypto_hash_sha256":357,"./crypto_kdf":358,"./crypto_kx":359,"./crypto_onetimeauth":360,"./crypto_scalarmult":361,"./crypto_secretbox":362,"./crypto_secretstream":363,"./crypto_shorthash":364,"./crypto_sign":365,"./crypto_stream":366,"./crypto_stream_chacha20":367,"./crypto_verify":368,"./helpers":369,"./memory":374,"./randombytes":375,"dup":39}],371:[function(require,module,exports){
+},{"dup":39,"nanoassert":432,"sha512-universal":545}],375:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],372:[function(require,module,exports){
+},{"dup":40,"nanoassert":432,"sha256-universal":541}],376:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"../memory":374,"dup":41,"nanoassert":414}],373:[function(require,module,exports){
+},{"./randombytes":393,"blake2b":164,"dup":41,"nanoassert":432}],377:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"dup":42}],374:[function(require,module,exports){
+},{"./crypto_generichash":373,"./crypto_scalarmult":379,"./randombytes":393,"dup":42,"nanoassert":432}],378:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],375:[function(require,module,exports){
+},{"./crypto_verify":386,"./internal/poly1305":391,"dup":43,"nanoassert":432}],379:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"dup":44,"nanoassert":414}],376:[function(require,module,exports){
+},{"./internal/ed25519":389,"dup":44}],380:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./crypto_onetimeauth":378,"./crypto_stream":384,"dup":45,"nanoassert":432}],381:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./crypto_stream_chacha20":385,"./helpers":387,"./internal/hchacha20":390,"./internal/poly1305":391,"./randombytes":393,"dup":46,"nanoassert":432}],382:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47,"siphash24":555}],383:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"./crypto_hash":374,"./crypto_hash.js":374,"./crypto_scalarmult.js":379,"./crypto_verify":386,"./internal/ed25519":389,"./randombytes":393,"dup":48,"nanoassert":432}],384:[function(require,module,exports){
+arguments[4][49][0].apply(exports,arguments)
+},{"dup":49,"xsalsa20":647}],385:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"chacha20-universal":212,"dup":50,"nanoassert":432}],386:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],387:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./crypto_verify":386,"dup":52,"nanoassert":432}],388:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"./crypto_aead":370,"./crypto_auth":371,"./crypto_box":372,"./crypto_generichash":373,"./crypto_hash":374,"./crypto_hash_sha256":375,"./crypto_kdf":376,"./crypto_kx":377,"./crypto_onetimeauth":378,"./crypto_scalarmult":379,"./crypto_secretbox":380,"./crypto_secretstream":381,"./crypto_shorthash":382,"./crypto_sign":383,"./crypto_stream":384,"./crypto_stream_chacha20":385,"./crypto_verify":386,"./helpers":387,"./memory":392,"./randombytes":393,"dup":53}],389:[function(require,module,exports){
+arguments[4][54][0].apply(exports,arguments)
+},{"dup":54}],390:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../memory":392,"dup":55,"nanoassert":432}],391:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"dup":56}],392:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],393:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58,"nanoassert":432}],394:[function(require,module,exports){
 const { hash, createKeyPair } = require('./lib/crypto')
 
 module.exports = class Stub {
@@ -81530,7 +83475,7 @@ module.exports = class Stub {
   }
 }
 
-},{"./lib/crypto":378}],377:[function(require,module,exports){
+},{"./lib/crypto":396}],395:[function(require,module,exports){
 (function (global){(function (){
 const crypto = require('hypercore-crypto')
 
@@ -81596,7 +83541,7 @@ exports.NS = {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"hypercore-crypto":325}],378:[function(require,module,exports){
+},{"hypercore-crypto":343}],396:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 
@@ -81626,7 +83571,7 @@ module.exports = {
   createKeyPair
 }
 
-},{"b4a":97,"sodium-universal":585}],379:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":603}],397:[function(require,module,exports){
 const c = require('compact-encoding')
 const net = require('compact-encoding-net')
 
@@ -82022,7 +83967,7 @@ exports.mutableGetResponse = {
   }
 }
 
-},{"compact-encoding":199,"compact-encoding-net":197}],380:[function(require,module,exports){
+},{"compact-encoding":217,"compact-encoding-net":215}],398:[function(require,module,exports){
 const Hyperbee = require('hyperbee')
 const Hyperblobs = require('hyperblobs')
 const isOptions = require('is-options')
@@ -82780,7 +84725,7 @@ function createStreamMapIgnore (ignore) {
   }
 }
 
-},{"./lib/monitor":381,"hyperbee":314,"hyperblobs":321,"hypercore":329,"hypercore-crypto":325,"hypercore-errors":326,"is-options":391,"mirror-drive":411,"ready-resource":508,"safety-catch":512,"streamx":607,"sub-encoder":609,"unix-path-resolve":617}],381:[function(require,module,exports){
+},{"./lib/monitor":399,"hyperbee":332,"hyperblobs":339,"hypercore":347,"hypercore-crypto":343,"hypercore-errors":344,"is-options":409,"mirror-drive":429,"ready-resource":526,"safety-catch":530,"streamx":625,"sub-encoder":627,"unix-path-resolve":635}],399:[function(require,module,exports){
 const ReadyResource = require('ready-resource')
 const safetyCatch = require('safety-catch')
 const speedometer = require('speedometer')
@@ -82905,7 +84850,7 @@ function toFixed (n) {
   return Math.round(n * 100) / 100
 }
 
-},{"ready-resource":508,"safety-catch":512,"speedometer":591}],382:[function(require,module,exports){
+},{"ready-resource":526,"safety-catch":530,"speedometer":609}],400:[function(require,module,exports){
 const { EventEmitter } = require('events')
 const { getStreamError } = require('streamx')
 const DHT = require('hyperdht')
@@ -83243,7 +85188,6 @@ module.exports = class Hyperswarm extends EventEmitter {
       const keepNew = existingIsOutdated || (expectedInitiator === conn.isInitiator)
 
       if (keepNew === false) {
-        existing.sendKeepAlive()
         conn.on('error', noop)
         conn.destroy(new Error(ERR_DUPLICATE))
         return
@@ -83549,7 +85493,7 @@ function shouldBan () {
   return false
 }
 
-},{"./lib/connection-set":384,"./lib/peer-discovery":385,"./lib/peer-info":386,"./lib/retry-timer":387,"b4a":97,"events":278,"hyperdht":376,"shuffled-priority-queue":531,"streamx":607,"unslab":619}],383:[function(require,module,exports){
+},{"./lib/connection-set":402,"./lib/peer-discovery":403,"./lib/peer-info":404,"./lib/retry-timer":405,"b4a":111,"events":296,"hyperdht":394,"shuffled-priority-queue":549,"streamx":625,"unslab":637}],401:[function(require,module,exports){
 module.exports = class BulkTimer {
   constructor (time, fn) {
     this._time = time
@@ -83584,7 +85528,7 @@ module.exports = class BulkTimer {
   }
 }
 
-},{}],384:[function(require,module,exports){
+},{}],402:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = class ConnectionSet {
@@ -83620,7 +85564,7 @@ module.exports = class ConnectionSet {
   }
 }
 
-},{"b4a":97}],385:[function(require,module,exports){
+},{"b4a":111}],403:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 const b4a = require('b4a')
 
@@ -83940,7 +85884,7 @@ function hasNode (nodes, len, node) {
 
 function noop () {}
 
-},{"b4a":97,"safety-catch":512}],386:[function(require,module,exports){
+},{"b4a":111,"safety-catch":530}],404:[function(require,module,exports){
 const { EventEmitter } = require('events')
 const b4a = require('b4a')
 const unslab = require('unslab')
@@ -84058,7 +86002,7 @@ module.exports = class PeerInfo extends EventEmitter {
   }
 }
 
-},{"b4a":97,"events":278,"unslab":619}],387:[function(require,module,exports){
+},{"b4a":111,"events":296,"unslab":637}],405:[function(require,module,exports){
 const BulkTimer = require('./bulk-timer')
 
 const BACKOFF_JITTER = 500
@@ -84119,7 +86063,7 @@ module.exports = class RetryTimer {
   }
 }
 
-},{"./bulk-timer":383}],388:[function(require,module,exports){
+},{"./bulk-timer":401}],406:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -84206,7 +86150,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],389:[function(require,module,exports){
+},{}],407:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -84235,7 +86179,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],390:[function(require,module,exports){
+},{}],408:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -84338,14 +86282,14 @@ module.exports = reflectApply
 		return tryFunctionObject(value);
 	};
 
-},{}],391:[function(require,module,exports){
+},{}],409:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = function isOptions (opts) {
   return typeof opts === 'object' && opts && !b4a.isBuffer(opts)
 }
 
-},{"b4a":97}],392:[function(require,module,exports){
+},{"b4a":111}],410:[function(require,module,exports){
 'use strict';
 
 var whichTypedArray = require('which-typed-array');
@@ -84355,14 +86299,14 @@ module.exports = function isTypedArray(value) {
 	return !!whichTypedArray(value);
 };
 
-},{"which-typed-array":626}],393:[function(require,module,exports){
+},{"which-typed-array":644}],411:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],394:[function(require,module,exports){
+},{}],412:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 
@@ -84630,7 +86574,7 @@ function encryptionKeyPath (profileKey) {
   return symmetricPath(b4a.toString(profileKey, 'hex'), 'encryption key')
 }
 
-},{"./lib/crypto":395,"./lib/encoding":396,"./lib/keychain":397,"b4a":97,"compact-encoding":199}],395:[function(require,module,exports){
+},{"./lib/crypto":413,"./lib/encoding":414,"./lib/keychain":415,"b4a":111,"compact-encoding":217}],413:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 
@@ -84656,7 +86600,7 @@ function blake2b (data, output = b4a.alloc(32)) {
   return output
 }
 
-},{"b4a":97,"sodium-universal":585}],396:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":603}],414:[function(require,module,exports){
 const c = require('compact-encoding')
 
 const ATTESTED_DEVICE = 0
@@ -84822,7 +86766,7 @@ module.exports = {
   ReceiptEncoding
 }
 
-},{"compact-encoding":199}],397:[function(require,module,exports){
+},{"compact-encoding":217}],415:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const c = require('compact-encoding')
 const assert = require('nanoassert')
@@ -84961,19 +86905,19 @@ function ensureHardened (n) {
   return n + HARDENED_OFFSET
 }
 
-},{"./crypto":395,"b4a":97,"bip39-mnemonic":121,"compact-encoding":199,"nanoassert":414,"sodium-hmac":541,"sodium-universal":585}],398:[function(require,module,exports){
+},{"./crypto":413,"b4a":111,"bip39-mnemonic":135,"compact-encoding":217,"nanoassert":432,"sodium-hmac":559,"sodium-universal":603}],416:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./abs')} */
 module.exports = Math.abs;
 
-},{}],399:[function(require,module,exports){
+},{}],417:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./floor')} */
 module.exports = Math.floor;
 
-},{}],400:[function(require,module,exports){
+},{}],418:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./isNaN')} */
@@ -84981,31 +86925,31 @@ module.exports = Number.isNaN || function isNaN(a) {
 	return a !== a;
 };
 
-},{}],401:[function(require,module,exports){
+},{}],419:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./max')} */
 module.exports = Math.max;
 
-},{}],402:[function(require,module,exports){
+},{}],420:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./min')} */
 module.exports = Math.min;
 
-},{}],403:[function(require,module,exports){
+},{}],421:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./pow')} */
 module.exports = Math.pow;
 
-},{}],404:[function(require,module,exports){
+},{}],422:[function(require,module,exports){
 'use strict';
 
 /** @type {import('./round')} */
 module.exports = Math.round;
 
-},{}],405:[function(require,module,exports){
+},{}],423:[function(require,module,exports){
 'use strict';
 
 var $isNaN = require('./isNaN');
@@ -85018,7 +86962,7 @@ module.exports = function sign(number) {
 	return number < 0 ? -1 : +1;
 };
 
-},{"./isNaN":400}],406:[function(require,module,exports){
+},{"./isNaN":418}],424:[function(require,module,exports){
 'use strict'
 var inherits = require('inherits')
 var HashBase = require('hash-base')
@@ -85166,7 +87110,7 @@ function fnI (a, b, c, d, m, k, s) {
 
 module.exports = MD5
 
-},{"hash-base":297,"inherits":389,"safe-buffer":511}],407:[function(require,module,exports){
+},{"hash-base":315,"inherits":407,"safe-buffer":529}],425:[function(require,module,exports){
 var bn = require('bn.js');
 var brorand = require('brorand');
 
@@ -85283,9 +87227,9 @@ MillerRabin.prototype.getDivisor = function getDivisor(n, k) {
   return false;
 };
 
-},{"bn.js":408,"brorand":152}],408:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"buffer":153,"dup":78}],409:[function(require,module,exports){
+},{"bn.js":426,"brorand":170}],426:[function(require,module,exports){
+arguments[4][92][0].apply(exports,arguments)
+},{"buffer":171,"dup":92}],427:[function(require,module,exports){
 module.exports = assert;
 
 function assert(val, msg) {
@@ -85298,7 +87242,7 @@ assert.equal = function assertEqual(l, r, msg) {
     throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
 };
 
-},{}],410:[function(require,module,exports){
+},{}],428:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -85358,7 +87302,7 @@ utils.encode = function encode(arr, enc) {
     return arr;
 };
 
-},{}],411:[function(require,module,exports){
+},{}],429:[function(require,module,exports){
 const sameData = require('same-data')
 const unixPathResolve = require('unix-path-resolve')
 const streamEquals = require('binary-stream-equals')
@@ -85538,7 +87482,7 @@ function toIgnoreFunction (ignore) {
 
 function noop () {}
 
-},{"binary-stream-equals":120,"same-data":513,"unix-path-resolve":617}],412:[function(require,module,exports){
+},{"binary-stream-equals":134,"same-data":531,"unix-path-resolve":635}],430:[function(require,module,exports){
 var queueTick = require('queue-tick')
 
 var mutexify = function () {
@@ -85571,7 +87515,7 @@ var mutexify = function () {
 
 module.exports = mutexify
 
-},{"queue-tick":475}],413:[function(require,module,exports){
+},{"queue-tick":493}],431:[function(require,module,exports){
 var mutexify = require('.')
 
 var mutexifyPromise = function () {
@@ -85591,7 +87535,7 @@ var mutexifyPromise = function () {
 
 module.exports = mutexifyPromise
 
-},{".":412}],414:[function(require,module,exports){
+},{".":430}],432:[function(require,module,exports){
 module.exports = assert
 
 class AssertionError extends Error {}
@@ -85611,7 +87555,7 @@ function assert (t, m) {
   }
 }
 
-},{}],415:[function(require,module,exports){
+},{}],433:[function(require,module,exports){
 (function (process,setImmediate){(function (){
 'use strict';
 
@@ -85689,7 +87633,7 @@ module.exports = (function () {
 }());
 
 }).call(this)}).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":465,"timers":613}],416:[function(require,module,exports){
+},{"_process":483,"timers":631}],434:[function(require,module,exports){
 /* eslint-disable camelcase */
 const sodium = require('sodium-universal')
 const assert = require('nanoassert')
@@ -85762,7 +87706,7 @@ function dh (publicKey, { scalar, secretKey }) {
   return output
 }
 
-},{"b4a":97,"nanoassert":414,"sodium-universal":585}],417:[function(require,module,exports){
+},{"b4a":111,"nanoassert":432,"sodium-universal":603}],435:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 
@@ -85855,9 +87799,9 @@ function decryptWithAD (key, counter, additionalData, ciphertext) {
   return plaintext
 }
 
-},{"b4a":97,"sodium-universal":439}],418:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"b4a":97,"dup":50,"nanoassert":414,"sodium-universal":439}],419:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":457}],436:[function(require,module,exports){
+arguments[4][64][0].apply(exports,arguments)
+},{"b4a":111,"dup":64,"nanoassert":432,"sodium-universal":457}],437:[function(require,module,exports){
 const hmacBlake2b = require('./hmac')
 const assert = require('nanoassert')
 const b4a = require('b4a')
@@ -85913,7 +87857,7 @@ function hmacDigest (key, input) {
   return hmac
 }
 
-},{"./hmac":420,"b4a":97,"nanoassert":414}],420:[function(require,module,exports){
+},{"./hmac":438,"b4a":111,"nanoassert":432}],438:[function(require,module,exports){
 /* eslint-disable camelcase */
 const b4a = require('b4a')
 const { sodium_memzero, crypto_generichash, crypto_generichash_batch } = require('sodium-universal')
@@ -85953,59 +87897,59 @@ module.exports = function hmac (out, data, key) {
 module.exports.BYTES = HASHLEN
 module.exports.KEYBYTES = BLOCKLEN
 
-},{"b4a":97,"sodium-universal":439}],421:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":436,"./crypto_verify":437,"./internal/poly1305":442,"dup":21,"nanoassert":414}],422:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"./crypto_verify":437,"dup":22,"nanoassert":414,"sha512-universal":527}],423:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"./crypto_generichash":424,"./crypto_hash":425,"./crypto_scalarmult":430,"./crypto_secretbox":431,"./crypto_stream":435,"./randombytes":444,"dup":23,"nanoassert":414,"xsalsa20":629}],424:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"blake2b":150,"dup":24}],425:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"nanoassert":414,"sha512-universal":527}],426:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26,"nanoassert":414,"sha256-universal":523}],427:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"./randombytes":444,"blake2b":150,"dup":27,"nanoassert":414}],428:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./crypto_generichash":424,"./crypto_scalarmult":430,"./randombytes":444,"dup":28,"nanoassert":414}],429:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./crypto_verify":437,"./internal/poly1305":442,"dup":29,"nanoassert":414}],430:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"./internal/ed25519":440,"dup":30}],431:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"./crypto_onetimeauth":429,"./crypto_stream":435,"dup":31,"nanoassert":414}],432:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":436,"./helpers":438,"./internal/hchacha20":441,"./internal/poly1305":442,"./randombytes":444,"dup":32,"nanoassert":414}],433:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"siphash24":537}],434:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./crypto_hash":425,"./crypto_hash.js":425,"./crypto_scalarmult.js":430,"./crypto_verify":437,"./internal/ed25519":440,"./randombytes":444,"dup":34,"nanoassert":414}],435:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":457}],439:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"xsalsa20":629}],436:[function(require,module,exports){
+},{"./crypto_stream_chacha20":454,"./crypto_verify":455,"./internal/poly1305":460,"dup":35,"nanoassert":432}],440:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"chacha20-universal":194,"dup":36,"nanoassert":414}],437:[function(require,module,exports){
+},{"./crypto_verify":455,"dup":36,"nanoassert":432,"sha512-universal":545}],441:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"dup":37}],438:[function(require,module,exports){
+},{"./crypto_generichash":442,"./crypto_hash":443,"./crypto_scalarmult":448,"./crypto_secretbox":449,"./crypto_stream":453,"./randombytes":462,"dup":37,"nanoassert":432,"xsalsa20":647}],442:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"./crypto_verify":437,"dup":38,"nanoassert":414}],439:[function(require,module,exports){
+},{"blake2b":164,"dup":38}],443:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"./crypto_aead":421,"./crypto_auth":422,"./crypto_box":423,"./crypto_generichash":424,"./crypto_hash":425,"./crypto_hash_sha256":426,"./crypto_kdf":427,"./crypto_kx":428,"./crypto_onetimeauth":429,"./crypto_scalarmult":430,"./crypto_secretbox":431,"./crypto_secretstream":432,"./crypto_shorthash":433,"./crypto_sign":434,"./crypto_stream":435,"./crypto_stream_chacha20":436,"./crypto_verify":437,"./helpers":438,"./memory":443,"./randombytes":444,"dup":39}],440:[function(require,module,exports){
+},{"dup":39,"nanoassert":432,"sha512-universal":545}],444:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],441:[function(require,module,exports){
+},{"dup":40,"nanoassert":432,"sha256-universal":541}],445:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"../memory":443,"dup":41,"nanoassert":414}],442:[function(require,module,exports){
+},{"./randombytes":462,"blake2b":164,"dup":41,"nanoassert":432}],446:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"dup":42}],443:[function(require,module,exports){
+},{"./crypto_generichash":442,"./crypto_scalarmult":448,"./randombytes":462,"dup":42,"nanoassert":432}],447:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],444:[function(require,module,exports){
+},{"./crypto_verify":455,"./internal/poly1305":460,"dup":43,"nanoassert":432}],448:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"dup":44,"nanoassert":414}],445:[function(require,module,exports){
+},{"./internal/ed25519":458,"dup":44}],449:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./crypto_onetimeauth":447,"./crypto_stream":453,"dup":45,"nanoassert":432}],450:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./crypto_stream_chacha20":454,"./helpers":456,"./internal/hchacha20":459,"./internal/poly1305":460,"./randombytes":462,"dup":46,"nanoassert":432}],451:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47,"siphash24":555}],452:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"./crypto_hash":443,"./crypto_hash.js":443,"./crypto_scalarmult.js":448,"./crypto_verify":455,"./internal/ed25519":458,"./randombytes":462,"dup":48,"nanoassert":432}],453:[function(require,module,exports){
+arguments[4][49][0].apply(exports,arguments)
+},{"dup":49,"xsalsa20":647}],454:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"chacha20-universal":212,"dup":50,"nanoassert":432}],455:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],456:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./crypto_verify":455,"dup":52,"nanoassert":432}],457:[function(require,module,exports){
 arguments[4][53][0].apply(exports,arguments)
-},{"./hkdf":419,"./symmetric-state":446,"b4a":97,"dup":53,"nanoassert":414}],446:[function(require,module,exports){
+},{"./crypto_aead":439,"./crypto_auth":440,"./crypto_box":441,"./crypto_generichash":442,"./crypto_hash":443,"./crypto_hash_sha256":444,"./crypto_kdf":445,"./crypto_kx":446,"./crypto_onetimeauth":447,"./crypto_scalarmult":448,"./crypto_secretbox":449,"./crypto_secretstream":450,"./crypto_shorthash":451,"./crypto_sign":452,"./crypto_stream":453,"./crypto_stream_chacha20":454,"./crypto_verify":455,"./helpers":456,"./memory":461,"./randombytes":462,"dup":53}],458:[function(require,module,exports){
 arguments[4][54][0].apply(exports,arguments)
-},{"./cipher":417,"./dh":418,"./hkdf":419,"b4a":97,"dup":54,"nanoassert":414,"sodium-universal":439}],447:[function(require,module,exports){
+},{"dup":54}],459:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../memory":461,"dup":55,"nanoassert":432}],460:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"dup":56}],461:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],462:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58,"nanoassert":432}],463:[function(require,module,exports){
+arguments[4][67][0].apply(exports,arguments)
+},{"./hkdf":437,"./symmetric-state":464,"b4a":111,"dup":67,"nanoassert":432}],464:[function(require,module,exports){
+arguments[4][68][0].apply(exports,arguments)
+},{"./cipher":435,"./dh":436,"./hkdf":437,"b4a":111,"dup":68,"nanoassert":432,"sodium-universal":457}],465:[function(require,module,exports){
 var wrappy = require('wrappy')
 module.exports = wrappy(once)
 module.exports.strict = wrappy(onceStrict)
@@ -86049,7 +87993,7 @@ function onceStrict (fn) {
   return f
 }
 
-},{"wrappy":627}],448:[function(require,module,exports){
+},{"wrappy":645}],466:[function(require,module,exports){
 module.exports={"2.16.840.1.101.3.4.1.1": "aes-128-ecb",
 "2.16.840.1.101.3.4.1.2": "aes-128-cbc",
 "2.16.840.1.101.3.4.1.3": "aes-128-ofb",
@@ -86063,7 +88007,7 @@ module.exports={"2.16.840.1.101.3.4.1.1": "aes-128-ecb",
 "2.16.840.1.101.3.4.1.43": "aes-256-ofb",
 "2.16.840.1.101.3.4.1.44": "aes-256-cfb"
 }
-},{}],449:[function(require,module,exports){
+},{}],467:[function(require,module,exports){
 // from https://github.com/indutny/self-signed/blob/gh-pages/lib/asn1.js
 // Fedor, you are amazing.
 
@@ -86188,7 +88132,7 @@ exports.signature = asn1.define('signature', function () {
 	);
 });
 
-},{"./certificate":450,"asn1.js":64}],450:[function(require,module,exports){
+},{"./certificate":468,"asn1.js":78}],468:[function(require,module,exports){
 // from https://github.com/Rantanen/node-dtls/blob/25a7dc861bda38cfeac93a723500eea4f0ac2e86/Certificate.js
 // thanks to @Rantanen
 
@@ -86279,7 +88223,7 @@ var X509Certificate = asn.define('X509Certificate', function () {
 
 module.exports = X509Certificate;
 
-},{"asn1.js":64}],451:[function(require,module,exports){
+},{"asn1.js":78}],469:[function(require,module,exports){
 'use strict';
 
 // adapted from https://github.com/apatil/pemstrip
@@ -86314,7 +88258,7 @@ module.exports = function (okey, password) {
 	};
 };
 
-},{"browserify-aes":156,"evp_bytestokey":279,"safe-buffer":511}],452:[function(require,module,exports){
+},{"browserify-aes":174,"evp_bytestokey":297,"safe-buffer":529}],470:[function(require,module,exports){
 'use strict';
 
 var asn1 = require('./asn1');
@@ -86427,13 +88371,13 @@ parseKeys.signature = asn1.signature;
 
 module.exports = parseKeys;
 
-},{"./aesid.json":448,"./asn1":449,"./fixProc":451,"browserify-aes":156,"pbkdf2":453,"safe-buffer":511}],453:[function(require,module,exports){
+},{"./aesid.json":466,"./asn1":467,"./fixProc":469,"browserify-aes":174,"pbkdf2":471,"safe-buffer":529}],471:[function(require,module,exports){
 'use strict';
 
 exports.pbkdf2 = require('./lib/async');
 exports.pbkdf2Sync = require('./lib/sync');
 
-},{"./lib/async":454,"./lib/sync":457}],454:[function(require,module,exports){
+},{"./lib/async":472,"./lib/sync":475}],472:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -86559,7 +88503,7 @@ module.exports = function (password, salt, iterations, keylen, digest, callback)
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./default-encoding":455,"./precondition":456,"./sync":457,"./to-buffer":458,"safe-buffer":511}],455:[function(require,module,exports){
+},{"./default-encoding":473,"./precondition":474,"./sync":475,"./to-buffer":476,"safe-buffer":529}],473:[function(require,module,exports){
 (function (process,global){(function (){
 'use strict';
 
@@ -86577,7 +88521,7 @@ if (global.process && global.process.browser) {
 module.exports = defaultEncoding;
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":465}],456:[function(require,module,exports){
+},{"_process":483}],474:[function(require,module,exports){
 'use strict';
 
 var MAX_ALLOC = Math.pow(2, 30) - 1; // default in iojs
@@ -86600,7 +88544,7 @@ module.exports = function (iterations, keylen) {
 	}
 };
 
-},{}],457:[function(require,module,exports){
+},{}],475:[function(require,module,exports){
 'use strict';
 
 var md5 = require('create-hash/md5');
@@ -86733,7 +88677,7 @@ function pbkdf2(password, salt, iterations, keylen, digest) {
 
 module.exports = pbkdf2;
 
-},{"./default-encoding":455,"./precondition":456,"./to-buffer":458,"create-hash/md5":460,"ripemd160":462,"safe-buffer":511,"sha.js":516}],458:[function(require,module,exports){
+},{"./default-encoding":473,"./precondition":474,"./to-buffer":476,"create-hash/md5":478,"ripemd160":480,"safe-buffer":529,"sha.js":534}],476:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -86755,7 +88699,7 @@ module.exports = function (thing, encoding, name) {
 	throw new TypeError(name + ' must be a string, a Buffer, a Uint8Array, or a DataView');
 };
 
-},{"safe-buffer":511,"to-buffer":615}],459:[function(require,module,exports){
+},{"safe-buffer":529,"to-buffer":633}],477:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 var intSize = 4
@@ -86789,7 +88733,7 @@ module.exports = function hash (buf, fn) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185}],460:[function(require,module,exports){
+},{"buffer":203}],478:[function(require,module,exports){
 'use strict'
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
@@ -86942,7 +88886,7 @@ module.exports = function md5 (buf) {
   return makeHash(buf, core_md5)
 }
 
-},{"./make-hash":459}],461:[function(require,module,exports){
+},{"./make-hash":477}],479:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 var Transform = require('stream').Transform
@@ -87029,7 +88973,7 @@ HashBase.prototype._digest = function () {
 module.exports = HashBase
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"inherits":389,"stream":592}],462:[function(require,module,exports){
+},{"buffer":203,"inherits":407,"stream":610}],480:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 var inherits = require('inherits')
@@ -87324,7 +89268,7 @@ function fn5 (a, b, c, d, e, m, k, s) {
 module.exports = RIPEMD160
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"hash-base":461,"inherits":389}],463:[function(require,module,exports){
+},{"buffer":203,"hash-base":479,"inherits":407}],481:[function(require,module,exports){
 'use strict';
 
 /** @type {import('.')} */
@@ -87343,7 +89287,7 @@ module.exports = [
 	'BigUint64Array'
 ];
 
-},{}],464:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -87392,7 +89336,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":465}],465:[function(require,module,exports){
+},{"_process":483}],483:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -87578,7 +89522,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],466:[function(require,module,exports){
+},{}],484:[function(require,module,exports){
 var varint = require('varint')
 var svarint = require('signed-varint')
 var b4a = require('b4a')
@@ -87867,7 +89811,7 @@ function bufferLength (val) {
   return b4a.isBuffer(val) ? val.length : b4a.byteLength(val)
 }
 
-},{"b4a":97,"signed-varint":533,"varint":623}],467:[function(require,module,exports){
+},{"b4a":111,"signed-varint":551,"varint":641}],485:[function(require,module,exports){
 const b4a = require('b4a')
 const c = require('compact-encoding')
 const queueTick = require('queue-tick')
@@ -88636,7 +90580,7 @@ function encodingLength (enc, val) {
   return state.end
 }
 
-},{"b4a":97,"compact-encoding":199,"queue-tick":475,"safety-catch":512,"unslab":619}],468:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217,"queue-tick":493,"safety-catch":530,"unslab":637}],486:[function(require,module,exports){
 exports.publicEncrypt = require('./publicEncrypt')
 exports.privateDecrypt = require('./privateDecrypt')
 
@@ -88648,7 +90592,7 @@ exports.publicDecrypt = function publicDecrypt (key, buf) {
   return exports.privateDecrypt(key, buf, true)
 }
 
-},{"./privateDecrypt":471,"./publicEncrypt":472}],469:[function(require,module,exports){
+},{"./privateDecrypt":489,"./publicEncrypt":490}],487:[function(require,module,exports){
 var createHash = require('create-hash')
 var Buffer = require('safe-buffer').Buffer
 
@@ -88669,9 +90613,9 @@ function i2ops (c) {
   return out
 }
 
-},{"create-hash":233,"safe-buffer":511}],470:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"buffer":153,"dup":78}],471:[function(require,module,exports){
+},{"create-hash":251,"safe-buffer":529}],488:[function(require,module,exports){
+arguments[4][92][0].apply(exports,arguments)
+},{"buffer":171,"dup":92}],489:[function(require,module,exports){
 var parseKeys = require('parse-asn1')
 var mgf = require('./mgf')
 var xor = require('./xor')
@@ -88778,7 +90722,7 @@ function compare (a, b) {
   return dif
 }
 
-},{"./mgf":469,"./withPublic":473,"./xor":474,"bn.js":470,"browserify-rsa":174,"create-hash":233,"parse-asn1":452,"safe-buffer":511}],472:[function(require,module,exports){
+},{"./mgf":487,"./withPublic":491,"./xor":492,"bn.js":488,"browserify-rsa":192,"create-hash":251,"parse-asn1":470,"safe-buffer":529}],490:[function(require,module,exports){
 var parseKeys = require('parse-asn1')
 var randomBytes = require('randombytes')
 var createHash = require('create-hash')
@@ -88868,7 +90812,7 @@ function nonZero (len) {
   return out
 }
 
-},{"./mgf":469,"./withPublic":473,"./xor":474,"bn.js":470,"browserify-rsa":174,"create-hash":233,"parse-asn1":452,"randombytes":493,"safe-buffer":511}],473:[function(require,module,exports){
+},{"./mgf":487,"./withPublic":491,"./xor":492,"bn.js":488,"browserify-rsa":192,"create-hash":251,"parse-asn1":470,"randombytes":511,"safe-buffer":529}],491:[function(require,module,exports){
 var BN = require('bn.js')
 var Buffer = require('safe-buffer').Buffer
 
@@ -88882,7 +90826,7 @@ function withPublic (paddedMsg, key) {
 
 module.exports = withPublic
 
-},{"bn.js":470,"safe-buffer":511}],474:[function(require,module,exports){
+},{"bn.js":488,"safe-buffer":529}],492:[function(require,module,exports){
 module.exports = function xor (a, b) {
   var len = a.length
   var i = -1
@@ -88892,10 +90836,10 @@ module.exports = function xor (a, b) {
   return a
 }
 
-},{}],475:[function(require,module,exports){
+},{}],493:[function(require,module,exports){
 module.exports = typeof queueMicrotask === 'function' ? queueMicrotask : (fn) => Promise.resolve().then(fn)
 
-},{}],476:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 const simdle = require('simdle-universal')
 
 const INDEX_LEN = (16 /* root */ + 128 * 16 /* children */) * 2
@@ -89339,7 +91283,7 @@ class SparseIndex extends Index {
   }
 }
 
-},{"simdle-universal":534}],477:[function(require,module,exports){
+},{"simdle-universal":552}],495:[function(require,module,exports){
 class CacheEntry {
   constructor (key, index, map) {
     this.key = key
@@ -89460,7 +91404,7 @@ class Rache {
 
 module.exports = Rache
 
-},{}],478:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 (function (Buffer){(function (){
 const ras = require('random-access-storage')
 
@@ -89788,7 +91732,7 @@ DeleteRequest.prototype.run = function (req) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"random-access-storage":479}],479:[function(require,module,exports){
+},{"buffer":203,"random-access-storage":497}],497:[function(require,module,exports){
 var events = require('events')
 var inherits = require('inherits')
 var queueTick = require('queue-tick')
@@ -90060,12 +92004,12 @@ function nextTick (req, err, val) {
   queueTick(() => req.callback(err, val))
 }
 
-},{"events":278,"inherits":389,"queue-tick":475}],480:[function(require,module,exports){
+},{"events":296,"inherits":407,"queue-tick":493}],498:[function(require,module,exports){
 module.exports = function () {
   throw new Error('random-access-file is not supported in the browser')
 }
 
-},{}],481:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -90073,7 +92017,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 const indexedDB = exports.indexedDB = window.indexedDB;
 
-},{}],482:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -90353,7 +92297,7 @@ const RequestType = {
 exports.default = RandomAccessProvider;
 module.exports = exports["default"];
 
-},{"./IndexedDB":481,"buffer":185,"random-access-storage":483}],483:[function(require,module,exports){
+},{"./IndexedDB":499,"buffer":203,"random-access-storage":501}],501:[function(require,module,exports){
 (function (process){(function (){
 var events = require('events')
 var inherits = require('inherits')
@@ -90607,7 +92551,7 @@ function nextTickCallback (req, err, val) {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":465,"events":278,"inherits":389}],484:[function(require,module,exports){
+},{"_process":483,"events":296,"inherits":407}],502:[function(require,module,exports){
 (function (Buffer){(function (){
 var RandomAccess = require('random-access-storage')
 var inherits = require('inherits')
@@ -90790,7 +92734,7 @@ function backify (r, cb) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./lib/blocks.js":485,"buffer":185,"buffer-alloc":182,"buffer-from":486,"inherits":389,"next-tick":415,"once":447,"random-access-storage":487}],485:[function(require,module,exports){
+},{"./lib/blocks.js":503,"buffer":203,"buffer-alloc":200,"buffer-from":504,"inherits":407,"next-tick":433,"once":465,"random-access-storage":505}],503:[function(require,module,exports){
 module.exports = function (size, start, end) {
   var result = []
   for (var n = Math.floor(start/size)*size; n < end; n += size) {
@@ -90803,7 +92747,7 @@ module.exports = function (size, start, end) {
   return result
 }
 
-},{}],486:[function(require,module,exports){
+},{}],504:[function(require,module,exports){
 (function (Buffer){(function (){
 var toString = Object.prototype.toString
 
@@ -90876,9 +92820,9 @@ function bufferFrom (value, encodingOrOffset, length) {
 module.exports = bufferFrom
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185}],487:[function(require,module,exports){
-arguments[4][479][0].apply(exports,arguments)
-},{"dup":479,"events":278,"inherits":389,"queue-tick":475}],488:[function(require,module,exports){
+},{"buffer":203}],505:[function(require,module,exports){
+arguments[4][497][0].apply(exports,arguments)
+},{"dup":497,"events":296,"inherits":407,"queue-tick":493}],506:[function(require,module,exports){
 /* global self */
 const global = (typeof window !== 'undefined') ? window : self
 
@@ -90914,7 +92858,7 @@ if (requestFileSystem) {
 
 module.exports = storage
 
-},{"./mutable-file-wrapper.js":489,"random-access-chrome-file":478,"random-access-idb":484,"random-access-memory":490}],489:[function(require,module,exports){
+},{"./mutable-file-wrapper.js":507,"random-access-chrome-file":496,"random-access-idb":502,"random-access-memory":508}],507:[function(require,module,exports){
 
 module.exports = function mutableStorage (options) {
   const randomAccess = require('random-access-storage')
@@ -90985,7 +92929,7 @@ module.exports = function mutableStorage (options) {
   }
 }
 
-},{"random-access-idb-mutable-file":482,"random-access-storage":491}],490:[function(require,module,exports){
+},{"random-access-idb-mutable-file":500,"random-access-storage":509}],508:[function(require,module,exports){
 (function (Buffer){(function (){
 const RandomAccess = require('random-access-storage')
 const isOptions = require('is-options')
@@ -91122,9 +93066,9 @@ RAM.prototype.toBuffer = function () {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":185,"inherits":389,"is-options":391,"random-access-storage":491}],491:[function(require,module,exports){
-arguments[4][479][0].apply(exports,arguments)
-},{"dup":479,"events":278,"inherits":389,"queue-tick":475}],492:[function(require,module,exports){
+},{"buffer":203,"inherits":407,"is-options":409,"random-access-storage":509}],509:[function(require,module,exports){
+arguments[4][497][0].apply(exports,arguments)
+},{"dup":497,"events":296,"inherits":407,"queue-tick":493}],510:[function(require,module,exports){
 module.exports = class RandomArrayIterator {
   constructor (values) {
     this.values = values
@@ -91172,7 +93116,7 @@ module.exports = class RandomArrayIterator {
   }
 }
 
-},{}],493:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 (function (process,global){(function (){
 'use strict'
 
@@ -91226,7 +93170,7 @@ function randomBytes (size, cb) {
 }
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":465,"safe-buffer":511}],494:[function(require,module,exports){
+},{"_process":483,"safe-buffer":529}],512:[function(require,module,exports){
 (function (process,global){(function (){
 'use strict'
 
@@ -91338,7 +93282,7 @@ function randomFillSync (buf, offset, size) {
 }
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":465,"randombytes":493,"safe-buffer":511}],495:[function(require,module,exports){
+},{"_process":483,"randombytes":511,"safe-buffer":529}],513:[function(require,module,exports){
 class WriteLock {
   constructor (parent) {
     this.writing = false
@@ -91474,7 +93418,7 @@ function pushToQueue (queue, resolve, reject) {
   queue.push([resolve, reject])
 }
 
-},{}],496:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -91606,7 +93550,7 @@ Duplex.prototype._destroy = function (err, cb) {
 
   pna.nextTick(cb, err);
 };
-},{"./_stream_readable":498,"./_stream_writable":500,"core-util-is":203,"inherits":389,"process-nextick-args":464}],497:[function(require,module,exports){
+},{"./_stream_readable":516,"./_stream_writable":518,"core-util-is":221,"inherits":407,"process-nextick-args":482}],515:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -91654,7 +93598,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":499,"core-util-is":203,"inherits":389}],498:[function(require,module,exports){
+},{"./_stream_transform":517,"core-util-is":221,"inherits":407}],516:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -92676,7 +94620,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./_stream_duplex":496,"./internal/streams/BufferList":501,"./internal/streams/destroy":502,"./internal/streams/stream":503,"_process":465,"core-util-is":203,"events":278,"inherits":389,"isarray":504,"process-nextick-args":464,"safe-buffer":505,"string_decoder/":506,"util":153}],499:[function(require,module,exports){
+},{"./_stream_duplex":514,"./internal/streams/BufferList":519,"./internal/streams/destroy":520,"./internal/streams/stream":521,"_process":483,"core-util-is":221,"events":296,"inherits":407,"isarray":522,"process-nextick-args":482,"safe-buffer":523,"string_decoder/":524,"util":171}],517:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -92891,7 +94835,7 @@ function done(stream, er, data) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":496,"core-util-is":203,"inherits":389}],500:[function(require,module,exports){
+},{"./_stream_duplex":514,"core-util-is":221,"inherits":407}],518:[function(require,module,exports){
 (function (process,global,setImmediate){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -93579,7 +95523,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"./_stream_duplex":496,"./internal/streams/destroy":502,"./internal/streams/stream":503,"_process":465,"core-util-is":203,"inherits":389,"process-nextick-args":464,"safe-buffer":505,"timers":613,"util-deprecate":620}],501:[function(require,module,exports){
+},{"./_stream_duplex":514,"./internal/streams/destroy":520,"./internal/streams/stream":521,"_process":483,"core-util-is":221,"inherits":407,"process-nextick-args":482,"safe-buffer":523,"timers":631,"util-deprecate":638}],519:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -93658,7 +95602,7 @@ if (util && util.inspect && util.inspect.custom) {
     return this.constructor.name + ' ' + obj;
   };
 }
-},{"safe-buffer":505,"util":153}],502:[function(require,module,exports){
+},{"safe-buffer":523,"util":171}],520:[function(require,module,exports){
 'use strict';
 
 /*<replacement>*/
@@ -93743,12 +95687,12 @@ module.exports = {
   destroy: destroy,
   undestroy: undestroy
 };
-},{"process-nextick-args":464}],503:[function(require,module,exports){
+},{"process-nextick-args":482}],521:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":278}],504:[function(require,module,exports){
-arguments[4][393][0].apply(exports,arguments)
-},{"dup":393}],505:[function(require,module,exports){
+},{"events":296}],522:[function(require,module,exports){
+arguments[4][411][0].apply(exports,arguments)
+},{"dup":411}],523:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -93812,7 +95756,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":185}],506:[function(require,module,exports){
+},{"buffer":203}],524:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -94109,7 +96053,7 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":505}],507:[function(require,module,exports){
+},{"safe-buffer":523}],525:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -94118,7 +96062,7 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":496,"./lib/_stream_passthrough.js":497,"./lib/_stream_readable.js":498,"./lib/_stream_transform.js":499,"./lib/_stream_writable.js":500}],508:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":514,"./lib/_stream_passthrough.js":515,"./lib/_stream_readable.js":516,"./lib/_stream_transform.js":517,"./lib/_stream_writable.js":518}],526:[function(require,module,exports){
 const EventEmitter = require('events')
 
 module.exports = class ReadyResource extends EventEmitter {
@@ -94179,7 +96123,7 @@ async function close (self) {
   self.emit('close')
 }
 
-},{"events":278}],509:[function(require,module,exports){
+},{"events":296}],527:[function(require,module,exports){
 let tmpResolve = null
 let tmpReject = null
 
@@ -94199,7 +96143,7 @@ function setTmp (resolve, reject) {
   tmpReject = reject
 }
 
-},{}],510:[function(require,module,exports){
+},{}],528:[function(require,module,exports){
 'use strict'
 var Buffer = require('buffer').Buffer
 var inherits = require('inherits')
@@ -94364,7 +96308,7 @@ function fn5 (a, b, c, d, e, m, k, s) {
 
 module.exports = RIPEMD160
 
-},{"buffer":185,"hash-base":297,"inherits":389}],511:[function(require,module,exports){
+},{"buffer":203,"hash-base":315,"inherits":407}],529:[function(require,module,exports){
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
@@ -94431,7 +96375,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":185}],512:[function(require,module,exports){
+},{"buffer":203}],530:[function(require,module,exports){
 module.exports = safetyCatch
 
 function isActuallyUncaught (err) {
@@ -94456,7 +96400,7 @@ function safetyCatch (err) {
   }
 }
 
-},{}],513:[function(require,module,exports){
+},{}],531:[function(require,module,exports){
 module.exports = sameData
 
 function type (o) {
@@ -94516,7 +96460,7 @@ function cmp (a, b) {
   return a[0] === b[0] ? 0 : a[0] < b[0] ? -1 : 1
 }
 
-},{}],514:[function(require,module,exports){
+},{}],532:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -94560,7 +96504,7 @@ module.exports = function setFunctionLength(fn, length) {
 	return fn;
 };
 
-},{"define-data-property":239,"es-errors/type":275,"get-intrinsic":286,"gopd":292,"has-property-descriptors":293}],515:[function(require,module,exports){
+},{"define-data-property":257,"es-errors/type":293,"get-intrinsic":304,"gopd":310,"has-property-descriptors":311}],533:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -94646,7 +96590,7 @@ Hash.prototype._update = function () {
 
 module.exports = Hash;
 
-},{"safe-buffer":511,"to-buffer":615}],516:[function(require,module,exports){
+},{"safe-buffer":529,"to-buffer":633}],534:[function(require,module,exports){
 'use strict';
 
 module.exports = function SHA(algorithm) {
@@ -94667,7 +96611,7 @@ module.exports.sha256 = require('./sha256');
 module.exports.sha384 = require('./sha384');
 module.exports.sha512 = require('./sha512');
 
-},{"./sha":517,"./sha1":518,"./sha224":519,"./sha256":520,"./sha384":521,"./sha512":522}],517:[function(require,module,exports){
+},{"./sha":535,"./sha1":536,"./sha224":537,"./sha256":538,"./sha384":539,"./sha512":540}],535:[function(require,module,exports){
 'use strict';
 
 /*
@@ -94773,7 +96717,7 @@ Sha.prototype._hash = function () {
 
 module.exports = Sha;
 
-},{"./hash":515,"inherits":389,"safe-buffer":511}],518:[function(require,module,exports){
+},{"./hash":533,"inherits":407,"safe-buffer":529}],536:[function(require,module,exports){
 'use strict';
 
 /*
@@ -94884,7 +96828,7 @@ Sha1.prototype._hash = function () {
 
 module.exports = Sha1;
 
-},{"./hash":515,"inherits":389,"safe-buffer":511}],519:[function(require,module,exports){
+},{"./hash":533,"inherits":407,"safe-buffer":529}],537:[function(require,module,exports){
 'use strict';
 
 /**
@@ -94941,7 +96885,7 @@ Sha224.prototype._hash = function () {
 
 module.exports = Sha224;
 
-},{"./hash":515,"./sha256":520,"inherits":389,"safe-buffer":511}],520:[function(require,module,exports){
+},{"./hash":533,"./sha256":538,"inherits":407,"safe-buffer":529}],538:[function(require,module,exports){
 'use strict';
 
 /**
@@ -95132,7 +97076,7 @@ Sha256.prototype._hash = function () {
 
 module.exports = Sha256;
 
-},{"./hash":515,"inherits":389,"safe-buffer":511}],521:[function(require,module,exports){
+},{"./hash":533,"inherits":407,"safe-buffer":529}],539:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -95193,7 +97137,7 @@ Sha384.prototype._hash = function () {
 
 module.exports = Sha384;
 
-},{"./hash":515,"./sha512":522,"inherits":389,"safe-buffer":511}],522:[function(require,module,exports){
+},{"./hash":533,"./sha512":540,"inherits":407,"safe-buffer":529}],540:[function(require,module,exports){
 'use strict';
 
 var inherits = require('inherits');
@@ -95577,7 +97521,7 @@ Sha512.prototype._hash = function () {
 
 module.exports = Sha512;
 
-},{"./hash":515,"inherits":389,"safe-buffer":511}],523:[function(require,module,exports){
+},{"./hash":533,"inherits":407,"safe-buffer":529}],541:[function(require,module,exports){
 const js = require('./sha256.js')
 const wasm = require('sha256-wasm')
 
@@ -95605,7 +97549,7 @@ wasm.ready(function (err) {
   }
 })
 
-},{"./sha256.js":524,"sha256-wasm":525}],524:[function(require,module,exports){
+},{"./sha256.js":542,"sha256-wasm":543}],542:[function(require,module,exports){
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
@@ -95842,7 +97786,7 @@ function bswap (a) {
   return r | l
 }
 
-},{"b4a":97,"nanoassert":414}],525:[function(require,module,exports){
+},{"b4a":111,"nanoassert":432}],543:[function(require,module,exports){
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
@@ -96013,7 +97957,7 @@ function roundUp (n, base) {
   return (n + base - 1) & -base
 }
 
-},{"./sha256.js":526,"b4a":97,"nanoassert":414}],526:[function(require,module,exports){
+},{"./sha256.js":544,"b4a":111,"nanoassert":432}],544:[function(require,module,exports){
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -96049,7 +97993,7 @@ module.exports = (imports) => {
   return instance.exports;
 };
 
-},{}],527:[function(require,module,exports){
+},{}],545:[function(require,module,exports){
 const js = require('./sha512.js')
 const wasm = require('sha512-wasm')
 
@@ -96077,7 +98021,7 @@ wasm.ready(function (err) {
   }
 })
 
-},{"./sha512.js":528,"sha512-wasm":529}],528:[function(require,module,exports){
+},{"./sha512.js":546,"sha512-wasm":547}],546:[function(require,module,exports){
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
@@ -96637,7 +98581,7 @@ HMAC.prototype.digest = function (enc, offset = 0) {
 
 Sha512.HMAC = HMAC
 
-},{"b4a":97,"nanoassert":414}],529:[function(require,module,exports){
+},{"b4a":111,"nanoassert":432}],547:[function(require,module,exports){
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
@@ -96810,7 +98754,7 @@ function roundUp (n, base) {
   return (n + base - 1) & -base
 }
 
-},{"./sha512.js":530,"b4a":97,"nanoassert":414}],530:[function(require,module,exports){
+},{"./sha512.js":548,"b4a":111,"nanoassert":432}],548:[function(require,module,exports){
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -96846,7 +98790,7 @@ module.exports = (imports) => {
   return instance.exports;
 };
 
-},{}],531:[function(require,module,exports){
+},{}],549:[function(require,module,exports){
 const set = require('unordered-set')
 
 module.exports = opts => new ShuffledPriorityQueue(opts)
@@ -96982,7 +98926,7 @@ function add (len, b) {
   return len + b.length
 }
 
-},{"unordered-set":618}],532:[function(require,module,exports){
+},{"unordered-set":636}],550:[function(require,module,exports){
 module.exports = class Signal {
   constructor () {
     this._resolve = null
@@ -97041,7 +98985,7 @@ function bind (resolve, reject) {
   this._reject = reject
 }
 
-},{}],533:[function(require,module,exports){
+},{}],551:[function(require,module,exports){
 var varint = require('varint')
 exports.encode = function encode (v, b, o) {
   v = v >= 0 ? v*2 : v*-2 - 1
@@ -97059,7 +99003,7 @@ exports.encodingLength = function (v) {
   return varint.encodingLength(v >= 0 ? v*2 : v*-2 - 1)
 }
 
-},{"varint":623}],534:[function(require,module,exports){
+},{"varint":641}],552:[function(require,module,exports){
 const b4a = require('b4a')
 const scalar = require('./scalar')
 
@@ -97297,7 +99241,7 @@ exports.xor = binary(
   }
 )
 
-},{"./scalar":535,"b4a":97}],535:[function(require,module,exports){
+},{"./scalar":553,"b4a":111}],553:[function(require,module,exports){
 const clz = exports.clz = function clz (n) {
   return Math.clz32(n)
 }
@@ -97322,7 +99266,7 @@ exports.cnt = function cnt (n) {
   return n
 }
 
-},{}],536:[function(require,module,exports){
+},{}],554:[function(require,module,exports){
 module.exports = fallback
 
 function _add (a, b) {
@@ -97444,7 +99388,7 @@ function fallback (out, m, key) { // modified from https://github.com/jedisct1/s
   out[7] = (h.h >> 24) & 0xff
 }
 
-},{}],537:[function(require,module,exports){
+},{}],555:[function(require,module,exports){
 var assert = require('nanoassert')
 var wasm = typeof WebAssembly !== 'undefined' && require('./siphash24')()
 var fallback = require('./fallback')
@@ -97485,7 +99429,7 @@ function realloc (size) {
   memory = new Uint8Array(wasm.memory.buffer)
 }
 
-},{"./fallback":536,"./siphash24":538,"nanoassert":414}],538:[function(require,module,exports){
+},{"./fallback":554,"./siphash24":556,"nanoassert":432}],556:[function(require,module,exports){
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -97521,7 +99465,7 @@ module.exports = (imports) => {
   return instance.exports;
 };
 
-},{}],539:[function(require,module,exports){
+},{}],557:[function(require,module,exports){
 const sodium = require('sodium-universal')
 
 module.exports = {
@@ -97532,7 +99476,7 @@ module.exports = {
   STATEBYTES: sodium.crypto_hash_sha256_STATEBYTES
 }
 
-},{"sodium-universal":585}],540:[function(require,module,exports){
+},{"sodium-universal":603}],558:[function(require,module,exports){
 const sodium = require('sodium-universal')
 
 module.exports = {
@@ -97543,7 +99487,7 @@ module.exports = {
   STATEBYTES: sodium.crypto_hash_sha512_STATEBYTES
 }
 
-},{"sodium-universal":585}],541:[function(require,module,exports){
+},{"sodium-universal":603}],559:[function(require,module,exports){
 const b4a = require('b4a')
 
 const sha256 = require('./hash/sha256')
@@ -97647,55 +99591,55 @@ function bufferByteXor (output, byte) {
   return output
 }
 
-},{"./hash/sha256":539,"./hash/sha512":540,"b4a":97}],542:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":557,"./crypto_verify":558,"./internal/poly1305":563,"dup":21,"nanoassert":414}],543:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"./crypto_verify":558,"dup":22,"nanoassert":414,"sha512-universal":527}],544:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"./crypto_generichash":545,"./crypto_hash":546,"./crypto_scalarmult":551,"./crypto_secretbox":552,"./crypto_stream":556,"./randombytes":565,"dup":23,"nanoassert":414,"xsalsa20":629}],545:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"blake2b":150,"dup":24}],546:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"nanoassert":414,"sha512-universal":527}],547:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26,"nanoassert":414,"sha256-universal":523}],548:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"./randombytes":565,"blake2b":150,"dup":27,"nanoassert":414}],549:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./crypto_generichash":545,"./crypto_scalarmult":551,"./randombytes":565,"dup":28,"nanoassert":414}],550:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./crypto_verify":558,"./internal/poly1305":563,"dup":29,"nanoassert":414}],551:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"./internal/ed25519":561,"dup":30}],552:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"./crypto_onetimeauth":550,"./crypto_stream":556,"dup":31,"nanoassert":414}],553:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":557,"./helpers":559,"./internal/hchacha20":562,"./internal/poly1305":563,"./randombytes":565,"dup":32,"nanoassert":414}],554:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"siphash24":537}],555:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./crypto_hash":546,"./crypto_hash.js":546,"./crypto_scalarmult.js":551,"./crypto_verify":558,"./internal/ed25519":561,"./randombytes":565,"dup":34,"nanoassert":414}],556:[function(require,module,exports){
+},{"./hash/sha256":557,"./hash/sha512":558,"b4a":111}],560:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"xsalsa20":629}],557:[function(require,module,exports){
+},{"./crypto_stream_chacha20":575,"./crypto_verify":576,"./internal/poly1305":581,"dup":35,"nanoassert":432}],561:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"chacha20-universal":194,"dup":36,"nanoassert":414}],558:[function(require,module,exports){
+},{"./crypto_verify":576,"dup":36,"nanoassert":432,"sha512-universal":545}],562:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"dup":37}],559:[function(require,module,exports){
+},{"./crypto_generichash":563,"./crypto_hash":564,"./crypto_scalarmult":569,"./crypto_secretbox":570,"./crypto_stream":574,"./randombytes":583,"dup":37,"nanoassert":432,"xsalsa20":647}],563:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"./crypto_verify":558,"dup":38,"nanoassert":414}],560:[function(require,module,exports){
+},{"blake2b":164,"dup":38}],564:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"./crypto_aead":542,"./crypto_auth":543,"./crypto_box":544,"./crypto_generichash":545,"./crypto_hash":546,"./crypto_hash_sha256":547,"./crypto_kdf":548,"./crypto_kx":549,"./crypto_onetimeauth":550,"./crypto_scalarmult":551,"./crypto_secretbox":552,"./crypto_secretstream":553,"./crypto_shorthash":554,"./crypto_sign":555,"./crypto_stream":556,"./crypto_stream_chacha20":557,"./crypto_verify":558,"./helpers":559,"./memory":564,"./randombytes":565,"dup":39}],561:[function(require,module,exports){
+},{"dup":39,"nanoassert":432,"sha512-universal":545}],565:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],562:[function(require,module,exports){
+},{"dup":40,"nanoassert":432,"sha256-universal":541}],566:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"../memory":564,"dup":41,"nanoassert":414}],563:[function(require,module,exports){
+},{"./randombytes":583,"blake2b":164,"dup":41,"nanoassert":432}],567:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"dup":42}],564:[function(require,module,exports){
+},{"./crypto_generichash":563,"./crypto_scalarmult":569,"./randombytes":583,"dup":42,"nanoassert":432}],568:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],565:[function(require,module,exports){
+},{"./crypto_verify":576,"./internal/poly1305":581,"dup":43,"nanoassert":432}],569:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"dup":44,"nanoassert":414}],566:[function(require,module,exports){
+},{"./internal/ed25519":579,"dup":44}],570:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./crypto_onetimeauth":568,"./crypto_stream":574,"dup":45,"nanoassert":432}],571:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./crypto_stream_chacha20":575,"./helpers":577,"./internal/hchacha20":580,"./internal/poly1305":581,"./randombytes":583,"dup":46,"nanoassert":432}],572:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47,"siphash24":555}],573:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"./crypto_hash":564,"./crypto_hash.js":564,"./crypto_scalarmult.js":569,"./crypto_verify":576,"./internal/ed25519":579,"./randombytes":583,"dup":48,"nanoassert":432}],574:[function(require,module,exports){
+arguments[4][49][0].apply(exports,arguments)
+},{"dup":49,"xsalsa20":647}],575:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"chacha20-universal":212,"dup":50,"nanoassert":432}],576:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],577:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./crypto_verify":576,"dup":52,"nanoassert":432}],578:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"./crypto_aead":560,"./crypto_auth":561,"./crypto_box":562,"./crypto_generichash":563,"./crypto_hash":564,"./crypto_hash_sha256":565,"./crypto_kdf":566,"./crypto_kx":567,"./crypto_onetimeauth":568,"./crypto_scalarmult":569,"./crypto_secretbox":570,"./crypto_secretstream":571,"./crypto_shorthash":572,"./crypto_sign":573,"./crypto_stream":574,"./crypto_stream_chacha20":575,"./crypto_verify":576,"./helpers":577,"./memory":582,"./randombytes":583,"dup":53}],579:[function(require,module,exports){
+arguments[4][54][0].apply(exports,arguments)
+},{"dup":54}],580:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../memory":582,"dup":55,"nanoassert":432}],581:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"dup":56}],582:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],583:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58,"nanoassert":432}],584:[function(require,module,exports){
 const sodium = require('sodium-universal')
 const b4a = require('b4a')
 
@@ -97767,55 +99711,55 @@ module.exports = {
   Pull
 }
 
-},{"b4a":97,"sodium-universal":585}],567:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":582,"./crypto_verify":583,"./internal/poly1305":588,"dup":21,"nanoassert":414}],568:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"./crypto_verify":583,"dup":22,"nanoassert":414,"sha512-universal":527}],569:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"./crypto_generichash":570,"./crypto_hash":571,"./crypto_scalarmult":576,"./crypto_secretbox":577,"./crypto_stream":581,"./randombytes":590,"dup":23,"nanoassert":414,"xsalsa20":629}],570:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"blake2b":150,"dup":24}],571:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"nanoassert":414,"sha512-universal":527}],572:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26,"nanoassert":414,"sha256-universal":523}],573:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"./randombytes":590,"blake2b":150,"dup":27,"nanoassert":414}],574:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./crypto_generichash":570,"./crypto_scalarmult":576,"./randombytes":590,"dup":28,"nanoassert":414}],575:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./crypto_verify":583,"./internal/poly1305":588,"dup":29,"nanoassert":414}],576:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"./internal/ed25519":586,"dup":30}],577:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"./crypto_onetimeauth":575,"./crypto_stream":581,"dup":31,"nanoassert":414}],578:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"./crypto_stream_chacha20":582,"./helpers":584,"./internal/hchacha20":587,"./internal/poly1305":588,"./randombytes":590,"dup":32,"nanoassert":414}],579:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"siphash24":537}],580:[function(require,module,exports){
-arguments[4][34][0].apply(exports,arguments)
-},{"./crypto_hash":571,"./crypto_hash.js":571,"./crypto_scalarmult.js":576,"./crypto_verify":583,"./internal/ed25519":586,"./randombytes":590,"dup":34,"nanoassert":414}],581:[function(require,module,exports){
+},{"b4a":111,"sodium-universal":603}],585:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"xsalsa20":629}],582:[function(require,module,exports){
+},{"./crypto_stream_chacha20":600,"./crypto_verify":601,"./internal/poly1305":606,"dup":35,"nanoassert":432}],586:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"chacha20-universal":194,"dup":36,"nanoassert":414}],583:[function(require,module,exports){
+},{"./crypto_verify":601,"dup":36,"nanoassert":432,"sha512-universal":545}],587:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"dup":37}],584:[function(require,module,exports){
+},{"./crypto_generichash":588,"./crypto_hash":589,"./crypto_scalarmult":594,"./crypto_secretbox":595,"./crypto_stream":599,"./randombytes":608,"dup":37,"nanoassert":432,"xsalsa20":647}],588:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"./crypto_verify":583,"dup":38,"nanoassert":414}],585:[function(require,module,exports){
+},{"blake2b":164,"dup":38}],589:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"./crypto_aead":567,"./crypto_auth":568,"./crypto_box":569,"./crypto_generichash":570,"./crypto_hash":571,"./crypto_hash_sha256":572,"./crypto_kdf":573,"./crypto_kx":574,"./crypto_onetimeauth":575,"./crypto_scalarmult":576,"./crypto_secretbox":577,"./crypto_secretstream":578,"./crypto_shorthash":579,"./crypto_sign":580,"./crypto_stream":581,"./crypto_stream_chacha20":582,"./crypto_verify":583,"./helpers":584,"./memory":589,"./randombytes":590,"dup":39}],586:[function(require,module,exports){
+},{"dup":39,"nanoassert":432,"sha512-universal":545}],590:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"dup":40}],587:[function(require,module,exports){
+},{"dup":40,"nanoassert":432,"sha256-universal":541}],591:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"../memory":589,"dup":41,"nanoassert":414}],588:[function(require,module,exports){
+},{"./randombytes":608,"blake2b":164,"dup":41,"nanoassert":432}],592:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"dup":42}],589:[function(require,module,exports){
+},{"./crypto_generichash":588,"./crypto_scalarmult":594,"./randombytes":608,"dup":42,"nanoassert":432}],593:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],590:[function(require,module,exports){
+},{"./crypto_verify":601,"./internal/poly1305":606,"dup":43,"nanoassert":432}],594:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"dup":44,"nanoassert":414}],591:[function(require,module,exports){
+},{"./internal/ed25519":604,"dup":44}],595:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"./crypto_onetimeauth":593,"./crypto_stream":599,"dup":45,"nanoassert":432}],596:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./crypto_stream_chacha20":600,"./helpers":602,"./internal/hchacha20":605,"./internal/poly1305":606,"./randombytes":608,"dup":46,"nanoassert":432}],597:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47,"siphash24":555}],598:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"./crypto_hash":589,"./crypto_hash.js":589,"./crypto_scalarmult.js":594,"./crypto_verify":601,"./internal/ed25519":604,"./randombytes":608,"dup":48,"nanoassert":432}],599:[function(require,module,exports){
+arguments[4][49][0].apply(exports,arguments)
+},{"dup":49,"xsalsa20":647}],600:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"chacha20-universal":212,"dup":50,"nanoassert":432}],601:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],602:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./crypto_verify":601,"dup":52,"nanoassert":432}],603:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"./crypto_aead":585,"./crypto_auth":586,"./crypto_box":587,"./crypto_generichash":588,"./crypto_hash":589,"./crypto_hash_sha256":590,"./crypto_kdf":591,"./crypto_kx":592,"./crypto_onetimeauth":593,"./crypto_scalarmult":594,"./crypto_secretbox":595,"./crypto_secretstream":596,"./crypto_shorthash":597,"./crypto_sign":598,"./crypto_stream":599,"./crypto_stream_chacha20":600,"./crypto_verify":601,"./helpers":602,"./memory":607,"./randombytes":608,"dup":53}],604:[function(require,module,exports){
+arguments[4][54][0].apply(exports,arguments)
+},{"dup":54}],605:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../memory":607,"dup":55,"nanoassert":432}],606:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"dup":56}],607:[function(require,module,exports){
+arguments[4][57][0].apply(exports,arguments)
+},{"dup":57}],608:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"dup":58,"nanoassert":432}],609:[function(require,module,exports){
 var tick = 1
 var maxTick = 65535
 var resolution = 4
@@ -97856,7 +99800,7 @@ module.exports = function (seconds) {
   }
 }
 
-},{}],592:[function(require,module,exports){
+},{}],610:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -97987,7 +99931,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":278,"inherits":389,"readable-stream/lib/_stream_duplex.js":594,"readable-stream/lib/_stream_passthrough.js":595,"readable-stream/lib/_stream_readable.js":596,"readable-stream/lib/_stream_transform.js":597,"readable-stream/lib/_stream_writable.js":598,"readable-stream/lib/internal/streams/end-of-stream.js":602,"readable-stream/lib/internal/streams/pipeline.js":604}],593:[function(require,module,exports){
+},{"events":296,"inherits":407,"readable-stream/lib/_stream_duplex.js":612,"readable-stream/lib/_stream_passthrough.js":613,"readable-stream/lib/_stream_readable.js":614,"readable-stream/lib/_stream_transform.js":615,"readable-stream/lib/_stream_writable.js":616,"readable-stream/lib/internal/streams/end-of-stream.js":620,"readable-stream/lib/internal/streams/pipeline.js":622}],611:[function(require,module,exports){
 'use strict';
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
@@ -98116,7 +100060,7 @@ createErrorType('ERR_UNKNOWN_ENCODING', function (arg) {
 createErrorType('ERR_STREAM_UNSHIFT_AFTER_END_EVENT', 'stream.unshift() after end event');
 module.exports.codes = codes;
 
-},{}],594:[function(require,module,exports){
+},{}],612:[function(require,module,exports){
 (function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -98245,7 +100189,7 @@ Object.defineProperty(Duplex.prototype, 'destroyed', {
   }
 });
 }).call(this)}).call(this,require('_process'))
-},{"./_stream_readable":596,"./_stream_writable":598,"_process":465,"inherits":389}],595:[function(require,module,exports){
+},{"./_stream_readable":614,"./_stream_writable":616,"_process":483,"inherits":407}],613:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -98283,7 +100227,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":597,"inherits":389}],596:[function(require,module,exports){
+},{"./_stream_transform":615,"inherits":407}],614:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -99313,7 +101257,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":593,"./_stream_duplex":594,"./internal/streams/async_iterator":599,"./internal/streams/buffer_list":600,"./internal/streams/destroy":601,"./internal/streams/from":603,"./internal/streams/state":605,"./internal/streams/stream":606,"_process":465,"buffer":185,"events":278,"inherits":389,"string_decoder/":608,"util":153}],597:[function(require,module,exports){
+},{"../errors":611,"./_stream_duplex":612,"./internal/streams/async_iterator":617,"./internal/streams/buffer_list":618,"./internal/streams/destroy":619,"./internal/streams/from":621,"./internal/streams/state":623,"./internal/streams/stream":624,"_process":483,"buffer":203,"events":296,"inherits":407,"string_decoder/":626,"util":171}],615:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -99504,7 +101448,7 @@ function done(stream, er, data) {
   if (stream._transformState.transforming) throw new ERR_TRANSFORM_ALREADY_TRANSFORMING();
   return stream.push(null);
 }
-},{"../errors":593,"./_stream_duplex":594,"inherits":389}],598:[function(require,module,exports){
+},{"../errors":611,"./_stream_duplex":612,"inherits":407}],616:[function(require,module,exports){
 (function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -100148,7 +102092,7 @@ Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":593,"./_stream_duplex":594,"./internal/streams/destroy":601,"./internal/streams/state":605,"./internal/streams/stream":606,"_process":465,"buffer":185,"inherits":389,"util-deprecate":620}],599:[function(require,module,exports){
+},{"../errors":611,"./_stream_duplex":612,"./internal/streams/destroy":619,"./internal/streams/state":623,"./internal/streams/stream":624,"_process":483,"buffer":203,"inherits":407,"util-deprecate":638}],617:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -100331,7 +102275,7 @@ var createReadableStreamAsyncIterator = function createReadableStreamAsyncIterat
 };
 module.exports = createReadableStreamAsyncIterator;
 }).call(this)}).call(this,require('_process'))
-},{"./end-of-stream":602,"_process":465}],600:[function(require,module,exports){
+},{"./end-of-stream":620,"_process":483}],618:[function(require,module,exports){
 'use strict';
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -100515,7 +102459,7 @@ module.exports = /*#__PURE__*/function () {
   }]);
   return BufferList;
 }();
-},{"buffer":185,"util":153}],601:[function(require,module,exports){
+},{"buffer":203,"util":171}],619:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -100614,7 +102558,7 @@ module.exports = {
   errorOrDestroy: errorOrDestroy
 };
 }).call(this)}).call(this,require('_process'))
-},{"_process":465}],602:[function(require,module,exports){
+},{"_process":483}],620:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/end-of-stream with
 // permission from the author, Mathias Buus (@mafintosh).
 
@@ -100701,12 +102645,12 @@ function eos(stream, opts, callback) {
   };
 }
 module.exports = eos;
-},{"../../../errors":593}],603:[function(require,module,exports){
+},{"../../../errors":611}],621:[function(require,module,exports){
 module.exports = function () {
   throw new Error('Readable.from is not available in the browser')
 };
 
-},{}],604:[function(require,module,exports){
+},{}],622:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/pump with
 // permission from the author, Mathias Buus (@mafintosh).
 
@@ -100793,7 +102737,7 @@ function pipeline() {
   return streams.reduce(pipe);
 }
 module.exports = pipeline;
-},{"../../../errors":593,"./end-of-stream":602}],605:[function(require,module,exports){
+},{"../../../errors":611,"./end-of-stream":620}],623:[function(require,module,exports){
 'use strict';
 
 var ERR_INVALID_OPT_VALUE = require('../../../errors').codes.ERR_INVALID_OPT_VALUE;
@@ -100816,9 +102760,9 @@ function getHighWaterMark(state, options, duplexKey, isDuplex) {
 module.exports = {
   getHighWaterMark: getHighWaterMark
 };
-},{"../../../errors":593}],606:[function(require,module,exports){
-arguments[4][503][0].apply(exports,arguments)
-},{"dup":503,"events":278}],607:[function(require,module,exports){
+},{"../../../errors":611}],624:[function(require,module,exports){
+arguments[4][521][0].apply(exports,arguments)
+},{"dup":521,"events":296}],625:[function(require,module,exports){
 (function (global){(function (){
 const { EventEmitter } = require('events')
 const STREAM_DESTROYED = new Error('Stream was destroyed')
@@ -102006,9 +103950,9 @@ module.exports = {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"events":278,"fast-fifo":281,"text-decoder":610}],608:[function(require,module,exports){
-arguments[4][506][0].apply(exports,arguments)
-},{"dup":506,"safe-buffer":511}],609:[function(require,module,exports){
+},{"events":296,"fast-fifo":299,"text-decoder":628}],626:[function(require,module,exports){
+arguments[4][524][0].apply(exports,arguments)
+},{"dup":524,"safe-buffer":529}],627:[function(require,module,exports){
 const codecs = require('codecs')
 const b = require('b4a')
 
@@ -102080,7 +104024,7 @@ function compat (enc) {
   return enc
 }
 
-},{"b4a":97,"codecs":196}],610:[function(require,module,exports){
+},{"b4a":111,"codecs":214}],628:[function(require,module,exports){
 const PassThroughDecoder = require('./lib/pass-through-decoder')
 const UTF8Decoder = require('./lib/utf8-decoder')
 
@@ -102146,7 +104090,7 @@ function normalizeEncoding (encoding) {
   }
 };
 
-},{"./lib/pass-through-decoder":611,"./lib/utf8-decoder":611}],611:[function(require,module,exports){
+},{"./lib/pass-through-decoder":629,"./lib/utf8-decoder":629}],629:[function(require,module,exports){
 module.exports = class BrowserDecoder {
   constructor (encoding) {
     this.decoder = new TextDecoder(encoding === 'utf16le' ? 'utf16-le' : encoding)
@@ -102165,7 +104109,7 @@ module.exports = class BrowserDecoder {
   }
 }
 
-},{}],612:[function(require,module,exports){
+},{}],630:[function(require,module,exports){
 module.exports = class TimerBrowser {
   constructor (ms, fn, ctx = null, interval = false) {
     this.ms = ms
@@ -102221,7 +104165,7 @@ function callInterval (self) {
   self.ontimeout.call(self.context)
 }
 
-},{}],613:[function(require,module,exports){
+},{}],631:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -102300,7 +104244,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":465,"timers":613}],614:[function(require,module,exports){
+},{"process/browser.js":483,"timers":631}],632:[function(require,module,exports){
 const b4a = require('b4a')
 
 module.exports = class BufferMap {
@@ -102353,7 +104297,7 @@ module.exports = class BufferMap {
   }
 }
 
-},{"b4a":97}],615:[function(require,module,exports){
+},{"b4a":111}],633:[function(require,module,exports){
 'use strict';
 
 var Buffer = require('safe-buffer').Buffer;
@@ -102464,7 +104408,7 @@ module.exports = function toBuffer(data, encoding) {
 	throw new TypeError('The "data" argument must be a string, an Array, a Buffer, a Uint8Array, or a DataView.');
 };
 
-},{"isarray":393,"safe-buffer":511,"typed-array-buffer":616}],616:[function(require,module,exports){
+},{"isarray":411,"safe-buffer":529,"typed-array-buffer":634}],634:[function(require,module,exports){
 'use strict';
 
 var $TypeError = require('es-errors/type');
@@ -102485,7 +104429,7 @@ module.exports = $typedArrayBuffer || function typedArrayBuffer(x) {
 	return x.buffer;
 };
 
-},{"call-bound":193,"es-errors/type":275,"is-typed-array":392}],617:[function(require,module,exports){
+},{"call-bound":211,"es-errors/type":293,"is-typed-array":410}],635:[function(require,module,exports){
 module.exports = resolve
 
 function parse (addr) {
@@ -102555,7 +104499,7 @@ function resolveNames (a, b) {
   return toString(toString('/', a), b)
 }
 
-},{}],618:[function(require,module,exports){
+},{}],636:[function(require,module,exports){
 exports.add = add
 exports.has = has
 exports.remove = remove
@@ -102593,7 +104537,7 @@ function swap (list, a, b) {
   list[b._index] = b
 }
 
-},{}],619:[function(require,module,exports){
+},{}],637:[function(require,module,exports){
 const b4a = require('b4a')
 
 unslab.all = all
@@ -102637,7 +104581,7 @@ function all (list) {
   return result
 }
 
-},{"b4a":97}],620:[function(require,module,exports){
+},{"b4a":111}],638:[function(require,module,exports){
 (function (global){(function (){
 
 /**
@@ -102708,7 +104652,7 @@ function config (name) {
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],621:[function(require,module,exports){
+},{}],639:[function(require,module,exports){
 module.exports = read
 
 var MSB = 0x80
@@ -102739,7 +104683,7 @@ function read(buf, offset) {
   return res
 }
 
-},{}],622:[function(require,module,exports){
+},{}],640:[function(require,module,exports){
 module.exports = encode
 
 var MSB = 0x80
@@ -102767,14 +104711,14 @@ function encode(num, out, offset) {
   return out
 }
 
-},{}],623:[function(require,module,exports){
+},{}],641:[function(require,module,exports){
 module.exports = {
     encode: require('./encode.js')
   , decode: require('./decode.js')
   , encodingLength: require('./length.js')
 }
 
-},{"./decode.js":621,"./encode.js":622,"./length.js":624}],624:[function(require,module,exports){
+},{"./decode.js":639,"./encode.js":640,"./length.js":642}],642:[function(require,module,exports){
 
 var N1 = Math.pow(2,  7)
 var N2 = Math.pow(2, 14)
@@ -102801,7 +104745,7 @@ module.exports = function (value) {
   )
 }
 
-},{}],625:[function(require,module,exports){
+},{}],643:[function(require,module,exports){
 var indexOf = function (xs, item) {
     if (xs.indexOf) return xs.indexOf(item);
     else for (var i = 0; i < xs.length; i++) {
@@ -102952,7 +104896,7 @@ exports.createContext = Script.createContext = function (context) {
     return copy;
 };
 
-},{}],626:[function(require,module,exports){
+},{}],644:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -103073,7 +105017,7 @@ module.exports = function whichTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":96,"call-bind":192,"call-bound":193,"for-each":283,"get-proto":289,"gopd":292,"has-tostringtag/shams":296}],627:[function(require,module,exports){
+},{"available-typed-arrays":110,"call-bind":210,"call-bound":211,"for-each":301,"get-proto":307,"gopd":310,"has-tostringtag/shams":314}],645:[function(require,module,exports){
 // Returns a wrapper function that returns a wrapped callback
 // The wrapper function should do some stuff, and return a
 // presumably different callback function.
@@ -103108,7 +105052,7 @@ function wrappy (fn, cb) {
   }
 }
 
-},{}],628:[function(require,module,exports){
+},{}],646:[function(require,module,exports){
 module.exports = class MaxCache {
   constructor ({ maxSize, maxAge, createMap, ongc }) {
     this.maxSize = maxSize
@@ -103218,7 +105162,7 @@ function defaultCreateMap () {
   return new Map()
 }
 
-},{}],629:[function(require,module,exports){
+},{}],647:[function(require,module,exports){
 var xsalsa20 = typeof WebAssembly !== "undefined" && require('./xsalsa20')()
 
 var SIGMA = new Uint8Array([101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121, 116, 101, 32, 107])
@@ -103675,7 +105619,7 @@ function core_hsalsa20(o,p,k,c) {
   o[31] = x9 >>> 24 & 0xff
 }
 
-},{"./xsalsa20":630}],630:[function(require,module,exports){
+},{"./xsalsa20":648}],648:[function(require,module,exports){
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
@@ -103711,7 +105655,7 @@ module.exports = (imports) => {
   return instance.exports;
 };
 
-},{}],631:[function(require,module,exports){
+},{}],649:[function(require,module,exports){
 const b4a = require('b4a')
 
 const ALPHABET = 'ybndrfg8ejkmcpqxot1uwisza345h769'
@@ -103839,7 +105783,7 @@ function quintet (s, i) {
   return bits
 }
 
-},{"b4a":97}],632:[function(require,module,exports){
+},{"b4a":111}],650:[function(require,module,exports){
 (function (Buffer){(function (){
 const Autobase = require('autobase')
 const Hyperdrive = require('hyperdrive')
@@ -104086,211 +106030,353 @@ function getLocalCore(store, handlers, encryptionKey) {
 module.exports = { create_autodrive, create_wildcard_invite, verify_challenge, invite_encoder, getLocalCore }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"autobase":79,"autobase/lib/messages":87,"b4a":97,"buffer":185,"compact-encoding":199,"events":278,"hyperdrive":380,"keet-identity-key":394}],633:[function(require,module,exports){
+},{"autobase":93,"autobase/lib/messages":101,"b4a":111,"buffer":203,"compact-encoding":217,"events":296,"hyperdrive":398,"keet-identity-key":412}],651:[function(require,module,exports){
 // Simple P2P blog helper
+const Autobase = require('autobase')
 const b4a = require('b4a')
 const { create_autodrive } = require('../../autodrive')
-const EventEmitter = require('events')
 
-let store, blog_core, drive
-const emitter = new EventEmitter()
-const connected_peers = new Map()
-const peer_drives = new Map()
+// emitter
+function make_emitter(state = {}) {
+  return { on, off, emit }
+  function on(type, callback) { (state[type] = state[type] || []).push(callback) }
+  function off(type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
+  function emit(type, data) { (state[type] = state[type] || []).map(f => f && f(data)) }
+}
+
+// Global state
+let store, blog_autobase, drive, metadata_store, drive_store
+const discovered_blogs = new Map() // Blogs available in explore tab
+const autobase_cache = new Map()
+const drive_cache = new Map()
+const emitter = make_emitter()
+
+// Validation functions
+function validate_blog_init(entry) {
+  return entry && 
+         entry.type === 'blog-init' && 
+         typeof entry.username === 'string' && 
+         typeof entry.title === 'string' && 
+         typeof entry.drive_key === 'string'
+}
+
+function validate_blog_post(entry) {
+  return entry && 
+         entry.type === 'blog-post' && 
+         typeof entry.filepath === 'string' && 
+         typeof entry.created === 'number'
+}
 
 // Local storage helpers
-function get_subscribed_peers() {
+const get_subscribed_peers = () => {
   try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
 }
-function add_subscribed_peer(key) {
+const add_subscribed_peer = key => {
   const peers = get_subscribed_peers()
   if (!peers.includes(key)) {
     peers.push(key)
     localStorage.setItem('subscribed_peers', JSON.stringify(peers))
   }
 }
-function remove_subscribed_peer(key) {
-  const peers = get_subscribed_peers().filter(k => k !== key)
-  localStorage.setItem('subscribed_peers', JSON.stringify(peers))
+const remove_subscribed_peer = key => {
+  localStorage.setItem('subscribed_peers', JSON.stringify(get_subscribed_peers().filter(k => k !== key)))
 }
 
-// Initialize your blog
-async function init_blog(store_instance, username) {
-  store = store_instance
-  blog_core = store.get({ name: 'blog-feed' })
-  drive = create_autodrive(store, blog_core.key)
-  await blog_core.ready()
-  await drive.ready()
+// Create autobase (new or paired)
+function create_blog_autobase(metadata_store, key = null) {
+  return new Autobase(metadata_store, key, {
+    valueEncoding: 'json',
+    open: (store) => store.get({ name: 'blog-view' }),
+    apply: async (batch, view, base) => {
+      for (const entry of batch) {
+        if (entry.value?.addWriter) {
+          const writer_key = b4a.from(entry.value.addWriter, 'hex')
+          await base.addWriter(writer_key, { isIndexer: true })
+        } else if (entry.value) {
+          await view.append(JSON.stringify(entry.value))
+        }
+      }
+    }
+  })
+}
+
+// Setup peer autobase
+async function setup_peer_autobase(key, key_buffer) {
+  const peer_metadata_store = store.namespace(`peer-metadata-${key.slice(0, 16)}`)
+  const peer_autobase = create_blog_autobase(peer_metadata_store, key_buffer)
+  await peer_autobase.ready()
   
-  if (blog_core.length === 0) {
-    await blog_core.append(JSON.stringify({
+  // Wait for init blog to replicate if needed
+  if (peer_autobase.view.length === 0) {
+    await new Promise(resolve => peer_autobase.once('update', resolve))
+  }
+  
+  peer_autobase.on('update', async () => {
+    if (peer_autobase.view.length > 0) {
+      try {
+        const latest_index = peer_autobase.view.length - 1
+        const raw_data = await peer_autobase.view.get(latest_index)
+        const latest_entry = JSON.parse(b4a.toString(raw_data))
+        
+        if (validate_blog_init(latest_entry) && !get_subscribed_peers().includes(key)) {
+          discovered_blogs.set(key, { ...latest_entry, key })
+          autobase_cache.set(key, peer_autobase)
+          emitter.emit('update')
+        } else if (validate_blog_post(latest_entry)) {
+          store.emit('feed', peer_autobase)
+        }
+      } catch (err) {
+        console.error('Error processing update:', err)
+      }
+    }
+  })
+  
+  return peer_autobase
+}
+
+// Restore subscribed peers on startup
+async function restore_subscribed_peers() {
+  for (const key of get_subscribed_peers()) {
+    try {
+      const peer_autobase = await setup_peer_autobase(key, b4a.from(key, 'hex'))
+      if (peer_autobase.view.length > 0) {
+        autobase_cache.set(key, peer_autobase)
+        const init_block = JSON.parse(b4a.toString(await peer_autobase.view.get(0)))
+        const peer_drive_store = store.namespace(`peer-drive-${init_block.drive_key.slice(0, 16)}`)
+        drive_cache.set(key, create_autodrive(peer_drive_store, b4a.from(init_block.drive_key, 'hex')))
+      }
+    } catch (err) {
+      console.error('Error restoring peer:', key.slice(0, 16) + '...', err)
+    }
+  }
+}
+
+// Initialize blog - join or create
+async function init_blog(store_instance, username, drive_key = null, autobase_key = null, _metadata_store = null, _drive_store = null) {
+  store = store_instance
+  
+  // Use provided stores for shared access, or create new ones for new blogs
+  metadata_store = _metadata_store || store.namespace('blog-metadata')
+  drive_store = _drive_store || store.namespace('blog-files')
+  
+  // Create autobase and drive based on whether keys are provided
+  blog_autobase = create_blog_autobase(metadata_store, autobase_key)
+  drive = create_autodrive(drive_store, drive_key)
+  
+  await Promise.all([blog_autobase.ready(), drive.ready()])
+  
+  if (!autobase_key && blog_autobase.view.length === 0) {
+    // Create init blog for new identity
+    const init_data = {
       type: 'blog-init',
       drive_key: b4a.toString(drive.base.key, 'hex'),
       title: `${username}'s Blog`,
       username
-    }))
+    }
+    await blog_autobase.append(init_data)
+    await blog_autobase.update()
+  }
+  
+  // Setup replication for new blogs
+  if (!autobase_key && store.swarm) {
+    const replicate = (conn) => {
+      metadata_store.replicate(conn)
+      drive_store.replicate(conn)
+    }
+    store.swarm.on('connection', replicate)
+    store.swarm.connections.forEach(replicate)
   }
   
   setup_event_handlers()
+  await restore_subscribed_peers()
   emitter.emit('update')
 }
 
 // Setup common event handlers
 function setup_event_handlers() {
-  blog_core.on('append', () => emitter.emit('update'))
-  store.on('feed', () => {
-    console.log('PEER POSTED NEW CONTENT')
-    emitter.emit('update')
-  })
+  blog_autobase.on('append', () => emitter.emit('update'))
+  blog_autobase.on('update', () => emitter.emit('update'))
+  store.on('feed', () => emitter.emit('update'))
   
-  store.on('blog-discovered', async (core) => {
-    const key = b4a.toString(core.key, 'hex')
-    if (key === b4a.toString(blog_core.key, 'hex')) return
+  store.on('peer-autobase-key', async ({ key, key_buffer }) => {
+    if (key === b4a.toString(blog_autobase.key, 'hex')) return
+    if (autobase_cache.has(key)) {
+      console.log('Peer already discovered, skipping:', key.slice(0, 16) + '...')
+      return
+    }
+    
     try {
-      await core.ready()
-      if (core.length === 0) return
-      const init_block = JSON.parse(b4a.toString(await core.get(0)))
-      if (init_block.type === 'blog-init' && !get_subscribed_peers().includes(key)) {
-        connected_peers.set(key, { ...init_block, key })
-        emitter.emit('update')
+      const peer_autobase = await setup_peer_autobase(key, key_buffer)
+      
+      if (peer_autobase.view.length > 0) {
+        try {
+          const init_block = JSON.parse(b4a.toString(await peer_autobase.view.get(0)))
+          if (validate_blog_init(init_block) && !get_subscribed_peers().includes(key)) {
+            discovered_blogs.set(key, { ...init_block, key })
+            autobase_cache.set(key, peer_autobase)
+            emitter.emit('update')
+          }
+        } catch (parseErr) {
+          console.warn('Failed to parse peer init block:', parseErr.message)
+        }
+      } else {
+        autobase_cache.set(key, peer_autobase)
       }
     } catch (err) {
-      // Silent error handling
+      console.error('Error in peer-autobase-key handler:', err)
     }
   })
 }
 
 // Create a post
 async function create_post(title, content) {
-  const filepath = `/posts/${Date.now()}.txt`
+  if (!blog_autobase.writable) {
+    throw new Error('Blog is not writable. You may not have write access to this blog.')
+  }
+  
+  const slug = title.toLowerCase().split(' ').join('_').replace(/[^a-z0-9_]/g, '')
+  const filepath = `/posts/${slug}/index.md`
   await drive.put(filepath, b4a.from(`${title}\n\n${content}`))
-  await blog_core.append(JSON.stringify({
-    type: 'blog-post',
-    filepath,
-    created: Date.now()
-  }))
+  await blog_autobase.append({ type: 'blog-post', filepath, created: Date.now() })
+  await blog_autobase.update()
   emitter.emit('update')
 }
 
 // Subscribe to peer
 async function subscribe(key) {
   if (get_subscribed_peers().includes(key)) return true
+  
   try {
-    const peer_core = store.get(b4a.from(key, 'hex'))
-    await peer_core.ready()
-    if (peer_core.length === 0) await peer_core.update({ wait: true })
-    const init_block = JSON.parse(b4a.toString(await peer_core.get(0)))
-    // Create peer drive
-    const peer_store = store.namespace(`peer-${init_block.drive_key.slice(0, 16)}`)
-    const peer_drive = create_autodrive(peer_store, b4a.from(init_block.drive_key, 'hex'))
-    // Store for later use
-    peer_drives.set(key, peer_drive)
+    const peer_autobase = autobase_cache.get(key)
+    if (!peer_autobase) return false
+    
+    const init_block = JSON.parse(b4a.toString(await peer_autobase.view.get(0)))
+    const peer_drive_store = store.namespace(`peer-drive-${init_block.drive_key.slice(0, 16)}`)
+    const peer_drive = create_autodrive(peer_drive_store, b4a.from(init_block.drive_key, 'hex'))
+    
+    // Setup replication for peer drive store
+    if (store.swarm) {
+      store.swarm.connections.forEach(conn => peer_drive_store.replicate(conn))
+    }
+    
+    drive_cache.set(key, peer_drive)
     add_subscribed_peer(key)
-    // Remove from discovered peers since they're now subscribed
-    connected_peers.delete(key)
+    discovered_blogs.delete(key) // Remove from explore tab when subscribed
+    emitter.emit('update')
     return true
   } catch (err) {
+    console.error('Subscription failed:', err)
     return false
   }
 }
 
-// Get your posts
-async function get_my_posts() {
+// Get posts for any blog by key (unified function)
+async function get_posts(key = null) {
+  // Use own blog if no key provided
+  const autobase = key ? autobase_cache.get(key) : blog_autobase
+  const drive_instance = key ? drive_cache.get(key) : drive
+  
+  if (!autobase || !drive_instance) return []
+  
+  await autobase.update()
   const posts = []
-  for (let i = 1; i < blog_core.length; i++) {
+  
+  for (let i = 1; i < autobase.view.length; i++) {
     try {
-      const entry = JSON.parse(b4a.toString(await blog_core.get(i)))
-      if (entry.type === 'blog-post') {
-        const content = await drive.get(entry.filepath)
+      const raw_data = await autobase.view.get(i)
+      if (!raw_data) continue
+      const entry = JSON.parse(b4a.toString(raw_data))
+      
+      if (validate_blog_post(entry)) {
+        const content = await drive_instance.get(entry.filepath)
+        
         if (content) {
-          const contentStr = b4a.toString(content)
-          const lines = contentStr.split('\n')
-          posts.push({
-            ...entry,
-            title: lines[0],
-            content: lines.slice(2).join('\n') // Skip title and empty line
-          })
+          const lines = b4a.toString(content).split('\n')
+          const title = lines[0] || 'Untitled'
+          const postContent = lines.length > 2 ? lines.slice(2).join('\n') : ''
+          posts.push({ ...entry, title, content: postContent })
+        } else {
+          posts.push({ ...entry, title: 'Untitled', content: '' })
         }
       }
     } catch (err) {
-      // Silent error handling
+      console.error(`Error reading entry ${i}:`, err.message)
     }
   }
+  
   return posts.reverse()
+}
+
+// Get your posts
+async function get_my_posts() {
+  return get_posts() // No key = own blog
 }
 
 // Get peer blogs
 async function get_peer_blogs() {
   const blogs = new Map()
-  const subscribed_peers = get_subscribed_peers()
-  for (const key of subscribed_peers) {
+  
+  for (const key of get_subscribed_peers()) {
     try {
-      const peer_core = store.get(b4a.from(key, 'hex'))
-      await peer_core.ready()
-      if (peer_core.length === 0) continue
-      const init_block = JSON.parse(b4a.toString(await peer_core.get(0)))
-      let peer_drive = peer_drives.get(key)
-      // Create peer drive if not cached
+      const peer_autobase = autobase_cache.get(key)
+      if (!peer_autobase || peer_autobase.view.length === 0) continue
+      
+      const init_block = JSON.parse(b4a.toString(await peer_autobase.view.get(0)))
+      if (!validate_blog_init(init_block)) continue
+      
+      let peer_drive = drive_cache.get(key)
       if (!peer_drive) {
-        const peer_store = store.namespace(`peer-${init_block.drive_key.slice(0, 16)}`)
-        peer_drive = create_autodrive(peer_store, b4a.from(init_block.drive_key, 'hex'))
-        peer_drives.set(key, peer_drive)
+        const peer_files_store = store.namespace(`peer-files-${init_block.drive_key.slice(0, 16)}`)
+        peer_drive = create_autodrive(peer_files_store, b4a.from(init_block.drive_key, 'hex'))
+        drive_cache.set(key, peer_drive)
       }
+      
       await peer_drive.ready()
-      const posts = []
-      for (let i = 1; i < peer_core.length; i++) {
-        try {
-          const entry = JSON.parse(b4a.toString(await peer_core.get(i)))
-          if (entry.type === 'blog-post') {
-            // Read from local replicated storage, not re-download
-            const content = await peer_drive.get(entry.filepath)
-            if (content) {
-              const contentStr = b4a.toString(content)
-              const lines = contentStr.split('\n')
-              posts.push({
-                title: lines[0] || 'Untitled',
-                filepath: entry.filepath,
-                created: entry.created,
-                content: lines.length > 2 ? lines.slice(2).join('\n') : ''
-              })
-            } else {
-              posts.push({
-                title: 'Untitled',
-                filepath: entry.filepath,
-                created: entry.created,
-                content: ''
-              })
-            }
-          }
-        } catch (err) {
-          // Silent error handling
-        }
-      }
       blogs.set(key, {
         key,
-        posts: posts.reverse(),
+        posts: await get_posts(key), // Use unified function
         username: init_block.username,
         title: init_block.title
       })
     } catch (err) {
-      // Silent error handling
+      // Silent error handling - peer might not be available
     }
   }
   return blogs
 }
 
-module.exports = {
-  init_blog,
-  create_post,
-  subscribe,
-  get_my_posts,
-  get_peer_blogs,
-  get_discovered_blogs: () => connected_peers,
-  get_my_core_key: () => blog_core?.key,
-  get_drive: () => drive,
-  on_update: cb => emitter.on('update', cb),
-  unsubscribe: key => { remove_subscribed_peer(key); peer_drives.delete(key); emitter.emit('update') }
+// Create invite for pairing
+async function create_invite(swarm) {
+  const pairing_helper = require('../pairing-helper')
+  const { invite_code, invite } = await pairing_helper.create_invite(
+    drive.base.key,
+    blog_autobase.key,
+    swarm
+  )
+  
+  await pairing_helper.setup_member(drive, blog_autobase, swarm, invite)
+  
+  return invite_code
 }
-},{"../../autodrive":632,"b4a":97,"events":278}],634:[function(require,module,exports){
+
+module.exports = {
+  init_blog, create_post, create_invite, subscribe, get_posts, get_my_posts, get_peer_blogs,
+  get_discovered_blogs: () => discovered_blogs, // Blogs in explore tab
+  get_my_core_key: () => blog_autobase?.key,
+  get_drive: () => drive,
+  get_autobase_key: () => blog_autobase ? b4a.toString(blog_autobase.key, 'hex') : null,
+  get_autobase: () => blog_autobase,
+  get_metadata_store: () => metadata_store,
+  get_drive_store: () => drive_store,
+  on_update: cb => emitter.on('update', cb),
+  unsubscribe: key => { 
+    remove_subscribed_peer(key)
+    drive_cache.delete(key)
+    autobase_cache.delete(key)
+    emitter.emit('update')
+  }
+}
+},{"../../autodrive":650,"../pairing-helper":653,"autobase":93,"b4a":111}],652:[function(require,module,exports){
 const b4a = require('b4a')
 const sodium = require('sodium')
 
@@ -104357,7 +106443,127 @@ module.exports = {
   load
 }
 
-},{"b4a":97,"bare-fs":106,"bip39":137,"bip39-mnemonic":121,"sodium":636}],635:[function(require,module,exports){
+},{"b4a":111,"bare-fs":120,"bip39":151,"bip39-mnemonic":135,"sodium":655}],653:[function(require,module,exports){
+const b4a = require('b4a')
+const BlindPairing = require('blind-pairing')
+const extend = require('@geut/sodium-javascript-plus/extend')
+const sodium = extend(require('sodium-universal'))
+
+let current_member = null
+let current_candidate = null
+
+// Create invite for sharing drive access
+async function create_invite(drive_key, autobase_key) {
+  console.log('Creating invite code...')
+  const invite = BlindPairing.createInvite(drive_key)
+  const invite_code = b4a.toString(invite.invite, 'base64')
+  console.log('Invite code created successfully')
+  return { invite_code, invite, autobase_key }
+}
+
+// Setup member to handle join requests
+async function setup_member(drive, blog_autobase, swarm, invite) {
+  const blind_pairing = new BlindPairing(swarm)
+  await blind_pairing.ready()
+  
+  current_member = blind_pairing.addMember({
+    discoveryKey: drive.base.discoveryKey,
+    onadd: async (request) => {
+      try {
+        console.log('Pairing request received')
+        await request.open(invite.publicKey)
+        console.log('Pairing request opened')
+        
+        const user_data = request.userData
+        
+        const metadata_writer_key = user_data.slice(0, 32)
+        const drive_writer_key = user_data.slice(32, 64)
+        
+        const metadata_writer_hex = b4a.toString(metadata_writer_key, 'hex')
+        await blog_autobase.append({ addWriter: metadata_writer_hex })
+        await blog_autobase.update()
+        
+        const drive_writer_hex = b4a.toString(drive_writer_key, 'hex')
+        await drive.add_writer(drive_writer_hex)
+
+        console.log('Added as writer in the autobase and autodrive')
+        
+        request.confirm({ 
+          key: drive.base.key,
+          encryptionKey: blog_autobase.key
+        })
+        
+        console.log('Device paired successfully')
+        
+      } catch (error) {
+        console.error('Pairing error:', error.message)
+      }
+    }
+  })
+  
+  await current_member.ready()
+  current_member.announce()
+  return current_member
+}
+
+// Join existing drive using invite
+async function join_with_invite(invite_code, swarm, store) {
+  const blind_pairing = new BlindPairing(swarm)
+  await blind_pairing.ready()
+  
+  const invite_buffer = b4a.from(invite_code, 'base64')
+  
+  const metadata_store = store.namespace('blog-metadata')
+  const drive_store = store.namespace('blog-files')
+  
+  const { getLocalCore } = require('../../autodrive')
+  
+  const metadata_core = getLocalCore(metadata_store)
+  const drive_core = getLocalCore(drive_store)
+  
+  await Promise.all([metadata_core.ready(), drive_core.ready()])
+  
+  const metadata_writer_key = metadata_core.key
+  const drive_writer_key = drive_core.key
+  
+  await Promise.all([metadata_core.close(), drive_core.close()])
+  
+  const user_data = b4a.concat([metadata_writer_key, drive_writer_key])
+  
+  console.log('Joining pairing network...')
+  
+  return new Promise((resolve, reject) => {
+    current_candidate = blind_pairing.addCandidate({
+      invite: invite_buffer,
+      userData: user_data,
+      onadd: async (result) => {
+        try {
+          console.log('Successfully joined network')
+          resolve({
+            drive_key: result.key,
+            autobase_key: result.encryptionKey,
+            metadata_store,
+            drive_store
+          })
+        } catch (error) {
+          console.error('Join error:', error.message)
+          reject(error)
+        }
+      }
+    })
+    
+    current_candidate.ready().catch(reject)
+  })
+}
+
+
+module.exports = {
+  create_invite,
+  setup_member,
+  join_with_invite
+}
+
+},{"../../autodrive":650,"@geut/sodium-javascript-plus/extend":9,"b4a":111,"blind-pairing":168,"sodium-universal":603}],654:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 // Autobase and multi device identity is currently commeneted 
@@ -104465,12 +106671,12 @@ function identity_exchange_protocol (handlers, init_fn, options = {}) {
 
 module.exports = { identity_exchange_protocol }
 
-},{"b4a":97,"compact-encoding":199}],636:[function(require,module,exports){
+},{"b4a":111,"compact-encoding":217}],655:[function(require,module,exports){
 const extend = require('./extension_pbkdf2_sha512_async.js')
 const sodium = require('sodium-javascript')
 Object.assign(sodium, extend)
 module.exports = sodium
-},{"./extension_pbkdf2_sha512_async.js":637,"sodium-javascript":560}],637:[function(require,module,exports){
+},{"./extension_pbkdf2_sha512_async.js":656,"sodium-javascript":578}],656:[function(require,module,exports){
 const b4a = require('b4a')
 
 async function extension_pbkdf2_sha512_async(out, password, salt, iterations, keylen) {
@@ -104647,7 +106853,7 @@ async function sha512(data) {
 module.exports = {
   extension_pbkdf2_sha512_async
 }
-},{"b4a":97,"crypto":237,"sodium-javascript":560}],638:[function(require,module,exports){
+},{"b4a":111,"crypto":255,"sodium-javascript":578}],657:[function(require,module,exports){
 const b4a = require('b4a')
 const Hyperswarm = require('hyperswarm')
 const DHT = require('@hyperswarm/dht-relay')
@@ -104658,14 +106864,21 @@ const Corestore = require('corestore')
 const RAW = require('random-access-web')
 const { create_mnemonic_keypair, save, load } = require('helpers/crypto-helpers')
 const { identity_exchange_protocol } = require('helpers/protocol-helpers')
+const pairing_helper = require('../helpers/pairing-helper')
+const blog_helper = require('../helpers/blog-helpers')
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 const PEERS_STORAGE_KEY = 'discovered_peers'
 
 async function start_browser_peer (options = {}) {
   const name = options.name || 'browser-peer'
+  const invite_code = options.invite_code // For joining existing networks
   const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
   const relay_url = options.relay || (is_dev ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
+  const get_blog_key = options.get_blog_key
+  const get_blog_autobase = options.get_blog_autobase
+  const get_metadata_store = options.get_metadata_store
+  const get_drive_store = options.get_drive_store
 
   const store = new Corestore(RAW(`blogs-${name}`))
   
@@ -104680,8 +106893,7 @@ async function start_browser_peer (options = {}) {
 
   await store.ready()
   const core = store.get({ name: 'test-core' })
-  const blog_core = store.get({ name: 'blog-feed' })
-  await Promise.all([core.ready(), blog_core.ready()])
+  await core.ready()
   if (core.length === 0) await core.append('This is some data')
 
   return new Promise((resolve, reject) => {
@@ -104692,7 +106904,7 @@ async function start_browser_peer (options = {}) {
       if (errorMessage.includes('Invalid URL') || errorMessage.includes('URL scheme') || errorMessage.includes('ERR_INVALID_URL')) {
         reject(new Error(`Invalid relay URL: ${relay_url}`))
       } else {
-        resolve({ store, core, blog_core, swarm: null, dht: null, cleanup: () => {} })
+        resolve({ store, core, swarm: null, dht: null, cleanup: () => {} })
       }
     })
     socket.addEventListener('close', () => console.log('WebSocket closed'))
@@ -104729,8 +106941,17 @@ async function start_browser_peer (options = {}) {
               const stream = HyperWebRTC.from(relay, { initiator: relay.isInitiator })
               stream.on('open', () => {
                 console.log('WebRTC connection established')
-                send({ type: 'feedkey', data: b4a.toString(blog_core.key, 'hex') })
-                store.replicate(stream, { live: true, encrypt: true, download: true })
+                const blog_key = get_blog_key ? get_blog_key() : null
+                if (blog_key) send({ type: 'feedkey', data: blog_key })
+                
+                // Setup corestore replication for WebRTC connections
+                const metadata_store = get_metadata_store ? get_metadata_store() : null
+                const drive_store = get_drive_store ? get_drive_store() : null
+                
+                if (metadata_store && drive_store) {
+                  metadata_store.replicate(stream)
+                  drive_store.replicate(stream)
+                }
               })
               stream.on('close', () => console.log('WebRTC connection closed'))
               stream.on('error', err => {
@@ -104739,62 +106960,23 @@ async function start_browser_peer (options = {}) {
                 }
               })
             } else if (message.data.mode === 'native') {
-              send({ type: 'feedkey', data: b4a.toString(blog_core.key, 'hex') })
-              console.log('Starting store replication via native relay')
-              store.replicate(relay, { live: true, encrypt: true, download: true })
+              const blog_key = get_blog_key ? get_blog_key() : null
+              if (blog_key) send({ type: 'feedkey', data: blog_key })
+              
+              // Setup corestore replication for peer connections
+              const metadata_store = get_metadata_store ? get_metadata_store() : null
+              const drive_store = get_drive_store ? get_drive_store() : null
+              
+              if (metadata_store && drive_store) {
+                metadata_store.replicate(relay)
+                drive_store.replicate(relay)
+              }
             }
           },
 
           on_feedkey: async ({ key_buffer }) => {
             const hex_key = b4a.toString(key_buffer, 'hex')
-            console.log(`Received feedkey for peer: ${hex_key.slice(0, 16)}...`)
-            const cloned_core = store.get(key_buffer)
-            await cloned_core.ready()
-            console.log(`Cloned core ready for peer: ${hex_key.slice(0, 16)}... (length: ${cloned_core.length})`)
-
-            // update saved peers
-            if (!saved_peers[hex_key]) {
-              saved_peers[hex_key] = { last_seen: Date.now(), key: hex_key }
-              localStorage.setItem(PEERS_STORAGE_KEY, JSON.stringify(saved_peers))
-            }
-
-            // only emit core once for discovery
-            store.emit('core', cloned_core)
-
-            // append handler
-            cloned_core.on('append', async () => {
-              try {
-                const raw = await cloned_core.get(cloned_core.length - 1)
-                const data = JSON.parse(b4a.toString(raw, 'utf-8'))
-
-                saved_peers[hex_key].last_seen = Date.now()
-                localStorage.setItem(PEERS_STORAGE_KEY, JSON.stringify(saved_peers))
-
-                if (data.type === 'blog-init' && !saved_peers[hex_key].initialized) {
-                  store.emit('blog-discovered', cloned_core)
-                  saved_peers[hex_key].initialized = true
-                  localStorage.setItem(PEERS_STORAGE_KEY, JSON.stringify(saved_peers))
-                } else if (data.type === 'blog-post' || data.type === 'peer-blog-post') {
-                  store.emit('feed', cloned_core)
-                }
-              } catch (err) {
-                console.error('Error processing data:', err)
-              }
-            })
-
-            // initial core check - always emit blog-discovered for reconnections
-            if (cloned_core.length > 0) {
-              try {
-                const data = JSON.parse(b4a.toString(await cloned_core.get(0)))
-                if (data.type === 'blog-init') {
-                  store.emit('blog-discovered', cloned_core)
-                  saved_peers[hex_key].initialized = true
-                  localStorage.setItem(PEERS_STORAGE_KEY, JSON.stringify(saved_peers))
-                }
-              } catch (err) {
-                // Silent error handling
-              }
-            }
+            store.emit('peer-autobase-key', { key: hex_key, key_buffer })
           }
         }
 
@@ -104819,6 +107001,13 @@ async function start_browser_peer (options = {}) {
         const identity_channel = setup_protocol(mux)
         identity_channel.open()
 
+        store.on('peer-add', (peer) => {
+          store.emit('peer-autobase-key', { 
+            key: b4a.toString(get_blog_autobase().key, 'hex'),
+            key_buffer: get_blog_autobase().key
+          })
+        })
+
         relay.on('close', () => console.log('Peer disconnected'))
         relay.on('error', err => {
           if (!err.message?.includes('Duplicate connection')) {
@@ -104837,7 +107026,15 @@ async function start_browser_peer (options = {}) {
           .catch(err => console.warn('Join warning:', err.message))
       }, 5000)
 
-      resolve({ store, core, blog_core, swarm, dht, cleanup: () => clearInterval(join_interval) })
+      // Attach swarm to store for easy access in blog-helpers
+      store.swarm = swarm
+      
+      // Handle pairing if invite_code is provided
+      if (invite_code) {
+        handle_join_with_invite(invite_code, swarm, store, name)
+      }
+      
+      resolve({ store, core, swarm, dht, cleanup: () => clearInterval(join_interval) })
       
       // Flush in background, don't block UI
       discovery.flushed().catch(err => console.warn('Flush warning:', err.message)).then(() => {
@@ -104847,11 +107044,41 @@ async function start_browser_peer (options = {}) {
   })
 }
 
+// Handle joining with invite code
+async function handle_join_with_invite(invite_code, swarm, store, username) {
+  try {
+    const result = await pairing_helper.join_with_invite(invite_code, swarm, store)
+    
+    // Setup corestore replication
+    swarm.on('connection', (conn) => {
+      result.metadata_store.replicate(conn)
+      result.drive_store.replicate(conn)
+    })
+    
+    for (const conn of swarm.connections) {
+      result.metadata_store.replicate(conn)
+      result.drive_store.replicate(conn)
+    }
+    
+    // Initialize blog with shared access
+  await blog_helper.init_blog(
+  store, 
+  username, 
+  result.drive_key, 
+  result.autobase_key,
+  result.metadata_store,
+  result.drive_store
+)
+    
+  } catch (err) {
+    console.error('Pairing error:', err)
+  }
+}
+
 module.exports = { start: start_browser_peer }
-},{"@hyperswarm/dht-relay":1,"@hyperswarm/dht-relay/ws":45,"b4a":97,"corestore":204,"helpers/crypto-helpers":634,"helpers/protocol-helpers":635,"hyper-webrtc":312,"hyperswarm":382,"protomux":467,"random-access-web":488}],639:[function(require,module,exports){
+},{"../helpers/blog-helpers":651,"../helpers/pairing-helper":653,"@hyperswarm/dht-relay":15,"@hyperswarm/dht-relay/ws":59,"b4a":111,"corestore":222,"helpers/crypto-helpers":652,"helpers/protocol-helpers":654,"hyper-webrtc":330,"hyperswarm":400,"protomux":485,"random-access-web":506}],658:[function(require,module,exports){
 const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
-const b4a = require('b4a')
 
 let store
 let username = localStorage.getItem('username') || ''
@@ -104867,7 +107094,12 @@ document.body.innerHTML = `
       <h3>P2P News App</h3>
       <input id="username" value="${username}" placeholder="Your Name">
       <div>
-        <button id="make_btn">Start</button>
+        <button id="make_btn">Make</button>
+        <button id="join_btn">Join</button>
+      </div>
+      <div id="join_form" style="display: none; margin-top: 10px;">
+        <input id="invite_code" placeholder="Paste invite code here" style="width: 300px;">
+        <button id="join_with_invite_btn">Join with Invite</button>
       </div>
     </div>
     <div id="main" style="display: ${username ? 'block' : 'none'}">
@@ -104891,6 +107123,35 @@ document.body.innerHTML = `
 const format_date = timestamp => new Date(timestamp).toLocaleString()
 const escape_html = str => str ? str.replace(/[&<>"']/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[tag])) : ''
 
+// Setup connection status UI
+function setup_connection_status(swarm) {
+  if (swarm) {
+    document.getElementById('connection_status').textContent = '🟡 Please wait, joining the swarm...'
+    
+    swarm.on('connection', () => {
+      is_joining = false
+      document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      if (current_view) render_view(current_view)
+    })
+    swarm.on('disconnection', () => {
+      document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+    })
+    
+    setTimeout(() => {
+      is_joining = false
+      if (swarm.connections.size > 0) {
+        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      } else {
+        document.getElementById('connection_status').textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
+      }
+      if (current_view) render_view(current_view)
+    }, 2000)
+  } else {
+    is_joining = false
+    document.getElementById('connection_status').textContent = '🟠 Offline mode (relay not available)'
+  }
+}
+
 // Core functionality
 async function make_network() {
   const user = document.getElementById('username').value.trim() || username
@@ -104906,40 +107167,21 @@ async function make_network() {
     document.getElementById('connection_status').textContent = 'Connecting to relay...'
     is_joining = true
 
-    const { store: _store, swarm: _swarm } = await start_browser_peer({ name: username })
+    const { store: _store, swarm: _swarm } = await start_browser_peer({ 
+      name: username,
+      get_blog_key: () => blog_helper.get_autobase_key(),
+      get_blog_autobase: () => blog_helper.get_autobase(),
+      get_metadata_store: () => blog_helper.get_metadata_store(),
+      get_drive_store: () => blog_helper.get_drive_store()
+    })
     store = _store
     swarm = _swarm
 
     blog_helper.on_update(() => {
-      // Just re-render the current view when updates happen
       if (current_view) render_view(current_view)
     })
 
-    if (swarm) {
-      document.getElementById('connection_status').textContent = '🟡 Please wait, joining the swarm...'
-      
-      swarm.on('connection', () => {
-        is_joining = false
-        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-        if (current_view) render_view(current_view)
-      })
-      swarm.on('disconnection', () => {
-        document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-      })
-      
-      setTimeout(() => {
-        is_joining = false
-        if (swarm.connections.size > 0) {
-          document.getElementById('connection_status').textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-        } else {
-          document.getElementById('connection_status').textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
-        }
-        if (current_view) render_view(current_view)
-      }, 2000)
-    } else {
-      is_joining = false
-      document.getElementById('connection_status').textContent = '🟠 Offline mode (relay not available)'
-    }
+    setup_connection_status(swarm)
 
     await blog_helper.init_blog(store, username)
     drive = blog_helper.get_drive()
@@ -104951,6 +107193,51 @@ async function make_network() {
     show_view('news')
   } catch (err) {
     document.getElementById('connection_status').textContent = `🔴 Error: ${err.message}`
+  }
+}
+
+// Join existing network with invite
+async function join_network() {
+  const user = document.getElementById('username').value.trim() || username
+  const invite_code = document.getElementById('invite_code').value.trim()
+  
+  if (!user) return alert('Please enter your name to join.')
+  if (!invite_code) return alert('Please enter an invite code.')
+
+  localStorage.setItem('username', user)
+  username = user
+
+  document.getElementById('login').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  try {
+    document.getElementById('connection_status').textContent = 'Connecting to relay...'
+    is_joining = true
+
+    const { store: _store, swarm: _swarm } = await start_browser_peer({ 
+      name: username,
+      invite_code: invite_code,
+      get_blog_key: () => blog_helper.get_autobase_key(),
+      get_blog_autobase: () => blog_helper.get_autobase(),
+      get_metadata_store: () => blog_helper.get_metadata_store(),
+      get_drive_store: () => blog_helper.get_drive_store()
+    })
+    store = _store
+    swarm = _swarm
+
+    blog_helper.on_update(() => {
+      if (current_view) render_view(current_view)
+    })
+
+    setup_connection_status(swarm)
+    
+    is_ready = true
+    is_joining = false
+    show_view('news')
+    
+  } catch (err) {
+    document.getElementById('connection_status').textContent = `🔴 Error: ${err.message}`
+    console.error('Join error:', err)
   }
 }
 
@@ -105024,7 +107311,7 @@ async function render_view (view, ...args) {
       const discovered = blog_helper.get_discovered_blogs()
       const subscribed_blogs = await blog_helper.get_peer_blogs()
       const subscribed_keys = Array.from(subscribed_blogs.keys())
-      const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      const my_key = blog_helper.get_autobase_key()
 
       // Show discovered peers (not yet subscribed)
       if (discovered.size > 0) {
@@ -105075,7 +107362,7 @@ async function render_view (view, ...args) {
     },
 
     config: () => {
-      const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+      const my_key = blog_helper.get_autobase_key()
       view_el.innerHTML = `
         <h3>Configuration</h3>
         <div>
@@ -105083,6 +107370,13 @@ async function render_view (view, ...args) {
           <p>Share this address with others so they can subscribe to your blog.</p>
           <input readonly value="${my_key}" size="70">
           <button onclick="navigator.clipboard.writeText('${my_key}')">Copy</button>
+        </div>
+        <hr>
+        <div>
+          <h4>Create Invite</h4>
+          <p>Create an invite to share write access to your blog.</p>
+          <button onclick="window.create_invite()">Create Invite</button>
+          <div id="invite_result" style="margin-top: 10px;"></div>
         </div>
         <hr>
         <div>
@@ -105128,11 +107422,26 @@ window.unsub = async (key) => {
   show_view('explore')
 }
 
+window.create_invite = async () => {
+  try {
+    const invite_code = await blog_helper.create_invite(swarm)
+    
+    document.getElementById('invite_result').innerHTML = `
+      <p>Invite created! Share this code:</p>
+      <input readonly value="${invite_code}" style="width: 400px;">
+      <button onclick="navigator.clipboard.writeText('${invite_code}')">Copy</button>
+      <p><small>Keep this page open while others join.</small></p>
+    `
+  } catch (err) {
+    alert('Error creating invite: ' + err.message)
+  }
+}
+
 window.manual_subscribe = async () => {
   const key = document.getElementById('manual_key').value.trim()
   if (!key) return alert('Please enter a blog address.')
 
-  const my_key = b4a.toString(blog_helper.get_my_core_key(), 'hex')
+  const my_key = blog_helper.get_autobase_key()
   if (key === my_key) return alert("You can't subscribe to yourself.")
 
   const success = await blog_helper.subscribe(key)
@@ -105189,10 +107498,15 @@ window.reset_all_data = async () => {
 
 // Event listeners
 document.getElementById('make_btn').addEventListener('click', make_network)
+document.getElementById('join_btn').addEventListener('click', () => {
+  document.getElementById('join_form').style.display = 'block'
+})
+document.getElementById('join_with_invite_btn').addEventListener('click', join_network)
+
 document.querySelectorAll('nav button').forEach(btn =>
   btn.addEventListener('click', () => show_view(btn.dataset.view))
 )
 
 // auto-join if we have a username
-if (username) join_network()
-},{"../src/node_modules/helpers/blog-helpers":633,"../src/node_modules/web-peer":638,"b4a":97}]},{},[639]);
+if (username) make_network()
+},{"../src/node_modules/helpers/blog-helpers":651,"../src/node_modules/web-peer":657}]},{},[658]);
