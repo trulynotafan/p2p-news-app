@@ -4,24 +4,24 @@ const bare_peer = require('../src/node_modules/bare-peer/index.js')
 const process = require('bare-process')
 const b4a = require('b4a')
 
-function parse_cli_args(args) {
+function parse_cli_args (args) {
   const parsed = {}
-  
+
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--name') {
       parsed.name = args[i + 1]
       if (!parsed.name || parsed.name.startsWith('--')) {
-        console.error("--name requires a name as an argument")
+        console.error('--name requires a name as an argument')
         process.exit(1)
       }
       i++
     }
   }
-  
+
   return parsed
 }
 
-function validate_cli_args(opts) {
+function validate_cli_args (opts) {
   if (!opts.name) {
     const hostname = process.env.HOSTNAME || 'unknown'
     const timestamp = Date.now().toString().slice(-4)
@@ -31,7 +31,7 @@ function validate_cli_args(opts) {
   return opts
 }
 
-async function show_menu() {
+async function show_menu () {
   console.log('\n=== P2P Blog Menu ===')
   console.log('1. Create new blog post')
   console.log('2. View all posts')
@@ -42,158 +42,158 @@ async function show_menu() {
   console.log('\nEnter your choice (1-6): ')
 }
 
-async function show_discovered_peers(peer) {
+async function show_discovered_peers (peer) {
   const { blog_helper } = peer
   const peer_list = []
   let i = 1
 
   console.log('\n=== Available Peers ===')
-  
-  const discovered_blogs = await blog_helper.get_discovered_blogs();
-  const subscribed_blogs = await blog_helper.get_peer_blogs();
+
+  const discovered_blogs = await blog_helper.get_discovered_blogs()
+  const subscribed_blogs = await blog_helper.get_peer_blogs()
 
   for (const [key, data] of discovered_blogs.entries()) {
     if (data.username && data.title && data.drive_key) {
       const is_subscribed = subscribed_blogs.has(key)
-      console.log(`${i}. ${data.username} [${key.slice(0,8)}]${is_subscribed ? ' [Subscribed]' : ''}`)
+      console.log(`${i}. ${data.username} [${key.slice(0, 8)}]${is_subscribed ? ' [Subscribed]' : ''}`)
       console.log(`   Blog: "${data.title}"`)
-      peer_list.push({ 
-        peer_key: key, 
-        username: data.username, 
+      peer_list.push({
+        peer_key: key,
+        username: data.username,
         title: data.title,
-        is_subscribed 
+        is_subscribed
       })
       i++
     }
   }
-  
+
   if (peer_list.length === 0) {
     console.log('No peers with blogs available')
     return null
   }
-  
+
   return peer_list
 }
 
-async function handle_user_input(input, peer) {
+async function handle_user_input (input, peer) {
   const { blog_helper } = peer
-  
-  switch(input.trim()) {
-    case '1':
-      console.log('\n=== Create New Post ===')
-      console.log('Enter title:')
-      const title = await read_line()
-      console.log('Enter content:')
-      const content = await read_line()
-      
-      await blog_helper.create_post(title, content)
-      console.log('\nPost created')
+
+  switch (input.trim()) {
+  case '1':
+    console.log('\n=== Create New Post ===')
+    console.log('Enter title:')
+    const title = await read_line()
+    console.log('Enter content:')
+    const content = await read_line()
+
+    await blog_helper.create_post(title, content)
+    console.log('\nPost created')
+    break
+
+  case '2':
+    console.log('\n=== All Posts ===')
+    const core = peer.blog_core
+
+    if (core.length <= 1) {
+      console.log('No posts yet')
       break
+    }
 
-    case '2':
-      console.log('\n=== All Posts ===')
-      const core = peer.blog_core
-      
-      if (core.length <= 1) {
-        console.log('No posts yet')
-        break
-      }
+    for (let i = 1; i < core.length; i++) {
+      const entry = JSON.parse(b4a.toString(await core.get(i)))
+      console.log(`\n${entry.title}`)
+      console.log(`Type: ${entry.type}`)
+      if (entry.content) console.log(entry.content)
+      console.log(`Posted: ${new Date(entry.created).toLocaleString()}`)
+      console.log('---')
+    }
+    break
 
-      for (let i = 1; i < core.length; i++) {
-        const entry = JSON.parse(b4a.toString(await core.get(i)))
-        console.log(`\n${entry.title}`)
-        console.log(`Type: ${entry.type}`)
-        if (entry.content) console.log(entry.content)
-        console.log(`Posted: ${new Date(entry.created).toLocaleString()}`)
-        console.log('---')
-      }
+  case '3':
+    await show_discovered_peers(peer)
+    break
+
+  case '4':
+    console.log('\n=== Subscribe to Peer ===')
+    const peers = await show_discovered_peers(peer)
+
+    if (!peers) {
+      console.log('\nWaiting for peers to initialize their blogs.')
       break
+    }
 
-    case '3':
-      await show_discovered_peers(peer)
+    console.log('\nEnter peer number (0 to cancel):')
+    const choice = await read_line()
+    const num = parseInt(choice.trim())
+
+    if (num === 0 || num < 1 || num > peers.length) {
+      console.log('Invalid choice')
       break
+    }
 
-    case '4':
-      console.log('\n=== Subscribe to Peer ===')
-      const peers = await show_discovered_peers(peer)
-      
-      if (!peers) {
-        console.log('\nWaiting for peers to initialize their blogs.')
-        break
-      }
-      
-      console.log('\nEnter peer number (0 to cancel):')
-      const choice = await read_line()
-      const num = parseInt(choice.trim())
-      
-      if (num === 0 || num < 1 || num > peers.length) {
-        console.log('Invalid choice')
-        break
-      }
-      
-      const peer_info = peers[num - 1]
-      
-      if (peer_info.is_subscribed) {
-        console.log(`Already subscribed to ${peer_info.username}`)
-        break
-      }
-      
-      console.log(`\nSubscribing to ${peer_info.username}...`)
-      console.log(`Blog: "${peer_info.title}"`)
-      
-      const success = await peer.subscribe(peer_info.peer_key)
-      
-      if (success) {
-        console.log(`\nSuccessfully subscribed to ${peer_info.username}!`)
-        const subscribed_blogs = await blog_helper.get_peer_blogs();
-        for (const [key, blog] of subscribed_blogs.entries()) {
-          if (blog.username === peer_info.username) {
-            console.log(`Available posts: ${blog.posts?.length || 0}`)
-            if (blog.posts && blog.posts.length > 0) {
-              console.log('Recent posts:')
-              blog.posts.slice(-3).forEach(post => {
-                console.log(`- ${post.title} (${new Date(post.created).toLocaleString()})`)
-              })
-            }
-            break
+    const peer_info = peers[num - 1]
+
+    if (peer_info.is_subscribed) {
+      console.log(`Already subscribed to ${peer_info.username}`)
+      break
+    }
+
+    console.log(`\nSubscribing to ${peer_info.username}...`)
+    console.log(`Blog: "${peer_info.title}"`)
+
+    const success = await peer.subscribe(peer_info.peer_key)
+
+    if (success) {
+      console.log(`\nSuccessfully subscribed to ${peer_info.username}!`)
+      const subscribed_blogs = await blog_helper.get_peer_blogs()
+      for (const [key, blog] of subscribed_blogs.entries()) {
+        if (blog.username === peer_info.username) {
+          console.log(`Available posts: ${blog.posts?.length || 0}`)
+          if (blog.posts && blog.posts.length > 0) {
+            console.log('Recent posts:')
+            blog.posts.slice(-3).forEach(post => {
+              console.log(`- ${post.title} (${new Date(post.created).toLocaleString()})`)
+            })
           }
-        }
-      } else {
-        console.log(`\nFailed to subscribe to ${peer_info.username}`)
-      }
-      break
-
-    case '5':
-      console.log('\n=== Subscribed Blogs ==')
-      const subscribed = await blog_helper.get_peer_blogs();
-      if (subscribed.size === 0) {
-        console.log('Not subscribed to any blogs')
-        break
-      }
-      for (const [key, peer_blog] of subscribed.entries()) {
-        console.log(`\n${peer_blog.username}'s Blog`)
-        console.log(`   Mode: ${peer_blog.mode || 'unknown'}`)
-        console.log(`   Posts: ${peer_blog.posts?.length || 0}`)
-        if (peer_blog.posts && peer_blog.posts.length > 0) {
-          console.log('   Recent posts:')
-          peer_blog.posts.slice(-3).forEach(post => {
-            console.log(`   - ${post.title} (${new Date(post.created).toLocaleString()})`)
-          })
+          break
         }
       }
-      break
+    } else {
+      console.log(`\nFailed to subscribe to ${peer_info.username}`)
+    }
+    break
 
-    case '6':
-      console.log('\nGoodbye!')
-      process.exit(0)
+  case '5':
+    console.log('\n=== Subscribed Blogs ==')
+    const subscribed = await blog_helper.get_peer_blogs()
+    if (subscribed.size === 0) {
+      console.log('Not subscribed to any blogs')
       break
+    }
+    for (const [key, peer_blog] of subscribed.entries()) {
+      console.log(`\n${peer_blog.username}'s Blog`)
+      console.log(`   Mode: ${peer_blog.mode || 'unknown'}`)
+      console.log(`   Posts: ${peer_blog.posts?.length || 0}`)
+      if (peer_blog.posts && peer_blog.posts.length > 0) {
+        console.log('   Recent posts:')
+        peer_blog.posts.slice(-3).forEach(post => {
+          console.log(`   - ${post.title} (${new Date(post.created).toLocaleString()})`)
+        })
+      }
+    }
+    break
 
-    default:
-      console.log('\nInvalid choice')
+  case '6':
+    console.log('\nGoodbye!')
+    process.exit(0)
+    break
+
+  default:
+    console.log('\nInvalid choice')
   }
 }
 
-function read_line() {
+function read_line () {
   return new Promise((resolve) => {
     const chunks = []
     process.stdin.on('data', (chunk) => {
@@ -206,10 +206,10 @@ function read_line() {
   })
 }
 
-async function start_native(peer) {
+async function start_native (peer) {
   console.log('\nStarting native peer')
   console.log('Discovering peers...')
-  
+
   while (true) {
     await show_menu()
     const choice = await read_line()

@@ -14,7 +14,7 @@
     },
     "rules": {
       "camelcase": "off",
-    "indent": ["error", 2]
+      "indent": ["error", 2]
     }
   },
   "scripts": {
@@ -40,7 +40,6 @@
     "bare-fs": "^4.1.6",
     "bare-path": "^3.0.0",
     "bare-process": "^4.2.1",
-    "bip39": "^3.1.0",
     "bip39-mnemonic": "^2.4.0",
     "blind-pairing": "^2.3.1",
     "blind-pairing-core": "^2.9.0",
@@ -49,7 +48,6 @@
     "hypercore-crypto": "^3.6.1",
     "hyperdrive": "^11.13.4",
     "hyperswarm": "^4.8.4",
-    "keet-identity-key": "^3.1.0",
     "random-access-memory": "^6.2.1",
     "random-access-web": "^2.0.3",
     "sodium-javascript": "^0.8.0",

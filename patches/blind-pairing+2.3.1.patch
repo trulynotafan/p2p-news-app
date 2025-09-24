@@ -1,0 +1,48 @@
+diff --git a/node_modules/blind-pairing/index.js b/node_modules/blind-pairing/index.js
+index fc829bc..9e70bff 100644
+--- a/node_modules/blind-pairing/index.js
++++ b/node_modules/blind-pairing/index.js
+@@ -462,7 +462,7 @@ class Member extends ReadyResource {
+       })
+     }
+ 
+-    // laod existing request if it exists
++    // load existing request if it exists
+     const pending = this._pendingRequests.get(session)
+ 
+     try {
+@@ -632,14 +632,31 @@ class Candidate extends ReadyResource {
+ 
+   * closestPeers () {
+     while (!this.paired) {
+-      const closest = Infinity
++      let closest = Infinity
+       let channel = null
+ 
+       for (const ch of this.ref.channels) {
+         if (this.visited.has(ch)) continue
+ 
+-        const { rtt } = ch._mux.stream.rawStream
+-        if (rtt < closest) channel = ch
++        try {
++          const { rtt } = ch._mux.stream.rawStream
++
++          console.log({rtt})
++          
++          // Handle undefined RTT in browser environment - use 0 as fallback
++          const fixed_rtt = (rtt !== undefined && rtt !== null) ? rtt : 0
++          
++          if ( fixed_rtt < closest) {
++            closest = fixed_rtt
++            channel = ch
++          }
++        } catch (error) {
++          // If RTT access fails completely, (haven't but still) still use the channel with fallback RTT of 0
++          if (0 < closest) {
++            closest = 0
++            channel = ch
++          }
++        }
+       }
+ 
+       if (!channel) return
