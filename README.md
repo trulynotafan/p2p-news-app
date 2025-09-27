@@ -78,5 +78,6 @@ The native peer will also join the same topic, and you will see diffrent option 
 If you want to see the flow of the code and how everything was made step by step check out the dev diary and for quick go through, check [code_explanation](https://github.com/trulynotafan/p2p-news-app/blob/main/docs/code_explanation.md)
 
 
+If you want to learn or collab.. Please dm me on discord. my username is `trulynotafan`
 
 
