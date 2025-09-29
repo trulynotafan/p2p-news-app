@@ -126,7 +126,8 @@ async function make_network () {
       get_blog_key: () => blog_helper.get_autobase_key(),
       get_blog_autobase: () => blog_helper.get_autobase(),
       get_metadata_store: () => blog_helper.get_metadata_store(),
-      get_drive_store: () => blog_helper.get_drive_store()
+      get_drive_store: () => blog_helper.get_drive_store(),
+      get_profile_store: () => blog_helper.get_profile_store()
     })
     store = _store
     swarm = _swarm
@@ -194,7 +195,8 @@ async function join_network () {
       get_blog_key: () => blog_helper.get_autobase_key(),
       get_blog_autobase: () => blog_helper.get_autobase(),
       get_metadata_store: () => blog_helper.get_metadata_store(),
-      get_drive_store: () => blog_helper.get_drive_store()
+      get_drive_store: () => blog_helper.get_drive_store(),
+      get_profile_store: () => blog_helper.get_profile_store()
     })
     store = _store
     swarm = _swarm
@@ -262,8 +264,11 @@ async function render_view (view, ...args) {
       }
 
       let html = ''
-      for (const [, blog] of peer_blogs) {
-        html += `<h2>${escape_html(blog.title)}</h2>`
+      for (const [key, blog] of peer_blogs) {
+        const profile = await blog_helper.get_profile(key)
+        const display_name = profile ? profile.name : blog.username
+        
+        html += `<h2>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h2>`
         if (blog.posts.length === 0) {
           html += '<p>No posts from this peer yet.</p>'
         } else {
@@ -272,7 +277,7 @@ async function render_view (view, ...args) {
               <div class="post">
                 <h3>${escape_html(post.title)}</h3>
                 <p>${escape_html(post.content)}</p>
-                <span>Posted on: ${new Date(post.created).toLocaleString()}</span>
+                <span>Posted by ${escape_html(display_name)} on: ${new Date(post.created).toLocaleString()}</span>
               </div>
             `
           }
@@ -282,7 +287,10 @@ async function render_view (view, ...args) {
     },
 
     blog: async () => {
-      view_el.innerHTML = '<h3>My Blog</h3>'
+      const profile = await blog_helper.get_profile()
+      const display_name = profile ? profile.name : username
+      
+      view_el.innerHTML = `<h3>${escape_html(display_name)}'s Blog</h3>`
       const posts = await blog_helper.get_my_posts()
       if (posts.length === 0) return view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
       for (const post of posts) {
@@ -308,9 +316,12 @@ async function render_view (view, ...args) {
         view_el.innerHTML += '<h4>Discovered Peers</h4>'
         for (const [key, peer] of discovered) {
           if (key === my_key) continue // Skip own blog
+          const profile = await blog_helper.get_profile(key)
+          const display_name = profile ? profile.name : peer.username
+          
           view_el.innerHTML += `
             <div>
-              <h5>${escape_html(peer.username)}'s Blog (${escape_html(peer.title)})</h5>
+              <h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5>
               <p><code>${key}</code></p>
               <button class="subscribe-btn" data-key="${key}">Subscribe</button>
             </div>
@@ -324,9 +335,12 @@ async function render_view (view, ...args) {
         view_el.innerHTML += '<h4>Subscribed Peers</h4>'
         for (const [key, blog] of subscribed_blogs) {
           if (key === my_key) continue // Skip own blog
+          const profile = await blog_helper.get_profile(key)
+          const display_name = profile ? profile.name : blog.username
+          
           view_el.innerHTML += `
             <div>
-              <h5>${escape_html(blog.username)}'s Blog (${escape_html(blog.title)})</h5>
+              <h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5>
               <p><code>${key}</code></p>
               <button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button>
             </div>
@@ -352,10 +366,22 @@ async function render_view (view, ...args) {
       publish_btn.addEventListener('click', handle_publish)
     },
 
-    config: () => {
+    config: async () => {
       const my_key = blog_helper.get_autobase_key()
+      const profile = await blog_helper.get_profile()
+      const avatar_content = await blog_helper.get_avatar_content()
+      
       view_el.innerHTML = `
         <h3>Configuration</h3>
+        <div>
+          <h4>My Profile</h4>
+          <p>Your current profile information:</p>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            <p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p>
+            <p><strong>Avatar:</strong> ${avatar_content ? avatar_content : 'Loading...'}</p>
+          </div>
+        </div>
+        <hr>
         <div>
           <h4>My Blog Address</h4>
           <p>Share this address with others so they can subscribe to your blog.</p>

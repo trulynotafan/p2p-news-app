@@ -78021,10 +78021,11 @@ function make_emitter (state = {}) {
 }
 
 // Global state
-let store, blog_autobase, drive, metadata_store, drive_store
+let store, blog_autobase, drive, profile_drive, metadata_store, drive_store, profile_store
 const discovered_blogs = new Map() // Blogs available in explore tab
 const autobase_cache = new Map()
 const drive_cache = new Map()
+const profile_cache = new Map()
 const emitter = make_emitter()
 
 // Validation functions
@@ -78041,6 +78042,13 @@ function validate_blog_post (entry) {
   return type === 'blog-post' &&
          typeof data.filepath === 'string' &&
          typeof data.created === 'number'
+}
+
+function validate_profile_init (entry) {
+  const { type, data = {} } = entry || {}
+  return type === 'profile-init' &&
+         typeof data.name === 'string' &&
+         typeof data.profile_drive_key === 'string'
 }
 
 // Local storage helpers
@@ -78105,6 +78113,14 @@ async function setup_peer_autobase (key, key_buffer) {
           const { data } = init_entry
           discovered_blogs.set(key, { ...data, key }) // Add to explore tab
           autobase_cache.set(key, peer_autobase)
+          
+          // Setup peer profile drive if profile_drive_key exists
+          if (data.profile_drive_key) {
+            const peer_profile_store = store.namespace(`peer-profile-${data.profile_drive_key.slice(0, 16)}`)
+            const peer_profile_drive = create_autodrive({ store: peer_profile_store, bootstrap: b4a.from(data.profile_drive_key, 'hex') })
+            profile_cache.set(key, peer_profile_drive)
+          }
+          
           emitter.emit('update')
         }
 
@@ -78140,6 +78156,13 @@ async function restore_subscribed_peers () {
         const { data } = init_block
         const peer_drive_store = store.namespace(`peer-drive-${data.drive_key.slice(0, 16)}`)
         drive_cache.set(key, create_autodrive({ store: peer_drive_store, bootstrap: b4a.from(data.drive_key, 'hex') }))
+        
+        // Setup peer profile drive if profile_drive_key exists
+        if (data.profile_drive_key) {
+          const peer_profile_store = store.namespace(`peer-profile-${data.profile_drive_key.slice(0, 16)}`)
+          const peer_profile_drive = create_autodrive({ store: peer_profile_store, bootstrap: b4a.from(data.profile_drive_key, 'hex') })
+          profile_cache.set(key, peer_profile_drive)
+        }
       }
     } catch (err) {
       console.error('Error restoring peer:', key.slice(0, 16) + '...', err)
@@ -78161,12 +78184,33 @@ async function init_blog (options) {
   // Create namespaced stores (deterministic - same namespace always returns same store)
   metadata_store = store.namespace('blog-metadata')
   drive_store = store.namespace('blog-files')
+  profile_store = store.namespace('blog-profile')
 
   // Create autobase and drive based on whether keys are provided
   blog_autobase = create_blog_autobase(metadata_store, autobase_key)
   drive = create_autodrive({ store: drive_store, bootstrap: drive_key })
+  
+  // For joined blogs, we need to get profile_drive_key from init data
+  let profile_drive_key = null
+  if (autobase_key) {
+    await blog_autobase.ready()
+    await blog_autobase.update()
+    if (blog_autobase.view.length > 0) {
+      try {
+        const init_raw_data = await blog_autobase.view.get(0)
+        const init_entry = JSON.parse(b4a.toString(init_raw_data))
+        if (validate_blog_init(init_entry)) {
+          profile_drive_key = init_entry.data.profile_drive_key
+        }
+      } catch (err) {
+        console.warn('Could not read profile drive key from init data:', err)
+      }
+    }
+  }
+  
+  profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key ? b4a.from(profile_drive_key, 'hex') : null })
 
-  await Promise.all([blog_autobase.ready(), drive.ready()])
+  await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready()])
 
   if (!autobase_key && blog_autobase.view.length === 0) {
     // Create init blog for new identity (not joining existing blog)
@@ -78174,12 +78218,16 @@ async function init_blog (options) {
       type: 'blog-init',
       data: {
         drive_key: b4a.toString(drive.base.key, 'hex'),
+        profile_drive_key: b4a.toString(profile_drive.base.key, 'hex'),
         title: `${username}'s Blog`,
         username
       }
     }
     await blog_autobase.append(init_data)
     await blog_autobase.update()
+    
+    // Create default profile
+    await create_default_profile(username)
   }
 
   // Setup replication for new blogs (not needed for joined blogs)
@@ -78187,6 +78235,7 @@ async function init_blog (options) {
     function handle_replication (conn) {
       metadata_store.replicate(conn)
       drive_store.replicate(conn)
+      profile_store.replicate(conn)
     }
     store.swarm.on('connection', handle_replication)
     store.swarm.connections.forEach(handle_replication)
@@ -78225,6 +78274,14 @@ function setup_event_handlers () {
             const { data } = init_block
             discovered_blogs.set(key, { ...data, key }) // Store init metadata
             autobase_cache.set(key, peer_autobase)
+            
+            // Setup peer profile drive if profile_drive_key exists
+            if (data.profile_drive_key) {
+              const peer_profile_store = store.namespace(`peer-profile-${data.profile_drive_key.slice(0, 16)}`)
+              const peer_profile_drive = create_autodrive({ store: peer_profile_store, bootstrap: b4a.from(data.profile_drive_key, 'hex') })
+              profile_cache.set(key, peer_profile_drive)
+            }
+            
             emitter.emit('update')
           }
         } catch (parseErr) {
@@ -78274,6 +78331,20 @@ async function subscribe (key) {
         peer_drive_store.replicate(conn)
       }
       store.swarm.connections.forEach(handle_peer_drive_replication)
+    }
+    
+    // Setup peer profile drive if profile_drive_key exists
+    if (data.profile_drive_key) {
+      const peer_profile_store = store.namespace(`peer-profile-${data.profile_drive_key.slice(0, 16)}`)
+      const peer_profile_drive = create_autodrive({ store: peer_profile_store, bootstrap: b4a.from(data.profile_drive_key, 'hex') })
+      profile_cache.set(key, peer_profile_drive)
+      
+      if (store.swarm) {
+        function handle_peer_profile_replication (conn) {
+          peer_profile_store.replicate(conn)
+        }
+        store.swarm.connections.forEach(handle_peer_profile_replication)
+      }
     }
 
     drive_cache.set(key, peer_drive)
@@ -78379,6 +78450,31 @@ async function get_peer_blogs () {
   return blogs
 }
 
+// Create default profile
+async function create_default_profile (username) {
+  const default_avatar = `<svg><text x="50%" y="50%" font-size="120" text-anchor="middle" dominant-baseline="middle">👤</text></svg>`
+  
+  await profile_drive.put('/avatar.svg', b4a.from(default_avatar))
+  await profile_drive.put('/profile.json', b4a.from(JSON.stringify({
+    name: username,
+    avatar: '/avatar.svg'
+  })))
+}
+
+// Get profile data
+async function get_profile (key = null) {
+  const profile_instance = key ? profile_cache.get(key) : profile_drive
+  if (!profile_instance) return null
+  
+  try {
+    const profile_data = await profile_instance.get('/profile.json')
+    if (!profile_data) return null
+    return JSON.parse(b4a.toString(profile_data))
+  } catch (err) {
+    return null
+  }
+}
+
 // Create invite for pairing
 async function create_invite (swarm) {
   const pairing_helper = require('../pairing-helper')
@@ -78387,7 +78483,7 @@ async function create_invite (swarm) {
     blog_autobase.key
   )
 
-  await pairing_helper.setup_member({ drive, blog_autobase, swarm, invite })
+  await pairing_helper.setup_member({ drive, blog_autobase, profile_drive, swarm, invite })
 
   return invite_code
 }
@@ -78401,13 +78497,16 @@ module.exports = {
   get_my_posts,
   get_peer_blogs,
   get_blog_username,
+  get_profile,
   get_discovered_blogs: () => discovered_blogs, // Blogs in explore tab
   get_my_core_key: () => blog_autobase?.key,
   get_drive: () => drive,
+  get_profile_drive: () => profile_drive,
   get_autobase_key: () => blog_autobase ? b4a.toString(blog_autobase.key, 'hex') : null,
   get_autobase: () => blog_autobase,
   get_metadata_store: () => metadata_store,
   get_drive_store: () => drive_store,
+  get_profile_store: () => profile_store,
   on_update: handle_update_callback,
   unsubscribe: handle_unsubscribe
 }
@@ -78501,7 +78600,7 @@ async function create_invite (drive_key, autobase_key) {
 
 // Setup member to handle join requests
 async function setup_member (options) {
-  const { drive, blog_autobase, swarm, invite } = options
+  const { drive, blog_autobase, profile_drive, swarm, invite } = options
   const blind_pairing = new BlindPairing(swarm)
   await blind_pairing.ready()
 
@@ -78513,9 +78612,10 @@ async function setup_member (options) {
 
       const user_data = request.userData
 
-      // Split the concatenated keys
+      // Split the concatenated keys (96 bytes total: 32 + 32 + 32)
       const metadata_writer_key = user_data.slice(0, 32)
       const drive_writer_key = user_data.slice(32, 64)
+      const profile_writer_key = user_data.slice(64, 96)
 
       const metadata_writer_hex = b4a.toString(metadata_writer_key, 'hex')
       await blog_autobase.append({ type: 'addWriter', data: { key: metadata_writer_hex } })
@@ -78523,8 +78623,11 @@ async function setup_member (options) {
 
       const drive_writer_hex = b4a.toString(drive_writer_key, 'hex')
       await drive.add_writer(drive_writer_hex)
+      
+      const profile_writer_hex = b4a.toString(profile_writer_key, 'hex')
+      await profile_drive.add_writer(profile_writer_hex)
 
-      console.log('Added as writer in the autobase and autodrive')
+      console.log('Added as writer in the autobase, autodrive, and profile autodrive')
 
       request.confirm({
         key: drive.base.key,
@@ -78560,18 +78663,21 @@ async function join_with_invite (options) {
 
   const { getLocalCore } = require('../../autodrive')
 
-  // Generate writer keys for both metadata and drive
+  // Generate writer keys for metadata, drive, and profile
+  const profile_store = store.namespace('blog-profile')
   const metadata_core = getLocalCore({ store: metadata_store })
   const drive_core = getLocalCore({ store: drive_store })
+  const profile_core = getLocalCore({ store: profile_store })
 
-  await Promise.all([metadata_core.ready(), drive_core.ready()])
+  await Promise.all([metadata_core.ready(), drive_core.ready(), profile_core.ready()])
 
   const metadata_writer_key = metadata_core.key
   const drive_writer_key = drive_core.key
+  const profile_writer_key = profile_core.key
 
-  await Promise.all([metadata_core.close(), drive_core.close()])
+  await Promise.all([metadata_core.close(), drive_core.close(), profile_core.close()])
 
-  const user_data = b4a.concat([metadata_writer_key, drive_writer_key]) // Send both keys
+  const user_data = b4a.concat([metadata_writer_key, drive_writer_key, profile_writer_key]) // Send all three keys
 
   console.log('Joining pairing network...')
 
@@ -78612,8 +78718,6 @@ module.exports = {
 },{"../../autodrive":603,"@geut/sodium-javascript-plus/extend":9,"b4a":102,"blind-pairing":129,"sodium-universal":556}],607:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
-// Autobase and multi device identity is currently commeneted
-// const { verify_proof } = require('../identity-helpers/index.js')
 
 function identity_exchange_protocol (handlers, init_fn, options = {}) {
   const { peer_mode = 'unknown', label = '[peer]', identity_info, peer_info } = options
@@ -78632,23 +78736,6 @@ function identity_exchange_protocol (handlers, init_fn, options = {}) {
             try {
               // Handle protocol message
               if (msg.type === 'protocol') {
-                // Verify proof if provided
-                // if (msg.data.identity_proof) {
-                //   const result = verify_proof(msg.data.identity_proof)
-
-                //   if (result.verified) {
-                //     msg.data.identity_verified = true
-                //     msg.data.identity_public_key = result.info.identityPublicKey
-
-                //     // Check if peer has the same identity as us
-                //     if (identity_info && identity_info.identity_public_key) {
-                //       const key1 = msg.data.identity_public_key
-                //       const key2 = identity_info.identity_public_key
-                //       msg.data.is_same_identity = b4a.equals(key1, key2)
-                //     }
-                //   }
-                // }
-
                 if (handlers.on_protocol) {
                   await handlers.on_protocol(msg, m => message.send(m), peer_mode)
                 }
@@ -78927,6 +79014,7 @@ async function start_browser_peer (options = {}) {
   const get_blog_autobase = options.get_blog_autobase
   const get_metadata_store = options.get_metadata_store
   const get_drive_store = options.get_drive_store
+  const get_profile_store = options.get_profile_store
 
   const store = new Corestore(RAW(`blogs-${name}`))
 
@@ -79016,10 +79104,12 @@ async function start_browser_peer (options = {}) {
                 // Setup corestore replication for WebRTC connections
                 const metadata_store = get_metadata_store ? get_metadata_store() : null
                 const drive_store = get_drive_store ? get_drive_store() : null
+                const profile_store = get_profile_store ? get_profile_store() : null
 
-                if (metadata_store && drive_store) {
+                if (metadata_store && drive_store && profile_store) {
                   metadata_store.replicate(stream)
                   drive_store.replicate(stream)
+                  profile_store.replicate(stream)
                 }
               }
 
@@ -79043,9 +79133,12 @@ async function start_browser_peer (options = {}) {
               // Setup corestore replication for native peer connections
               const metadata_store = get_metadata_store ? get_metadata_store() : null
               const drive_store = get_drive_store ? get_drive_store() : null
+              const profile_store = get_profile_store ? get_profile_store() : null
 
-              if (metadata_store && drive_store) {
+              if (metadata_store && drive_store && profile_store) {
                 metadata_store.replicate(relay) // Use relay stream directly
+                drive_store.replicate(relay)
+                profile_store.replicate(relay)
               }
             }
           }
@@ -79175,6 +79268,7 @@ async function handle_join_with_invite (options) {
     function handle_pairing_connection (conn) {
       blog_helper.get_metadata_store().replicate(conn)
       blog_helper.get_drive_store().replicate(conn)
+      blog_helper.get_profile_store().replicate(conn)
     }
 
     swarm.on('connection', handle_pairing_connection)
@@ -79182,6 +79276,7 @@ async function handle_join_with_invite (options) {
     for (const conn of swarm.connections) {
       blog_helper.get_metadata_store().replicate(conn)
       blog_helper.get_drive_store().replicate(conn)
+      blog_helper.get_profile_store().replicate(conn)
     }
   } catch (err) {
     console.error('Pairing error:', err)
@@ -79319,7 +79414,8 @@ async function make_network () {
       get_blog_key: () => blog_helper.get_autobase_key(),
       get_blog_autobase: () => blog_helper.get_autobase(),
       get_metadata_store: () => blog_helper.get_metadata_store(),
-      get_drive_store: () => blog_helper.get_drive_store()
+      get_drive_store: () => blog_helper.get_drive_store(),
+      get_profile_store: () => blog_helper.get_profile_store()
     })
     store = _store
     swarm = _swarm
@@ -79361,7 +79457,6 @@ async function wait_for_blog_username () {
     const handler = async () => {
       const username = await blog_helper.get_blog_username()
       if (username) {
-        console.log('Got username from blog update event:', username)
         resolve(username)
       }
     }
@@ -79388,7 +79483,8 @@ async function join_network () {
       get_blog_key: () => blog_helper.get_autobase_key(),
       get_blog_autobase: () => blog_helper.get_autobase(),
       get_metadata_store: () => blog_helper.get_metadata_store(),
-      get_drive_store: () => blog_helper.get_drive_store()
+      get_drive_store: () => blog_helper.get_drive_store(),
+      get_profile_store: () => blog_helper.get_profile_store()
     })
     store = _store
     swarm = _swarm
@@ -79456,8 +79552,11 @@ async function render_view (view, ...args) {
       }
 
       let html = ''
-      for (const [, blog] of peer_blogs) {
-        html += `<h2>${escape_html(blog.title)}</h2>`
+      for (const [key, blog] of peer_blogs) {
+        const profile = await blog_helper.get_profile(key)
+        const display_name = profile ? profile.name : blog.username
+        
+        html += `<h2>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h2>`
         if (blog.posts.length === 0) {
           html += '<p>No posts from this peer yet.</p>'
         } else {
@@ -79466,7 +79565,7 @@ async function render_view (view, ...args) {
               <div class="post">
                 <h3>${escape_html(post.title)}</h3>
                 <p>${escape_html(post.content)}</p>
-                <span>Posted on: ${new Date(post.created).toLocaleString()}</span>
+                <span>Posted by ${escape_html(display_name)} on: ${new Date(post.created).toLocaleString()}</span>
               </div>
             `
           }
@@ -79476,7 +79575,10 @@ async function render_view (view, ...args) {
     },
 
     blog: async () => {
-      view_el.innerHTML = '<h3>My Blog</h3>'
+      const profile = await blog_helper.get_profile()
+      const display_name = profile ? profile.name : username
+      
+      view_el.innerHTML = `<h3>${escape_html(display_name)}'s Blog</h3>`
       const posts = await blog_helper.get_my_posts()
       if (posts.length === 0) return view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
       for (const post of posts) {
@@ -79502,9 +79604,12 @@ async function render_view (view, ...args) {
         view_el.innerHTML += '<h4>Discovered Peers</h4>'
         for (const [key, peer] of discovered) {
           if (key === my_key) continue // Skip own blog
+          const profile = await blog_helper.get_profile(key)
+          const display_name = profile ? profile.name : peer.username
+          
           view_el.innerHTML += `
             <div>
-              <h5>${escape_html(peer.username)}'s Blog (${escape_html(peer.title)})</h5>
+              <h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5>
               <p><code>${key}</code></p>
               <button class="subscribe-btn" data-key="${key}">Subscribe</button>
             </div>
@@ -79518,9 +79623,12 @@ async function render_view (view, ...args) {
         view_el.innerHTML += '<h4>Subscribed Peers</h4>'
         for (const [key, blog] of subscribed_blogs) {
           if (key === my_key) continue // Skip own blog
+          const profile = await blog_helper.get_profile(key)
+          const display_name = profile ? profile.name : blog.username
+          
           view_el.innerHTML += `
             <div>
-              <h5>${escape_html(blog.username)}'s Blog (${escape_html(blog.title)})</h5>
+              <h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5>
               <p><code>${key}</code></p>
               <button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button>
             </div>
