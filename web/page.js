@@ -404,6 +404,17 @@ async function render_view (view, ...args) {
         </div>
         <hr>
         <div>
+          <h4>Show Raw Data</h4>
+          <button class="show-raw-data-btn">Show Raw Data</button>
+          <div class="raw-data-options" style="display: none; margin-top: 10px;">
+            <button class="raw-metadata-btn">Metadata Autobase</button>
+            <button class="raw-posts-btn">Posts Autodrive</button>
+            <button class="raw-profile-btn">Profile Autodrive</button>
+          </div>
+          <pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre>
+        </div>
+        <hr>
+        <div>
           <h4>Reset</h4>
           <button class="reset-data-btn">Delete All My Data</button>
         </div>
@@ -534,6 +545,22 @@ async function handle_reset_all_data () {
   }
 }
 
+// Raw data handler
+function handle_raw_data (action, type) {
+  const options = document.querySelector('.raw-data-options')
+  const display = document.querySelector('.raw-data-display')
+  
+  if (action === 'toggle') {
+    options.style.display = options.style.display === 'none' ? 'block' : 'none'
+    display.style.display = 'none'
+    return
+  }
+  
+  display.textContent = 'Loading...'
+  display.style.display = 'block'
+  blog_helper.get_raw_data(type).then(data => display.textContent = data).catch(err => display.textContent = 'Error: ' + err.message)
+}
+
 // Event listeners
 function handle_make_form_display () {
   document.querySelector('.initial-buttons').style.display = 'none'
@@ -597,6 +624,12 @@ function handle_document_click (event) {
   if (target.classList.contains('reset-data-btn')) {
     handle_reset_all_data()
   }
+
+  // Handle raw data buttons
+  if (target.classList.contains('show-raw-data-btn')) handle_raw_data('toggle')
+  if (target.classList.contains('raw-metadata-btn')) handle_raw_data('show', 'metadata')
+  if (target.classList.contains('raw-posts-btn')) handle_raw_data('show', 'posts')
+  if (target.classList.contains('raw-profile-btn')) handle_raw_data('show', 'profile')
 }
 
 // Setup event listeners
