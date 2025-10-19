@@ -378,7 +378,20 @@ async function render_view (view, ...args) {
           <p>Your current profile information:</p>
           <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
             <p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p>
-            <p><strong>Avatar:</strong> ${avatar_content ? avatar_content : 'Loading...'}</p>
+            <div><strong>Avatar:</strong></div>
+            <div style="margin: 10px 0;">
+              ${avatar_content ? 
+                (avatar_content.startsWith('data:') ? 
+                  `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px; border-radius: 5px;">` : 
+                  avatar_content
+                ) : 
+                'Loading...'
+              }
+            </div>
+          </div>
+          <div style="margin-top: 10px;">
+            <input type="file" class="avatar-upload" accept="image/*" style="margin-right: 10px;">
+            <button class="upload-avatar-btn">Upload Profile Picture</button>
           </div>
         </div>
         <hr>
@@ -561,6 +574,36 @@ function handle_raw_data (action, type) {
   blog_helper.get_raw_data(type).then(data => display.textContent = data).catch(err => display.textContent = 'Error: ' + err.message)
 }
 
+// Upload avatar handler
+function handle_upload_avatar () {
+  const fileInput = document.querySelector('.avatar-upload')
+  const file = fileInput.files[0]
+  
+  if (!file) {
+    alert('Please select a file first')
+    return
+  }
+  
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = async function (e) {
+    try {
+      const imageData = new Uint8Array(e.target.result)
+      await blog_helper.upload_avatar(imageData, file.name)
+      alert('Profile picture uploaded successfully!')
+      // Refresh the config view to show the new avatar
+      if (current_view === 'config') render_view('config')
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    }
+  }
+  reader.readAsArrayBuffer(file)
+}
+
 // Event listeners
 function handle_make_form_display () {
   document.querySelector('.initial-buttons').style.display = 'none'
@@ -621,8 +664,11 @@ function handle_document_click (event) {
     handle_manual_subscribe()
   }
 
-  if (target.classList.contains('reset-data-btn')) {
+  if (event.target.classList.contains('reset-data-btn')) {
     handle_reset_all_data()
+  }
+  if (event.target.classList.contains('upload-avatar-btn')) {
+    handle_upload_avatar()
   }
 
   // Handle raw data buttons

@@ -78044,13 +78044,6 @@ function validate_blog_post (entry) {
          typeof data.created === 'number'
 }
 
-function validate_profile_init (entry) {
-  const { type, data = {} } = entry || {}
-  return type === 'profile-init' &&
-         typeof data.name === 'string' &&
-         typeof data.profile_drive_key === 'string'
-}
-
 // Local storage helpers
 const get_subscribed_peers = () => {
   try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
@@ -78176,7 +78169,8 @@ async function init_blog (options) {
     store_instance,
     username,
     drive_key = null,
-    autobase_key = null
+    autobase_key = null,
+    profile_drive_key = null
   } = options
 
   store = store_instance
@@ -78189,26 +78183,7 @@ async function init_blog (options) {
   // Create autobase and drive based on whether keys are provided
   blog_autobase = create_blog_autobase(metadata_store, autobase_key)
   drive = create_autodrive({ store: drive_store, bootstrap: drive_key })
-  
-  // For joined blogs, we need to get profile_drive_key from init data
-  let profile_drive_key = null
-  if (autobase_key) {
-    await blog_autobase.ready()
-    await blog_autobase.update()
-    if (blog_autobase.view.length > 0) {
-      try {
-        const init_raw_data = await blog_autobase.view.get(0)
-        const init_entry = JSON.parse(b4a.toString(init_raw_data))
-        if (validate_blog_init(init_entry)) {
-          profile_drive_key = init_entry.data.profile_drive_key
-        }
-      } catch (err) {
-        console.warn('Could not read profile drive key from init data:', err)
-      }
-    }
-  }
-  
-  profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key ? b4a.from(profile_drive_key, 'hex') : null })
+  profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key })
 
   await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready()])
 
@@ -78218,7 +78193,7 @@ async function init_blog (options) {
       type: 'blog-init',
       data: {
         drive_key: b4a.toString(drive.base.key, 'hex'),
-        profile_drive_key: b4a.toString(profile_drive.base.key, 'hex'),
+        profile_drive_key: b4a.toString(profile_drive.base.key, 'hex'), // 3rd data structure
         title: `${username}'s Blog`,
         username
       }
@@ -78230,8 +78205,8 @@ async function init_blog (options) {
     await create_default_profile(username)
   }
 
-  // Setup replication for new blogs (not needed for joined blogs)
-  if (!autobase_key && store.swarm) {
+  // Setup replication for all blogs (both new and joined)
+  if (store.swarm) {
     function handle_replication (conn) {
       metadata_store.replicate(conn)
       drive_store.replicate(conn)
@@ -78252,12 +78227,41 @@ function setup_event_handlers () {
     emitter.emit('update')
   }
 
+  async function handle_autobase_update () {
+    emitter.emit('update')
+  }
+
   blog_autobase.on('append', handle_emit_update)
-  blog_autobase.on('update', handle_emit_update)
+  blog_autobase.on('update', handle_autobase_update)
   store.on('feed', handle_emit_update)
 
   async function handle_peer_autobase_key ({ key, key_buffer }) {
-    if (key === b4a.toString(blog_autobase.key, 'hex')) return // Skip own blog
+    if (key === b4a.toString(blog_autobase.key, 'hex')) {
+      // This is our own blog key - set up our profile drive if we're joining an existing blog
+      if (blog_autobase.view.length > 0) {
+        try {
+          const init_raw_data = await blog_autobase.view.get(0)
+          const init_entry = JSON.parse(b4a.toString(init_raw_data))
+          if (validate_blog_init(init_entry) && init_entry.data.profile_drive_key && !profile_drive) {
+            // Recreate profile drive with the correct bootstrap key
+            const profile_drive_key = init_entry.data.profile_drive_key
+            profile_drive = create_autodrive({ store: profile_store, bootstrap: b4a.from(profile_drive_key, 'hex') })
+            await profile_drive.ready()
+            
+            // Setup replication for the profile drive
+            if (store.swarm) {
+              function handle_own_profile_replication (conn) {
+                profile_store.replicate(conn)
+              }
+              store.swarm.connections.forEach(handle_own_profile_replication)
+            }
+          }
+        } catch (err) {
+          console.warn('Error setting up own profile drive:', err)
+        }
+      }
+      return // Skip own blog for peer processing
+    }
     if (autobase_cache.has(key)) {
       console.log('Peer already discovered, skipping:', key.slice(0, 16) + '...')
       return
@@ -78461,12 +78465,37 @@ async function create_default_profile (username) {
   })))
 }
 
+// Upload avatar image
+async function upload_avatar (imageData, filename) {
+  if (!profile_drive) {
+    throw new Error('Profile drive not initialized')
+  }
+  
+  // Get file extension from filename
+  const ext = filename.split('.').pop().toLowerCase()
+  const avatar_path = `/avatar.${ext}`
+  
+  // Store the image file
+  await profile_drive.put(avatar_path, b4a.from(imageData))
+  
+  // Update profile.json to point to the new avatar
+  const profile = await get_profile()
+  const updated_profile = {
+    ...profile,
+    avatar: avatar_path
+  }
+  
+  await profile_drive.put('/profile.json', b4a.from(JSON.stringify(updated_profile)))
+  emitter.emit('update')
+}
+
 // Get profile data
 async function get_profile (key = null) {
   const profile_instance = key ? profile_cache.get(key) : profile_drive
   if (!profile_instance) return null
   
   try {
+    await profile_instance.ready()
     const profile_data = await profile_instance.get('/profile.json')
     if (!profile_data) return null
     return JSON.parse(b4a.toString(profile_data))
@@ -78475,15 +78504,81 @@ async function get_profile (key = null) {
   }
 }
 
+// Get avatar content from drive
+async function get_avatar_content (key = null) {
+  const profile_instance = key ? profile_cache.get(key) : profile_drive
+  if (!profile_instance) return null
+  
+  try {
+    await profile_instance.ready()
+    
+    // Get profile to find avatar path
+    const profile = await get_profile(key)
+    if (!profile || !profile.avatar) return null
+    
+    const avatar_data = await profile_instance.get(profile.avatar)
+    if (!avatar_data) return null
+    
+    // For SVG files, return as text
+    if (profile.avatar.endsWith('.svg')) {
+      return b4a.toString(avatar_data)
+    }
+    
+    // For image files, return as data URL
+    const ext = profile.avatar.split('.').pop().toLowerCase()
+    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
+    const base64 = b4a.toString(avatar_data, 'base64')
+    return `data:${mimeType};base64,${base64}`
+  } catch (err) {
+    return null
+  }
+}
+
+// Get raw data from any data structure
+async function get_raw_data (type) {
+  if (type === 'metadata') {
+    if (!blog_autobase) return 'No metadata autobase'
+    await blog_autobase.update()
+    const entries = []
+    for (let i = 0; i < blog_autobase.view.length; i++) {
+      try {
+        entries.push(`[${i}] ${b4a.toString(await blog_autobase.view.get(i))}`)
+      } catch (err) {
+        entries.push(`[${i}] Error: ${err.message}`)
+      }
+    }
+    return entries.join('\n')
+  }
+  
+  const target = type === 'posts' ? drive : profile_drive
+  if (!target) return `No ${type} autodrive`
+  await target.ready()
+  const files = []
+  try {
+    for (const file of await target.list('/')) {
+      try {
+        const content = await target.get(file)
+        files.push(`${file}: ${content ? b4a.toString(content) : 'null'}`)
+      } catch (err) {
+        files.push(`${file}: Error: ${err.message}`)
+      }
+    }
+  } catch (err) {
+    files.push(`List error: ${err.message}`)
+  }
+  return files.join('\n\n')
+}
+
 // Create invite for pairing
 async function create_invite (swarm) {
   const pairing_helper = require('../pairing-helper')
-  const { invite_code, invite } = await pairing_helper.create_invite(
+  const { invite_code, invite, profile_drive_key } = await pairing_helper.create_invite(
     drive.base.key,
-    blog_autobase.key
+    blog_autobase.key,
+    profile_drive.base.key
   )
 
-  await pairing_helper.setup_member({ drive, blog_autobase, profile_drive, swarm, invite })
+  await pairing_helper.setup_member({ drive, blog_autobase, profile_drive, swarm, invite, profile_drive_key })
 
   return invite_code
 }
@@ -78498,6 +78593,9 @@ module.exports = {
   get_peer_blogs,
   get_blog_username,
   get_profile,
+  get_avatar_content,
+  get_raw_data,
+  upload_avatar,
   get_discovered_blogs: () => discovered_blogs, // Blogs in explore tab
   get_my_core_key: () => blog_autobase?.key,
   get_drive: () => drive,
@@ -78590,17 +78688,17 @@ let current_member = null
 let current_candidate = null
 
 // Create invite for sharing drive access
-async function create_invite (drive_key, autobase_key) {
+async function create_invite (drive_key, autobase_key, profile_drive_key) {
   console.log('Creating invite code...')
   const invite = BlindPairing.createInvite(drive_key)
   const invite_code = b4a.toString(invite.invite, 'base64')
   console.log('Invite code created successfully')
-  return { invite_code, invite, autobase_key }
+  return { invite_code, invite, autobase_key, profile_drive_key }
 }
 
 // Setup member to handle join requests
 async function setup_member (options) {
-  const { drive, blog_autobase, profile_drive, swarm, invite } = options
+  const { drive, blog_autobase, profile_drive, swarm, invite, profile_drive_key } = options
   const blind_pairing = new BlindPairing(swarm)
   await blind_pairing.ready()
 
@@ -78631,7 +78729,8 @@ async function setup_member (options) {
 
       request.confirm({
         key: drive.base.key,
-        encryptionKey: blog_autobase.key
+        encryptionKey: blog_autobase.key,
+        profileDriveKey: profile_drive_key
       })
 
       console.log('Device paired successfully')
@@ -78687,7 +78786,8 @@ async function join_with_invite (options) {
         console.log('Successfully joined network')
         resolve({
           drive_key: result.key,
-          autobase_key: result.encryptionKey
+          autobase_key: result.encryptionKey,
+          profile_drive_key: result.profileDriveKey
         })
       } catch (error) {
         console.error('Join error:', error.message)
@@ -79261,7 +79361,8 @@ async function handle_join_with_invite (options) {
       store_instance: store,
       username,
       drive_key: result.drive_key,
-      autobase_key: result.autobase_key
+      autobase_key: result.autobase_key,
+      profile_drive_key: result.profile_drive_key
     })
 
     // Setup corestore replication using blog helper stores
@@ -79654,10 +79755,35 @@ async function render_view (view, ...args) {
       publish_btn.addEventListener('click', handle_publish)
     },
 
-    config: () => {
+    config: async () => {
       const my_key = blog_helper.get_autobase_key()
+      const profile = await blog_helper.get_profile()
+      const avatar_content = await blog_helper.get_avatar_content()
+      
       view_el.innerHTML = `
         <h3>Configuration</h3>
+        <div>
+          <h4>My Profile</h4>
+          <p>Your current profile information:</p>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            <p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p>
+            <div><strong>Avatar:</strong></div>
+            <div style="margin: 10px 0;">
+              ${avatar_content ? 
+                (avatar_content.startsWith('data:') ? 
+                  `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px; border-radius: 5px;">` : 
+                  avatar_content
+                ) : 
+                'Loading...'
+              }
+            </div>
+          </div>
+          <div style="margin-top: 10px;">
+            <input type="file" class="avatar-upload" accept="image/*" style="margin-right: 10px;">
+            <button class="upload-avatar-btn">Upload Profile Picture</button>
+          </div>
+        </div>
+        <hr>
         <div>
           <h4>My Blog Address</h4>
           <p>Share this address with others so they can subscribe to your blog.</p>
@@ -79677,6 +79803,17 @@ async function render_view (view, ...args) {
           <p>Subscribe to a blog by its address.</p>
           <input class="manual-key-input" placeholder="Blog Address" size="70">
           <button class="manual-subscribe-btn">Subscribe</button>
+        </div>
+        <hr>
+        <div>
+          <h4>Show Raw Data</h4>
+          <button class="show-raw-data-btn">Show Raw Data</button>
+          <div class="raw-data-options" style="display: none; margin-top: 10px;">
+            <button class="raw-metadata-btn">Metadata Autobase</button>
+            <button class="raw-posts-btn">Posts Autodrive</button>
+            <button class="raw-profile-btn">Profile Autodrive</button>
+          </div>
+          <pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre>
         </div>
         <hr>
         <div>
@@ -79810,6 +79947,52 @@ async function handle_reset_all_data () {
   }
 }
 
+// Raw data handler
+function handle_raw_data (action, type) {
+  const options = document.querySelector('.raw-data-options')
+  const display = document.querySelector('.raw-data-display')
+  
+  if (action === 'toggle') {
+    options.style.display = options.style.display === 'none' ? 'block' : 'none'
+    display.style.display = 'none'
+    return
+  }
+  
+  display.textContent = 'Loading...'
+  display.style.display = 'block'
+  blog_helper.get_raw_data(type).then(data => display.textContent = data).catch(err => display.textContent = 'Error: ' + err.message)
+}
+
+// Upload avatar handler
+function handle_upload_avatar () {
+  const fileInput = document.querySelector('.avatar-upload')
+  const file = fileInput.files[0]
+  
+  if (!file) {
+    alert('Please select a file first')
+    return
+  }
+  
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = async function (e) {
+    try {
+      const imageData = new Uint8Array(e.target.result)
+      await blog_helper.upload_avatar(imageData, file.name)
+      alert('Profile picture uploaded successfully!')
+      // Refresh the config view to show the new avatar
+      if (current_view === 'config') render_view('config')
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    }
+  }
+  reader.readAsArrayBuffer(file)
+}
+
 // Event listeners
 function handle_make_form_display () {
   document.querySelector('.initial-buttons').style.display = 'none'
@@ -79870,9 +80053,18 @@ function handle_document_click (event) {
     handle_manual_subscribe()
   }
 
-  if (target.classList.contains('reset-data-btn')) {
+  if (event.target.classList.contains('reset-data-btn')) {
     handle_reset_all_data()
   }
+  if (event.target.classList.contains('upload-avatar-btn')) {
+    handle_upload_avatar()
+  }
+
+  // Handle raw data buttons
+  if (target.classList.contains('show-raw-data-btn')) handle_raw_data('toggle')
+  if (target.classList.contains('raw-metadata-btn')) handle_raw_data('show', 'metadata')
+  if (target.classList.contains('raw-posts-btn')) handle_raw_data('show', 'posts')
+  if (target.classList.contains('raw-profile-btn')) handle_raw_data('show', 'profile')
 }
 
 // Setup event listeners
