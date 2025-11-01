@@ -425,6 +425,7 @@ async function render_view (view, ...args) {
             <button class="raw-metadata-btn">Metadata Autobase</button>
             <button class="raw-posts-btn">Posts Autodrive</button>
             <button class="raw-profile-btn">Profile Autodrive</button>
+            <button class="raw-events-btn">Events Autodrive</button>
           </div>
           <pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre>
         </div>
@@ -676,6 +677,7 @@ function handle_document_click (event) {
   if (target.classList.contains('raw-metadata-btn')) handle_raw_data('show', 'metadata')
   if (target.classList.contains('raw-posts-btn')) handle_raw_data('show', 'posts')
   if (target.classList.contains('raw-profile-btn')) handle_raw_data('show', 'profile')
+  if (target.classList.contains('raw-events-btn')) handle_raw_data('show', 'events')
 }
 
 // Setup event listeners
