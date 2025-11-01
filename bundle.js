@@ -78173,6 +78173,7 @@ async function init_blog (options) {
     profile_drive_key = null
   } = options
 
+
   store = store_instance
 
   // Create namespaced stores (deterministic - same namespace always returns same store)
@@ -78183,9 +78184,19 @@ async function init_blog (options) {
   // Create autobase and drive based on whether keys are provided
   blog_autobase = create_blog_autobase(metadata_store, autobase_key)
   drive = create_autodrive({ store: drive_store, bootstrap: drive_key })
-  profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key })
 
-  await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready()])
+  // Only create profile drive if we have a key (either local or shared)
+  if (profile_drive_key) {
+    profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key })
+    await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready()])
+  } else if (!autobase_key) {
+    // Only create local profile for new blogs (not when joining)
+    profile_drive = create_autodrive({ store: profile_store, bootstrap: null })
+    await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready()])
+  } else {
+    // Joining without profile key yet - don't create profile drive
+    await Promise.all([blog_autobase.ready(), drive.ready()])
+  }
 
   if (!autobase_key && blog_autobase.view.length === 0) {
     // Create init blog for new identity (not joining existing blog)
@@ -78210,7 +78221,7 @@ async function init_blog (options) {
     function handle_replication (conn) {
       metadata_store.replicate(conn)
       drive_store.replicate(conn)
-      profile_store.replicate(conn)
+      if (profile_store) profile_store.replicate(conn)
     }
     store.swarm.on('connection', handle_replication)
     store.swarm.connections.forEach(handle_replication)
@@ -78377,6 +78388,21 @@ async function get_blog_username () {
   }
 }
 
+// Get profile_drive_key from blog init data
+async function get_blog_profile_drive_key () {
+  if (!blog_autobase) return null
+  try {
+    await blog_autobase.update()
+    if (blog_autobase.view.length === 0) return null
+    const raw_data = await blog_autobase.view.get(0)
+    if (!raw_data) return null
+    const entry = JSON.parse(b4a.toString(raw_data))
+    return entry.data?.profile_drive_key || null
+  } catch (err) {
+    return null
+  }
+}
+
 // Get posts for any blog by key (unified function)
 async function get_posts (key = null) {
   // Use own blog if no key provided
@@ -78495,11 +78521,12 @@ async function get_profile (key = null) {
   if (!profile_instance) return null
   
   try {
-    await profile_instance.ready()
+    await profile_instance.ready()  
     const profile_data = await profile_instance.get('/profile.json')
     if (!profile_data) return null
     return JSON.parse(b4a.toString(profile_data))
   } catch (err) {
+    console.error('Error getting profile:', err)
     return null
   }
 }
@@ -78583,6 +78610,21 @@ async function create_invite (swarm) {
   return invite_code
 }
 
+function set_profile_drive (drive, store_instance) {
+  profile_drive = drive
+  profile_store = store_instance
+  
+  // Setup replication for profile drive
+  if (store.swarm) {
+    function handle_profile_replication (conn) {
+      profile_store.replicate(conn)
+    }
+    store.swarm.connections.forEach(handle_profile_replication)
+  }
+  
+  emitter.emit('update')
+}
+
 module.exports = {
   init_blog,
   create_post,
@@ -78592,10 +78634,12 @@ module.exports = {
   get_my_posts,
   get_peer_blogs,
   get_blog_username,
+  get_blog_profile_drive_key,
   get_profile,
   get_avatar_content,
   get_raw_data,
   upload_avatar,
+  set_profile_drive,
   get_discovered_blogs: () => discovered_blogs, // Blogs in explore tab
   get_my_core_key: () => blog_autobase?.key,
   get_drive: () => drive,
@@ -78698,7 +78742,7 @@ async function create_invite (drive_key, autobase_key, profile_drive_key) {
 
 // Setup member to handle join requests
 async function setup_member (options) {
-  const { drive, blog_autobase, profile_drive, swarm, invite, profile_drive_key } = options
+  const { drive, blog_autobase, profile_drive, swarm, invite } = options
   const blind_pairing = new BlindPairing(swarm)
   await blind_pairing.ready()
 
@@ -78721,7 +78765,7 @@ async function setup_member (options) {
 
       const drive_writer_hex = b4a.toString(drive_writer_key, 'hex')
       await drive.add_writer(drive_writer_hex)
-      
+
       const profile_writer_hex = b4a.toString(profile_writer_key, 'hex')
       await profile_drive.add_writer(profile_writer_hex)
 
@@ -78729,8 +78773,7 @@ async function setup_member (options) {
 
       request.confirm({
         key: drive.base.key,
-        encryptionKey: blog_autobase.key,
-        profileDriveKey: profile_drive_key
+        encryptionKey: blog_autobase.key
       })
 
       console.log('Device paired successfully')
@@ -78786,8 +78829,7 @@ async function join_with_invite (options) {
         console.log('Successfully joined network')
         resolve({
           drive_key: result.key,
-          autobase_key: result.encryptionKey,
-          profile_drive_key: result.profileDriveKey
+          autobase_key: result.encryptionKey
         })
       } catch (error) {
         console.error('Join error:', error.message)
@@ -79356,20 +79398,50 @@ async function handle_join_with_invite (options) {
   try {
     const result = await pairing_helper.join_with_invite({ invite_code, swarm, store })
 
-    // Initialize blog with shared access first
+    // Initialize blog with shared access (without profile_drive_key yet)
     await blog_helper.init_blog({
       store_instance: store,
       username,
       drive_key: result.drive_key,
-      autobase_key: result.autobase_key,
-      profile_drive_key: result.profile_drive_key
+      autobase_key: result.autobase_key
     })
+
+    // Wait for profile_drive_key from blog-init entry
+    let profile_drive_key = await blog_helper.get_blog_profile_drive_key()
+    
+    if (!profile_drive_key) {
+      profile_drive_key = await new Promise((resolve) => {
+        async function handle_update () {
+          const key = await blog_helper.get_blog_profile_drive_key()
+          if (key) {
+            resolve(key)
+          }
+        }
+        blog_helper.on_update(handle_update)
+      })
+    }
+
+    console.log('[pairing] profile_drive_key from blog-init:', profile_drive_key ? profile_drive_key.slice(0, 16) : 'null')
+    
+    // Create profile drive separately without reinitializing everything
+    if (profile_drive_key) {
+      const b4a = require('b4a')
+      const profile_store = store.namespace('blog-profile')
+      const { create_autodrive } = require('../autodrive')
+      const profile_drive = create_autodrive({ store: profile_store, bootstrap: b4a.from(profile_drive_key, 'hex') })
+      await profile_drive.ready()
+      
+      // Set the profile drive in blog_helper
+      blog_helper.set_profile_drive(profile_drive, profile_store)
+      console.log('[pairing] Profile drive created and set')
+    }
 
     // Setup corestore replication using blog helper stores
     function handle_pairing_connection (conn) {
       blog_helper.get_metadata_store().replicate(conn)
       blog_helper.get_drive_store().replicate(conn)
-      blog_helper.get_profile_store().replicate(conn)
+      const profile_store = blog_helper.get_profile_store()
+      if (profile_store) profile_store.replicate(conn)
     }
 
     swarm.on('connection', handle_pairing_connection)
@@ -79377,7 +79449,8 @@ async function handle_join_with_invite (options) {
     for (const conn of swarm.connections) {
       blog_helper.get_metadata_store().replicate(conn)
       blog_helper.get_drive_store().replicate(conn)
-      blog_helper.get_profile_store().replicate(conn)
+      const profile_store = blog_helper.get_profile_store()
+      if (profile_store) profile_store.replicate(conn)
     }
   } catch (err) {
     console.error('Pairing error:', err)
@@ -79386,7 +79459,7 @@ async function handle_join_with_invite (options) {
 
 module.exports = { start: start_browser_peer }
 
-},{"../helpers/blog-helpers":604,"../helpers/pairing-helper":606,"@hyperswarm/dht-relay":15,"@hyperswarm/dht-relay/ws":59,"b4a":102,"corestore":183,"helpers/crypto-helpers":605,"helpers/protocol-helpers":607,"hyper-webrtc":292,"hyperswarm":362,"protomux":439,"random-access-web":460}],611:[function(require,module,exports){
+},{"../autodrive":603,"../helpers/blog-helpers":604,"../helpers/pairing-helper":606,"@hyperswarm/dht-relay":15,"@hyperswarm/dht-relay/ws":59,"b4a":102,"corestore":183,"helpers/crypto-helpers":605,"helpers/protocol-helpers":607,"hyper-webrtc":292,"hyperswarm":362,"protomux":439,"random-access-web":460}],611:[function(require,module,exports){
 const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
 

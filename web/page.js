@@ -305,7 +305,7 @@ async function render_view (view, ...args) {
     },
 
     explore: async () => {
-      view_el.innerHTML = '<h3>Explore Peers</h3>'
+      let html = '<h3>Explore Peers</h3>'
       const discovered = blog_helper.get_discovered_blogs()
       const subscribed_blogs = await blog_helper.get_peer_blogs()
       const subscribed_keys = Array.from(subscribed_blogs.keys())
@@ -313,13 +313,13 @@ async function render_view (view, ...args) {
 
       // Show discovered peers (not yet subscribed)
       if (discovered.size > 0) {
-        view_el.innerHTML += '<h4>Discovered Peers</h4>'
+        html += '<h4>Discovered Peers</h4>'
         for (const [key, peer] of discovered) {
           if (key === my_key) continue // Skip own blog
           const profile = await blog_helper.get_profile(key)
           const display_name = profile ? profile.name : peer.username
           
-          view_el.innerHTML += `
+          html += `
             <div>
               <h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5>
               <p><code>${key}</code></p>
@@ -332,13 +332,13 @@ async function render_view (view, ...args) {
 
       // Show subscribed peers
       if (subscribed_blogs.size > 0) {
-        view_el.innerHTML += '<h4>Subscribed Peers</h4>'
+        html += '<h4>Subscribed Peers</h4>'
         for (const [key, blog] of subscribed_blogs) {
           if (key === my_key) continue // Skip own blog
           const profile = await blog_helper.get_profile(key)
           const display_name = profile ? profile.name : blog.username
           
-          view_el.innerHTML += `
+          html += `
             <div>
               <h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5>
               <p><code>${key}</code></p>
@@ -351,8 +351,10 @@ async function render_view (view, ...args) {
 
       // Show message if no peers at all
       if (discovered.size === 0 && subscribed_blogs.size === 0) {
-        view_el.innerHTML += '<p>No peers found yet. Wait for peers to be discovered.</p>'
+        html += '<p>No peers found yet. Wait for peers to be discovered.</p>'
       }
+      
+      view_el.innerHTML = html
     },
 
     post: () => {
@@ -455,12 +457,10 @@ async function handle_publish () {
 
 async function handle_subscribe (key) {
   await blog_helper.subscribe(key)
-  show_view('explore')
 }
 
 async function handle_unsubscribe (key) {
   await blog_helper.unsubscribe(key)
-  show_view('explore')
 }
 
 async function handle_create_invite () {
