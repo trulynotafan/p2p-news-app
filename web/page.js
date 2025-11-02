@@ -590,6 +590,13 @@ function handle_upload_avatar () {
     return
   }
   
+  // Check file size (1MB = 1024 * 1024 bytes)
+  const max_size = 1024 * 1024
+  if (file.size > max_size) {
+    alert(`File too large! Maximum size is 1MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
+    return
+  }
+  
   const reader = new FileReader()
   reader.onload = async function (e) {
     try {
