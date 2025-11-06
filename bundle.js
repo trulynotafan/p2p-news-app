@@ -77816,12 +77816,14 @@ function create_autodrive (options) {
     readers: new Set(),
     writers: new Set(),
     opts,
-    base: null
+    base: null,
+    view_ready: false
   }
 
   // Autobase handlers
   function handle_autobase_open (store) {
-    const drive_store = store.base.store.namespace('autodrive-' + store.base.version)
+    // FIX 1: Use a FIXED namespace for consistency
+    const drive_store = store.base.store.namespace('autodrive')
     const drive = new Hyperdrive(drive_store)
     return { drive }
   }
@@ -77829,48 +77831,70 @@ function create_autodrive (options) {
   async function handle_autobase_apply (nodes, view, base) {
     await view.drive.ready()
     const batch = view.drive.batch()
+    
     for (const node of nodes) {
       const { type, data = {} } = node.value || {}
       if (!type) continue
 
-      if (type === 'put') {
-        const buffer = b4a.from(data.content, 'base64')
-        await batch.put(data.path, buffer)
-        emitter.emit('content-added', { path: data.path, content: buffer })
-      } else if (type === 'del') {
-        await batch.del(data.path)
-      } else if (type === 'add_writer') {
-        const key = b4a.from(data.key, 'hex')
-        await base.addWriter(key, { indexer: data.is_indexer }) // Grant write access
-        state.writers.add(data.key)
-        emitter.emit('writer-added', { key: data.key, is_indexer: data.is_indexer })
-      } else if (type === 'add_reader') {
-        state.readers.add(data.key)
-        emitter.emit('reader-added', { key: data.key })
-      } else if (type === 'remove_writer') {
-        const key = b4a.from(data.key, 'hex')
-        await base.removeWriter(key)
-        state.writers.delete(data.key)
-        emitter.emit('writer-removed', { key: data.key })
-      } else if (type === 'remove_reader') {
-        state.readers.delete(data.key)
-        emitter.emit('reader-removed', { key: data.key })
+      try {
+        if (type === 'put') {
+          const buffer = b4a.from(data.content, 'base64')
+          await batch.put(data.path, buffer)
+          emitter.emit('content-added', { path: data.path, content: buffer })
+        } else if (type === 'del') {
+          await batch.del(data.path)
+        } else if (type === 'add_writer') {
+          const key = b4a.from(data.key, 'hex')
+          await base.addWriter(key, { indexer: data.is_indexer })
+          state.writers.add(data.key)
+          emitter.emit('writer-added', { key: data.key, is_indexer: data.is_indexer })
+        } else if (type === 'add_reader') {
+          state.readers.add(data.key)
+          emitter.emit('reader-added', { key: data.key })
+        } else if (type === 'remove_writer') {
+          const key = b4a.from(data.key, 'hex')
+          await base.removeWriter(key)
+          state.writers.delete(data.key)
+          emitter.emit('writer-removed', { key: data.key })
+        } else if (type === 'remove_reader') {
+          state.readers.delete(data.key)
+          emitter.emit('reader-removed', { key: data.key })
+        }
+      } catch (err) {
+        console.error('Error applying node:', err)
       }
     }
+    
+    // FIX 2: Ensure flush completes
     await batch.flush()
+    await batch.close()
   }
 
   async function handle_autobase_close (view) {
-    await view.drive.close()
+    if (view.drive) await view.drive.close()
   }
 
   state.base = new Autobase(store, bootstrap, {
-    inputs: [store.get({ name: 'writer' })],
     valueEncoding: 'json',
     open: handle_autobase_open,
     apply: handle_autobase_apply,
     close: handle_autobase_close,
-    ackInterval: opts.ack_interval || 5000
+    ackInterval: opts.ack_interval || 1000,
+    // FIX 3: Add ackThreshold to wait for confirmations
+    ackThreshold: opts.ack_threshold || 0
+  })
+
+  // FIX 4: Listen for base updates to track view changes
+  state.base.on('update', async () => {
+    try {
+      if (state.base.view && state.base.view.drive) {
+        state.drive = state.base.view.drive
+        state.view_ready = true
+      }
+      emitter.emit('update')
+    } catch (err) {
+      console.error('Error on base update:', err)
+    }
   })
 
   const api = {
@@ -77878,137 +77902,183 @@ function create_autodrive (options) {
     off: (event, listener) => emitter.off(event, listener),
     emit: (event, ...args) => emitter.emit(event, ...args),
     get base () { return state.base },
+    
     async ready () {
       await state.base.ready()
       state.drive = state.base.view.drive
+      await state.drive.ready()
+      state.view_ready = true
     },
-    async init () {
-      if (!state.bootstrap) return
-    },
+    
     async close () {
       await state.base.close()
     },
+    
     async put (path, content) {
       await api.ready()
-      await state.base.append({ type: 'put', data: { path, content: b4a.toString(content, 'base64') } })
+      await state.base.append({ 
+        type: 'put', 
+        data: { 
+          path, 
+          content: b4a.toString(content, 'base64') 
+        } 
+      })
+      // FIX 5: Wait for apply to complete
+      await state.base.update()
+      // Give time for other writers to process
+      await new Promise(resolve => {
+        const check_update = () => resolve()
+        state.base.once('update', check_update)
+        setTimeout(check_update, 100)
+      })
     },
+    
     async del (path) {
       await api.ready()
       await state.base.append({ type: 'del', data: { path } })
       await state.base.update()
     },
+    
     async get (path, opts) {
       await api.ready()
+      // FIX 6: Always update before reading to get latest from all writers
+      await state.base.update()
       return state.drive.get(path, opts)
     },
 
     async list (folder = '/', opts = {}) {
       await api.ready()
-      // List only immediate children (files and directories)
+      await state.base.update()
       const entries = []
-      async function collect_entry_keys () {
-        for await (const entry of await state.drive.list(folder, { ...opts, recursive: false })) {
-          entries.push(entry.key)
-        }
+      for await (const entry of state.drive.list(folder, { ...opts, recursive: false })) {
+        entries.push(entry.key)
       }
-      await collect_entry_keys()
       return entries
     },
-    replicate (isInitiator, options) {
-      return state.base.replicate(isInitiator, options)
-    },
+    
     async download (folder = '/', opts) {
-      if (typeof folder === 'object') return api.download(undefined, folder)
+      await api.ready()
+      if (typeof folder === 'object') {
+        opts = folder
+        folder = '/'
+      }
+      
       const dls = []
       const entry = (!folder || folder.endsWith('/')) ? null : await state.drive.entry(folder)
+      
       if (entry) {
         const b = entry.value.blob
         if (!b) return
         const blobs = await state.drive.getBlobs()
-        await blobs.core.download({ start: b.blockOffset, length: b.blockLength }).downloaded() // Download single file
+        await blobs.core.download({ start: b.blockOffset, length: b.blockLength }).downloaded()
         return
       }
-      async function iterate_drive_list () {
-        for await (const _ of state.drive.list(folder, opts)) {}
-      }
 
-      async function collect_download_promises () {
-        for await (const entry of state.drive.list(folder, opts)) {
-          const b = entry.value.blob
-          if (!b) continue
-          const blobs = await state.drive.getBlobs()
-          dls.push(blobs.core.download({ start: b.block_offset, length: b.block_length }))
-        }
+      // Download the directory listing first
+      for await (const _ of state.drive.list(folder, opts)) {}
+      
+      // Then download all blobs
+      for await (const entry of state.drive.list(folder, opts)) {
+        const b = entry.value.blob
+        if (!b) continue
+        const blobs = await state.drive.getBlobs()
+        dls.push(blobs.core.download({ start: b.blockOffset, length: b.blockLength }))
       }
-
-      await iterate_drive_list()
-      await collect_download_promises()
-      const proms = []
-      function collect_download_promise (r) {
-        proms.push(r.downloaded())
-      }
-      dls.forEach(collect_download_promise)
-      await Promise.allSettled(proms)
+      
+      await Promise.allSettled(dls.map(r => r.downloaded()))
     },
+    
     async add_writer (key, opts = {}) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
       const is_indexer = opts.is_indexer === undefined ? true : !!opts.is_indexer
-      await state.base.append({ type: 'add_writer', data: { key: key_str, is_indexer } })
+      
+      await state.base.append({ 
+        type: 'add_writer', 
+        data: { key: key_str, is_indexer } 
+      })
+      
+      // FIX 7: Wait for writer to be fully added and view to update
+      await state.base.update()
+      
+      // Wait for the apply function to process the add_writer
+      await new Promise(resolve => {
+        const check_writer = () => {
+          if (state.writers.has(key_str)) {
+            resolve()
+          } else {
+            setTimeout(check_writer, 50)
+          }
+        }
+        // Also listen for writer-added event
+        const on_writer_added = ({ key }) => {
+          if (key === key_str) {
+            emitter.off('writer-added', on_writer_added)
+            resolve()
+          }
+        }
+        emitter.once('writer-added', on_writer_added)
+        setTimeout(check_writer, 50)
+      })
+      
+      // Force another update to ensure all inputs are indexed
       await state.base.update()
     },
+    
     async add_reader (key) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
       await state.base.append({ type: 'add_reader', data: { key: key_str } })
       await state.base.update()
     },
+    
     async remove_reader (key) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
       await state.base.append({ type: 'remove_reader', data: { key: key_str } })
       await state.base.update()
     },
+    
     async remove_writer (key) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
       await state.base.append({ type: 'remove_writer', data: { key: key_str } })
       await state.base.update()
     },
+    
     get_readers () { return Array.from(state.readers) },
     get_writers () { return Array.from(state.writers) },
+    
     is_reader (key) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
       return state.readers.has(key_str)
     },
+    
     is_writer (key) {
       const key_str = typeof key === 'string' ? key : key.toString('hex')
-      // Check local state, autobase writers, or if it's the base key
-      return !!state.writers.has(key_str) || (state.base.writers && state.base.writers.some(w => w.key.toString('hex') === key_str)) || key_str === state.base.key.toString('hex')
+      return state.writers.has(key_str) || 
+             key_str === state.base.key.toString('hex')
     },
+    
     async exists (path) {
+      await api.ready()
       try {
-        return !!(await state.drive.get(path))
+        const entry = await state.drive.entry(path)
+        return !!entry
       } catch {
         return false
       }
     },
+    
     replicate (stream_or_initiator, opts = {}) {
-      if (typeof stream_or_initiator === 'boolean') return state.store.replicate(stream_or_initiator, opts)
-      const stream = stream_or_initiator
-      return state.store.replicate(stream, opts)
+      if (typeof stream_or_initiator === 'boolean') {
+        return state.store.replicate(stream_or_initiator, opts)
+      }
+      return state.store.replicate(stream_or_initiator, opts)
     }
   }
+  
   return api
 }
 
-// Static function to get local core (copied from Autobase to avoid full import) // i just copied it from easybase to send writer key before pairing.
-function getLocalCore (options) {
-  const { store, handlers, encryptionKey } = options
-  const messages = require('autobase/lib/messages')
-  const opts = { ...handlers, compat: false, active: false, exclusive: true, valueEncoding: messages.OplogMessage, encryptionKey }
-  return opts.keyPair ? store.get(opts) : store.get({ ...opts, name: 'local' })
-}
-
-module.exports = { create_autodrive, getLocalCore }
-
-},{"autobase":84,"autobase/lib/messages":92,"b4a":102,"events":258,"hyperdrive":360}],604:[function(require,module,exports){
+module.exports = { create_autodrive }
+},{"autobase":84,"b4a":102,"events":258,"hyperdrive":360}],604:[function(require,module,exports){
 // Simple P2P blog helper
 const Autobase = require('autobase')
 const b4a = require('b4a')
@@ -78202,6 +78272,8 @@ async function init_blog (options) {
   } else {
     // Joining without profile key yet - don't create profile or events drive
     await Promise.all([blog_autobase.ready(), drive.ready()])
+    await blog_autobase.update()
+    await drive.download('/')
   }
 
   if (!autobase_key && blog_autobase.view.length === 0) {
@@ -78221,19 +78293,17 @@ async function init_blog (options) {
     
     // Create default profile
     await create_default_profile(username)
+    
+    // Log bootstrap device as Device 1
+    await log_event('add', {
+      metadata_writer: b4a.toString(blog_autobase.local.key, 'hex'),
+      drive_writer: b4a.toString(drive.base.local.key, 'hex'),
+      profile_writer: b4a.toString(profile_drive.base.local.key, 'hex'),
+      events_writer: b4a.toString(events_drive.base.local.key, 'hex')
+    })
   }
 
-  // Setup replication for all blogs (both new and joined)
-  // profile_store and events_store are NOT replicated here, only between paired devices
-  // I will add the store replication once we start showing peer profiles to other peers.
-  if (store.swarm) {
-    function handle_replication (conn) {
-      metadata_store.replicate(conn)
-      drive_store.replicate(conn)
-    }
-    store.swarm.on('connection', handle_replication)
-    store.swarm.connections.forEach(handle_replication)
-  }
+  // Replication is now handled in web-peer
 
   setup_event_handlers()
   await restore_subscribed_peers()
@@ -78266,6 +78336,12 @@ function setup_events_sync_listeners () {
         if (init_block.data) discovered_blogs.set(event.data.peer_key, { ...init_block.data, key: event.data.peer_key })
       }
       console.log('Unsubscribed from peer:', event.data.peer_key.slice(0, 16))
+      emitter.emit('update')
+    } else if (path.includes('-add.json')) {
+      console.log('Device added:', event.data.metadata_writer.slice(0, 16))
+      emitter.emit('update')
+    } else if (path.includes('-remove.json')) {
+      console.log('Device removed:', event.data.metadata_writer.slice(0, 16))
       emitter.emit('update')
     }
   })
@@ -78392,7 +78468,8 @@ async function create_post (title, content) {
   const slug = title.toLowerCase().split(' ').join('_').replace(/[^a-z0-9_]/g, '')
   const filepath = `/posts/${slug}/index.md`
   await drive.put(filepath, b4a.from(`${title}\n\n${content}`))
-  await blog_autobase.append({ type: 'blog-post', data: { filepath, created: Date.now() } })
+  const device_key = b4a.toString(blog_autobase.local.key, 'hex')
+  await blog_autobase.append({ type: 'blog-post', data: { filepath, created: Date.now(), device: device_key } })
   await blog_autobase.update()
   emitter.emit('update')
 }
@@ -78516,14 +78593,15 @@ async function get_posts (key = null) {
       if (validate_blog_post(entry)) {
         const { data } = entry
         const content = await drive_instance.get(data.filepath)
+        const device_name = data.device ? await get_device_name(data.device) : null
 
         if (content) {
           const lines = b4a.toString(content).split('\n')
           const title = lines[0] || 'Untitled'
           const postContent = lines.length > 2 ? lines.slice(2).join('\n') : ''
-          posts.push({ ...data, title, content: postContent })
+          posts.push({ ...data, title, content: postContent, device_name })
         } else {
-          posts.push({ ...data, title: 'Untitled', content: '' })
+          posts.push({ ...data, title: 'Untitled', content: '', device_name })
         }
       }
     } catch (err) {
@@ -78713,6 +78791,83 @@ async function get_events () {
   }
 }
 
+// Get paired devices from events drive (calculates active devices from add/remove events)
+async function get_paired_devices () {
+  const events = await get_events()
+  const devices_map = new Map()
+  let device_counter = 0 // Start at 0 so bootstrap device is Device 1
+  
+  // Process events in order to track add/remove
+  for (const event of events) {
+    if (event.type === 'add') {
+      const device_id = event.data.metadata_writer
+      device_counter++
+      const device_name = `Device ${device_counter}`
+      devices_map.set(device_id, {
+        name: device_name,
+        metadata_writer: event.data.metadata_writer,
+        drive_writer: event.data.drive_writer,
+        profile_writer: event.data.profile_writer,
+        events_writer: event.data.events_writer,
+        timestamp: event.data.timestamp,
+        added_date: new Date(event.data.timestamp).toLocaleString()
+      })
+    } else if (event.type === 'remove') {
+      const device_id = event.data.metadata_writer
+      devices_map.delete(device_id)
+    }
+  }
+  
+  return Array.from(devices_map.values())
+}
+
+// Get device name by metadata writer key
+async function get_device_name (metadata_writer_key) {
+  const devices = await get_paired_devices()
+  const device = devices.find(d => d.metadata_writer === metadata_writer_key)
+  return device ? device.name : null
+}
+
+// Remove device by removing writer access from all drives
+async function remove_device (device) {
+  try {
+    // Remove from metadata autobase
+    await blog_autobase.append({ 
+      type: 'removeWriter', 
+      data: { key: device.metadata_writer } 
+    })
+    await blog_autobase.update()
+    
+    // Remove from drive autodrive
+    await drive.remove_writer(device.drive_writer)
+    
+    // Remove from profile autodrive if it exists
+    if (profile_drive) {
+      await profile_drive.remove_writer(device.profile_writer)
+    }
+    
+    // Remove from events autodrive if it exists
+    if (events_drive) {
+      await events_drive.remove_writer(device.events_writer)
+    }
+    
+    // Log the removal event
+    await log_event('remove', {
+      metadata_writer: device.metadata_writer,
+      drive_writer: device.drive_writer,
+      profile_writer: device.profile_writer,
+      events_writer: device.events_writer
+    })
+    
+    console.log('Device removed successfully')
+    emitter.emit('update')
+    return true
+  } catch (err) {
+    console.error('Error removing device:', err)
+    return false
+  }
+}
+
 // Get raw data from any data structure
 async function get_raw_data (type) {
   if (type === 'metadata') {
@@ -78806,8 +78961,12 @@ module.exports = {
   set_events_drive,
   log_event,
   get_events,
+  get_paired_devices,
+  get_device_name,
+  remove_device,
   get_discovered_blogs: () => discovered_blogs, // Blogs in explore tab
   get_my_core_key: () => blog_autobase?.key,
+  get_local_key: () => blog_autobase ? b4a.toString(blog_autobase.local.key, 'hex') : null,
   get_drive: () => drive,
   get_profile_drive: () => profile_drive,
   get_autobase_key: () => blog_autobase ? b4a.toString(blog_autobase.key, 'hex') : null,
@@ -78932,7 +79091,8 @@ async function setup_member (options) {
   async function handle_pairing_request (request) {
     try {
       console.log('Pairing request received')
-      await request.open(invite.publicKey)
+      await request.open(options.invite.publicKey) // if you click invite twice then the 2nd inviite will be used for the pairing request
+      // but i think we have to close the previous pairing request as well. @todo bug
       console.log('Pairing request opened')
 
       const user_data = request.userData
@@ -78999,15 +79159,16 @@ async function join_with_invite (options) {
   const metadata_store = store.namespace('blog-metadata')
   const drive_store = store.namespace('blog-files')
 
-  const { getLocalCore } = require('../../autodrive')
+  const { get_local_core } = require('../../autodrive')
 
   // Generate writer keys for metadata, drive, profile, and events
   const profile_store = store.namespace('blog-profile')
   const events_store = store.namespace('blog-events')
-  const metadata_core = getLocalCore({ store: metadata_store })
-  const drive_core = getLocalCore({ store: drive_store })
-  const profile_core = getLocalCore({ store: profile_store })
-  const events_core = getLocalCore({ store: events_store })
+  // changed the fucntion naming to use the snake case instead
+  const metadata_core = get_local_core({ store: metadata_store })
+  const drive_core = get_local_core({ store: drive_store })
+  const profile_core = get_local_core({ store: profile_store })
+  const events_core = get_local_core({ store: events_store })
 
   await Promise.all([metadata_core.ready(), drive_core.ready(), profile_core.ready(), events_core.ready()])
 
@@ -79019,6 +79180,7 @@ async function join_with_invite (options) {
   await Promise.all([metadata_core.close(), drive_core.close(), profile_core.close(), events_core.close()])
 
   const user_data = b4a.concat([metadata_writer_key, drive_writer_key, profile_writer_key, events_writer_key]) // Send all four keys
+  // @todo - use a more general apporoach for any type of app. I need to figure out what type of other approach we need..
 
   console.log('Joining pairing network...')
 
@@ -79440,18 +79602,10 @@ async function start_browser_peer (options = {}) {
               function handle_webrtc_open () {
                 console.log('WebRTC connection established')
                 const blog_key = get_blog_key ? get_blog_key() : null
-                if (blog_key) send({ type: 'feedkey', data: blog_key }) // Share our blog key
+                if (blog_key) send({ type: 'feedkey', data: blog_key })
 
-                // Setup corestore replication for WebRTC connections
-                const metadata_store = get_metadata_store ? get_metadata_store() : null
-                const drive_store = get_drive_store ? get_drive_store() : null
-                const profile_store = get_profile_store ? get_profile_store() : null
-
-                if (metadata_store && drive_store && profile_store) {
-                  metadata_store.replicate(stream)
-                  drive_store.replicate(stream)
-                  profile_store.replicate(stream)
-                }
+                // Replicate all available stores
+                store.replicate(stream)
               }
 
               function handle_webrtc_close () {
@@ -79476,18 +79630,10 @@ async function start_browser_peer (options = {}) {
               stream.on('error', handle_webrtc_error)
             } else if (message.data.mode === 'native') {
               const blog_key = get_blog_key ? get_blog_key() : null
-              if (blog_key) send({ type: 'feedkey', data: blog_key }) // Share our blog key
+              if (blog_key) send({ type: 'feedkey', data: blog_key })
 
-              // Setup corestore replication for native peer connections
-              const metadata_store = get_metadata_store ? get_metadata_store() : null
-              const drive_store = get_drive_store ? get_drive_store() : null
-              const profile_store = get_profile_store ? get_profile_store() : null
-
-              if (metadata_store && drive_store && profile_store) {
-                metadata_store.replicate(relay) // Use relay stream directly
-                drive_store.replicate(relay)
-                profile_store.replicate(relay)
-              }
+              // Replicate all available stores
+              store.replicate(relay)
             }
           }
 
@@ -79634,6 +79780,8 @@ async function handle_join_with_invite (options) {
         const { create_autodrive } = require('../autodrive')
         const drive = create_autodrive({ store: drive_store, bootstrap: b4a.from(drive_key, 'hex') })
         await drive.ready()
+        await drive.base.update()
+        await drive.download('/')
         setter(drive, drive_store)
         console.log(`[pairing] ${type} drive created and set`)
       }
@@ -79643,26 +79791,7 @@ async function handle_join_with_invite (options) {
     await setup_secondary_drive('profile', blog_helper.get_blog_profile_drive_key, blog_helper.set_profile_drive, 'blog-profile')
     await setup_secondary_drive('events', blog_helper.get_blog_events_drive_key, blog_helper.set_events_drive, 'blog-events')
 
-    // Setup corestore replication using blog helper stores
-    function handle_pairing_connection (conn) {
-      blog_helper.get_metadata_store().replicate(conn)
-      blog_helper.get_drive_store().replicate(conn)
-      const profile_store = blog_helper.get_profile_store()
-      if (profile_store) profile_store.replicate(conn)
-      const events_store = blog_helper.get_events_store()
-      if (events_store) events_store.replicate(conn)
-    }
-
-    swarm.on('connection', handle_pairing_connection)
-
-    for (const conn of swarm.connections) {
-      blog_helper.get_metadata_store().replicate(conn)
-      blog_helper.get_drive_store().replicate(conn)
-      const profile_store = blog_helper.get_profile_store()
-      if (profile_store) profile_store.replicate(conn)
-      const events_store = blog_helper.get_events_store()
-      if (events_store) events_store.replicate(conn)
-    }
+    // Replication is handled automatically by the main connection handler
   } catch (err) {
     console.error('Pairing error:', err)
   }
@@ -79713,6 +79842,8 @@ document.body.innerHTML = `
         <button class="make-btn">Seed</button>
         <button class="join-btn">Pair</button>
         <button class="load-btn">Load</button>
+        <!-- Sometimes the data gets corrupted during development, so this button outside will help to reset the indexedDB easily -->
+        <button class="reset-all-btn">Reset All Data</button>
       </div>
     </div>
     <div class="main" style="display: ${username ? 'block' : 'none'}">
@@ -79967,11 +80098,12 @@ async function render_view (view, ...args) {
       const posts = await blog_helper.get_my_posts()
       if (posts.length === 0) return view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
       for (const post of posts) {
+        const device_info = post.device_name ? ` • ${escape_html(post.device_name)}` : ''
         view_el.innerHTML += `
           <div class="post">
             <h4>${escape_html(post.title)}</h4>
             <p>${escape_html(post.content)}</p>
-            <small>Posted on: ${format_date(post.created)}</small>
+            <small>Posted on: ${format_date(post.created)}${device_info}</small>
           </div>
         `
       }
@@ -80092,6 +80224,14 @@ async function render_view (view, ...args) {
         </div>
         <hr>
         <div>
+          <h4>Paired Devices</h4>
+          <p>Devices that have write access to this blog:</p>
+          <div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            Loading devices...
+          </div>
+        </div>
+        <hr>
+        <div>
           <h4>Show Raw Data</h4>
           <button class="show-raw-data-btn">Show Raw Data</button>
           <div class="raw-data-options" style="display: none; margin-top: 10px;">
@@ -80108,6 +80248,42 @@ async function render_view (view, ...args) {
           <button class="reset-data-btn">Delete All My Data</button>
         </div>
       `
+      
+      // Load paired devices if in config view
+      if (view === 'config') {
+        const devices = await blog_helper.get_paired_devices()
+        const devices_list = document.querySelector('.paired-devices-list')
+        const my_key = blog_helper.get_local_key()
+        
+        if (devices.length === 0) {
+          devices_list.innerHTML = '<p style="color: #666;">No paired devices yet. Create an invite to add devices.</p>'
+        } else {
+          let devices_html = ''
+          for (const device of devices) {
+            const is_my_device = device.metadata_writer === my_key
+            const remove_btn = is_my_device ? '' : `<button class="remove-device-btn" data-metadata-writer="${escape_html(device.metadata_writer)}" data-drive-writer="${escape_html(device.drive_writer)}" data-profile-writer="${escape_html(device.profile_writer)}" data-events-writer="${escape_html(device.events_writer)}" style="margin-top: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove Device</button>`
+            const my_device_label = is_my_device ? ' <span style="color: #28a745;">(This Device)</span>' : ''
+            
+            devices_html += `
+              <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 3px;">
+                <p style="margin: 5px 0;"><strong>${escape_html(device.name)}</strong>${my_device_label}</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #666;">Added: ${escape_html(device.added_date)}</p>
+                <details style="margin-top: 5px;">
+                  <summary style="cursor: pointer; color: #007bff;">Show Keys</summary>
+                  <div style="margin-top: 10px; font-family: monospace; font-size: 11px; word-break: break-all;">
+                    <p><strong>Metadata:</strong> ${escape_html(device.metadata_writer)}</p>
+                    <p><strong>Drive:</strong> ${escape_html(device.drive_writer)}</p>
+                    <p><strong>Profile:</strong> ${escape_html(device.profile_writer)}</p>
+                    <p><strong>Events:</strong> ${escape_html(device.events_writer)}</p>
+                  </div>
+                </details>
+                ${remove_btn}
+              </div>
+            `
+          }
+          devices_list.innerHTML = devices_html
+        }
+      }
     }
   }
 
@@ -80172,6 +80348,37 @@ async function handle_manual_subscribe () {
     show_view('news')
   } else {
     alert('Failed to subscribe. The key may be invalid or the peer is offline.')
+  }
+}
+
+// Remove device handler
+async function handle_remove_device (button) {
+  const device = {
+    metadata_writer: button.dataset.metadataWriter,
+    drive_writer: button.dataset.driveWriter,
+    profile_writer: button.dataset.profileWriter,
+    events_writer: button.dataset.eventsWriter
+  }
+  
+  if (!confirm('Remove this device? This will revoke write access from all drives.')) return
+  
+  try {
+    button.disabled = true
+    button.textContent = 'Removing...'
+    
+    const success = await blog_helper.remove_device(device)
+    
+    if (success) {
+      show_view('config') // Refresh to show updated list (this is why we needed the remove event)
+    } else {
+      alert('Failed to remove device')
+      button.disabled = false
+      button.textContent = 'Remove Device'
+    }
+  } catch (err) {
+    alert('Error: ' + err.message)
+    button.disabled = false
+    button.textContent = 'Remove Device'
   }
 }
 
@@ -80345,7 +80552,11 @@ function handle_document_click (event) {
     handle_manual_subscribe()
   }
 
-  if (event.target.classList.contains('reset-data-btn')) {
+  if (target.classList.contains('remove-device-btn')) {
+    handle_remove_device(target)
+  }
+
+  if (event.target.classList.contains('reset-data-btn') || event.target.classList.contains('reset-all-btn')) {
     handle_reset_all_data()
   }
   if (event.target.classList.contains('upload-avatar-btn')) {

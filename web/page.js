@@ -40,6 +40,8 @@ document.body.innerHTML = `
         <button class="make-btn">Seed</button>
         <button class="join-btn">Pair</button>
         <button class="load-btn">Load</button>
+        <!-- Sometimes the data gets corrupted during development, so this button outside will help to reset the indexedDB easily -->
+        <button class="reset-all-btn">Reset All Data</button>
       </div>
     </div>
     <div class="main" style="display: ${username ? 'block' : 'none'}">
@@ -52,6 +54,7 @@ document.body.innerHTML = `
         <button data-view="config">Config</button>
       </nav>
       <style>
+        body { font-family: monospace; }
         nav button.active { background-color: #007bff; color: white; }
       </style>
       <div class="view"></div>
@@ -294,11 +297,12 @@ async function render_view (view, ...args) {
       const posts = await blog_helper.get_my_posts()
       if (posts.length === 0) return view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
       for (const post of posts) {
+        const device_info = post.device_name ? ` • ${escape_html(post.device_name)}` : ''
         view_el.innerHTML += `
           <div class="post">
             <h4>${escape_html(post.title)}</h4>
             <p>${escape_html(post.content)}</p>
-            <small>Posted on: ${format_date(post.created)}</small>
+            <small>Posted on: ${format_date(post.created)}${device_info}</small>
           </div>
         `
       }
@@ -419,6 +423,14 @@ async function render_view (view, ...args) {
         </div>
         <hr>
         <div>
+          <h4>Paired Devices</h4>
+          <p>Devices that have write access to this blog:</p>
+          <div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            Loading devices...
+          </div>
+        </div>
+        <hr>
+        <div>
           <h4>Show Raw Data</h4>
           <button class="show-raw-data-btn">Show Raw Data</button>
           <div class="raw-data-options" style="display: none; margin-top: 10px;">
@@ -435,6 +447,42 @@ async function render_view (view, ...args) {
           <button class="reset-data-btn">Delete All My Data</button>
         </div>
       `
+      
+      // Load paired devices if in config view
+      if (view === 'config') {
+        const devices = await blog_helper.get_paired_devices()
+        const devices_list = document.querySelector('.paired-devices-list')
+        const my_key = blog_helper.get_local_key()
+        
+        if (devices.length === 0) {
+          devices_list.innerHTML = '<p style="color: #666;">No paired devices yet. Create an invite to add devices.</p>'
+        } else {
+          let devices_html = ''
+          for (const device of devices) {
+            const is_my_device = device.metadata_writer === my_key
+            const remove_btn = is_my_device ? '' : `<button class="remove-device-btn" data-metadata-writer="${escape_html(device.metadata_writer)}" data-drive-writer="${escape_html(device.drive_writer)}" data-profile-writer="${escape_html(device.profile_writer)}" data-events-writer="${escape_html(device.events_writer)}" style="margin-top: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove Device</button>`
+            const my_device_label = is_my_device ? ' <span style="color: #28a745;">(This Device)</span>' : ''
+            
+            devices_html += `
+              <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 3px;">
+                <p style="margin: 5px 0;"><strong>${escape_html(device.name)}</strong>${my_device_label}</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #666;">Added: ${escape_html(device.added_date)}</p>
+                <details style="margin-top: 5px;">
+                  <summary style="cursor: pointer; color: #007bff;">Show Keys</summary>
+                  <div style="margin-top: 10px; font-family: monospace; font-size: 11px; word-break: break-all;">
+                    <p><strong>Metadata:</strong> ${escape_html(device.metadata_writer)}</p>
+                    <p><strong>Drive:</strong> ${escape_html(device.drive_writer)}</p>
+                    <p><strong>Profile:</strong> ${escape_html(device.profile_writer)}</p>
+                    <p><strong>Events:</strong> ${escape_html(device.events_writer)}</p>
+                  </div>
+                </details>
+                ${remove_btn}
+              </div>
+            `
+          }
+          devices_list.innerHTML = devices_html
+        }
+      }
     }
   }
 
@@ -499,6 +547,37 @@ async function handle_manual_subscribe () {
     show_view('news')
   } else {
     alert('Failed to subscribe. The key may be invalid or the peer is offline.')
+  }
+}
+
+// Remove device handler
+async function handle_remove_device (button) {
+  const device = {
+    metadata_writer: button.dataset.metadataWriter,
+    drive_writer: button.dataset.driveWriter,
+    profile_writer: button.dataset.profileWriter,
+    events_writer: button.dataset.eventsWriter
+  }
+  
+  if (!confirm('Remove this device? This will revoke write access from all drives.')) return
+  
+  try {
+    button.disabled = true
+    button.textContent = 'Removing...'
+    
+    const success = await blog_helper.remove_device(device)
+    
+    if (success) {
+      show_view('config') // Refresh to show updated list (this is why we needed the remove event)
+    } else {
+      alert('Failed to remove device')
+      button.disabled = false
+      button.textContent = 'Remove Device'
+    }
+  } catch (err) {
+    alert('Error: ' + err.message)
+    button.disabled = false
+    button.textContent = 'Remove Device'
   }
 }
 
@@ -672,7 +751,11 @@ function handle_document_click (event) {
     handle_manual_subscribe()
   }
 
-  if (event.target.classList.contains('reset-data-btn')) {
+  if (target.classList.contains('remove-device-btn')) {
+    handle_remove_device(target)
+  }
+
+  if (event.target.classList.contains('reset-data-btn') || event.target.classList.contains('reset-all-btn')) {
     handle_reset_all_data()
   }
   if (event.target.classList.contains('upload-avatar-btn')) {
