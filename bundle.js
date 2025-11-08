@@ -78196,19 +78196,24 @@ async function setup_peer_autobase (key, key_buffer) {
           discovered_blogs.set(key, { ...data, key }) // Add to explore tab
           autobase_cache.set(key, peer_autobase)
           // Note: peer profile drive is created in subscribe(), not here
+          
+          // Emit update for newly discovered peers (to show in explore tab)
+          emitter.emit('update')
         }
 
-        // Always emit update when peer data changes (for both discovered and subscribed)
-        emitter.emit('update')
+        // Only emit updates and check for new posts if we're subscribed to this peer
+        if (get_subscribed_peers().includes(key)) {
+          emitter.emit('update')
+          
+          // Check if latest entry is a new post (for notifications)
+          if (peer_autobase.view.length > 1) {
+            const latest_index = peer_autobase.view.length - 1
+            const latest_raw_data = await peer_autobase.view.get(latest_index)
+            const latest_entry = JSON.parse(b4a.toString(latest_raw_data))
 
-        // Check if latest entry is a new post (for notifications)
-        if (peer_autobase.view.length > 1) {
-          const latest_index = peer_autobase.view.length - 1
-          const latest_raw_data = await peer_autobase.view.get(latest_index)
-          const latest_entry = JSON.parse(b4a.toString(latest_raw_data))
-
-          if (validate_blog_post(latest_entry)) {
-            store.emit('feed', peer_autobase) // Notify about new posts
+            if (validate_blog_post(latest_entry)) {
+              store.emit('feed', peer_autobase) // Notify about new posts
+            }
           }
         }
       } catch (err) {
@@ -78276,11 +78281,19 @@ async function init_blog (options) {
     profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key })
     events_drive = create_autodrive({ store: events_store, bootstrap: null })
     await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready(), events_drive.ready()])
+    
+    // Set drives in identity_helper
+    identity_helper.set_profile_drive(profile_drive, profile_store)
+    identity_helper.set_events_drive(events_drive, events_store, setup_events_sync_listeners)
   } else if (!autobase_key) {
     // Only create local profile and events for new blogs (not when joining)
     profile_drive = create_autodrive({ store: profile_store, bootstrap: null })
     events_drive = create_autodrive({ store: events_store, bootstrap: null })
     await Promise.all([blog_autobase.ready(), drive.ready(), profile_drive.ready(), events_drive.ready()])
+    
+    // Set drives in identity_helper
+    identity_helper.set_profile_drive(profile_drive, profile_store)
+    identity_helper.set_events_drive(events_drive, events_store, setup_events_sync_listeners)
   } else {
     // Joining without profile key yet - don't create profile or events drive
     await Promise.all([blog_autobase.ready(), drive.ready()])
@@ -78399,16 +78412,22 @@ async function sync_events_to_subscriptions () {
 
 // Setup common event handlers
 function setup_event_handlers () {
+  // Only emit updates for OUR OWN blog, not peer blogs
   function handle_emit_update () {
+    console.log('[blog-helpers] Update triggered by blog_autobase append/feed')
     emitter.emit('update')
   }
 
   async function handle_autobase_update () {
+    console.log('[blog-helpers] Update triggered by blog_autobase update')
     emitter.emit('update')
   }
 
+  // These listeners are for OUR blog only
   blog_autobase.on('append', handle_emit_update)
   blog_autobase.on('update', handle_autobase_update)
+  
+  // Feed events are only emitted for subscribed peers (already filtered in setup_peer_autobase)
   store.on('feed', handle_emit_update)
 
   async function handle_peer_autobase_key ({ key, key_buffer }) {
@@ -78879,6 +78898,7 @@ module.exports = {
 
 },{"b4a":102,"bip39-mnemonic":108,"sodium":609}],606:[function(require,module,exports){
 // Identity and multi-device management helper
+// App-independent identity management
 const b4a = require('b4a')
 const { create_autodrive } = require('../../autodrive')
 
@@ -78899,33 +78919,64 @@ function make_emitter (state = {}) {
 let store, profile_drive, events_drive, profile_store, events_store
 const emitter = make_emitter()
 
-// Initialize identity system
-async function init_identity (options) {
+// Make new identity (create new profile and events drives)
+async function make (options) {
   const {
     store_instance,
-    profile_drive_key = null,
-    events_drive_key = null
+    profile_namespace = 'profile',
+    events_namespace = 'events'
   } = options
 
   store = store_instance
 
   // Create namespaced stores
-  profile_store = store.namespace('blog-profile')
-  events_store = store.namespace('blog-events')
+  profile_store = store.namespace(profile_namespace)
+  events_store = store.namespace(events_namespace)
 
-  // Create profile and events drives
-  if (profile_drive_key) {
-    profile_drive = create_autodrive({ store: profile_store, bootstrap: profile_drive_key })
-    events_drive = create_autodrive({ store: events_store, bootstrap: events_drive_key })
-    await Promise.all([profile_drive.ready(), events_drive.ready()])
-  } else {
-    // Create new drives for new identity
-    profile_drive = create_autodrive({ store: profile_store, bootstrap: null })
-    events_drive = create_autodrive({ store: events_store, bootstrap: null })
-    await Promise.all([profile_drive.ready(), events_drive.ready()])
-  }
+  // Create new drives for new identity
+  profile_drive = create_autodrive({ store: profile_store, bootstrap: null })
+  events_drive = create_autodrive({ store: events_store, bootstrap: null })
+  await Promise.all([profile_drive.ready(), events_drive.ready()])
 
   emitter.emit('update')
+  
+  return {
+    profile_drive_key: b4a.toString(profile_drive.base.key, 'hex'),
+    events_drive_key: b4a.toString(events_drive.base.key, 'hex')
+  }
+}
+
+// Load existing identity (from existing profile and events drive keys)
+async function load (options) {
+  const {
+    store_instance,
+    profile_drive_key,
+    events_drive_key,
+    profile_namespace = 'profile',
+    events_namespace = 'events'
+  } = options
+
+  if (!profile_drive_key || !events_drive_key) {
+    throw new Error('profile_drive_key and events_drive_key are required for load()')
+  }
+
+  store = store_instance
+
+  // Create namespaced stores
+  profile_store = store.namespace(profile_namespace)
+  events_store = store.namespace(events_namespace)
+
+  // Load existing drives
+  profile_drive = create_autodrive({ store: profile_store, bootstrap: b4a.from(profile_drive_key, 'hex') })
+  events_drive = create_autodrive({ store: events_store, bootstrap: b4a.from(events_drive_key, 'hex') })
+  await Promise.all([profile_drive.ready(), events_drive.ready()])
+
+  emitter.emit('update')
+  
+  return {
+    profile_drive_key,
+    events_drive_key
+  }
 }
 
 // Create default profile
@@ -79189,23 +79240,37 @@ function handle_update_callback (cb) {
 }
 
 module.exports = {
-  init_identity,
+  // Core identity functions (app-independent)
+  make,
+  load,
+  
+  // Profile management
   create_default_profile,
   upload_avatar,
   get_profile,
   get_avatar_content,
+  
+  // Events and device management
   log_event,
   get_events,
   get_paired_devices,
   get_device_name,
   remove_device,
+  
+  // Debugging
   get_raw_data,
+  
+  // Drive setters (for pairing)
   set_profile_drive,
   set_events_drive,
+  
+  // Getters
   get_profile_drive: () => profile_drive,
   get_events_drive: () => events_drive,
   get_profile_store: () => profile_store,
   get_events_store: () => events_store,
+  
+  // Events
   on_update: handle_update_callback
 }
 
@@ -79649,7 +79714,6 @@ const { create_mnemonic_keypair, save, load } = require('helpers/crypto-helpers'
 const { identity_exchange_protocol } = require('helpers/protocol-helpers')
 const pairing_helper = require('../helpers/pairing-helper')
 const blog_helper = require('../helpers/blog-helpers')
-const identity_helper = require('../helpers/identity-helper')
 
 const topic = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 const PEERS_STORAGE_KEY = 'discovered_peers'
@@ -79947,7 +80011,7 @@ async function handle_join_with_invite (options) {
 
 module.exports = { start: start_browser_peer }
 
-},{"../autodrive":603,"../helpers/blog-helpers":604,"../helpers/identity-helper":606,"../helpers/pairing-helper":607,"@hyperswarm/dht-relay":15,"@hyperswarm/dht-relay/ws":59,"b4a":102,"corestore":183,"helpers/crypto-helpers":605,"helpers/protocol-helpers":608,"hyper-webrtc":292,"hyperswarm":362,"protomux":439,"random-access-web":460}],612:[function(require,module,exports){
+},{"../autodrive":603,"../helpers/blog-helpers":604,"../helpers/pairing-helper":607,"@hyperswarm/dht-relay":15,"@hyperswarm/dht-relay/ws":59,"b4a":102,"corestore":183,"helpers/crypto-helpers":605,"helpers/protocol-helpers":608,"hyper-webrtc":292,"hyperswarm":362,"protomux":439,"random-access-web":460}],612:[function(require,module,exports){
 const { start: start_browser_peer } = require('../src/node_modules/web-peer')
 const blog_helper = require('../src/node_modules/helpers/blog-helpers')
 
