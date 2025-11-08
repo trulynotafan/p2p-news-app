@@ -21,7 +21,7 @@
     "web": "budo web/page.js:bundle.js --live --open",
     "build": "browserify web/page.js > bundle.js",
     "relay": "node src/node_modules/relay/index.js",
-    "resetcli": "rm -rf ./storage*",
+    "resetcli": "rm -rf ./storage* && rm -rf ./.local-storage",
     "peer": "bare src/node_modules/bare-peer/index.js",
     "lint": "standardx",
     "lintfix": "standardx --fix",
