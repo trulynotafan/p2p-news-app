@@ -25,7 +25,10 @@
     "peer": "bare src/node_modules/bare-peer/index.js",
     "lint": "standardx",
     "lintfix": "standardx --fix",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "web:news": "budo web/news.js:news-bundle.js --live --open",
+    "build:news": "browserify web/news.js > news-bundle.js"
+
   },
   "bin": {
     "native-peer": "./bin/cli.js"
