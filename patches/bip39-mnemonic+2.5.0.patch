@@ -4,7 +4,7 @@ index 541e5e9..4c1b999 100644
 +++ b/node_modules/bip39-mnemonic/index.js
 @@ -1,4 +1,4 @@
 -const sodium = require('sodium-universal')
-+const sodium = require('../../src/node_modules/sodium')
++const sodium = require('../../lib/node_modules/sodium')
  const b4a = require('b4a')
  const assert = require('nanoassert')
  const { detectLanguage, loadWordlist } = require('./wordlist')

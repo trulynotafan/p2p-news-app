@@ -17,19 +17,27 @@
       "indent": ["error", 2]
     }
   },
+  "bin": {
+    "p2p-news-app": "./lib/run.js"
+  },
   "scripts": {
-    "web": "budo web/page.js:bundle.js --live --open",
-    "build": "browserify web/page.js > bundle.js",
-    "relay": "node src/node_modules/relay/index.js",
+    "cli": "bare lib/run.js",
+    "web": "npm run web:ds & npm run web:ui",
+    "web:ds": "budo lib/datashell.js:shim.js --live",
+    "web:ui": "budo lib/webapp-ui.js:bundle.js --live --open",
+    "build": "npm run build:ds & npm run build:ui",
+    "build:ds": "browserify lib/datashell.js > shim.js",
+    "build:ui": "browserify lib/webapp-ui.js > bundle.js",
+    "relay": "node lib/node_modules/relay/index.js",
     "resetcli": "rm -rf ./storage* && rm -rf ./.local-storage",
-    "peer": "bare src/node_modules/bare-peer/index.js",
+
     "lint": "standardx",
     "lintfix": "standardx --fix",
     "postinstall": "patch-package"
   },
-  "bin": {
-    "native-peer": "./bin/cli.js"
-  },
+  "keywords": ["p2p", "blog", "hypercore", "datashell"],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@geut/sodium-javascript-plus": "^0.0.6",
     "@hyperswarm/dht-relay": "^0.4.3",
