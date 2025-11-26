@@ -808,6 +808,11 @@ async function start_networking (options = {}) {
     new Corestore(RAW(store_name))
 
   await store.ready()
+  
+  // Offline mode - return store without networking
+  if (options.offline_mode) {
+    return { store, swarm: null, dht: null, cleanup: () => {} }
+  }
 
   // CLI: Use same networking pattern as bare-peer
   if (is_cli) {
@@ -876,26 +881,37 @@ async function start_networking (options = {}) {
   // Browser: Original WebSocket relay code
   const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
   const relay_url = options.relay || (is_dev ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app')
+  
+  console.log('[Identity] Using relay:', relay_url)
 
   await store.ready()
 
   return new Promise((resolve, reject) => {
     const socket = new WebSocket(relay_url)
+    let resolved = false
 
     function handle_socket_error (err) {
-      const errorMessage = err.message || err.toString() || ''
-      if (errorMessage.includes('Invalid URL') || errorMessage.includes('URL scheme') || errorMessage.includes('ERR_INVALID_URL')) {
-        reject(new Error(`Invalid relay URL: ${relay_url}`))
-      } else {
-        resolve({ store, swarm: null, dht: null, cleanup: () => {} })
-      }
+      if (resolved) return
+      resolved = true
+      
+      const errorMessage = (err && err.message) ? err.message : 'Connection error'
+      reject(new Error(`Relay connection failed: ${relay_url} - ${errorMessage}`))
+    }
+
+    function handle_socket_close () {
+      if (resolved) return
+      resolved = true
+      reject(new Error(`Relay connection closed: ${relay_url}`))
     }
 
     socket.addEventListener('error', handle_socket_error)
-    socket.addEventListener('close', () => {})
+    socket.addEventListener('close', handle_socket_close)
 
     async function handle_socket_open () {
       try {
+        if (resolved) return
+        resolved = true
+        
         if (socket.readyState !== WebSocket.OPEN) {
           console.error('Socket not ready:', socket.readyState)
           return
@@ -912,12 +928,14 @@ async function start_networking (options = {}) {
         const dht = new DHT(stream)
         const swarm = new Hyperswarm({ dht, key_pair: mnemonic_data.keypair })
 
+        let peer_relay_url = null
         function handle_swarm_connection (relay, details) {
           if (!relay.userData) relay.userData = null
           const mux = new Protomux(relay)
 
           async function handle_protocol_message (message, send, current_peer_mode) {
             if (message.data.relay_url) {
+              peer_relay_url = message.data.relay_url
               if (!window.discovered_relays) window.discovered_relays = new Set()
               window.discovered_relays.add(message.data.relay_url)
             }
@@ -951,7 +969,7 @@ async function start_networking (options = {}) {
 
           async function handle_feedkey_message ({ key_buffer }) {
             const hex_key = b4a.toString(key_buffer, 'hex')
-            store.emit('peer-autobase-key', { key: hex_key, key_buffer })
+            store.emit('peer-autobase-key', { key: hex_key, key_buffer, relay_url: peer_relay_url })
           }
 
           const handlers = {
