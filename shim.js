@@ -9458,6 +9458,12 @@ const HANDSHAKES = Object.freeze({
     PRESHARE_RS,
     [TOK_E, TOK_ES, TOK_S, TOK_SS],
     [TOK_E, TOK_EE, TOK_SE]
+  ],
+  XK: [
+    PRESHARE_RS,
+    [TOK_E, TOK_ES],
+    [TOK_E, TOK_EE],
+    [TOK_S, TOK_SE]
   ]
 })
 
@@ -62138,6 +62144,7 @@ module.exports = class Hyperswarm extends EventEmitter {
     this._firewall = firewall
 
     this.dht.on('network-change', this._handleNetworkChange.bind(this))
+    this.dht.on('network-update', this._handleNetworkUpdate.bind(this))
     this.on('update', this._handleUpdate)
   }
 
@@ -62486,7 +62493,14 @@ module.exports = class Hyperswarm extends EventEmitter {
     }
   }
 
+  async _handleNetworkUpdate() {
+    if (!this.online) return
+    this._handleNetworkChange()
+  }
+
   async _handleNetworkChange() {
+    if (this.suspended) return
+
     // prioritize figuring out if existing connections are dead
     for (const conn of this._allConnections) {
       conn.sendKeepAlive()
@@ -62761,11 +62775,11 @@ module.exports = class ConnectionSet {
   }
 
   has(publicKey) {
-    return this._byPublicKey.has(b4a.toString(publicKey, 'hex'))
+    return this._byPublicKey.has(toHex(publicKey))
   }
 
   get(publicKey) {
-    return this._byPublicKey.get(b4a.toString(publicKey, 'hex'))
+    return this._byPublicKey.get(toHex(publicKey))
   }
 
   add(connection) {
@@ -62780,6 +62794,10 @@ module.exports = class ConnectionSet {
   }
 }
 
+function toHex(b) {
+  return typeof b === 'string' ? b : b4a.toString(b, 'hex')
+}
+
 },{"b4a":111}],395:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 const b4a = require('b4a')
@@ -62787,6 +62805,8 @@ const b4a = require('b4a')
 const REFRESH_INTERVAL = 1000 * 60 * 10 // 10 min
 const RANDOM_JITTER = 1000 * 60 * 2 // 2 min
 const DELAY_GRACE_PERIOD = 1000 * 30 // 30s
+
+const MAX_DISCOVERY_CACHE = 64
 
 module.exports = class PeerDiscovery {
   constructor(
@@ -62810,6 +62830,7 @@ module.exports = class PeerDiscovery {
     this._onpeer = onpeer
     this._onerror = onerror
 
+    this._discovered = new Set()
     this._activeQuery = null
     this._timer = null
     this._currentRefresh = null
@@ -62874,6 +62895,17 @@ module.exports = class PeerDiscovery {
       this._needsUnannounce = true
     }
 
+    let limit = this.limit
+
+    if (limit < Infinity && limit > 0) {
+      for (const id of this._discovered) {
+        if (!this.swarm.connections.has(id)) continue
+        if (--limit === 0) break
+      }
+    }
+
+    this._discovered.clear()
+
     const announcing = this.isServer
     const query = (this._activeQuery = announcing
       ? this.swarm.dht.announce(
@@ -62890,8 +62922,20 @@ module.exports = class PeerDiscovery {
       for await (const data of this._activeQuery) {
         if (!this.isClient || !this._isActive()) continue
         for (const peer of data.peers) {
-          if (this.limit === 0) return
-          this.limit--
+          if (limit < Infinity) {
+            const id = b4a.toString(peer.publicKey, 'hex')
+
+            if (this._discovered.size < MAX_DISCOVERY_CACHE) {
+              this._discovered.add(id)
+            }
+
+            if (limit === 0) continue
+
+            // there is a chance it has updated a connection during discovery and we go over
+            // the limit - thats acceptable to avoid a complexity spiral here.
+            if (!this.swarm.connections.has(id)) limit--
+          }
+
           this._onpeer(peer, data)
         }
       }
@@ -63965,19 +64009,77 @@ utils.encode = function encode(arr, enc) {
 };
 
 },{}],418:[function(require,module,exports){
+const EventEmitter = require('events')
 const sameData = require('same-data')
 const unixPathResolve = require('unix-path-resolve')
 const streamEquals = require('binary-stream-equals')
+const speedometer = require('speedometer')
 const { pipelinePromise, isStream } = require('streamx')
+
+class Monitor extends EventEmitter {
+  constructor (mirror, { interval = 250 } = {}) {
+    super()
+
+    this.mirror = mirror
+    this.interval = setInterval(this.update.bind(this), interval)
+    this.stats = null
+    this.index = mirror.monitors.push(this) - 1
+
+    this.update() // populate latest stats
+  }
+
+  get destroyed () {
+    return this.index === -1
+  }
+
+  update () {
+    if (this.index === -1) return
+
+    // NOTE: immutable (append-only) data structure
+    this.stats = {
+      peers: this.mirror.peers.length,
+      download: {
+        bytes: this.mirror.downloadedBytes,
+        blocks: this.mirror.downloadedBlocks,
+        speed: this.mirror.downloadSpeed(),
+        progress: this.mirror.downloadProgress
+      },
+      upload: {
+        bytes: this.mirror.uploadedBytes,
+        blocks: this.mirror.uploadedBlocks,
+        speed: this.mirror.uploadSpeed()
+      }
+    }
+
+    this.emit('update', this.stats)
+  }
+
+  destroy () {
+    if (this.index === -1) return
+
+    clearInterval(this.interval)
+
+    const head = this.mirror.monitors.pop()
+    if (head !== this) {
+      this.mirror.monitors[this.index] = head
+      head.index = this.index
+    }
+
+    this.index = -1
+    this.emit('destroy')
+  }
+}
 
 module.exports = class MirrorDrive {
   constructor (src, dst, opts = {}) {
     this.src = src
     this.dst = dst
 
-    this.prefix = opts.prefix || '/'
+    this.prefix = toArray(opts.prefix || '/')
     this.dryRun = !!opts.dryRun
     this.prune = opts.prune !== false
+    this.preload = opts.preload !== false && !!src.getBlobs
+    this.includeProgress = !!opts.progress && !!src.getBlobs
     this.includeEquals = !!opts.includeEquals
     this.filter = opts.filter || null
     this.metadataEquals = opts.metadataEquals || null
@@ -63988,12 +64090,42 @@ module.exports = class MirrorDrive {
     this.count = { files: 0, add: 0, remove: 0, change: 0 }
     this.bytesRemoved = 0
     this.bytesAdded = 0
-    this.iterator = this._mirror()
-    this._ignore = opts.ignore ? toIgnoreFunction(opts.ignore) : null
+    this.ignore = opts.ignore ? toIgnoreFunction(opts.ignore) : null
+    this.finished = false
+
+    this.downloadedBlocks = 0
+    this.downloadedBlocksEstimate = 0
+    this.downloadedBytes = 0
+    this.downloadSpeed = this.includeProgress ? speedometer() : null
+
+    this.uploadedBlocks = 0
+    this.uploadedBytes = 0
+    this.uploadSpeed = this.includeProgress ? speedometer() : null
+
+    this.monitors = []
+    this.iterator = this._init()
   }
 
   [Symbol.asyncIterator] () {
     return this.iterator
+  }
+
+  get peers () {
+    return this.src.core?.peers || []
+  }
+
+  get downloadProgress () {
+    if (this.finished) return 1
+    if (!this.downloadedBlocksEstimate) return 0
+    // leave 3% incase our estimatation is wrong - then at least it wont appear done...
+    return Math.min(0.99, this.downloadedBlocks / this.downloadedBlocksEstimate)
+  }
+
+  monitor (opts) {
+    this.includeProgress = true
+    if (this.downloadSpeed === null) this.downloadSpeed = speedometer()
+    if (this.uploadSpeed === null) this.uploadSpeed = speedometer()
+    return new Monitor(this, opts)
   }
 
   async done () {
@@ -64003,16 +64135,70 @@ module.exports = class MirrorDrive {
     }
   }
 
+  _onupload (index, byteLength) {
+    this.uploadedBlocks++
+    this.uploadedBytes += byteLength
+    this.uploadSpeed(byteLength)
+  }
+
+  _ondownload (index, byteLength) {
+    this.downloadedBlocks++
+    this.downloadedBytes += byteLength
+    this.downloadSpeed(byteLength)
+  }
+
+  async _flushPreload (entries) {
+    const ranges = []
+    const blobs = await this.src.getBlobs()
+
+    for (const entry of entries) {
+      const blob = entry.value.blob
+      if (!blob) continue
+      const dl = blobs.core.download({ start: blob.blockOffset, length: blob.blockLength })
+      await dl.ready()
+      ranges.push(dl)
+    }
+
+    this.downloadedBlocksEstimate = this.downloadedBlocks
+    for (const dl of ranges) {
+      if (!dl.request.context) continue
+      this.downloadedBlocksEstimate += (dl.request.context.end - dl.request.context.start)
+    }
+
+    for (const dl of ranges) {
+      await dl.done()
+    }
+  }
+
+  async * _init () {
+    try {
+      for await (const out of this._mirror()) yield out
+    } finally {
+      while (this.monitors.length) {
+        this.monitors[this.monitors.length - 1].destroy()
+      }
+    }
+  }
+
   async * _mirror () {
     await this.src.ready()
     await this.dst.ready()
 
     if (this.dst.core && !this.dst.core.writable) throw new Error('Destination must be writable')
 
+    const blobs = this.includeProgress ? await this.src.getBlobs() : null
+    const onupload = this._onupload.bind(this)
+    const ondownload = this._ondownload.bind(this)
+
+    if (blobs) {
+      blobs.core.on('upload', onupload)
+      blobs.core.on('download', ondownload)
+    }
+
     const dst = this.batch ? this.dst.batch() : this.dst
 
     if (this.prune) {
-      for await (const [key, dstEntry, srcEntry] of this._list(this.dst, this.src)) {
+      for await (const [key, dstEntry, srcEntry] of this._list(this.dst, this.src, null)) {
         if (srcEntry) continue
 
         this.count.remove++
@@ -64023,12 +64209,18 @@ module.exports = class MirrorDrive {
       }
     }
 
-    if (this.src.download && !this.entries) {
-      const dl = this.src.download(this.prefix)
-      if (dl.catch) dl.catch(noop)
+    if (this.preload) {
+      const entries = []
+
+      for await (const [, srcEntry] of this._list(this.src, null, this.filter)) {
+        entries.push(srcEntry)
+      }
+
+      // flush in bg
+      this._flushPreload(entries).catch(noop)
     }
 
-    for await (const [key, srcEntry, dstEntry] of this._list(this.src, dst, { filter: this.filter })) {
+    for await (const [key, srcEntry, dstEntry] of this._list(this.src, dst, this.filter)) {
       if (!srcEntry) continue // Due entries option, src entry might not exist probably because it was pruned
 
       this.count.files++
@@ -64085,30 +64277,38 @@ module.exports = class MirrorDrive {
     }
 
     if (this.batch) await dst.flush()
-  }
 
-  async * _list (a, b, opts) {
-    const list = this.entries || a.list(this.prefix, { ignore: this._ignore })
-    const filter = opts && opts.filter
-
-    for await (const entry of list) {
-      const key = typeof entry === 'object' ? entry.key : entry
-
-      if (filter && !filter(key)) continue
-
-      const entryA = await a.entry(entry)
-      const entryB = await b.entry(key)
-
-      yield [key, entryA, entryB]
+    if (blobs) {
+      blobs.core.off('upload', onupload)
+      blobs.core.off('download', ondownload)
     }
 
-    if (this.prefix !== '/' && (!filter || filter(this.prefix))) {
-      const entryA = await a.entry(this.prefix)
-      const entryB = await b.entry(this.prefix)
+    this.finished = true
+  }
 
-      if (!entryA && !entryB) return
+  async * _list (a, b, filter) {
+    for (const prefix of this.prefix) {
+      const list = this.entries || a.list(prefix, { ignore: this.ignore })
 
-      yield [this.prefix, entryA, entryB]
+      for await (const entry of list) {
+        const key = typeof entry === 'object' ? entry.key : entry
+
+        if (filter && !filter(key)) continue
+
+        const entryA = await a.entry(entry)
+        const entryB = b ? await b.entry(key) : null
+
+        yield [key, entryA, entryB]
+      }
+
+      if (prefix !== '/' && (!filter || filter(prefix))) {
+        const entryA = await a.entry(prefix)
+        const entryB = b ? await b.entry(prefix) : null
+
+        if (!entryA && !entryB) continue
+
+        yield [prefix, entryA, entryB]
+      }
     }
   }
 }
@@ -64166,9 +64366,13 @@ function toIgnoreFunction (ignore) {
   return key => all.some(path => path === key || key.startsWith(path + '/'))
 }
 
+function toArray (prefix) {
+  return Array.isArray(prefix) ? prefix : [prefix]
+}
+
 function noop () {}
 
-},{"binary-stream-equals":136,"same-data":518,"streamx":609,"unix-path-resolve":619}],419:[function(require,module,exports){
+},{"binary-stream-equals":136,"events":288,"same-data":518,"speedometer":593,"streamx":609,"unix-path-resolve":619}],419:[function(require,module,exports){
 var queueTick = require('queue-tick')
 
 var mutexify = function () {
@@ -64632,8 +64836,303 @@ arguments[4][66][0].apply(exports,arguments)
 },{"dup":66}],451:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
 },{"dup":67,"nanoassert":421}],452:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"./hkdf":426,"./symmetric-state":453,"b4a":111,"dup":76,"nanoassert":421}],453:[function(require,module,exports){
+const assert = require('nanoassert')
+const b4a = require('b4a')
+
+const SymmetricState = require('./symmetric-state')
+const { HASHLEN } = require('./hkdf')
+
+const PRESHARE_IS = Symbol('initiator static key preshared')
+const PRESHARE_RS = Symbol('responder static key preshared')
+
+const TOK_PSK = Symbol('psk')
+
+const TOK_S = Symbol('s')
+const TOK_E = Symbol('e')
+
+const TOK_ES = Symbol('es')
+const TOK_SE = Symbol('se')
+const TOK_EE = Symbol('ee')
+const TOK_SS = Symbol('ss')
+
+const HANDSHAKES = Object.freeze({
+  NN: [
+    [TOK_E],
+    [TOK_E, TOK_EE]
+  ],
+  NNpsk0: [
+    [TOK_PSK, TOK_E],
+    [TOK_E, TOK_EE]
+  ],
+  XX: [
+    [TOK_E],
+    [TOK_E, TOK_EE, TOK_S, TOK_ES],
+    [TOK_S, TOK_SE]
+  ],
+  XXpsk0: [
+    [TOK_PSK, TOK_E],
+    [TOK_E, TOK_EE, TOK_S, TOK_ES],
+    [TOK_S, TOK_SE]
+  ],
+  IK: [
+    PRESHARE_RS,
+    [TOK_E, TOK_ES, TOK_S, TOK_SS],
+    [TOK_E, TOK_EE, TOK_SE]
+  ]
+})
+
+class Writer {
+  constructor () {
+    this.size = 0
+    this.buffers = []
+  }
+
+  push (b) {
+    this.size += b.byteLength
+    this.buffers.push(b)
+  }
+
+  end () {
+    const all = b4a.alloc(this.size)
+    let offset = 0
+    for (const b of this.buffers) {
+      all.set(b, offset)
+      offset += b.byteLength
+    }
+    return all
+  }
+}
+
+class Reader {
+  constructor (buf) {
+    this.offset = 0
+    this.buffer = buf
+  }
+
+  shift (n) {
+    const start = this.offset
+    const end = this.offset += n
+    if (end > this.buffer.byteLength) throw new Error('Insufficient bytes')
+    return this.buffer.subarray(start, end)
+  }
+
+  end () {
+    return this.shift(this.buffer.byteLength - this.offset)
+  }
+}
+
+module.exports = class NoiseState extends SymmetricState {
+  constructor (pattern, initiator, staticKeypair, opts = {}) {
+    super(opts)
+
+    this.s = staticKeypair || this.curve.generateKeyPair()
+    this.e = null
+
+    this.psk = null
+    if (opts && opts.psk) this.psk = opts.psk
+
+    this.re = null
+    this.rs = null
+
+    this.pattern = pattern
+    this.handshake = HANDSHAKES[this.pattern].slice()
+
+    this.isPskHandshake = !!this.psk && hasPskToken(this.handshake)
+
+    this.protocol = b4a.from([
+      'Noise',
+      this.pattern,
+      this.DH_ALG,
+      this.CIPHER_ALG,
+      'BLAKE2b'
+    ].join('_'))
+
+    this.initiator = initiator
+    this.complete = false
+
+    this.rx = null
+    this.tx = null
+    this.hash = null
+  }
+
+  initialise (prologue, remoteStatic) {
+    if (this.protocol.byteLength <= HASHLEN) this.digest.set(this.protocol)
+    else this.mixHash(this.protocol)
+
+    this.chainingKey = b4a.from(this.digest)
+
+    this.mixHash(prologue)
+
+    while (!Array.isArray(this.handshake[0])) {
+      const message = this.handshake.shift()
+
+      // handshake steps should be as arrays, only
+      // preshare tokens are provided otherwise
+      assert(message === PRESHARE_RS || message === PRESHARE_IS,
+        'Unexpected pattern')
+
+      const takeRemoteKey = this.initiator
+        ? message === PRESHARE_RS
+        : message === PRESHARE_IS
+
+      if (takeRemoteKey) this.rs = remoteStatic
+
+      const key = takeRemoteKey ? this.rs : this.s.publicKey
+      assert(key != null, 'Remote pubkey required')
+
+      this.mixHash(key)
+    }
+  }
+
+  final () {
+    const [k1, k2] = this.split()
+
+    this.tx = this.initiator ? k1 : k2
+    this.rx = this.initiator ? k2 : k1
+
+    this.complete = true
+    this.hash = this.getHandshakeHash()
+
+    this._clear()
+  }
+
+  recv (buf) {
+    const r = new Reader(buf)
+
+    for (const pattern of this.handshake.shift()) {
+      switch (pattern) {
+        case TOK_PSK :
+          this.mixKeyAndHash(this.psk)
+          break
+
+        case TOK_E :
+          this.re = r.shift(this.curve.PKLEN)
+          this.mixHash(this.re)
+          if (this.isPskHandshake) this.mixKeyNormal(this.re)
+          break
+
+        case TOK_S : {
+          const klen = this.hasKey ? this.curve.PKLEN + 16 : this.curve.PKLEN
+          this.rs = this.decryptAndHash(r.shift(klen))
+          break
+        }
+
+        case TOK_EE :
+        case TOK_ES :
+        case TOK_SE :
+        case TOK_SS : {
+          const useStatic = keyPattern(pattern, this.initiator)
+
+          const localKey = useStatic.local ? this.s : this.e
+          const remoteKey = useStatic.remote ? this.rs : this.re
+
+          this.mixKey(remoteKey, localKey)
+          break
+        }
+
+        default :
+          throw new Error('Unexpected message')
+      }
+    }
+
+    const payload = this.decryptAndHash(r.end())
+
+    if (!this.handshake.length) this.final()
+    return payload
+  }
+
+  send (payload = b4a.alloc(0)) {
+    const w = new Writer()
+
+    for (const pattern of this.handshake.shift()) {
+      switch (pattern) {
+        case TOK_PSK :
+          this.mixKeyAndHash(this.psk)
+          break
+
+        case TOK_E :
+          if (this.e === null) this.e = this.curve.generateKeyPair()
+          this.mixHash(this.e.publicKey)
+          if (this.isPskHandshake) this.mixKeyNormal(this.e.publicKey)
+          w.push(this.e.publicKey)
+          break
+
+        case TOK_S :
+          w.push(this.encryptAndHash(this.s.publicKey))
+          break
+
+        case TOK_ES :
+        case TOK_SE :
+        case TOK_EE :
+        case TOK_SS : {
+          const useStatic = keyPattern(pattern, this.initiator)
+
+          const localKey = useStatic.local ? this.s : this.e
+          const remoteKey = useStatic.remote ? this.rs : this.re
+
+          this.mixKey(remoteKey, localKey)
+          break
+        }
+
+        default :
+          throw new Error('Unexpected message')
+      }
+    }
+
+    w.push(this.encryptAndHash(payload))
+    const response = w.end()
+
+    if (!this.handshake.length) this.final()
+    return response
+  }
+
+  _clear () {
+    super._clear()
+
+    this.e.secretKey.fill(0)
+    this.e.publicKey.fill(0)
+
+    this.re.fill(0)
+
+    this.e = null
+    this.re = null
+  }
+}
+
+function keyPattern (pattern, initiator) {
+  const ret = {
+    local: false,
+    remote: false
+  }
+
+  switch (pattern) {
+    case TOK_EE:
+      return ret
+
+    case TOK_ES:
+      ret.local ^= !initiator
+      ret.remote ^= initiator
+      return ret
+
+    case TOK_SE:
+      ret.local ^= initiator
+      ret.remote ^= !initiator
+      return ret
+
+    case TOK_SS:
+      ret.local ^= 1
+      ret.remote ^= 1
+      return ret
+  }
+}
+
+function hasPskToken (handshake) {
+  return handshake.some(x => {
+    return Array.isArray(x) && x.indexOf(TOK_PSK) !== -1
+  })
+}
+
+},{"./hkdf":426,"./symmetric-state":453,"b4a":111,"nanoassert":421}],453:[function(require,module,exports){
 arguments[4][77][0].apply(exports,arguments)
 },{"./cipher":424,"./dh":425,"./hkdf":426,"b4a":111,"dup":77,"nanoassert":421,"sodium-universal":446}],454:[function(require,module,exports){
 var wrappy = require('wrappy')
