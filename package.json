@@ -14,7 +14,10 @@
     },
     "rules": {
       "camelcase": "off",
-      "indent": ["error", 2]
+      "indent": [
+        "error",
+        2
+      ]
     }
   },
   "bin": {
@@ -30,14 +33,18 @@
     "build:ui": "browserify lib/webapp-ui.js > bundle.js",
     "relay": "node lib/node_modules/relay/index.js",
     "resetcli": "rm -rf ./storage* && rm -rf ./.local-storage",
-
     "lint": "standardx",
     "lintfix": "standardx --fix",
     "postinstall": "patch-package",
-    "web:news": "budo web/news.js:news-bundle.js --dir . --live --open -- -i STATE",
-    "build:news": "browserify web/news.js -i STATE -o news-bundle.js"
+    "web:news": "NODE_PATH=./lib/node_modules budo web/news.js:news-bundle.js --dir . --live --open -- -i STATE",
+    "build:news": "NODE_PATH=./lib/node_modules browserify web/news.js -i STATE -o news-bundle.js"
   },
-  "keywords": ["p2p", "blog", "hypercore", "datashell"],
+  "keywords": [
+    "p2p",
+    "blog",
+    "hypercore",
+    "datashell"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -54,6 +61,7 @@
     "blind-pairing": "^2.3.1",
     "blind-pairing-core": "^2.9.0",
     "corestore": "^6.18.4",
+    "graph-explorer": "github:ddroid/graph-explorer",
     "hyper-webrtc": "^1.0.0",
     "hypercore-crypto": "^3.6.1",
     "hyperdrive": "^11.13.4",
