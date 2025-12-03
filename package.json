@@ -2,6 +2,14 @@
   "name": "p2p-news-app",
   "version": "0.0.1",
   "description": "A p2p-news-app worked via hypercore/hyperswarms stack",
+  "standardx": {
+    "ignore": [
+      "*-bundle.js",
+      "shim.js",
+      "bundle.js",
+      "docs/"
+    ]
+  },
   "eslintConfig": {
     "env": {
       "browser": true,
@@ -36,8 +44,8 @@
     "lint": "standardx",
     "lintfix": "standardx --fix",
     "postinstall": "patch-package",
-    "web:news": "NODE_PATH=./lib/node_modules budo web/news.js:news-bundle.js --dir . --live --open -- -i STATE",
-    "build:news": "NODE_PATH=./lib/node_modules browserify web/news.js -i STATE -o news-bundle.js"
+    "web:news": "budo web/news.js:news-bundle.js --dir . --live --open -- -i STATE",
+    "build:news": "browserify web/news.js -i STATE -o news-bundle.js"
   },
   "keywords": [
     "p2p",

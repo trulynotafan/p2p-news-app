@@ -6014,6 +6014,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }
 
 },{}],8:[function(require,module,exports){
+/* global vault */
 const news = require('news')
 
 // Initialize with datashell vault/api
@@ -6069,7 +6070,7 @@ function graphdb(entries) {
 
 },{}],10:[function(require,module,exports){
 (function (__filename){(function (){
-const blog_app = require('p2p-news-app')
+const blog_app = require('../../../lib/node_modules/p2p-news-app')
 const wrapper = require('./wrapper')
 const STATE = require('STATE')
 const statedb = STATE(__filename)
@@ -6079,7 +6080,7 @@ module.exports = function news_app(vault) {
     const container = document.createElement('div')
     container.className = 'app-container'
 
-    // Inject styles
+
     const styleEl = document.createElement('style')
     styleEl.textContent = `
     body {
@@ -6124,18 +6125,18 @@ module.exports = function news_app(vault) {
   `
     document.head.appendChild(styleEl)
 
-    // Sidebar container
+
     const sidebar = document.createElement('div')
     sidebar.className = 'sidebar'
     container.appendChild(sidebar)
 
-    // Main content container
+
     const main = document.createElement('div')
     main.className = 'main-content'
     main.innerHTML = '<h1>Select a feed to view posts</h1>'
     container.appendChild(main)
 
-    // Initialize App
+
     init(vault, sidebar, main)
 
     return container
@@ -6143,11 +6144,10 @@ module.exports = function news_app(vault) {
 
 async function init(vault, sidebarEl, mainEl) {
     try {
-        // Initialize API
+
         const api = blog_app(vault)
 
-        // We need to init the blog to get the store and swarm
-        // Check for existing username
+
         let username = localStorage.getItem('username')
         if (!username) {
             username = prompt('Enter your username:')
@@ -6155,18 +6155,19 @@ async function init(vault, sidebarEl, mainEl) {
             else return
         }
 
-        // Init blog
+
         await api.init_blog({ username })
 
-        // Data Transformation Logic
         const get_entries = async () => {
             const entries = {
-                '/': { name: 'P2P News', type: 'root', subs: ['/feeds', '/my-blog'], hubs: [] },
+                '/': { name: 'P2P News', type: 'root', subs: ['/my-stories', '/feeds', '/lists', '/discover'], hubs: [] },
+                '/my-stories': { name: 'My Stories', type: 'folder', subs: [] },
                 '/feeds': { name: 'Feeds', type: 'folder', subs: [] },
-                '/my-blog': { name: 'My Blog', type: 'folder', subs: [] }
+                '/lists': { name: 'Lists', type: 'folder', subs: [] },
+                '/discover': { name: 'Discover', type: 'folder', subs: [] }
             }
 
-            // Get subscribed peers
+
             const peer_blogs = await api.get_peer_blogs()
 
             for (const [key, blog] of peer_blogs) {
@@ -6181,7 +6182,7 @@ async function init(vault, sidebarEl, mainEl) {
                     subs: []
                 }
 
-                // Add posts as children
+
                 if (blog.posts) {
                     blog.posts.forEach((post, index) => {
                         const post_path = `${path}/${index}`
@@ -6189,17 +6190,17 @@ async function init(vault, sidebarEl, mainEl) {
                         entries[post_path] = {
                             name: post.title,
                             type: 'post',
-                            data: post // Store full post data
+                            data: post
                         }
                     })
                 }
             }
 
-            // Get my posts
+
             const my_posts = await api.get_my_posts()
             my_posts.forEach((post, index) => {
-                const path = `/my-blog/${index}`
-                entries['/my-blog'].subs.push(path)
+                const path = `/my-stories/${index}`
+                entries['/my-stories'].subs.push(path)
                 entries[path] = {
                     name: post.title,
                     type: 'post',
@@ -6210,45 +6211,29 @@ async function init(vault, sidebarEl, mainEl) {
             return entries
         }
 
-        // Initialize STATE and populate drive
-        const { id, sdb } = await get() // Get default session
+        const { id, sdb } = await get()
         const { drive } = sdb
 
-        // Write entries to drive
-        const entries = await get_entries()
-        // We need to write it as a file
-        // drive.put expects buffer or string?
-        // In fallback, it's { $ref: 'entries.json' }.
-        // If we write 'entries/entries.json', the wrapper will read it.
-        // Wait, the wrapper reads 'entries/' directory.
-        // And then reads each file.
-        // So we should write 'entries/entries.json'.
 
-        // Note: sdb.drive might be an autodrive or similar.
-        // Assuming it supports `put(path, content)`.
+        const entries = await get_entries()
+
         await drive.put('entries/entries.json', JSON.stringify(entries))
 
-        // Initialize Sidebar with the same session ID
+
         const sidebar_component = await wrapper({
             id: 'sidebar',
-            sid: id, // Pass our session ID so wrapper gets the same drive
+            sid: id,
             ids: { up: 'host' }
         }, (send) => {
-            // Protocol handler for host (us)
-            // We receive messages from the sidebar here
             return (msg) => {
-                // console.log('[Host] Received:', msg)
-                // Handle selection
-                // Note: The placeholder/wrapper might not send selection events yet
-                // But if it did, we would update mainEl here
+                console.log('Host received:', msg)
             }
         })
 
         sidebarEl.appendChild(sidebar_component)
 
-        // Listen for updates
+
         api.on_update(async () => {
-            // Refresh sidebar data
             console.log('Data updated, refreshing sidebar...')
             const updated_entries = await get_entries()
             await drive.put('entries/entries.json', JSON.stringify(updated_entries))
@@ -6282,7 +6267,7 @@ function fallback_module() {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":11,"STATE":4,"p2p-news-app":1}],11:[function(require,module,exports){
+},{"../../../lib/node_modules/p2p-news-app":1,"./wrapper":11,"STATE":4}],11:[function(require,module,exports){
 (function (__filename){(function (){
 let STATE
 try {

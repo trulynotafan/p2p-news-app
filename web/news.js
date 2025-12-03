@@ -1,3 +1,4 @@
+/* global vault */
 const news = require('news')
 
 // Initialize with datashell vault/api
