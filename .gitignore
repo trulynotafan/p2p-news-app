@@ -6,3 +6,4 @@
 .*-seedphrase
 /src/node_modules/bare-peer/node_modules
 /src/node_modules/bare-peer/package-lock.json
+.DS_Store
