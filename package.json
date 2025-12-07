@@ -44,8 +44,8 @@
     "lint": "standardx",
     "lintfix": "standardx --fix",
     "postinstall": "patch-package",
-    "web:news": "budo web/news.js:news-bundle.js --dir . --live --open -- -i STATE",
-    "build:news": "browserify web/news.js -i STATE -o news-bundle.js"
+    "web:news": "budo web/page.js:web/bundle.js --dir web --live --open -- -i STATE",
+    "build:news": "browserify web/page.js -i STATE -o web/bundle.js"
   },
   "keywords": [
     "p2p",
