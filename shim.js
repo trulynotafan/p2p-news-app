@@ -690,7 +690,7 @@ function datastructure_manager (opts = {}) {
   }
 
   // Join with invite and initialize all structures
-  const join_with_invite_and_init = async (invite_code, swarm, store_instance, verification_code) => {
+  const join_with_invite_and_init = async (invite_code, swarm, store_instance, on_verification_code_ready) => {
     const pairing_manager_constructor = require('../pairing-manager')
     
     // Create ds_manager interface for pairing-manager
@@ -706,16 +706,16 @@ function datastructure_manager (opts = {}) {
     
     const pairing_manager = pairing_manager_constructor(ds_manager_interface, swarm)
     
-    const result = await pairing_manager.join_with_invite({ invite_code, store: store_instance, verification_code })
+    const result = await pairing_manager.join_with_invite({ 
+      invite_code, 
+      store: store_instance,
+      on_verification_code_ready
+    })
     
     // Initialize ALL structures with keys received from pairing.
     const keys_map = result.all_structure_keys || {}
     
-    console.log('Received keys for structures:', Object.keys(keys_map).join(', '))
-    
     const instances = await init_all_with_keys(keys_map)
-    
-    console.log('Successfully joined structures:', Object.keys(instances).join(', '))
     
     return { ...result, instances }
   }
@@ -1366,11 +1366,12 @@ module.exports = pairing_manager
 function pairing_manager (ds_manager, swarm) {
   let current_member = null
   let current_candidate = null
-  let verification_code = null  // One-time verification code
+  let pending_pairing_requests = []  // Array to store ALL incoming pairing requests
+  let multiple_attempts_detected = false  // Flag to notify user of unusual behavior
 
-  // Generate random 6-digit verification code
-  const generate_verification_code = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString()
+  // Extract 6 digits from a writer key (last 6 hex chars = 3 bytes)
+  const extract_verification_digits = (writer_key_hex) => {
+    return writer_key_hex.slice(-6).toUpperCase()
   }
 
   // Create invite for pairing (member side)
@@ -1382,21 +1383,17 @@ function pairing_manager (ds_manager, swarm) {
     const invite_obj = BlindPairing.createInvite(key_buffer)
     const invite_code = b4a.toString(invite_obj.invite, 'base64')
     
-    // Generate verification code for this invite
-    verification_code = generate_verification_code()
-    
     return {
       invite_code,
       invite: invite_obj,
       autobase_key: primary_autobase_key,
-      all_keys,
-      verification_code  // Return code to display on screen
+      all_keys
     }
   }
 
   // Setup member to handle pairing requests
   const setup_member = async (config) => {
-    const { primary_discovery_key, invite, on_paired, username } = config
+    const { primary_discovery_key, invite, on_paired, on_verification_needed, username } = config
     const crypto = require('hypercore-crypto')
     
     const blind_pairing = new BlindPairing(swarm)
@@ -1409,88 +1406,52 @@ function pairing_manager (ds_manager, swarm) {
         const user_data = request.userData
         const structure_names = ds_manager.get_names()
         
-        // Extract verification code and writer keys from user_data
-        // Format: [6-digit code string (variable length)] + [32 bytes per structure]
-        const user_data_str = b4a.toString(user_data)
-        let received_verification_code = null
-        let offset = 0
-        
-        // Try to extract verification code (first 6 characters if it's a number)
-        if (user_data_str.match(/^\d{6}/)) {
-          received_verification_code = user_data_str.slice(0, 6)
-          offset = 6
-        }
-        
-        // Verify the code matches (if code was generated)
-        if (verification_code && received_verification_code !== verification_code) {
-          console.error('Verification code mismatch!')
-          request.deny({ status: 1 })
-          return
-        }
-        
-        // Extract writer keys from remaining user_data (32 bytes each)
+        // Extract writer keys from user_data (32 bytes each)
         const writer_keys = {}
-        const key_data = user_data.slice(offset)
         let key_offset = 0
         
         for (const name of structure_names) {
           const config = ds_manager.get_config(name)
-          const key_buffer = key_data.slice(key_offset, key_offset + 32)
+          const key_buffer = user_data.slice(key_offset, key_offset + 32)
           writer_keys[config.namespace] = b4a.toString(key_buffer, 'hex')
           key_offset += 32
         }
 
-        // Add writers to all structures
-        for (const name of structure_names) {
-          const config = ds_manager.get_config(name)
-          await ds_manager.add_writer(name, writer_keys[config.namespace])
+        // Extract verification digits from the candidate's metadata writer key
+        const candidate_metadata_writer = writer_keys[ds_manager.get_config('metadata').namespace]
+        const verification_digits = extract_verification_digits(candidate_metadata_writer)
+        
+        // Check if we already have pending requests - if so, mark multiple attempts
+        if (pending_pairing_requests.length > 0) {
+          multiple_attempts_detected = true
         }
         
-        console.log(`Added device as writer to: ${structure_names.join(', ')}`)
-
-        // Prepare ALL structure keys + username to send via additional data
-        const pairing_data = {
-          username: username,
-          keys: {}
+        // Store this pairing request (store ALL requests, not just first)
+        const pairing_request_data = {
+          writer_keys,
+          request,
+          verification_digits,
+          invite_keypair: crypto.keyPair(invite.seed),
+          on_paired,
+          username,
+          timestamp: Date.now()
         }
         
-        for (const name of structure_names) {
-          pairing_data.keys[name] = ds_manager.get_key(name)
+        pending_pairing_requests.push(pairing_request_data)
+        
+        // Notify UI that verification is needed (only for first request)
+        if (pending_pairing_requests.length === 1 && on_verification_needed) {
+          on_verification_needed(verification_digits)
         }
         
-        // Encode additional data as JSON
-        const additional_data = b4a.from(JSON.stringify(pairing_data))
-        
-        // Sign the additional data with the invite's keypair
-        // This is needed by the blind pairing protocol to confirm request
-        const invite_keypair = crypto.keyPair(invite.seed)
-        const signature = crypto.sign(additional_data, invite_keypair.secretKey)
-        
-        // Confirm pairing with primary keys + ALL other keys in additional
-        const drive_name = structure_names.find(n => 
-          ds_manager.get_config(n).namespace === 'blog-files'
-        )
-        const metadata_name = structure_names.find(n => 
-          ds_manager.get_config(n).namespace === 'blog-metadata'
-        )
-        
-        request.confirm({
-          key: b4a.from(ds_manager.get_key(drive_name), 'hex'),
-          encryptionKey: b4a.from(ds_manager.get_key(metadata_name), 'hex'),
-          additional: {
-            data: additional_data,
-            signature: signature
-          }
+        // Return a promise that resolves when verification is complete
+        return new Promise((resolve, reject) => {
+          pairing_request_data.resolve_verification = resolve
+          pairing_request_data.reject_verification = reject
         })
-        
-        if (on_paired) {
-          await on_paired(writer_keys)
-        }
-        
-        // Delete verification code after successful pairing (single-use)
-        verification_code = null
       } catch (error) {
-        console.error('Pairing error:', error.message)
+        console.error('[pairing-manager] Pairing request error:', error.message)
+        throw error
       }
     }
 
@@ -1505,9 +1466,139 @@ function pairing_manager (ds_manager, swarm) {
     return current_member
   }
 
+  // Verify the code entered by user and complete pairing
+  const verify_and_complete_pairing = async (config) => {
+    const { entered_verification_code } = config
+    const crypto = require('hypercore-crypto')
+    
+    if (pending_pairing_requests.length === 0) {
+      throw new Error('No pending pairing requests')
+    }
+    
+    // Try to find a matching request
+    let matched_request = null
+    let matched_index = -1
+    
+    for (let i = 0; i < pending_pairing_requests.length; i++) {
+      if (entered_verification_code === pending_pairing_requests[i].verification_digits) {
+        matched_request = pending_pairing_requests[i]
+        matched_index = i
+        break
+      }
+    }
+    
+    // If no match found, throw error (user can try again)
+    if (!matched_request) {
+      throw new Error('Verification code does not match any pending pairing request. Please try again.')
+    }
+    
+    // Code matches, complete the pairing with the matched request
+    const { writer_keys, request, invite_keypair, on_paired, username } = matched_request
+    const structure_names = ds_manager.get_names()
+    
+    // Add writers to all structures
+    for (const name of structure_names) {
+      const config = ds_manager.get_config(name)
+      await ds_manager.add_writer(name, writer_keys[config.namespace])
+    }
+
+    // Prepare ALL structure keys + username to send via additional data
+    const pairing_data = {
+      username: username,
+      keys: {}
+    }
+    
+    for (const name of structure_names) {
+      pairing_data.keys[name] = ds_manager.get_key(name)
+    }
+    
+    // Encode additional data as JSON
+    const additional_data = b4a.from(JSON.stringify(pairing_data))
+    
+    // Sign the additional data with the invite's keypair
+    const signature = crypto.sign(additional_data, invite_keypair.secretKey)
+    
+    // Find drive and metadata names
+    const drive_name = structure_names.find(n => 
+      ds_manager.get_config(n).namespace === 'blog-files'
+    )
+    const metadata_name = structure_names.find(n => 
+      ds_manager.get_config(n).namespace === 'blog-metadata'
+    )
+    
+    request.confirm({
+      key: b4a.from(ds_manager.get_key(drive_name), 'hex'),
+      encryptionKey: b4a.from(ds_manager.get_key(metadata_name), 'hex'),
+      additional: {
+        data: additional_data,
+        signature: signature
+      }
+    })
+    
+    if (on_paired) {
+      await on_paired(writer_keys)
+    }
+    
+    // Resolve the matched request's promise
+    if (matched_request.resolve_verification) {
+      matched_request.resolve_verification()
+    }
+    
+    // Deny all other non-matching requests
+    for (let i = 0; i < pending_pairing_requests.length; i++) {
+      if (i !== matched_index) {
+        const req = pending_pairing_requests[i]
+        try {
+          req.request.deny()
+          if (req.resolve_verification) req.resolve_verification()
+        } catch (err) {
+          console.error('[pairing-manager] Error denying request:', err.message)
+        }
+      }
+    }
+    
+    // Prepare result with multiple attempts info
+    const had_multiple_attempts = multiple_attempts_detected
+    const total_attempts = pending_pairing_requests.length
+    
+    // Clear all pending requests
+    pending_pairing_requests = []
+    multiple_attempts_detected = false
+    
+    // Return info about multiple attempts if detected
+    return {
+      success: true,
+      multiple_attempts: had_multiple_attempts,
+      total_attempts: total_attempts
+    }
+  }
+
+  // Deny all pending pairing requests
+  const deny_pairing = () => {
+    if (pending_pairing_requests.length === 0) {
+      throw new Error('No pending pairing requests')
+    }
+    
+    // Deny all pending requests
+    for (const req of pending_pairing_requests) {
+      try {
+        req.request.deny()
+        if (req.resolve_verification) {
+          req.resolve_verification()
+        }
+      } catch (err) {
+        console.error('[pairing-manager] Error denying request:', err.message)
+      }
+    }
+    
+    // Clear all pending requests
+    pending_pairing_requests = []
+    multiple_attempts_detected = false
+  }
+
   // Join with invite (candidate side)
   const join_with_invite = async (config) => {
-    const { invite_code, store, verification_code: provided_code } = config
+    const { invite_code, store, on_verification_code_ready } = config
     
     const blind_pairing = new BlindPairing(swarm)
     await blind_pairing.ready()
@@ -1524,13 +1615,28 @@ function pairing_manager (ds_manager, swarm) {
       return local_keys[config.namespace]
     })
     
-    // Prepend verification code to user_data if provided
-    const code_buffer = provided_code ? b4a.from(provided_code) : b4a.alloc(0)
-    const user_data = b4a.concat([code_buffer, ...key_buffers])
+    // Extract verification digits from metadata writer key (for Device B to display)
+    const metadata_namespace = ds_manager.get_config('metadata').namespace
+    const metadata_writer_key = local_keys[metadata_namespace]
+    const metadata_writer_hex = b4a.toString(metadata_writer_key, 'hex')
+    const verification_digits = extract_verification_digits(metadata_writer_hex)
+    
+    // Call callback immediately with verification code so UI can display it
+    if (on_verification_code_ready) {
+      on_verification_code_ready(verification_digits)
+    }
+    
+    // Send only writer keys (no verification code)
+    const user_data = b4a.concat(key_buffers)
 
     return new Promise((resolve, reject) => {
+      let resolved_or_rejected = false
+      
       const handle_candidate_add = async (result) => {
         try {
+          if (resolved_or_rejected) return
+          resolved_or_rejected = true
+          
           // Extract username and ALL structure keys from additional data
           let username = null
           let all_keys = {}
@@ -1540,7 +1646,7 @@ function pairing_manager (ds_manager, swarm) {
               username = pairing_data.username
               all_keys = pairing_data.keys
             } catch (err) {
-              console.error('Error parsing pairing data:', err)
+              console.error('[pairing-manager] Error parsing pairing data:', err.message)
             }
           }
           
@@ -1551,14 +1657,20 @@ function pairing_manager (ds_manager, swarm) {
             all_structure_keys: all_keys
           })
         } catch (error) {
-          console.error('Join error:', error.message)
-          reject(error)
+          console.error('[pairing-manager] Join error:', error.message)
+          if (!resolved_or_rejected) {
+            resolved_or_rejected = true
+            reject(error)
+          }
         }
       }
 
       const handle_candidate_ready_error = (error) => {
-        console.error('Candidate ready error:', error)
-        reject(error)
+        console.error('[pairing-manager] Candidate ready error:', error.message)
+        if (!resolved_or_rejected) {
+          resolved_or_rejected = true
+          reject(error)
+        }
       }
 
       current_candidate = blind_pairing.addCandidate({
@@ -1569,11 +1681,15 @@ function pairing_manager (ds_manager, swarm) {
 
       // Listen for rejection from member
       current_candidate.request.on('rejected', (err) => {
-        console.error('Pairing rejected by member:', err.message || err.code)
-        reject(new Error('Pairing rejected: ' + (err.message || 'Verification code mismatch')))
+        if (!resolved_or_rejected) {
+          resolved_or_rejected = true
+          reject(new Error('Pairing denied by user'))
+        }
       })
 
-      current_candidate.ready().catch(handle_candidate_ready_error)
+      // Wait for candidate to be ready
+      current_candidate.ready()
+        .catch(handle_candidate_ready_error)
     })
   }
 
@@ -1589,21 +1705,27 @@ function pairing_manager (ds_manager, swarm) {
     }
   }
 
-  // Get current verification code (for UI to check if invite is active)
-  const get_verification_code = () => verification_code
-
-  // Clear verification code (called after successful pairing)
-  const clear_verification_code = () => {
-    verification_code = null
+  // Get pending verification digits (for UI to show input box)
+  const get_pending_verification_digits = () => {
+    return pending_pairing_requests.length > 0 ? pending_pairing_requests[0].verification_digits : null
   }
+  
+  // Get count of pending pairing requests
+  const get_pending_requests_count = () => pending_pairing_requests.length
+  
+  // Check if multiple attempts were detected
+  const has_multiple_attempts = () => multiple_attempts_detected
 
   return {
     create_invite,
     setup_member,
+    verify_and_complete_pairing,
+    deny_pairing,
     join_with_invite,
     close,
-    get_verification_code,
-    clear_verification_code
+    get_pending_verification_digits,
+    get_pending_requests_count,
+    has_multiple_attempts
   }
 }
 
@@ -9458,6 +9580,12 @@ const HANDSHAKES = Object.freeze({
     PRESHARE_RS,
     [TOK_E, TOK_ES, TOK_S, TOK_SS],
     [TOK_E, TOK_EE, TOK_SE]
+  ],
+  XK: [
+    PRESHARE_RS,
+    [TOK_E, TOK_ES],
+    [TOK_E, TOK_EE],
+    [TOK_S, TOK_SE]
   ]
 })
 
@@ -62138,6 +62266,7 @@ module.exports = class Hyperswarm extends EventEmitter {
     this._firewall = firewall
 
     this.dht.on('network-change', this._handleNetworkChange.bind(this))
+    this.dht.on('network-update', this._handleNetworkUpdate.bind(this))
     this.on('update', this._handleUpdate)
   }
 
@@ -62486,7 +62615,14 @@ module.exports = class Hyperswarm extends EventEmitter {
     }
   }
 
+  async _handleNetworkUpdate() {
+    if (!this.online) return
+    this._handleNetworkChange()
+  }
+
   async _handleNetworkChange() {
+    if (this.suspended) return
+
     // prioritize figuring out if existing connections are dead
     for (const conn of this._allConnections) {
       conn.sendKeepAlive()
@@ -62761,11 +62897,11 @@ module.exports = class ConnectionSet {
   }
 
   has(publicKey) {
-    return this._byPublicKey.has(b4a.toString(publicKey, 'hex'))
+    return this._byPublicKey.has(toHex(publicKey))
   }
 
   get(publicKey) {
-    return this._byPublicKey.get(b4a.toString(publicKey, 'hex'))
+    return this._byPublicKey.get(toHex(publicKey))
   }
 
   add(connection) {
@@ -62780,6 +62916,10 @@ module.exports = class ConnectionSet {
   }
 }
 
+function toHex(b) {
+  return typeof b === 'string' ? b : b4a.toString(b, 'hex')
+}
+
 },{"b4a":111}],395:[function(require,module,exports){
 const safetyCatch = require('safety-catch')
 const b4a = require('b4a')
@@ -62787,6 +62927,8 @@ const b4a = require('b4a')
 const REFRESH_INTERVAL = 1000 * 60 * 10 // 10 min
 const RANDOM_JITTER = 1000 * 60 * 2 // 2 min
 const DELAY_GRACE_PERIOD = 1000 * 30 // 30s
+
+const MAX_DISCOVERY_CACHE = 64
 
 module.exports = class PeerDiscovery {
   constructor(
@@ -62810,6 +62952,7 @@ module.exports = class PeerDiscovery {
     this._onpeer = onpeer
     this._onerror = onerror
 
+    this._discovered = new Set()
     this._activeQuery = null
     this._timer = null
     this._currentRefresh = null
@@ -62874,6 +63017,17 @@ module.exports = class PeerDiscovery {
       this._needsUnannounce = true
     }
 
+    let limit = this.limit
+
+    if (limit < Infinity && limit > 0) {
+      for (const id of this._discovered) {
+        if (!this.swarm.connections.has(id)) continue
+        if (--limit === 0) break
+      }
+    }
+
+    this._discovered.clear()
+
     const announcing = this.isServer
     const query = (this._activeQuery = announcing
       ? this.swarm.dht.announce(
@@ -62890,8 +63044,20 @@ module.exports = class PeerDiscovery {
       for await (const data of this._activeQuery) {
         if (!this.isClient || !this._isActive()) continue
         for (const peer of data.peers) {
-          if (this.limit === 0) return
-          this.limit--
+          if (limit < Infinity) {
+            const id = b4a.toString(peer.publicKey, 'hex')
+
+            if (this._discovered.size < MAX_DISCOVERY_CACHE) {
+              this._discovered.add(id)
+            }
+
+            if (limit === 0) continue
+
+            // there is a chance it has updated a connection during discovery and we go over
+            // the limit - thats acceptable to avoid a complexity spiral here.
+            if (!this.swarm.connections.has(id)) limit--
+          }
+
           this._onpeer(peer, data)
         }
       }
@@ -63965,19 +64131,77 @@ utils.encode = function encode(arr, enc) {
 };
 
 },{}],418:[function(require,module,exports){
+const EventEmitter = require('events')
 const sameData = require('same-data')
 const unixPathResolve = require('unix-path-resolve')
 const streamEquals = require('binary-stream-equals')
+const speedometer = require('speedometer')
 const { pipelinePromise, isStream } = require('streamx')
+
+class Monitor extends EventEmitter {
+  constructor (mirror, { interval = 250 } = {}) {
+    super()
+
+    this.mirror = mirror
+    this.interval = setInterval(this.update.bind(this), interval)
+    this.stats = null
+    this.index = mirror.monitors.push(this) - 1
+
+    this.update() // populate latest stats
+  }
+
+  get destroyed () {
+    return this.index === -1
+  }
+
+  update () {
+    if (this.index === -1) return
+
+    // NOTE: immutable (append-only) data structure
+    this.stats = {
+      peers: this.mirror.peers.length,
+      download: {
+        bytes: this.mirror.downloadedBytes,
+        blocks: this.mirror.downloadedBlocks,
+        speed: this.mirror.downloadSpeed(),
+        progress: this.mirror.downloadProgress
+      },
+      upload: {
+        bytes: this.mirror.uploadedBytes,
+        blocks: this.mirror.uploadedBlocks,
+        speed: this.mirror.uploadSpeed()
+      }
+    }
+
+    this.emit('update', this.stats)
+  }
+
+  destroy () {
+    if (this.index === -1) return
+
+    clearInterval(this.interval)
+
+    const head = this.mirror.monitors.pop()
+    if (head !== this) {
+      this.mirror.monitors[this.index] = head
+      head.index = this.index
+    }
+
+    this.index = -1
+    this.emit('destroy')
+  }
+}
 
 module.exports = class MirrorDrive {
   constructor (src, dst, opts = {}) {
     this.src = src
     this.dst = dst
 
-    this.prefix = opts.prefix || '/'
+    this.prefix = toArray(opts.prefix || '/')
     this.dryRun = !!opts.dryRun
     this.prune = opts.prune !== false
+    this.preload = opts.preload !== false && !!src.getBlobs
+    this.includeProgress = !!opts.progress && !!src.getBlobs
     this.includeEquals = !!opts.includeEquals
     this.filter = opts.filter || null
     this.metadataEquals = opts.metadataEquals || null
@@ -63988,12 +64212,42 @@ module.exports = class MirrorDrive {
     this.count = { files: 0, add: 0, remove: 0, change: 0 }
     this.bytesRemoved = 0
     this.bytesAdded = 0
-    this.iterator = this._mirror()
-    this._ignore = opts.ignore ? toIgnoreFunction(opts.ignore) : null
+    this.ignore = opts.ignore ? toIgnoreFunction(opts.ignore) : null
+    this.finished = false
+
+    this.downloadedBlocks = 0
+    this.downloadedBlocksEstimate = 0
+    this.downloadedBytes = 0
+    this.downloadSpeed = this.includeProgress ? speedometer() : null
+
+    this.uploadedBlocks = 0
+    this.uploadedBytes = 0
+    this.uploadSpeed = this.includeProgress ? speedometer() : null
+
+    this.monitors = []
+    this.iterator = this._init()
   }
 
   [Symbol.asyncIterator] () {
     return this.iterator
+  }
+
+  get peers () {
+    return this.src.core?.peers || []
+  }
+
+  get downloadProgress () {
+    if (this.finished) return 1
+    if (!this.downloadedBlocksEstimate) return 0
+    // leave 3% incase our estimatation is wrong - then at least it wont appear done...
+    return Math.min(0.99, this.downloadedBlocks / this.downloadedBlocksEstimate)
+  }
+
+  monitor (opts) {
+    this.includeProgress = true
+    if (this.downloadSpeed === null) this.downloadSpeed = speedometer()
+    if (this.uploadSpeed === null) this.uploadSpeed = speedometer()
+    return new Monitor(this, opts)
   }
 
   async done () {
@@ -64003,16 +64257,70 @@ module.exports = class MirrorDrive {
     }
   }
 
+  _onupload (index, byteLength) {
+    this.uploadedBlocks++
+    this.uploadedBytes += byteLength
+    this.uploadSpeed(byteLength)
+  }
+
+  _ondownload (index, byteLength) {
+    this.downloadedBlocks++
+    this.downloadedBytes += byteLength
+    this.downloadSpeed(byteLength)
+  }
+
+  async _flushPreload (entries) {
+    const ranges = []
+    const blobs = await this.src.getBlobs()
+
+    for (const entry of entries) {
+      const blob = entry.value.blob
+      if (!blob) continue
+      const dl = blobs.core.download({ start: blob.blockOffset, length: blob.blockLength })
+      await dl.ready()
+      ranges.push(dl)
+    }
+
+    this.downloadedBlocksEstimate = this.downloadedBlocks
+    for (const dl of ranges) {
+      if (!dl.request.context) continue
+      this.downloadedBlocksEstimate += (dl.request.context.end - dl.request.context.start)
+    }
+
+    for (const dl of ranges) {
+      await dl.done()
+    }
+  }
+
+  async * _init () {
+    try {
+      for await (const out of this._mirror()) yield out
+    } finally {
+      while (this.monitors.length) {
+        this.monitors[this.monitors.length - 1].destroy()
+      }
+    }
+  }
+
   async * _mirror () {
     await this.src.ready()
     await this.dst.ready()
 
     if (this.dst.core && !this.dst.core.writable) throw new Error('Destination must be writable')
 
+    const blobs = this.includeProgress ? await this.src.getBlobs() : null
+    const onupload = this._onupload.bind(this)
+    const ondownload = this._ondownload.bind(this)
+
+    if (blobs) {
+      blobs.core.on('upload', onupload)
+      blobs.core.on('download', ondownload)
+    }
+
     const dst = this.batch ? this.dst.batch() : this.dst
 
     if (this.prune) {
-      for await (const [key, dstEntry, srcEntry] of this._list(this.dst, this.src)) {
+      for await (const [key, dstEntry, srcEntry] of this._list(this.dst, this.src, null)) {
         if (srcEntry) continue
 
         this.count.remove++
@@ -64023,12 +64331,18 @@ module.exports = class MirrorDrive {
       }
     }
 
-    if (this.src.download && !this.entries) {
-      const dl = this.src.download(this.prefix)
-      if (dl.catch) dl.catch(noop)
+    if (this.preload) {
+      const entries = []
+
+      for await (const [, srcEntry] of this._list(this.src, null, this.filter)) {
+        entries.push(srcEntry)
+      }
+
+      // flush in bg
+      this._flushPreload(entries).catch(noop)
     }
 
-    for await (const [key, srcEntry, dstEntry] of this._list(this.src, dst, { filter: this.filter })) {
+    for await (const [key, srcEntry, dstEntry] of this._list(this.src, dst, this.filter)) {
       if (!srcEntry) continue // Due entries option, src entry might not exist probably because it was pruned
 
       this.count.files++
@@ -64085,30 +64399,38 @@ module.exports = class MirrorDrive {
     }
 
     if (this.batch) await dst.flush()
-  }
 
-  async * _list (a, b, opts) {
-    const list = this.entries || a.list(this.prefix, { ignore: this._ignore })
-    const filter = opts && opts.filter
-
-    for await (const entry of list) {
-      const key = typeof entry === 'object' ? entry.key : entry
-
-      if (filter && !filter(key)) continue
-
-      const entryA = await a.entry(entry)
-      const entryB = await b.entry(key)
-
-      yield [key, entryA, entryB]
+    if (blobs) {
+      blobs.core.off('upload', onupload)
+      blobs.core.off('download', ondownload)
     }
 
-    if (this.prefix !== '/' && (!filter || filter(this.prefix))) {
-      const entryA = await a.entry(this.prefix)
-      const entryB = await b.entry(this.prefix)
+    this.finished = true
+  }
 
-      if (!entryA && !entryB) return
+  async * _list (a, b, filter) {
+    for (const prefix of this.prefix) {
+      const list = this.entries || a.list(prefix, { ignore: this.ignore })
 
-      yield [this.prefix, entryA, entryB]
+      for await (const entry of list) {
+        const key = typeof entry === 'object' ? entry.key : entry
+
+        if (filter && !filter(key)) continue
+
+        const entryA = await a.entry(entry)
+        const entryB = b ? await b.entry(key) : null
+
+        yield [key, entryA, entryB]
+      }
+
+      if (prefix !== '/' && (!filter || filter(prefix))) {
+        const entryA = await a.entry(prefix)
+        const entryB = b ? await b.entry(prefix) : null
+
+        if (!entryA && !entryB) continue
+
+        yield [prefix, entryA, entryB]
+      }
     }
   }
 }
@@ -64166,9 +64488,13 @@ function toIgnoreFunction (ignore) {
   return key => all.some(path => path === key || key.startsWith(path + '/'))
 }
 
+function toArray (prefix) {
+  return Array.isArray(prefix) ? prefix : [prefix]
+}
+
 function noop () {}
 
-},{"binary-stream-equals":136,"same-data":518,"streamx":609,"unix-path-resolve":619}],419:[function(require,module,exports){
+},{"binary-stream-equals":136,"events":288,"same-data":518,"speedometer":593,"streamx":609,"unix-path-resolve":619}],419:[function(require,module,exports){
 var queueTick = require('queue-tick')
 
 var mutexify = function () {
@@ -64632,8 +64958,303 @@ arguments[4][66][0].apply(exports,arguments)
 },{"dup":66}],451:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
 },{"dup":67,"nanoassert":421}],452:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"./hkdf":426,"./symmetric-state":453,"b4a":111,"dup":76,"nanoassert":421}],453:[function(require,module,exports){
+const assert = require('nanoassert')
+const b4a = require('b4a')
+
+const SymmetricState = require('./symmetric-state')
+const { HASHLEN } = require('./hkdf')
+
+const PRESHARE_IS = Symbol('initiator static key preshared')
+const PRESHARE_RS = Symbol('responder static key preshared')
+
+const TOK_PSK = Symbol('psk')
+
+const TOK_S = Symbol('s')
+const TOK_E = Symbol('e')
+
+const TOK_ES = Symbol('es')
+const TOK_SE = Symbol('se')
+const TOK_EE = Symbol('ee')
+const TOK_SS = Symbol('ss')
+
+const HANDSHAKES = Object.freeze({
+  NN: [
+    [TOK_E],
+    [TOK_E, TOK_EE]
+  ],
+  NNpsk0: [
+    [TOK_PSK, TOK_E],
+    [TOK_E, TOK_EE]
+  ],
+  XX: [
+    [TOK_E],
+    [TOK_E, TOK_EE, TOK_S, TOK_ES],
+    [TOK_S, TOK_SE]
+  ],
+  XXpsk0: [
+    [TOK_PSK, TOK_E],
+    [TOK_E, TOK_EE, TOK_S, TOK_ES],
+    [TOK_S, TOK_SE]
+  ],
+  IK: [
+    PRESHARE_RS,
+    [TOK_E, TOK_ES, TOK_S, TOK_SS],
+    [TOK_E, TOK_EE, TOK_SE]
+  ]
+})
+
+class Writer {
+  constructor () {
+    this.size = 0
+    this.buffers = []
+  }
+
+  push (b) {
+    this.size += b.byteLength
+    this.buffers.push(b)
+  }
+
+  end () {
+    const all = b4a.alloc(this.size)
+    let offset = 0
+    for (const b of this.buffers) {
+      all.set(b, offset)
+      offset += b.byteLength
+    }
+    return all
+  }
+}
+
+class Reader {
+  constructor (buf) {
+    this.offset = 0
+    this.buffer = buf
+  }
+
+  shift (n) {
+    const start = this.offset
+    const end = this.offset += n
+    if (end > this.buffer.byteLength) throw new Error('Insufficient bytes')
+    return this.buffer.subarray(start, end)
+  }
+
+  end () {
+    return this.shift(this.buffer.byteLength - this.offset)
+  }
+}
+
+module.exports = class NoiseState extends SymmetricState {
+  constructor (pattern, initiator, staticKeypair, opts = {}) {
+    super(opts)
+
+    this.s = staticKeypair || this.curve.generateKeyPair()
+    this.e = null
+
+    this.psk = null
+    if (opts && opts.psk) this.psk = opts.psk
+
+    this.re = null
+    this.rs = null
+
+    this.pattern = pattern
+    this.handshake = HANDSHAKES[this.pattern].slice()
+
+    this.isPskHandshake = !!this.psk && hasPskToken(this.handshake)
+
+    this.protocol = b4a.from([
+      'Noise',
+      this.pattern,
+      this.DH_ALG,
+      this.CIPHER_ALG,
+      'BLAKE2b'
+    ].join('_'))
+
+    this.initiator = initiator
+    this.complete = false
+
+    this.rx = null
+    this.tx = null
+    this.hash = null
+  }
+
+  initialise (prologue, remoteStatic) {
+    if (this.protocol.byteLength <= HASHLEN) this.digest.set(this.protocol)
+    else this.mixHash(this.protocol)
+
+    this.chainingKey = b4a.from(this.digest)
+
+    this.mixHash(prologue)
+
+    while (!Array.isArray(this.handshake[0])) {
+      const message = this.handshake.shift()
+
+      // handshake steps should be as arrays, only
+      // preshare tokens are provided otherwise
+      assert(message === PRESHARE_RS || message === PRESHARE_IS,
+        'Unexpected pattern')
+
+      const takeRemoteKey = this.initiator
+        ? message === PRESHARE_RS
+        : message === PRESHARE_IS
+
+      if (takeRemoteKey) this.rs = remoteStatic
+
+      const key = takeRemoteKey ? this.rs : this.s.publicKey
+      assert(key != null, 'Remote pubkey required')
+
+      this.mixHash(key)
+    }
+  }
+
+  final () {
+    const [k1, k2] = this.split()
+
+    this.tx = this.initiator ? k1 : k2
+    this.rx = this.initiator ? k2 : k1
+
+    this.complete = true
+    this.hash = this.getHandshakeHash()
+
+    this._clear()
+  }
+
+  recv (buf) {
+    const r = new Reader(buf)
+
+    for (const pattern of this.handshake.shift()) {
+      switch (pattern) {
+        case TOK_PSK :
+          this.mixKeyAndHash(this.psk)
+          break
+
+        case TOK_E :
+          this.re = r.shift(this.curve.PKLEN)
+          this.mixHash(this.re)
+          if (this.isPskHandshake) this.mixKeyNormal(this.re)
+          break
+
+        case TOK_S : {
+          const klen = this.hasKey ? this.curve.PKLEN + 16 : this.curve.PKLEN
+          this.rs = this.decryptAndHash(r.shift(klen))
+          break
+        }
+
+        case TOK_EE :
+        case TOK_ES :
+        case TOK_SE :
+        case TOK_SS : {
+          const useStatic = keyPattern(pattern, this.initiator)
+
+          const localKey = useStatic.local ? this.s : this.e
+          const remoteKey = useStatic.remote ? this.rs : this.re
+
+          this.mixKey(remoteKey, localKey)
+          break
+        }
+
+        default :
+          throw new Error('Unexpected message')
+      }
+    }
+
+    const payload = this.decryptAndHash(r.end())
+
+    if (!this.handshake.length) this.final()
+    return payload
+  }
+
+  send (payload = b4a.alloc(0)) {
+    const w = new Writer()
+
+    for (const pattern of this.handshake.shift()) {
+      switch (pattern) {
+        case TOK_PSK :
+          this.mixKeyAndHash(this.psk)
+          break
+
+        case TOK_E :
+          if (this.e === null) this.e = this.curve.generateKeyPair()
+          this.mixHash(this.e.publicKey)
+          if (this.isPskHandshake) this.mixKeyNormal(this.e.publicKey)
+          w.push(this.e.publicKey)
+          break
+
+        case TOK_S :
+          w.push(this.encryptAndHash(this.s.publicKey))
+          break
+
+        case TOK_ES :
+        case TOK_SE :
+        case TOK_EE :
+        case TOK_SS : {
+          const useStatic = keyPattern(pattern, this.initiator)
+
+          const localKey = useStatic.local ? this.s : this.e
+          const remoteKey = useStatic.remote ? this.rs : this.re
+
+          this.mixKey(remoteKey, localKey)
+          break
+        }
+
+        default :
+          throw new Error('Unexpected message')
+      }
+    }
+
+    w.push(this.encryptAndHash(payload))
+    const response = w.end()
+
+    if (!this.handshake.length) this.final()
+    return response
+  }
+
+  _clear () {
+    super._clear()
+
+    this.e.secretKey.fill(0)
+    this.e.publicKey.fill(0)
+
+    this.re.fill(0)
+
+    this.e = null
+    this.re = null
+  }
+}
+
+function keyPattern (pattern, initiator) {
+  const ret = {
+    local: false,
+    remote: false
+  }
+
+  switch (pattern) {
+    case TOK_EE:
+      return ret
+
+    case TOK_ES:
+      ret.local ^= !initiator
+      ret.remote ^= initiator
+      return ret
+
+    case TOK_SE:
+      ret.local ^= initiator
+      ret.remote ^= !initiator
+      return ret
+
+    case TOK_SS:
+      ret.local ^= 1
+      ret.remote ^= 1
+      return ret
+  }
+}
+
+function hasPskToken (handshake) {
+  return handshake.some(x => {
+    return Array.isArray(x) && x.indexOf(TOK_PSK) !== -1
+  })
+}
+
+},{"./hkdf":426,"./symmetric-state":453,"b4a":111,"nanoassert":421}],453:[function(require,module,exports){
 arguments[4][77][0].apply(exports,arguments)
 },{"./cipher":424,"./dh":425,"./hkdf":426,"b4a":111,"dup":77,"nanoassert":421,"sodium-universal":446}],454:[function(require,module,exports){
 var wrappy = require('wrappy')

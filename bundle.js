@@ -136,7 +136,6 @@ const setup_peer_autobase = async (key, key_buffer) => {
   await handle_peer_autobase_update()
   
   autobase_cache.set(key, peer_autobase)
-  console.log('[setup_peer_autobase] Setup complete')
   return peer_autobase
 }
 
@@ -158,7 +157,7 @@ const restore_subscribed_peers = () => {
 
 // Initialize blog
 const init_blog = async (options) => {
-  const { username, invite_code, verification_code, relay, offline_mode } = options
+  const { username, invite_code, relay, offline_mode, on_verification_code_ready } = options
   
   const peer_name = invite_code ? 'joining-user' : username
   const networking_options = {
@@ -193,10 +192,13 @@ const init_blog = async (options) => {
   // JOINING EXISTING BLOG - All keys received from pairing
   if (invite_code) {
     // join_with_invite_and_init already initializes ALL structures with keys from pairing
-    const result = await ds_manager.join_with_invite_and_init(invite_code, swarm_instance, store, verification_code)
-    console.log('[blog-helpers] Pairing result:', result)
+    const result = await ds_manager.join_with_invite_and_init(
+      invite_code, 
+      swarm_instance,
+      store,
+      on_verification_code_ready
+    )
     pairing_result = result  // Store for later retrieval
-    console.log('[blog-helpers] Pairing result stored, username:', pairing_result?.username)
     
     const metadata = ds_manager.get('metadata')
     const drive = ds_manager.get('drive')
@@ -289,9 +291,6 @@ const init_blog = async (options) => {
   
   if (!device_exists) {
     await log_event('add', device_keys)
-    console.log('[blog-helpers] Bootstrap device logged')
-  } else {
-    console.log('[blog-helpers] Bootstrap device already exists, skipping log')
   }
   
   // Write ALL structure keys to metadata (dynamic!)
@@ -568,10 +567,16 @@ const create_invite = async () => {
   const swarm = identity.get_swarm()
   const drive = ds_manager.get('drive')
   
-  const { invite_code, invite, verification_code, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive')
+  // Close previous pairing session if it exists
+  if (pairing_manager) {
+    await pairing_manager.close()
+    pairing_manager = null
+  }
   
-  // Store pairing_manager for later use
-  if (!pairing_manager) pairing_manager = pm
+  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive')
+  
+  // Store pairing_manager for later use (always update to the new one)
+  pairing_manager = pm
   
   // Get username from profile (using blog app's get_profile, not identity)
   const profile = await get_profile()
@@ -582,6 +587,10 @@ const create_invite = async () => {
     primary_discovery_key: drive.base.discoveryKey,
     invite,
     username: blog_username,
+    on_verification_needed: (verification_digits) => {
+      // Emit event so UI can show input box with the digits to verify
+      emitter.emit('verification_needed', verification_digits)
+    },
     on_paired: async (writer_keys) => {
       // Convert writer_keys from namespace format to structure_name_writer format
       const device_keys = {}
@@ -594,13 +603,39 @@ const create_invite = async () => {
       
       // Log device add event with proper format
       await log_event('add', device_keys)
-      
-      // Clear verification code after successful pairing
-      if (pairing_manager) pairing_manager.clear_verification_code()
+      emitter.emit('update')
     }
   })
   
-  return { invite_code, verification_code }
+  return { invite_code, pairing_manager: pm }
+}
+
+// Verify and complete pairing
+const verify_pairing = async (entered_code) => {
+  if (!pairing_manager) {
+    throw new Error('No pairing manager available')
+  }
+  
+  const result = await pairing_manager.verify_and_complete_pairing({
+    entered_verification_code: entered_code,
+    username: await get_blog_username(),
+    on_paired: () => {
+      emitter.emit('update')
+    }
+  })
+  
+  // Return result with multiple attempts info
+  return result
+}
+
+// Deny pairing
+const deny_pairing = () => {
+  if (!pairing_manager) {
+    throw new Error('No pairing manager available')
+  }
+  
+  pairing_manager.deny_pairing()
+  emitter.emit('update')
 }
 
 // Getters
@@ -625,6 +660,8 @@ const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
     init_blog,
     create_post,
     create_invite,
+    verify_pairing,
+    deny_pairing,
     subscribe,
     unsubscribe,
     get_blog_username,
@@ -657,7 +694,8 @@ const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
     get_discovered_blogs,
     get_pairing_result,
     get_structure_names,
-    on_update: (cb) => emitter.on('update', cb)
+    on_update: (cb) => emitter.on('update', cb),
+    on_verification_needed: (cb) => emitter.on('verification_needed', cb)
   }
   
   return api
@@ -719,8 +757,6 @@ document.body.innerHTML = `
         </div>
         <div class="join-form" style="display: none; margin-top: 10px;">
           <button class="back-btn" style="margin-bottom: 5px;">← Back</button><br>
-          <input class="verification-code-input" placeholder="Enter 6-digit verification code" style="width: 300px; margin-bottom: 5px;" maxlength="6">
-          <br>
           <input class="invite-code-input" placeholder="Paste invite code here" style="width: 300px; margin-bottom: 5px;">
           <br>
           <button class="join-with-invite-btn">Join with Invite</button>
@@ -820,7 +856,13 @@ document.body.innerHTML = `
         if (current_view) render_view(current_view)
       }
 
+      function handle_verification_needed (verification_digits) {
+        // Navigate to config tab and re-render to show pairing request
+        show_view('config')
+      }
+
       api.on_update(handle_blog_update)
+      api.on_verification_needed(handle_verification_needed)
 
       // Init blog with relay if set
       const init_options = { username }
@@ -866,10 +908,7 @@ document.body.innerHTML = `
 
   // Join existing network with invite
   async function join_network () {
-    const verification_code = document.querySelector('.verification-code-input').value.trim()
     const invite_code = document.querySelector('.invite-code-input').value.trim()
-    if (!verification_code) return alert('Please enter the 6-digit verification code.')
-    if (!verification_code.match(/^\d{6}$/)) return alert('Verification code must be exactly 6 digits.')
     if (!invite_code) return alert('Please enter an invite code.')
     
     // Validate invite code format and length
@@ -893,14 +932,17 @@ document.body.innerHTML = `
       // Create blog app with vault (identity API)
       api = blog_app(vault)
 
-      // Show "Getting ready..." status
-      document.querySelector('.connection-status').textContent = '🟡 Getting ready...'
+      // Show "Pairing..." status
+      document.querySelector('.connection-status').innerHTML = '🟡 Pairing...'
       
-      // Initialize blog with invite code and verification code
+      // Initialize blog with invite code and callback to display verification code
       const result = await api.init_blog({
         username: 'joining-user',
         invite_code: invite_code,
-        verification_code: verification_code
+        on_verification_code_ready: (verification_code) => {
+          // Display the verification code immediately in the UI
+          document.querySelector('.connection-status').innerHTML = `🟡 Pairing...<br><strong style="font-size: 1em; color: #007bff;">Verification Code: ${verification_code}</strong><br><small>Share this code with Device A</small>`
+        }
       })
       
       store = result.store
@@ -928,6 +970,14 @@ document.body.innerHTML = `
     } catch (err) {
       is_joining = false
       let error_msg = err.message
+      
+      // Check if pairing was denied by the user
+      if (error_msg.includes('Pairing denied by user')) {
+        alert('Pairing was denied by Main Device. Click OK to restart.')
+        await handle_reset_all_data()
+        return
+      }
+      
       if (error_msg.includes('Pairing rejected')) {
         error_msg = 'Pairing rejected: Verification code does not match. Please check the code on the first device and try again.'
       } else if (error_msg.includes('Unknown invite version')) {
@@ -1053,20 +1103,21 @@ document.body.innerHTML = `
         const avatar_content = await api.get_avatar_content()
         const raw_data_buttons = await generate_raw_data_buttons()
         
-        // Build stored invite section if codes exist (check from pairing_manager)
+        // Check if there's a pending pairing request
+        const pending_verification = pairing_manager ? pairing_manager.get_pending_verification_digits() : null
+        const pairing_section = pending_verification 
+          ? `<div><h4>Active Pairing Request</h4><p>Enter 6-digit code from new device:</p><input class="verification-input" placeholder="6-digit code" style="width: 150px; padding: 5px; margin-right: 5px;" maxlength="6"><button class="verify-btn" style="padding: 5px 10px; margin-right: 5px;">Verify</button><button class="deny-pairing-btn" style="padding: 5px 10px;">Deny</button><hr></div>` 
+          : ''
+        
+        // Build invite section
         let invite_section = `<div><h4>Create Invite</h4><p>Create an invite to share write access to your blog.</p><button class="create-invite-btn">Create Invite</button><div class="invite-result" style="margin-top: 10px;"></div></div>`
-        const active_code = pairing_manager ? pairing_manager.get_verification_code() : null
-        if (active_code) {
-          const invite_code = document.querySelector('.invite-code-display')?.value || ''
-          invite_section = `<div><h4>Active Invite</h4><p>Verification Code: <strong>${active_code}</strong></p><p>Invite Code:</p><input class="invite-code-display" readonly value="${invite_code}" style="width: 400px;"><button class="copy-invite-btn">Copy</button><p><small>Keep this page open while others join.</small></p></div><hr><div><h4>Create New Invite</h4><button class="create-invite-btn">Create Another Invite</button><div class="invite-result" style="margin-top: 10px;"></div></div>`
-        }
         
         // Build relay list
         const relays = get_relays()
         const current_default = get_default_relay()
         let relay_list_html = relays.map(r => `<div style="margin: 5px 0;"><span>${escape_html(r)}</span> <button class="relay-default-btn" data-relay="${escape_html(r)}" style="margin-left: 10px;">${r === current_default ? '✓ Default' : 'Set Default'}</button> <button class="relay-remove-btn" data-relay="${escape_html(r)}" style="margin-left: 5px; background: #dc3545; color: white; border: none; padding: 2px 8px; cursor: pointer;">Remove</button></div>`).join('')
         
-        view_el.innerHTML = `<h3>Configuration</h3><div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Relays</h4><p>Add custom relays to connect through:</p><input class="relay-input" placeholder="ws://localhost:8080 or wss://relay.example.com" style="width: 400px;"><button class="relay-add-btn">Add Relay</button><div style="margin-top: 10px;">${relay_list_html || '<p style="color: #666;">No custom relays added</p>'}</div></div><hr>${invite_section}<hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Paired Devices</h4><p>Devices that have write access to this blog:</p><div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">Loading devices...</div></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
+        view_el.innerHTML = `<h3>Configuration</h3>${pairing_section}<div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Relays</h4><p>Add custom relays to connect through:</p><input class="relay-input" placeholder="ws://localhost:8080 or wss://relay.example.com" style="width: 400px;"><button class="relay-add-btn">Add Relay</button><div style="margin-top: 10px;">${relay_list_html || '<p style="color: #666;">No custom relays added</p>'}</div></div><hr>${invite_section}<hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Paired Devices</h4><p>Devices that have write access to this blog:</p><div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">Loading devices...</div></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
         
         // Load paired devices after HTML is set
         const devices = await api.get_paired_devices()
@@ -1134,15 +1185,14 @@ document.body.innerHTML = `
   async function handle_create_invite () {
     try {
       const result = await api.create_invite()
-      const { invite_code, verification_code, pairing_manager: pm } = result
+      const { invite_code, pairing_manager: pm } = result
       pairing_manager = pm
       const invite_result = document.querySelector('.invite-result')
       invite_result.innerHTML = `
-        <p>Verification Code: <strong>${verification_code}</strong></p>
         <p>Invite Code:</p>
         <input class="invite-code-display" readonly value="${invite_code}" style="width: 400px;">
         <button class="copy-invite-btn">Copy</button>
-        <p><small>Keep this page open while others join.</small></p>
+        <p><small>Keep this page open. When a device tries to pair, go to the Config tab to verify the 6-digit code.</small></p>
       `
       const copy_btn = invite_result.querySelector('.copy-invite-btn')
       copy_btn.addEventListener('click', () => {
@@ -1336,6 +1386,25 @@ document.body.innerHTML = `
   })
   document.addEventListener('click', (event) => {
     const target = event.target
+    if (target.classList.contains('verify-btn')) {
+      const entered_code = document.querySelector('.verification-input').value.trim()
+      if (!entered_code || entered_code.length !== 6) {
+        return alert('Please enter exactly 6 digits')
+      }
+      api.verify_pairing(entered_code).then((result) => {
+        // Check if multiple pairing attempts were detected
+        if (result && result.multiple_attempts) {
+          alert(`NOTICE\n\nPairing successful, but ${result.total_attempts} device(s) attempted to pair simultaneously.\n\nThis could indicate:\n- Someone tried to steal your invite code\n- You accidentally pasted the invite on multiple devices\nIf you didn't initiate multiple pairing attempts, your invite code may have been compromised. Consider this a security warning.`)
+        }
+        show_view('config')
+      }).catch(err => {
+        alert('Verification failed: ' + err.message)
+      })
+    }
+    if (target.classList.contains('deny-pairing-btn')) {
+      api.deny_pairing()
+      show_view('config')
+    }
     if (target.classList.contains('subscribe-btn')) handle_subscribe(target.dataset.key)
     if (target.classList.contains('unsubscribe-btn')) handle_unsubscribe(target.dataset.key)
     if (target.classList.contains('back-btn')) {
