@@ -1369,9 +1369,13 @@ function pairing_manager (ds_manager, swarm) {
   let pending_pairing_requests = []  // Array to store ALL incoming pairing requests
   let multiple_attempts_detected = false  // Flag to notify user of unusual behavior
 
-  // Extract 6 digits from a writer key (last 6 hex chars = 3 bytes)
+  // Extract 6 digits from a writer key's discovery key (hash) for security
   const extract_verification_digits = (writer_key_hex) => {
-    return writer_key_hex.slice(-6).toUpperCase()
+    const crypto = require('hypercore-crypto')
+    const key_buffer = b4a.from(writer_key_hex, 'hex')
+    const discovery_key = crypto.discoveryKey(key_buffer)
+    const discovery_key_hex = b4a.toString(discovery_key, 'hex')
+    return discovery_key_hex.slice(-6).toUpperCase()
   }
 
   // Create invite for pairing (member side)
