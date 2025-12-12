@@ -3183,10 +3183,11 @@ function graphdb(entries) {
 
 },{}],4:[function(require,module,exports){
 (function (__filename){(function (){
-const wrapper = require('./wrapper')
 const STATE = require('STATE')
+console.log('[DEBUG] news/index.js running, filename:', __filename)
 const statedb = STATE(__filename)
 const { get } = statedb(fallback_module)
+const wrapper = require('./wrapper')
 
 module.exports = function news_app(opts = {}) {
     const { sid = 0, vault } = opts
@@ -3257,7 +3258,7 @@ module.exports = function news_app(opts = {}) {
 
 async function init(vault, sidebarEl, mainEl) {
     try {
-
+        /*
         const api = blog_app(vault)
 
 
@@ -3272,66 +3273,18 @@ async function init(vault, sidebarEl, mainEl) {
         await api.init_blog({ username })
 
         const get_entries = async () => {
-            const entries = {
-                '/': { name: 'P2P News', type: 'root', subs: ['/my-stories', '/feeds', '/lists', '/discover'], hubs: [] },
-                '/my-stories': { name: 'My Stories', type: 'folder', subs: [] },
-                '/feeds': { name: 'Feeds', type: 'folder', subs: [] },
-                '/lists': { name: 'Lists', type: 'folder', subs: [] },
-                '/discover': { name: 'Discover', type: 'folder', subs: [] }
-            }
-
-
-            const peer_blogs = await api.get_peer_blogs()
-
-            for (const [key, blog] of peer_blogs) {
-                const path = `/feeds/${key}`
-                const profile = await api.get_profile(key)
-                const name = profile ? profile.name : blog.username
-
-                entries['/feeds'].subs.push(path)
-                entries[path] = {
-                    name: name,
-                    type: 'feed',
-                    subs: []
-                }
-
-
-                if (blog.posts) {
-                    blog.posts.forEach((post, index) => {
-                        const post_path = `${path}/${index}`
-                        entries[path].subs.push(post_path)
-                        entries[post_path] = {
-                            name: post.title,
-                            type: 'post',
-                            data: post
-                        }
-                    })
-                }
-            }
-
-
-            const my_posts = await api.get_my_posts()
-            my_posts.forEach((post, index) => {
-                const path = `/my-stories/${index}`
-                entries['/my-stories'].subs.push(path)
-                entries[path] = {
-                    name: post.title,
-                    type: 'post',
-                    data: post
-                }
-            })
-
-            return entries
+             // ... (commented out)
+             return {}
         }
+        */
 
         const { id, sdb } = await get()
         const { drive } = sdb
 
-
+        /*
         const entries = await get_entries()
-
         await drive.put('entries/entries.json', JSON.stringify(entries))
-
+        */
 
         const sidebar_component = await wrapper({
             id: 'sidebar',
@@ -3345,12 +3298,13 @@ async function init(vault, sidebarEl, mainEl) {
 
         sidebarEl.appendChild(sidebar_component)
 
-
+        /*
         api.on_update(async () => {
             console.log('Data updated, refreshing sidebar...')
             const updated_entries = await get_entries()
             await drive.put('entries/entries.json', JSON.stringify(updated_entries))
         })
+        */
 
     } catch (err) {
         console.error('Error initializing news app:', err)
@@ -3382,8 +3336,9 @@ function fallback_module() {
 },{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
+console.log('[DEBUG] wrapper.js running, filename:', __filename)
 const statedb = STATE(__filename)
-statedb.admin()
+
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
@@ -3396,7 +3351,7 @@ async function my_component_with_graph(opts, protocol) {
 
     const ids = opts.ids
     if (!ids || !ids.up) {
-        // throw new Error(`Component ${__filename} requires ids.up to be provided`)
+
     }
 
     const by = id
@@ -3601,12 +3556,18 @@ function fallback_module() {
 }
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
 },{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+console.log('[DEBUG] page.js running, filename:', __filename)
+const statedb = STATE(__filename)
+statedb.admin()
+
 console.log('p2p news app')
 const news = require('news')
 
-// Custom vault object (mock for now, replace with real integration later)
+
 const customVault = {
-    // Add vault methods here as needed
+
     init_blog: async ({ username }) => {
         console.log('[customVault] init_blog:', username)
     },
@@ -3633,4 +3594,5 @@ async function init() {
     const app = await news({ sid: 0, vault: customVault })
     document.body.append(app)
 }
-},{"news":4}]},{},[6]);
+}).call(this)}).call(this,"/web/page.js")
+},{"STATE":1,"news":4}]},{},[6]);

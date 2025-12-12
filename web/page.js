@@ -1,3 +1,8 @@
+const STATE = require('STATE')
+console.log('[DEBUG] page.js running, filename:', __filename)
+const statedb = STATE(__filename)
+statedb.admin()
+
 console.log('p2p news app')
 const news = require('news')
 
