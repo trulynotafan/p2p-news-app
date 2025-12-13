@@ -20,12 +20,21 @@ async function web (identity) {
   console.log('[datashell] Debug - args1:', args1, 'args2:', args2, 'args3:', args3)
   console.log('[datashell] Debug - final args:', args, 'app:', app)
   const config = { ...env, args: arg }
+  const vault = identity(config)
+  console.log('[datashell] Identity API created:', vault)
+  
+  // Load and run setup (vault-ui) if not authenticated
+  let existing_api = null
+  if (!localStorage.getItem('username')) {
+    const setup = await webload('setup.js')
+    existing_api = await setup(vault)
+  }
+  
+  // Load and run app (pass existing_api if pairing just completed)
   const loader = await webload(app)
-  const identity_api = identity(config)
-  console.log('[datashell] Identity API created:', identity_api)
   console.log('[datashell] Calling loader with identity_api...')
   try {
-    await loader(identity_api)
+    await loader(vault, existing_api)
     console.log('[datashell] Loader completed successfully')
   } catch (err) {
     console.error('[datashell] Loader error:', err)
@@ -53,10 +62,16 @@ async function webload (app) {
   console.log('[datashell] Response content-type:', response.headers.get('content-type'))
   const src = await response.text()
   console.log('[datashell] Source length:', src.length, 'First 100 chars:', src.slice(0, 100))
-  const AsyncFunction = (async () => { }).constructor
-  return new AsyncFunction('vault', src)
+  const async_function = (async () => {}).constructor
+  return new async_function('vault', 'existing_api', `
+    ${src}; 
+    if ('${app}' === 'setup.js') {
+      return await window.setup(vault, existing_api);
+    } else {
+      return await window.webapp(vault, existing_api);
+    }
+  `)
 }
-
 },{"bare-process":125,"identity":5}],2:[function(require,module,exports){
 const Autobase = require('autobase')
 const Hyperdrive = require('hyperdrive')
@@ -45995,28 +46010,39 @@ const ICES = [
 
 module.exports = class WebPeer {
   constructor (relay, opts = {}) {
+    console.log('[WebPeer] Constructor called with relay:', relay.publicKey?.toString('hex')?.slice(0, 8))
     this._rtc = new RTCPeerConnection({ iceServers: opts.iceServers || ICES })
+    console.log('[WebPeer] RTCPeerConnection created, state:', this._rtc.connectionState)
     this._relay = relay
     this._mux = Protomux.from(relay)
+    console.log('[WebPeer] Protomux created')
 
     this._channel = this._mux.createChannel({ protocol: 'hyper-webrtc/signal' })
+    console.log('[WebPeer] Channel created:', this._channel ? 'success' : 'failed')
 
     if (this._channel === null) throw new Error('Channel duplicated')
 
     this._ice = this._channel.addMessage({ encoding: c.json, onmessage: this._onice.bind(this) })
     this._offer = this._channel.addMessage({ encoding: c.json, onmessage: this._onoffer.bind(this) })
     this._answer = this._channel.addMessage({ encoding: c.json, onmessage: this._onanswer.bind(this) })
+    console.log('[WebPeer] Messages added to channel')
 
     this._channel.open()
+    console.log('[WebPeer] Channel opened')
 
     this._rtc.onicecandidate = onicecandidate.bind(this)
+    console.log('[WebPeer] Ice candidate handler set')
   }
 
   static from (relay) {
+    console.log('[WebPeer.from] Creating peer for relay:', relay.publicKey?.toString('hex')?.slice(0, 8))
     const peer = new this(relay)
 
+    console.log('[WebPeer.from] Creating data channel')
     const rawStream = peer._rtc.createDataChannel('wire', { negotiated: true, id: 0 })
+    console.log('[WebPeer.from] Data channel created, state:', rawStream.readyState)
 
+    console.log('[WebPeer.from] Creating WebStream')
     const stream = new WebStream(relay.isInitiator, rawStream, {
       publicKey: relay.publicKey,
       remotePublicKey: relay.remotePublicKey,
@@ -46024,49 +46050,70 @@ module.exports = class WebPeer {
     })
 
     relay.on('close', () => {
+      console.log('[WebPeer.from] Relay closed, closing RTC and rawStream')
       peer._rtc.close()
       rawStream.close()
     })
 
     stream.on('close', () => {
+      console.log('[WebPeer.from] Stream closed, closing RTC and destroying relay')
       peer._rtc.close()
       relay.destroy()
     })
 
+    console.log('[WebPeer.from] Starting negotiation')
     peer.negotiate().catch(safetyCatch)
 
     return stream
   }
 
   async negotiate () {
+    console.log('[WebPeer.negotiate] Starting negotiation, isInitiator:', this._relay.isInitiator)
     if (!this._relay.isInitiator) return
 
+    console.log('[WebPeer.negotiate] Creating offer')
     const offer = await this._rtc.createOffer()
+    console.log('[WebPeer.negotiate] Offer created, setting local description')
     await this._rtc.setLocalDescription(offer)
+    console.log('[WebPeer.negotiate] Local description set, sending offer')
 
     this._offer.send({ offer: this._rtc.localDescription })
+    console.log('[WebPeer.negotiate] Offer sent')
   }
 
   async _onice ({ ice }) {
+    console.log('[WebPeer._onice] Received ICE candidate:', ice.candidate?.slice(0, 50))
     await this._rtc.addIceCandidate(new RTCIceCandidate(ice))
+    console.log('[WebPeer._onice] ICE candidate added')
   }
 
   async _onoffer ({ offer }) {
+    console.log('[WebPeer._onoffer] Received offer, setting remote description')
     await this._rtc.setRemoteDescription(offer)
+    console.log('[WebPeer._onoffer] Remote description set, creating answer')
 
     const answer = await this._rtc.createAnswer()
+    console.log('[WebPeer._onoffer] Answer created, setting local description')
     await this._rtc.setLocalDescription(answer)
+    console.log('[WebPeer._onoffer] Local description set, sending answer')
 
     this._answer.send({ answer: this._rtc.localDescription })
+    console.log('[WebPeer._onoffer] Answer sent')
   }
 
   async _onanswer ({ answer }) {
+    console.log('[WebPeer._onanswer] Received answer, setting remote description')
     await this._rtc.setRemoteDescription(answer)
+    console.log('[WebPeer._onanswer] Remote description set, negotiation complete')
   }
 }
 
 function onicecandidate (e) {
-  if (e.candidate) this._ice.send({ ice: e.candidate })
+  console.log('[WebPeer.onicecandidate] ICE candidate event:', e.candidate ? 'has candidate' : 'null candidate')
+  if (e.candidate) {
+    console.log('[WebPeer.onicecandidate] Sending ICE candidate:', e.candidate.candidate?.slice(0, 50))
+    this._ice.send({ ice: e.candidate })
+  }
 }
 
 },{"./lib/web-stream.js":323,"compact-encoding":208,"get-webrtc":300,"protomux":470,"safety-catch":517}],323:[function(require,module,exports){
@@ -46075,9 +46122,15 @@ const b4a = require('b4a')
 
 module.exports = class WebStream extends Duplex {
   constructor (isInitiator, dc, opts = {}) {
+    console.log('[WebStream] Constructor called, isInitiator:', isInitiator, 'dc.readyState:', dc.readyState)
     super({ mapWritable: toBuffer })
 
     this._dc = dc
+    this._writeCount = 0
+    this._totalBytesWritten = 0
+
+    // Chunking state
+    this._chunkBuffers = new Map() // messageId -> { chunks: [], totalChunks: number, totalSize: number }
 
     this.noiseStream = this
     this.isInitiator = isInitiator
@@ -46098,25 +46151,31 @@ module.exports = class WebStream extends Duplex {
     this._onerror = onerror.bind(this)
     this._onclose = onclose.bind(this)
 
+    console.log('[WebStream] Adding event listeners to data channel')
     this._dc.addEventListener('open', this._onopen)
     this._dc.addEventListener('message', this._onmessage)
     this._dc.addEventListener('error', this._onerror)
     this._dc.addEventListener('close', this._onclose)
 
+    console.log('[WebStream] Resuming and pausing stream')
     this.resume().pause() // Open immediately
   }
 
   _open (cb) {
+    console.log('[WebStream._open] Called, dc.readyState:', this._dc.readyState)
     if (this._dc.readyState === 'closed' || this._dc.readyState === 'closing') {
+      console.log('[WebStream._open] Stream is closed/closing, calling cb with error')
       cb(new Error('Stream is closed'))
       return
     }
 
     if (this._dc.readyState === 'connecting') {
+      console.log('[WebStream._open] Still connecting, storing callback')
       this._opening = cb
       return
     }
 
+    console.log('[WebStream._open] Stream ready, resolving opened and calling cb')
     this._resolveOpened(true)
     cb(null)
   }
@@ -46143,8 +46202,86 @@ module.exports = class WebStream extends Duplex {
   }
 
   _write (data, cb) {
-    this._dc.send(data)
-    cb(null)
+    this._writeCount++
+    this._totalBytesWritten += data.length
+    console.log('[WebStream._write] Write #' + this._writeCount + ', size:', data.length + 'B, total:', this._totalBytesWritten + 'B, dc.readyState:', this._dc.readyState)
+    
+    if (this._dc.readyState !== 'open') {
+      console.log('[WebStream._write] ERROR: DataChannel not open, state:', this._dc.readyState)
+      cb(new Error('DataChannel not open'))
+      return
+    }
+
+    const MAX_CHUNK_SIZE = 60 * 1024 // 60KB to be safe (below 64KB limit)
+    
+    try {
+      if (data.length <= MAX_CHUNK_SIZE) {
+        // Small message - send directly
+        console.log('[WebStream._write] Sending small message directly, bufferedAmount before:', this._dc.bufferedAmount)
+        this._dc.send(data)
+        console.log('[WebStream._write] Data sent, bufferedAmount after:', this._dc.bufferedAmount)
+        cb(null)
+      } else {
+        // Large message - chunk it
+        console.log('[WebStream._write] Large message detected (' + data.length + 'B), chunking into', Math.ceil(data.length / MAX_CHUNK_SIZE), 'chunks')
+        this._sendChunked(data, cb)
+      }
+    } catch (err) {
+      console.log('[WebStream._write] ERROR sending data:', err.message)
+      cb(err)
+    }
+  }
+
+  _sendChunked (data, cb) {
+    const MAX_CHUNK_SIZE = 60 * 1024
+    const totalChunks = Math.ceil(data.length / MAX_CHUNK_SIZE)
+    const messageId = Math.random().toString(36).substr(2, 9) // Random ID for this message
+    
+    console.log('[WebStream._sendChunked] Sending', totalChunks, 'chunks for message', messageId)
+    
+    // Send header first
+    const header = JSON.stringify({
+      type: 'chunked_start',
+      messageId: messageId,
+      totalChunks: totalChunks,
+      totalSize: data.length
+    })
+    
+    try {
+      this._dc.send(b4a.from(header))
+      console.log('[WebStream._sendChunked] Header sent for message', messageId)
+      
+      // Send chunks
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * MAX_CHUNK_SIZE
+        const end = Math.min(start + MAX_CHUNK_SIZE, data.length)
+        const chunk = data.slice(start, end)
+        
+        const chunkMessage = JSON.stringify({
+          type: 'chunk',
+          messageId: messageId,
+          chunkIndex: i,
+          data: b4a.toString(chunk, 'base64')
+        })
+        
+        this._dc.send(b4a.from(chunkMessage))
+        console.log('[WebStream._sendChunked] Sent chunk', i + 1, '/', totalChunks, 'for message', messageId, '(' + chunk.length + 'B)')
+      }
+      
+      // Send end marker
+      const endMessage = JSON.stringify({
+        type: 'chunked_end',
+        messageId: messageId
+      })
+      
+      this._dc.send(b4a.from(endMessage))
+      console.log('[WebStream._sendChunked] End marker sent for message', messageId)
+      
+      cb(null)
+    } catch (err) {
+      console.log('[WebStream._sendChunked] ERROR during chunked send:', err.message)
+      cb(err)
+    }
   }
 
   _predestroy () {
@@ -46161,18 +46298,74 @@ module.exports = class WebStream extends Duplex {
 }
 
 function onopen () {
+  console.log('[WebStream.onopen] DataChannel opened')
   this._continueOpen()
 }
 
 function onmessage (event) {
-  this.push(b4a.from(event.data))
+  console.log('[WebStream.onmessage] Received message, size:', event.data.byteLength || event.data.length)
+  
+  const data = b4a.from(event.data)
+  
+  // Try to parse as JSON to check if it's a chunked message
+  try {
+    const message = JSON.parse(b4a.toString(data))
+    
+    if (message.type === 'chunked_start') {
+      console.log('[WebStream.onmessage] Starting chunked message', message.messageId, 'with', message.totalChunks, 'chunks')
+      this._chunkBuffers.set(message.messageId, {
+        chunks: new Array(message.totalChunks),
+        totalChunks: message.totalChunks,
+        totalSize: message.totalSize,
+        receivedChunks: 0
+      })
+      return
+    }
+    
+    if (message.type === 'chunk') {
+      const buffer = this._chunkBuffers.get(message.messageId)
+      if (!buffer) {
+        console.log('[WebStream.onmessage] ERROR: Received chunk for unknown message', message.messageId)
+        return
+      }
+      
+      buffer.chunks[message.chunkIndex] = b4a.from(message.data, 'base64')
+      buffer.receivedChunks++
+      console.log('[WebStream.onmessage] Received chunk', message.chunkIndex + 1, '/', buffer.totalChunks, 'for message', message.messageId)
+      
+      // Check if we have all chunks
+      if (buffer.receivedChunks === buffer.totalChunks) {
+        console.log('[WebStream.onmessage] All chunks received for message', message.messageId, ', reassembling...')
+        const reassembled = b4a.concat(buffer.chunks)
+        console.log('[WebStream.onmessage] Reassembled message size:', reassembled.length, 'expected:', buffer.totalSize)
+        this._chunkBuffers.delete(message.messageId)
+        this.push(reassembled)
+      }
+      return
+    }
+    
+    if (message.type === 'chunked_end') {
+      console.log('[WebStream.onmessage] Received end marker for message', message.messageId)
+      // End marker - chunked message should already be complete
+      return
+    }
+    
+    // If we get here, it's a JSON message but not chunked - treat as regular data
+    this.push(data)
+    
+  } catch (err) {
+    // Not JSON - treat as regular binary data
+    this.push(data)
+  }
 }
 
 function onerror (err) {
+  console.log('[WebStream.onerror] DataChannel error:', err)
   this.destroy(err)
 }
 
 function onclose () {
+  console.log('[WebStream.onclose] DataChannel closed')
   this._dc.removeEventListener('open', this._onopen)
   this._dc.removeEventListener('message', this._onmessage)
   this._dc.removeEventListener('error', this._onerror)
