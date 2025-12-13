@@ -3184,79 +3184,38 @@ function graphdb(entries) {
 },{}],4:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
-console.log('[DEBUG] news/index.js running, filename:', __filename)
+console.log('[DEBUG] news/index.js running')
 const statedb = STATE(__filename)
 const { get } = statedb(fallback_module)
 const wrapper = require('./wrapper')
 
-module.exports = function news_app(opts = {}) {
-    const { sid = 0, vault } = opts
-    const container = document.createElement('div')
-    container.className = 'app-container'
+// const blog_app = require('p2p-news-app') // Commented out for now
 
+module.exports = news_app
 
-    const styleEl = document.createElement('style')
-    styleEl.textContent = `
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
-
-    .app-container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-    }
-
-    .sidebar {
-      width: 300px;
-      border-right: 1px solid #e0e0e0;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .main-content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #fff;
-    }
-
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      color: #666;
-    }
-  `
-    document.head.appendChild(styleEl)
-
+async function news_app(opts = {}) {
+    console.log('[news_app] called with opts:', opts)
+    const { sid, vault } = opts
 
     const sidebar = document.createElement('div')
-    sidebar.className = 'sidebar'
-    container.appendChild(sidebar)
-
+    sidebar.classList.add('sidebar')
 
     const main = document.createElement('div')
-    main.className = 'main-content'
-    main.innerHTML = '<h1>Select a feed to view posts</h1>'
+    main.classList.add('main')
+
+    const container = document.createElement('div')
+    container.classList.add('container')
+    container.appendChild(sidebar)
     container.appendChild(main)
 
-
-    init(vault, sidebar, main)
+    // Pass sid to init
+    await init(vault, sidebar, main, sid)
 
     return container
 }
 
-async function init(vault, sidebarEl, mainEl) {
+
+async function init(vault, sidebarEl, mainEl, sid) {
     try {
         /*
         const api = blog_app(vault)
@@ -3271,25 +3230,36 @@ async function init(vault, sidebarEl, mainEl) {
 
 
         await api.init_blog({ username })
-
-        const get_entries = async () => {
-             // ... (commented out)
-             return {}
-        }
         */
 
-        const { id, sdb } = await get()
+        console.log('[news/index.js] init called with sid:', sid)
+        const { id, sdb } = await get(sid) // Pass sid to get()
         const { drive } = sdb
 
-        /*
-        const entries = await get_entries()
-        await drive.put('entries/entries.json', JSON.stringify(entries))
-        */
+        console.log('[news/index.js] Got id:', id)
+
+        // Watch for active instances to get wrapper's sid
+        const subs = await sdb.watch(async (batch) => {
+            // Handle updates
+            console.log('[news/index.js] Watch batch:', batch)
+        })
+
+        console.log('[news/index.js] Watch returned:', subs)
+
+        if (!subs || subs.length === 0) {
+            console.error('[news/index.js] No active instances found for wrapper')
+            return
+        }
+
+        // subs[0] should be the wrapper instance
+        const wrapper_instance = subs[0]
+        const { sid: wrapper_sid } = wrapper_instance
+        console.log('[news/index.js] Retrieved sid for wrapper:', wrapper_sid)
 
         const sidebar_component = await wrapper({
             id: 'sidebar',
-            sid: id,
-            ids: { up: 'host' }
+            sid: wrapper_sid, // Use correct wrapper sid
+            ids: { up: id }   // Correct up link to parent id
         }, (send) => {
             return (msg) => {
                 console.log('Host received:', msg)
@@ -3298,14 +3268,6 @@ async function init(vault, sidebarEl, mainEl) {
 
         sidebarEl.appendChild(sidebar_component)
 
-        /*
-        api.on_update(async () => {
-            console.log('Data updated, refreshing sidebar...')
-            const updated_entries = await get_entries()
-            await drive.put('entries/entries.json', JSON.stringify(updated_entries))
-        })
-        */
-
     } catch (err) {
         console.error('Error initializing news app:', err)
         mainEl.innerHTML = `<p style="color:red">Error: ${err.message}</p>`
@@ -3313,23 +3275,23 @@ async function init(vault, sidebarEl, mainEl) {
 }
 
 function fallback_module() {
-    return {
-        _: {
-            './wrapper': { $: '' }
-        },
-        api: fallback_instance
-    }
-
     function fallback_instance() {
         return {
             _: {
-                './wrapper': { $: '' }
+                './wrapper': { $: '', 0: '' }
             },
             drive: {
                 'entries/': {},
                 'theme/': {}
             }
         }
+    }
+
+    return {
+        _: {
+            './wrapper': { $: '', 0: '' }
+        },
+        api: fallback_instance
     }
 }
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
@@ -3493,7 +3455,6 @@ function fallback_module() {
         return {
             _: {
                 'graph-explorer': {
-                    $: '',
                     0: '',
                     mapping: {
                         style: 'theme',
@@ -3505,7 +3466,7 @@ function fallback_module() {
                     }
                 },
                 './graphdb': {
-                    $: ''
+                    0: ''
                 }
             },
             drive: {
@@ -3557,17 +3518,26 @@ function fallback_module() {
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
 },{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
 (function (__filename){(function (){
+// FORCE CLEAR STATE for debugging
+localStorage.clear()
 const STATE = require('STATE')
-console.log('[DEBUG] page.js running, filename:', __filename)
 const statedb = STATE(__filename)
 statedb.admin()
+
+function fallback_module() {
+    return {
+        _: {
+            'news': { $: '', 0: '' }
+        }
+    }
+}
+
+const { get } = statedb(fallback_module)
 
 console.log('p2p news app')
 const news = require('news')
 
-
 const customVault = {
-
     init_blog: async ({ username }) => {
         console.log('[customVault] init_blog:', username)
     },
@@ -3588,11 +3558,33 @@ const customVault = {
     }
 }
 
-init().catch(console.error)
-
 async function init() {
-    const app = await news({ sid: 0, vault: customVault })
+    console.log('[page.js] init started')
+    const { sdb } = await get()
+
+    // Watch for instances to get the valid sid
+    const start = await sdb.watch(async (batch) => {
+        // Handle updates if needed
+        console.log('[page.js] sdb watch batch:', batch)
+    })
+
+    console.log('[page.js] Watch returned:', start)
+
+    // start is an array of sub-instances. We expect 'news' to be there.
+    // Based on STATE logic, it returns active subs.
+    if (!start || start.length === 0) {
+        console.error('[page.js] No active instances found for news')
+        return
+    }
+
+    const news_instance = start[0]
+    const { sid } = news_instance
+    console.log('[page.js] Retrieved sid for news:', sid)
+
+    const app = await news({ sid, vault: customVault })
     document.body.append(app)
 }
+
+init().catch(console.error)
 }).call(this)}).call(this,"/web/page.js")
 },{"STATE":1,"news":4}]},{},[6]);
