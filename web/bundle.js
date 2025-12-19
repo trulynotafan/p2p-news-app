@@ -3250,8 +3250,8 @@ async function init (vault, sidebarEl, mainEl, sid) {
 
     const sidebar_component = await wrapper({
       id: 'sidebar',
-      sid: wrapper_sid, 
-      ids: { up: id } 
+      sid: wrapper_sid,
+      ids: { up: id }
     }, (send) => {
       return (msg) => {
         console.log('Host received:', msg)
@@ -3319,7 +3319,7 @@ const graphdb = require('./graphdb')
 
 module.exports = my_component_with_graph
 
-async function my_component_with_graph(opts, protocol) {
+async function my_component_with_graph (opts, protocol) {
   const { id, sdb } = await get(opts.sid)
   const { drive } = sdb
 
@@ -3346,7 +3346,7 @@ async function my_component_with_graph(opts, protocol) {
 
   return el
 
-  async function onbatch(batch) {
+  async function onbatch (batch) {
     for (const { type, paths } of batch) {
       const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
       const valid_data = data.filter(d => d !== null)
@@ -3356,11 +3356,11 @@ async function my_component_with_graph(opts, protocol) {
     }
   }
 
-  function inject(data) {
+  function inject (data) {
     sheet.replaceSync(data.join('\n'))
   }
 
-  function on_entries(data) {
+  function on_entries (data) {
     if (!data || !data[0]) {
       // console.error('Entries data is missing or empty.')
       db = graphdb({})
@@ -3385,7 +3385,7 @@ async function my_component_with_graph(opts, protocol) {
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized(entries) {
+  function notify_db_initialized (entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({
@@ -3396,18 +3396,18 @@ async function my_component_with_graph(opts, protocol) {
     }
   }
 
-  function graph_explorer_protocol(send) {
+  function graph_explorer_protocol (send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message(msg) {
+    function on_graph_explorer_message (msg) {
       const { type } = msg
       if (type.startsWith('db_')) {
         handle_db_request(msg, send)
       }
     }
 
-    function handle_db_request(request_msg, send) {
+    function handle_db_request (request_msg, send) {
       const { head: request_head, type: operation, data: params } = request_msg
       let result
 
@@ -3436,7 +3436,7 @@ async function my_component_with_graph(opts, protocol) {
 
       send_response(request_head, result)
 
-      function send_response(request_head, result) {
+      function send_response (request_head, result) {
         const response_head = [by, 'graph_explorer', mid++]
         send({
           head: response_head,
@@ -3449,7 +3449,7 @@ async function my_component_with_graph(opts, protocol) {
   }
 }
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       'graph-explorer': { $: '' },
@@ -3458,7 +3458,7 @@ function fallback_module() {
     api: fallback_instance
   }
 
-  function fallback_instance() {
+  function fallback_instance () {
     return {
       _: {
         'graph-explorer': {
