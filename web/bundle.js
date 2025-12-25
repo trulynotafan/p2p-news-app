@@ -3183,380 +3183,303 @@ function graphdb(entries) {
 
 },{}],4:[function(require,module,exports){
 (function (__filename){(function (){
-const wrapper = require('./wrapper')
 const STATE = require('STATE')
+console.log('[DEBUG] news/index.js running')
 const statedb = STATE(__filename)
 const { get } = statedb(fallback_module)
+const wrapper = require('./wrapper')
 
-module.exports = function news_app(opts = {}) {
-    const { sid = 0, vault } = opts
-    const container = document.createElement('div')
-    container.className = 'app-container'
+// const blog_app = require('p2p-news-app') // Commented out for now
 
+module.exports = news_app
 
-    const styleEl = document.createElement('style')
-    styleEl.textContent = `
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
+async function news_app (opts = {}) {
+  console.log('[news_app] called with opts:', opts)
+  const { sid, vault } = opts
 
-    .app-container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-    }
+  const sidebar = document.createElement('div')
+  sidebar.classList.add('sidebar')
 
-    .sidebar {
-      width: 300px;
-      border-right: 1px solid #e0e0e0;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
+  const main = document.createElement('div')
+  main.classList.add('main')
 
-    .main-content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #fff;
-    }
+  const container = document.createElement('div')
+  container.classList.add('container')
+  container.appendChild(sidebar)
+  container.appendChild(main)
 
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      color: #666;
-    }
-  `
-    document.head.appendChild(styleEl)
+  await init(vault, sidebar, main, sid)
 
-
-    const sidebar = document.createElement('div')
-    sidebar.className = 'sidebar'
-    container.appendChild(sidebar)
-
-
-    const main = document.createElement('div')
-    main.className = 'main-content'
-    main.innerHTML = '<h1>Select a feed to view posts</h1>'
-    container.appendChild(main)
-
-
-    init(vault, sidebar, main)
-
-    return container
+  return container
 }
 
-async function init(vault, sidebarEl, mainEl) {
-    try {
+async function init (vault, sidebarEl, mainEl, sid) {
+  try {
+    /*
+            const api = blog_app(vault)
 
-        const api = blog_app(vault)
-
-
-        let username = localStorage.getItem('username')
-        if (!username) {
-            username = prompt('Enter your username:')
-            if (username) localStorage.setItem('username', username)
-            else return
-        }
-
-
-        await api.init_blog({ username })
-
-        const get_entries = async () => {
-            const entries = {
-                '/': { name: 'P2P News', type: 'root', subs: ['/my-stories', '/feeds', '/lists', '/discover'], hubs: [] },
-                '/my-stories': { name: 'My Stories', type: 'folder', subs: [] },
-                '/feeds': { name: 'Feeds', type: 'folder', subs: [] },
-                '/lists': { name: 'Lists', type: 'folder', subs: [] },
-                '/discover': { name: 'Discover', type: 'folder', subs: [] }
+            let username = localStorage.getItem('username')
+            if (!username) {
+                username = prompt('Enter your username:')
+                if (username) localStorage.setItem('username', username)
+                else return
             }
 
+            await api.init_blog({ username })
+            */
 
-            const peer_blogs = await api.get_peer_blogs()
+    console.log('[news/index.js] init called with sid:', sid)
+    const { id, sdb } = await get(sid) // Pass sid to get()
 
-            for (const [key, blog] of peer_blogs) {
-                const path = `/feeds/${key}`
-                const profile = await api.get_profile(key)
-                const name = profile ? profile.name : blog.username
+    console.log('[news/index.js] Got id:', id)
 
-                entries['/feeds'].subs.push(path)
-                entries[path] = {
-                    name: name,
-                    type: 'feed',
-                    subs: []
-                }
+    const subs = await sdb.watch(async (batch) => {
+      console.log('[news/index.js] Watch batch:', batch)
+    })
 
+    console.log('[news/index.js] Watch returned:', subs)
 
-                if (blog.posts) {
-                    blog.posts.forEach((post, index) => {
-                        const post_path = `${path}/${index}`
-                        entries[path].subs.push(post_path)
-                        entries[post_path] = {
-                            name: post.title,
-                            type: 'post',
-                            data: post
-                        }
-                    })
-                }
-            }
-
-
-            const my_posts = await api.get_my_posts()
-            my_posts.forEach((post, index) => {
-                const path = `/my-stories/${index}`
-                entries['/my-stories'].subs.push(path)
-                entries[path] = {
-                    name: post.title,
-                    type: 'post',
-                    data: post
-                }
-            })
-
-            return entries
-        }
-
-        const { id, sdb } = await get()
-        const { drive } = sdb
-
-
-        const entries = await get_entries()
-
-        await drive.put('entries/entries.json', JSON.stringify(entries))
-
-
-        const sidebar_component = await wrapper({
-            id: 'sidebar',
-            sid: id,
-            ids: { up: 'host' }
-        }, (send) => {
-            return (msg) => {
-                console.log('Host received:', msg)
-            }
-        })
-
-        sidebarEl.appendChild(sidebar_component)
-
-
-        api.on_update(async () => {
-            console.log('Data updated, refreshing sidebar...')
-            const updated_entries = await get_entries()
-            await drive.put('entries/entries.json', JSON.stringify(updated_entries))
-        })
-
-    } catch (err) {
-        console.error('Error initializing news app:', err)
-        mainEl.innerHTML = `<p style="color:red">Error: ${err.message}</p>`
+    if (!subs || subs.length === 0) {
+      console.error('[news/index.js] No active instances found for wrapper')
+      return
     }
+
+    const wrapper_instance = subs[0]
+    const { sid: wrapper_sid } = wrapper_instance
+    console.log('[news/index.js] Retrieved sid for wrapper:', wrapper_sid)
+
+    const sidebar_component = await wrapper({
+      id: 'sidebar',
+      sid: wrapper_sid,
+      ids: { up: id }
+    }, (send) => {
+      return (msg) => {
+        console.log('Host received:', msg)
+      }
+    })
+
+    sidebarEl.appendChild(sidebar_component)
+  } catch (err) {
+    console.error('Error initializing news app:', err)
+    mainEl.innerHTML = `<p style="color:red">Error: ${err.message}</p>`
+  }
 }
 
-function fallback_module() {
+function fallback_module () {
+  function fallback_instance () {
     return {
-        _: {
-            './wrapper': { $: '' }
-        },
-        api: fallback_instance
-    }
-
-    function fallback_instance() {
-        return {
-            _: {
-                './wrapper': { $: '' }
-            },
-            drive: {
-                'entries/': {},
-                'theme/': {}
-            }
+      _: {
+        './wrapper': {
+          0: '',
+          mapping: {
+            theme: 'theme',
+            entries: 'entries',
+            runtime: 'runtime',
+            mode: 'mode',
+            flags: 'flags',
+            keybinds: 'keybinds',
+            undo: 'undo'
+          }
         }
+      },
+      drive: {
+        'entries/': {
+          'entries.json': {
+            $ref: 'entries.json'
+          }
+        },
+        'theme/': {},
+        'runtime/': {},
+        'mode/': {},
+        'flags/': {},
+        'keybinds/': {},
+        'undo/': {}
+      }
     }
+  }
+
+  return {
+    _: {
+      './wrapper': { $: '' }
+    },
+    api: fallback_instance
+  }
 }
+
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
 },{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
+console.log('[DEBUG] wrapper.js running, filename:', __filename)
 const statedb = STATE(__filename)
-statedb.admin()
+
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
 
 module.exports = my_component_with_graph
 
-async function my_component_with_graph(opts, protocol) {
-    const { id, sdb } = await get(opts.sid)
-    const { drive } = sdb
+async function my_component_with_graph (opts, protocol) {
+  const { id, sdb } = await get(opts.sid)
+  const { drive } = sdb
 
-    const ids = opts.ids
-    if (!ids || !ids.up) {
-        // throw new Error(`Component ${__filename} requires ids.up to be provided`)
+  const by = id
+  let db = null
+  let send_to_graph_explorer = null
+  let mid = 0
+
+  const on = {
+    theme: inject,
+    entries: on_entries
+  }
+
+  const el = document.createElement('div')
+  el.style.height = '100%'
+  el.style.width = '100%'
+  const shadow = el.attachShadow({ mode: 'closed' })
+  const sheet = new CSSStyleSheet()
+  shadow.adoptedStyleSheets = [sheet]
+
+  const subs = await sdb.watch(onbatch)
+  const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
+  shadow.append(explorer_el)
+
+  return el
+
+  async function onbatch (batch) {
+    for (const { type, paths } of batch) {
+      const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
+      const valid_data = data.filter(d => d !== null)
+      if (valid_data.length > 0) {
+        on[type] && on[type](valid_data)
+      }
+    }
+  }
+
+  function inject (data) {
+    sheet.replaceSync(data.join('\n'))
+  }
+
+  function on_entries (data) {
+    if (!data || !data[0]) {
+      // console.error('Entries data is missing or empty.')
+      db = graphdb({})
+      notify_db_initialized({})
+      return
     }
 
-    const by = id
-    let db = null
-    let send_to_graph_explorer = null
-    let mid = 0
-
-    const on = {
-        theme: inject,
-        entries: on_entries
+    let parsed_data
+    try {
+      parsed_data = typeof data[0] === 'string' ? JSON.parse(data[0]) : data[0]
+    } catch (e) {
+      console.error('Failed to parse entries data:', e)
+      parsed_data = {}
     }
 
-    const el = document.createElement('div')
-    el.style.height = '100%'
-    el.style.width = '100%'
-    const shadow = el.attachShadow({ mode: 'closed' })
-    const sheet = new CSSStyleSheet()
-    shadow.adoptedStyleSheets = [sheet]
-
-    const subs = await sdb.watch(onbatch)
-    const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
-    shadow.append(explorer_el)
-
-    return el
-
-    async function onbatch(batch) {
-        for (const { type, paths } of batch) {
-            const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
-            const valid_data = data.filter(d => d !== null)
-            if (valid_data.length > 0) {
-                on[type] && on[type](valid_data)
-            }
-        }
+    if (typeof parsed_data !== 'object' || !parsed_data) {
+      console.error('Parsed entries data is not a valid object.')
+      parsed_data = {}
     }
 
-    function inject(data) {
-        sheet.replaceSync(data.join('\n'))
+    db = graphdb(parsed_data)
+    notify_db_initialized(parsed_data)
+  }
+
+  function notify_db_initialized (entries) {
+    if (send_to_graph_explorer) {
+      const head = [by, 'graph_explorer', mid++]
+      send_to_graph_explorer({
+        head,
+        type: 'db_initialized',
+        data: { entries }
+      })
+    }
+  }
+
+  function graph_explorer_protocol (send) {
+    send_to_graph_explorer = send
+    return on_graph_explorer_message
+
+    function on_graph_explorer_message (msg) {
+      const { type } = msg
+      if (type.startsWith('db_')) {
+        handle_db_request(msg, send)
+      }
     }
 
-    function on_entries(data) {
-        if (!data || !data[0]) {
-            // console.error('Entries data is missing or empty.')
-            db = graphdb({})
-            notify_db_initialized({})
-            return
-        }
+    function handle_db_request (request_msg, send) {
+      const { head: request_head, type: operation, data: params } = request_msg
+      let result
 
-        let parsed_data
-        try {
-            parsed_data = typeof data[0] === 'string' ? JSON.parse(data[0]) : data[0]
-        } catch (e) {
-            console.error('Failed to parse entries data:', e)
-            parsed_data = {}
-        }
+      if (!db) {
+        // console.error('[my_component] Database not initialized yet')
+        send_response(request_head, null)
+        return
+      }
 
-        if (typeof parsed_data !== 'object' || !parsed_data) {
-            console.error('Parsed entries data is not a valid object.')
-            parsed_data = {}
-        }
+      if (operation === 'db_get') {
+        result = db.get(params.path)
+      } else if (operation === 'db_has') {
+        result = db.has(params.path)
+      } else if (operation === 'db_is_empty') {
+        result = db.is_empty()
+      } else if (operation === 'db_root') {
+        result = db.root()
+      } else if (operation === 'db_keys') {
+        result = db.keys()
+      } else if (operation === 'db_raw') {
+        result = db.raw()
+      } else {
+        console.warn('[my_component] Unknown db operation:', operation)
+        result = null
+      }
 
-        db = graphdb(parsed_data)
-        notify_db_initialized(parsed_data)
+      send_response(request_head, result)
+
+      function send_response (request_head, result) {
+        const response_head = [by, 'graph_explorer', mid++]
+        send({
+          head: response_head,
+          refs: { cause: request_head },
+          type: 'db_response',
+          data: { result }
+        })
+      }
     }
-
-    function notify_db_initialized(entries) {
-        if (send_to_graph_explorer) {
-            const head = [by, 'graph_explorer', mid++]
-            send_to_graph_explorer({
-                head,
-                type: 'db_initialized',
-                data: { entries }
-            })
-        }
-    }
-
-    function graph_explorer_protocol(send) {
-        send_to_graph_explorer = send
-        return on_graph_explorer_message
-
-        function on_graph_explorer_message(msg) {
-            const { type } = msg
-            if (type.startsWith('db_')) {
-                handle_db_request(msg, send)
-            }
-        }
-
-        function handle_db_request(request_msg, send) {
-            const { head: request_head, type: operation, data: params } = request_msg
-            let result
-
-            if (!db) {
-                // console.error('[my_component] Database not initialized yet')
-                send_response(request_head, null)
-                return
-            }
-
-            if (operation === 'db_get') {
-                result = db.get(params.path)
-            } else if (operation === 'db_has') {
-                result = db.has(params.path)
-            } else if (operation === 'db_is_empty') {
-                result = db.is_empty()
-            } else if (operation === 'db_root') {
-                result = db.root()
-            } else if (operation === 'db_keys') {
-                result = db.keys()
-            } else if (operation === 'db_raw') {
-                result = db.raw()
-            } else {
-                console.warn('[my_component] Unknown db operation:', operation)
-                result = null
-            }
-
-            send_response(request_head, result)
-
-            function send_response(request_head, result) {
-                const response_head = [by, 'graph_explorer', mid++]
-                send({
-                    head: response_head,
-                    refs: { cause: request_head },
-                    type: 'db_response',
-                    data: { result }
-                })
-            }
-        }
-    }
+  }
 }
 
-function fallback_module() {
-    return {
-        _: {
-            'graph-explorer': { $: '' },
-            './graphdb': { $: '' }
-        },
-        api: fallback_instance
-    }
+function fallback_module () {
+  return {
+    _: {
+      'graph-explorer': { $: '' },
+      './graphdb': { $: '' }
+    },
+    api: fallback_instance
+  }
 
-    function fallback_instance() {
-        return {
-            _: {
-                'graph-explorer': {
-                    $: '',
-                    0: '',
-                    mapping: {
-                        style: 'theme',
-                        runtime: 'runtime',
-                        mode: 'mode',
-                        flags: 'flags',
-                        keybinds: 'keybinds',
-                        undo: 'undo'
-                    }
-                },
-                './graphdb': {
-                    $: ''
-                }
-            },
-            drive: {
-                'theme/': {
-                    'style.css': {
-                        raw: `
+  function fallback_instance () {
+    return {
+      _: {
+        'graph-explorer': {
+          0: '',
+          mapping: {
+            style: 'theme',
+            runtime: 'runtime',
+            mode: 'mode',
+            flags: 'flags',
+            keybinds: 'keybinds',
+            undo: 'undo'
+          }
+        },
+        './graphdb': {
+          0: ''
+        }
+      },
+      drive: {
+        'theme/': {
+          'style.css': {
+            raw: `
               :host {
                 display: block;
                 height: 100%;
@@ -3583,54 +3506,109 @@ function fallback_module() {
               .node.type-js-file > .icon::before { content: '📜'; }
               .node.type-file > .icon::before { content: '📄'; }
             `
-                    }
-                },
-                'entries/': {
-                    'entries.json': {
-                        $ref: 'entries.json'
-                    }
-                },
-                'runtime/': {},
-                'mode/': {},
-                'flags/': {},
-                'keybinds/': {},
-                'undo/': {}
-            }
-        }
+          }
+        },
+        'entries/': {
+          'entries.json': {
+            $ref: 'entries.json'
+          }
+        },
+        'runtime/': {},
+        'mode/': {},
+        'flags/': {},
+        'keybinds/': {},
+        'undo/': {}
+      }
     }
+  }
 }
+
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
 },{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
+(function (__filename){(function (){
+localStorage.clear()
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+statedb.admin()
+
+function fallback_module () {
+  return {
+    _: {
+      news: {
+        $: '',
+        0: '',
+        mapping: {
+          entries: 'entries',
+          theme: 'theme',
+          runtime: 'runtime',
+          mode: 'mode',
+          flags: 'flags',
+          keybinds: 'keybinds',
+          undo: 'undo'
+        }
+      }
+    },
+    drive: {
+      'entries/': {},
+      'theme/': {},
+      'runtime/': {},
+      'mode/': {},
+      'flags/': {},
+      'keybinds/': {},
+      'undo/': {}
+    }
+  }
+}
+
+const { sdb } = statedb(fallback_module)
+
 console.log('p2p news app')
 const news = require('news')
 
-// Custom vault object (mock for now, replace with real integration later)
 const customVault = {
-    // Add vault methods here as needed
-    init_blog: async ({ username }) => {
-        console.log('[customVault] init_blog:', username)
-    },
-    get_peer_blogs: async () => {
-        console.log('[customVault] get_peer_blogs')
-        return new Map()
-    },
-    get_my_posts: async () => {
-        console.log('[customVault] get_my_posts')
-        return []
-    },
-    get_profile: async (key) => {
-        console.log('[customVault] get_profile:', key)
-        return null
-    },
-    on_update: (callback) => {
-        console.log('[customVault] on_update registered')
-    }
+  init_blog: async ({ username }) => {
+    console.log('[customVault] init_blog:', username)
+  },
+  get_peer_blogs: async () => {
+    console.log('[customVault] get_peer_blogs')
+    return new Map()
+  },
+  get_my_posts: async () => {
+    console.log('[customVault] get_my_posts')
+    return []
+  },
+  get_profile: async (key) => {
+    console.log('[customVault] get_profile:', key)
+    return null
+  },
+  on_update: (callback) => {
+    console.log('[customVault] on_update registered')
+  }
+}
+
+async function init () {
+  console.log('[page.js] init started')
+
+  const start = await sdb.watch(async (batch) => {
+    console.log('[page.js] sdb watch batch:', batch)
+  })
+
+  console.log('[page.js] Watch returned:', start)
+
+  if (!start || start.length === 0) {
+    console.error('[page.js] No active instances found for news')
+    return
+  }
+
+  const news_instance = start[0]
+  const { sid } = news_instance
+  console.log('[page.js] Retrieved sid for news:', sid)
+
+  const app = await news({ sid, vault: customVault })
+  document.body.append(app)
 }
 
 init().catch(console.error)
 
-async function init() {
-    const app = await news({ sid: 0, vault: customVault })
-    document.body.append(app)
-}
-},{"news":4}]},{},[6]);
+}).call(this)}).call(this,"/web/page.js")
+},{"STATE":1,"news":4}]},{},[6]);
