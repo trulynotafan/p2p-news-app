@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.webapp = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (Buffer){(function (){
 // P2P News App.. Blog application that receives identity (vault) as parameter
 // Exports a single constructor function named blog_app
@@ -706,24 +706,23 @@ const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
 }
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"b4a":3,"buffer":5}],2:[function(require,module,exports){
-/* global vault */
-// Web App UI which receives vault from datashell
-// Authentication handled by setup.js (vault-ui) before this loads
+// webapp-ui receives `uservault` from datashell (after auth)
+// this only runs when user is already authenticated
 
 const blog_app = require('p2p-news-app')
 
-// webapp-ui function, called by datashell with vault parameter
-// User is already authenticated when this runs (setup.js ran first)
-async function webapp_ui(vault, existing_api_result) {
+// Uservault param is injected by datashell as 'vault'
+const uservault = vault
+console.log('[webapp-ui] Starting app with uservault:', uservault)
 
-  // Global state
-  let store
-  let username = localStorage.getItem('username') || ''
+// Global state
+let store
+let username = uservault.username || localStorage.getItem('username') || ''
   let current_view
   let is_ready = false
   let is_joining = false
   let swarm = null
-  let api = existing_api_result?.api || null  // Extract API from pairing result
+  let api = null
   let pairing_manager = null
   let default_relay = null
   
@@ -814,28 +813,6 @@ async function webapp_ui(vault, existing_api_result) {
   // Initialize blog app (called on page load)
   async function init_blog_app() {
     try {
-      // If we already have API from pairing, skip initialization
-      if (api) {
-        console.log('[webapp-ui] Using existing API from pairing')
-        
-        // Get swarm from vault (identity) and set up connection status
-        swarm = vault.get_swarm()
-        setup_connection_status(swarm)
-        
-        // Set up event handlers for the existing API
-        api.on_update(() => {
-          if (current_view) render_view(current_view)
-        })
-        api.on_verification_needed((verification_digits) => {
-          show_view('config')
-        })
-        
-        is_ready = true
-        is_joining = false
-        show_view('news')
-        return
-      }
-
       document.querySelector('.connection-status').textContent = 'Connecting to relay...'
       is_joining = true
 
@@ -843,7 +820,7 @@ async function webapp_ui(vault, existing_api_result) {
       default_relay = get_default_relay()
 
       // Create blog app with vault
-      api = blog_app(vault)
+      api = blog_app(uservault)
 
       function handle_blog_update() {
         if (current_view) render_view(current_view)
@@ -857,14 +834,34 @@ async function webapp_ui(vault, existing_api_result) {
       api.on_update(handle_blog_update)
       api.on_verification_needed(handle_verification_needed)
 
-      // Init blog with relay if set
+      // Init blog with user data
       const init_options = { username }
+      
+      // Check if uservault is in pair mode
+      if (uservault.mode === 'pair' && uservault.invite_code) {
+        init_options.invite_code = uservault.invite_code
+        init_options.on_verification_code_ready = (verification_code) => {
+          document.querySelector('.connection-status').innerHTML = 
+            `🟡 Pairing...<br><strong style="font-size: 1.2em; color: #007bff;">Verification Code: ${verification_code}</strong><br><small>Share this code with Device A</small>`
+        }
+      }
+      
       if (default_relay) init_options.relay = default_relay
+      
       console.log('[webapp-ui] Calling api.init_blog with options:', init_options)
       const result = await api.init_blog(init_options)
       console.log('[webapp-ui] init_blog succeeded, result:', result)
       store = result.store
       swarm = result.swarm
+
+      // Update username if we got it from pairing
+      if (uservault.mode === 'pair') {
+        const pairing_result = api.get_pairing_result()
+        if (pairing_result?.username) {
+          username = pairing_result.username
+          localStorage.setItem('username', username)
+        }
+      }
 
       setup_connection_status(swarm)
 
@@ -1339,14 +1336,10 @@ async function webapp_ui(vault, existing_api_result) {
     }
   })
 
-  // Auto-initialize blog app if already authenticated
+  // Start app initialization
   if (username) {
     init_blog_app()
   }
-}
-
-// Export as async function
-module.exports = webapp_ui
 
 },{"p2p-news-app":1}],3:[function(require,module,exports){
 (function (Buffer){(function (){
@@ -3560,5 +3553,4 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}]},{},[2])(2)
-});
+},{}]},{},[2]);

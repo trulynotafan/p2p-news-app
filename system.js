@@ -1,739 +1,25 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.setup = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (Buffer){(function (){
-// P2P News App.. Blog application that receives identity (vault) as parameter
-// Exports a single constructor function named blog_app
-const b4a = require('b4a')
+// Web system ui, handles authentication 
+// this is system-level UI, not app-specific
+// doesnt load p2p-news-app.
 
-// Blog-specific topic for swarm discovery
-const BLOG_TOPIC = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
-
-module.exports = blog_app
-
-function blog_app (identity) {
-  // identity is the vault object from the identity module
-
-// ============================================================================
-// DATA STRUCTURES, The only place we need to define structures.. 
-// ============================================================================
-// To add a new structure just add ONE line here:
-// - name: identifier for the structure (e.g., 'comments', 'likes', 'media')
-// - namespace: storage namespace (e.g., 'blog-comments', 'chat-messages')
-// - type: 'autobase' for structured data, 'autodrive' for files (Both are multidevice obviously)
-// - encoding: (autobase only) 'json' or something else
-// - view_name: (autobase only) name for the view hypercore
-//
-// The datastructure-manager handles this automatically:
-// registration, initialization, pairing, replication,  writer management
-// ============================================================================
-const STRUCTURES = [
-  { name: 'metadata', namespace: 'blog-metadata', type: 'autobase', encoding: 'json', view_name: 'blog-view' },
-  { name: 'drive', namespace: 'blog-files', type: 'autodrive' },
-  { name: 'profile', namespace: 'blog-profile', type: 'autodrive' },
-  { name: 'events', namespace: 'blog-events', type: 'autodrive' },
-  // ADD NEW STRUCTURES, Just one line. Example:
-  // { name: 'comments', namespace: 'blog-comments', type: 'autodrive' }
-]
-// ============================================================================
-
-// Emitter
-const make_emitter = (state = {}) => ({
-  on: (type, cb) => (state[type] = state[type] || []).push(cb),
-  off: (type, cb) => (state[type] = state[type] || [])[state[type].indexOf(cb)] = undefined,
-  emit: (type, data) => (state[type] = state[type] || []).map(f => f && f(data))
-})
-
-// Global state
-let store, ds_manager, pairing_manager, pairing_result = null
-const discovered_blogs = new Map()
-const peer_relays = new Map() // Store relay URLs for peers
-const autobase_cache = new Map()
-const drive_cache = new Map()
-const emitter = make_emitter()
-
-// Validation
-const validate_blog_init = (entry) => {
-  const { type, data = {} } = entry || {}
-  return type === 'blog-init' &&
-         typeof data.username === 'string' &&
-         typeof data.title === 'string' &&
-         typeof data.drive_key === 'string'
-}
-
-const validate_blog_post = (entry) => {
-  const { type, data = {} } = entry || {}
-  return type === 'blog-post' &&
-         typeof data.filepath === 'string' &&
-         typeof data.created === 'number'
-}
-
-// LocalStorage helpers
-const get_subscribed_peers = () => {
-  try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
-}
-
-const add_subscribed_peer = (key) => {
-  const peers = get_subscribed_peers()
-  if (!peers.includes(key)) {
-    peers.push(key)
-    localStorage.setItem('subscribed_peers', JSON.stringify(peers))
-  }
-}
-
-const remove_subscribed_peer = (key) => {
-  localStorage.setItem('subscribed_peers', JSON.stringify(
-    get_subscribed_peers().filter(k => k !== key)
-  ))
-}
-
-// Store relay URL for a peer (called from protocol exchange)
-const set_peer_relay = (key, relay_url) => {
-  if (relay_url) peer_relays.set(key, relay_url)
-}
-
-// Setup peer autobase
-const setup_peer_autobase = async (key, key_buffer) => {
-  // Check if already exists
-  if (autobase_cache.has(key)) return autobase_cache.get(key)
-  
-  // Use datastructure-manager to create peer metadata autobase
-  const peer_autobase = await ds_manager.create_peer_structure('metadata', key, key_buffer, store)
-
-  // Wait for data if empty
-  if (peer_autobase.view.length === 0) {
-    await new Promise(resolve => peer_autobase.once('update', resolve))
-  }
-
-  const handle_peer_autobase_update = async () => {
-    if (peer_autobase.view.length > 0) {
-      try {
-        const init_raw_data = await peer_autobase.view.get(0)
-        const init_entry = JSON.parse(init_raw_data)
-        
-        if (validate_blog_init(init_entry)) {
-          discovered_blogs.set(key, {
-            username: init_entry.data.username,
-            title: init_entry.data.title,
-            drive_key: init_entry.data.drive_key,
-            relay_url: peer_relays.get(key) || null
-          })
-          
-          // Setup peer drive
-          if (!drive_cache.has(key) && init_entry.data.drive_key) {
-            const drive_key_buffer = b4a.from(init_entry.data.drive_key, 'hex')
-            const peer_drive = await ds_manager.create_peer_structure('drive', key, drive_key_buffer, store)
-            drive_cache.set(key, peer_drive)
-          }
-          
-          emitter.emit('update')
-        }
-      } catch (err) {
-        console.error('[setup_peer_autobase] Error processing update:', err)
-      }
-    }
-  }
-
-  peer_autobase.on('update', handle_peer_autobase_update)
-  await handle_peer_autobase_update()
-  
-  autobase_cache.set(key, peer_autobase)
-  return peer_autobase
-}
-
-// Restore subscribed peers
-const restore_subscribed_peers = () => {
-  if (!store) return
-  
-  const handle_peer_key = async (key) => {
-    try {
-      const key_buffer = b4a.from(key, 'hex')
-      await setup_peer_autobase(key, key_buffer)
-    } catch (err) {
-      console.error('Error restoring peer:', err)
-    }
-  }
-  
-  get_subscribed_peers().forEach(handle_peer_key)
-}
-
-// Initialize blog
-const init_blog = async (options) => {
-  const { username, invite_code, relay, offline_mode, on_verification_code_ready } = options
-  
-  const peer_name = invite_code ? 'joining-user' : username
-  const networking_options = {
-    name: peer_name,
-    store_name: `blogs-${peer_name}`,
-    topic: BLOG_TOPIC,
-    get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
-    get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
-    relay,
-    offline_mode
-  }
-  
-  const { store: _store, swarm: _swarm, dht, cleanup } = await identity.start_networking(networking_options)
-  
-  store = _store
-  const swarm_instance = _swarm
-  
-  // Set swarm in identity for app access
-  identity.set_swarm(swarm_instance)
-  
-  // Create datastructure manager from identity
-  ds_manager = identity.create_ds_manager()
-  
-  // Set ds_manager in identity for dynamic raw data access
-  identity.set_ds_manager(ds_manager)
-  
-  // Register all structures 
-  for (const config of STRUCTURES) {
-    ds_manager.register({ ...config, store })
-  }
-
-  // JOINING EXISTING BLOG - All keys received from pairing
-  if (invite_code) {
-    // join_with_invite_and_init already initializes ALL structures with keys from pairing
-    const result = await ds_manager.join_with_invite_and_init(
-      invite_code, 
-      swarm_instance,
-      store,
-      on_verification_code_ready
-    )
-    pairing_result = result  // Store for later retrieval
-    
-    const metadata = ds_manager.get('metadata')
-    const drive = ds_manager.get('drive')
-    const profile_drive = ds_manager.get('profile')
-    const events_drive = ds_manager.get('events')
-    
-    // Wait for all structures to be ready
-    await Promise.all([
-      metadata.ready(),
-      drive.ready(),
-      profile_drive.ready(),
-      events_drive.ready()
-    ])
-    
-    // Download content
-    await metadata.update()
-    await drive.download('/')
-    await profile_drive.download('/')
-    
-    // Setup identity events drive (for device management only)
-    identity.set_events_drive(events_drive, ds_manager.get_store('events'))
-    
-    // Setup event handlers
-    store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
-      if (key === ds_manager.get_key('metadata')) return
-      if (relay_url) set_peer_relay(key, relay_url)
-      if (autobase_cache.has(key)) return
-      await setup_peer_autobase(key, key_buffer)
-    })
-
-    metadata.on('update', () => emitter.emit('update'))
-    restore_subscribed_peers()
-    
-    return { store, swarm: swarm_instance }
-  }
-  
-  // CREATING NEW BLOG - using the ds_manager
-  const instances = await ds_manager.init_all()
-  const metadata = instances.metadata
-  
-  // Write blog initialization entry
-  await metadata.append({
-    type: 'blog-init',
-    data: {
-      username,
-      title: `${username}'s Blog`,
-      drive_key: ds_manager.get_key('drive')
-    }
-  })
-  
-  // Setup identity (profile and events already initialized by init_all)
-  const profile_drive = instances.profile
-  const events_drive = instances.events
-  
-  await profile_drive.ready()
-  await events_drive.ready()
-  
-  // Setup identity events drive (for device management only)
-  identity.set_events_drive(events_drive, ds_manager.get_store('events'))
-  
-  await create_default_profile(username)
-  
-  // Log bootstrap device with ALL structure writer keys (also dynamic)
-  const device_keys = {}
-  for (const name of ds_manager.get_names()) {
-    const structure = ds_manager.get(name)
-    const config = ds_manager.get_config(name)
-    
-    let writer_key = null
-    if (config.type === 'autobase') {
-      // For autobase: structure.local.key
-      writer_key = structure.local?.key
-    } else if (config.type === 'autodrive') {
-      // For autodrive: structure.base.local.key
-      writer_key = structure.base?.local?.key
-    }
-    
-    if (writer_key) {
-      device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
-    } else {
-      console.warn(`[blog-helpers] No writer key found for structure: ${name}`)
-    }
-  }
-  
-  // Device keys initialized
-  
-  // Only log device if it doesn't already exist (prevent duplicates on refresh)
-  const existing_devices = await get_paired_devices()
-  const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
-  
-  if (!device_exists) {
-    await log_event('add', device_keys)
-  }
-  
-  // Write ALL structure keys to metadata (dynamic!)
-  const all_structure_keys = {}
-  for (const name of ds_manager.get_names()) {
-    // Skip metadata and drive (already shared via pairing)
-    if (name !== 'metadata' && name !== 'drive') {
-      all_structure_keys[`${name}_key`] = ds_manager.get_key(name)
-    }
-  }
-  
-  await metadata.append({
-    type: 'blog-init-extended',
-    data: all_structure_keys
-  })
-
-  // Setup event handlers
-  store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
-    if (key === ds_manager.get_key('metadata')) return
-    if (relay_url) set_peer_relay(key, relay_url)
-    if (autobase_cache.has(key)) return
-    await setup_peer_autobase(key, key_buffer)
-  })
-
-  metadata.on('update', () => emitter.emit('update'))
-  
-  restore_subscribed_peers()
-  
-  return { store, swarm: swarm_instance }
-}
-
-// Create post
-const create_post = async (title, content) => {
-  const drive = ds_manager.get('drive')
-  const metadata = ds_manager.get('metadata')
-  
-  const created = Date.now()
-  const filepath = `/posts/${created}.json`
-  const post_data = { title, content, created }
-  
-  await drive.put(filepath, Buffer.from(JSON.stringify(post_data)))
-  await metadata.append({
-    type: 'blog-post',
-    data: { filepath, created }
-  })
-}
-
-// Profile management (app-specific, not in identity)
-const create_default_profile = async (username) => {
-  const profile_drive = ds_manager.get('profile')
-  
-  // use the profile pic if it exists
-  if (await profile_drive.get('/profile.json')) return
-  
-  const default_avatar = `<svg><text x="50%" y="50%" font-size="120" text-anchor="middle" dominant-baseline="middle">👤</text></svg>`
-  
-  await profile_drive.put('/avatar.svg', b4a.from(default_avatar))
-  await profile_drive.put('/profile.json', b4a.from(JSON.stringify({
-    name: username,
-    avatar: '/avatar.svg'
-  })))
-}
-
-const upload_avatar = async (imageData, filename) => {
-  const profile_drive = ds_manager.get('profile')
-  if (!profile_drive) {
-    throw new Error('Profile drive not initialized')
-  }
-  
-  // Get file extension from filename
-  const ext = filename.split('.').pop().toLowerCase()
-  const avatar_path = `/avatar.${ext}`
-  
-  // Store the image file
-  await profile_drive.put(avatar_path, b4a.from(imageData))
-  
-  // Update profile.json to point to the new avatar
- const profile = await get_profile()
-  const updated_profile = {
-    ...profile,
-    avatar: avatar_path
-  }
-  
-  await profile_drive.put('/profile.json', b4a.from(JSON.stringify(updated_profile)))
-  emitter.emit('update')
-}
-
-const get_profile = async (profile_key = null) => {
-  // If string key passed, ignore it
-  if (typeof profile_key === 'string') return null
-  
-  const profile_drive = ds_manager.get('profile')
-  if (!profile_drive) return null
-  
-  try {
-    await profile_drive.ready()  
-    const profile_data = await profile_drive.get('/profile.json')
-    if (!profile_data) return null
-    return JSON.parse(b4a.toString(profile_data))
-  } catch (err) {
-    console.error('Error getting profile:', err)
-    return null
-  }
-}
-
-const get_avatar_content = async (profile_key = null) => {
-  const profile_drive = ds_manager.get('profile')
-  if (!profile_drive) return null
-  
-  try {
-    await profile_drive.ready()
-    
-    // Get profile to find avatar path
-    const profile = await get_profile(profile_key)
-    if (!profile || !profile.avatar) return null
-    
-    const avatar_data = await profile_drive.get(profile.avatar)
-    if (!avatar_data) return null
-    
-    // For SVG files, return as text
-    if (profile.avatar.endsWith('.svg')) {
-      return b4a.toString(avatar_data)
-    }
-    
-    // For image files, return as data URL
-    const ext = profile.avatar.split('.').pop().toLowerCase()
-    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
-    const base64 = b4a.toString(avatar_data, 'base64')
-    return `data:${mimeType};base64,${base64}`
-  } catch (err) {
-    return null
-  }
-}
-
-// Device/pairing management (delegates to identity with events_drive)
-const log_event = async (type, data) => {
-  const events_drive = ds_manager.get('events')
-  return identity.log_event(events_drive, type, data)
-}
-
-const get_paired_devices = async () => {
-  const events_drive = ds_manager.get('events')
-  return identity.get_paired_devices(events_drive)
-}
-
-const remove_device = async (device) => {
-  const events_drive = ds_manager.get('events')
-  return identity.remove_device(events_drive, device)
-}
-
-const get_raw_data = async (structure_name) => {
-  return identity.get_raw_data(structure_name)
-}
-
-// Subscribe to peer
-const subscribe = async (key) => {
-  if (!key || typeof key !== 'string') return false
-  
-  const my_key = ds_manager.get_key('metadata')
-  if (key === my_key) return false
-  
-  try {
-    const key_buffer = b4a.from(key, 'hex')
-    await setup_peer_autobase(key, key_buffer)
-    add_subscribed_peer(key)
-    emitter.emit('update')
-    return true
-  } catch (err) {
-    console.error('Subscribe error:', err)
-    return false
-  }
-}
-
-// Unsubscribe
-const unsubscribe = async (key) => {
-  remove_subscribed_peer(key)
-  
-  const peer_autobase = autobase_cache.get(key)
-  if (peer_autobase) {
-    await peer_autobase.close()
-    autobase_cache.delete(key)
-  }
-  
-  const peer_drive = drive_cache.get(key)
-  if (peer_drive) {
-    await peer_drive.close()
-    drive_cache.delete(key)
-  }
-  
-  // Keep in discovered_blogs so it shows in "Discovered Peers" again
-  emitter.emit('update')
-}
-
-// Get blog username
-const get_blog_username = async () => {
-  if (!ds_manager) return null
-  const metadata = ds_manager.get('metadata')
-  if (!metadata || !metadata.view || metadata.view.length === 0) return null
-  
-  try {
-    const init_raw = await metadata.view.get(0)
-    const init_entry = JSON.parse(init_raw)
-    return validate_blog_init(init_entry) ? init_entry.data.username : null
-  } catch {
-    return null
-  }
-}
-
-// Get blog drive keys
-const get_blog_drive_key = async (key_name) => {
-  const metadata = ds_manager.get('metadata')
-  if (!metadata || metadata.view.length < 2) return null
-  
-  try {
-    const extended_raw = await metadata.view.get(1)
-    const extended_entry = JSON.parse(extended_raw)
-    return extended_entry.data?.[key_name] || null
-  } catch {
-    return null
-  }
-}
-
-const get_blog_profile_drive_key = () => get_blog_drive_key('profile_drive_key')
-const get_blog_events_drive_key = () => get_blog_drive_key('events_drive_key')
-
-// Get posts
-const get_posts = async (key = null) => {
-  const target_key = key || ds_manager.get_key('metadata')
-  const is_my_blog = !key || key === ds_manager.get_key('metadata')
-  
-  const metadata = is_my_blog ? ds_manager.get('metadata') : autobase_cache.get(target_key)
-  const drive = is_my_blog ? ds_manager.get('drive') : drive_cache.get(target_key)
-  
-  if (!metadata || !drive) return []
-  if (!metadata.view || !metadata.view.length) return []
-  
-  const posts = []
-  
-  for (let i = 0; i < metadata.view.length; i++) {
-    try {
-      const raw = await metadata.view.get(i)
-      const entry = JSON.parse(raw)
-      
-      if (validate_blog_post(entry)) {
-        const post_buffer = await drive.get(entry.data.filepath)
-        if (post_buffer) {
-          const post = JSON.parse(post_buffer.toString())
-          posts.push(post)
-        }
-      }
-    } catch (err) {
-      console.error('Error reading post:', err)
-    }
-  }
-  
-  return posts.sort((a, b) => b.created - a.created)
-}
-
-const get_my_posts = () => get_posts()
-
-// Get peer blogs
-const get_peer_blogs = async () => {
-  const blogs = new Map()
-  
-  for (const key of get_subscribed_peers()) {
-    const blog_data = discovered_blogs.get(key)
-    if (blog_data) {
-      const posts = await get_posts(key)
-      blogs.set(key, { ...blog_data, posts })
-    }
-  }
-  
-  return blogs
-}
-
-// Create invite - Use universal API
-const create_invite = async () => {
-  const swarm = identity.get_swarm()
-  const drive = ds_manager.get('drive')
-  
-  // Close previous pairing session if it exists
-  if (pairing_manager) {
-    await pairing_manager.close()
-    pairing_manager = null
-  }
-  
-  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive')
-  
-  // Store pairing_manager for later use (always update to the new one)
-  pairing_manager = pm
-  
-  // Get username from profile (using blog app's get_profile, not identity)
-  const profile = await get_profile()
-  const blog_username = profile?.name || 'Unknown'
-  
-  // Setup member to handle pairing requests
-  await pm.setup_member({
-    primary_discovery_key: drive.base.discoveryKey,
-    invite,
-    username: blog_username,
-    on_verification_needed: (verification_digits) => {
-      // Emit event so UI can show input box with the digits to verify
-      emitter.emit('verification_needed', verification_digits)
-    },
-    on_paired: async (writer_keys) => {
-      // Convert writer_keys from namespace format to structure_name_writer format
-      const device_keys = {}
-      for (const name of ds_manager.get_names()) {
-        const config = ds_manager.get_config(name)
-        if (writer_keys[config.namespace]) {
-          device_keys[`${name}_writer`] = writer_keys[config.namespace]
-        }
-      }
-      
-      // Log device add event with proper format
-      await log_event('add', device_keys)
-      emitter.emit('update')
-    }
-  })
-  
-  return { invite_code, pairing_manager: pm }
-}
-
-// Verify and complete pairing
-const verify_pairing = async (entered_code) => {
-  if (!pairing_manager) {
-    throw new Error('No pairing manager available')
-  }
-  
-  const result = await pairing_manager.verify_and_complete_pairing({
-    entered_verification_code: entered_code,
-    username: await get_blog_username(),
-    on_paired: () => {
-      emitter.emit('update')
-    }
-  })
-  
-  // Return result with multiple attempts info
-  return result
-}
-
-// Deny pairing
-const deny_pairing = () => {
-  if (!pairing_manager) {
-    throw new Error('No pairing manager available')
-  }
-  
-  pairing_manager.deny_pairing()
-  emitter.emit('update')
-}
-
-// Getters
-const get_drive = () => ds_manager ? ds_manager.get('drive') : null
-const get_profile_drive = () => ds_manager ? ds_manager.get('profile') : null
-const get_autobase_key = () => ds_manager ? ds_manager.get_key('metadata') : null
-const get_autobase = () => ds_manager ? ds_manager.get('metadata') : null
-const get_metadata_store = () => ds_manager ? ds_manager.get_store('metadata') : null
-const get_drive_store = () => ds_manager ? ds_manager.get_store('drive') : null
-const get_profile_store = () => ds_manager ? ds_manager.get_store('profile') : null
-const get_events_store = () => ds_manager ? ds_manager.get_store('events') : null
-const get_local_key = () => {
-  const metadata = ds_manager.get('metadata')
-  return metadata ? b4a.toString(metadata.local.key, 'hex') : null
-}
-const get_discovered_blogs = () => discovered_blogs
-const get_pairing_result = () => pairing_result
-const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
-
-  // Return the blog app API
-  const api = {
-    init_blog,
-    create_post,
-    create_invite,
-    verify_pairing,
-    deny_pairing,
-    subscribe,
-    unsubscribe,
-    get_blog_username,
-    get_blog_profile_drive_key,
-    get_blog_events_drive_key,
-    get_my_posts,
-    get_peer_blogs,
-    // Profile management
-    get_profile,
-    get_avatar_content,
-    upload_avatar,
-    create_default_profile,
-    // Device/pairing management
-    log_event,
-    get_paired_devices,
-    remove_device,
-    get_raw_data,
-    // Relay management
-    set_peer_relay,
-    // Other getters
-    get_local_key,
-    get_drive,
-    get_profile_drive,
-    get_autobase_key,
-    get_autobase,
-    get_metadata_store,
-    get_drive_store,
-    get_profile_store,
-    get_events_store,
-    get_discovered_blogs,
-    get_pairing_result,
-    get_structure_names,
-    on_update: (cb) => emitter.on('update', cb),
-    on_verification_needed: (cb) => emitter.on('verification_needed', cb)
-  }
-  
-  return api
-}
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"b4a":3,"buffer":5}],2:[function(require,module,exports){
-(function (Buffer){(function (){
-/* global vault */
-// Vault UI - Handles initial authentication (Seed/Pair/Load)
-// Loaded as standalone bundle by datashell
-// Receives vault parameter from datashell via async function
-
-const blog_app = require('p2p-news-app')
-
-// This function is called by datashell with vault parameter
-async function setup(vault) {
-  // Note: datashell already checked authentication, so we always show UI here
-
-  // Show authentication UI
-  const container = document.createElement('div')
-  container.className = 'vault-ui'
+// show authentication UI
+const container = document.createElement('div')
+container.className = 'system-ui'
   container.innerHTML = `
     <div class="login">
-      <h3>P2P News App</h3>
+      <h3>System Authentication</h3>
       <div class="make-form" style="display: none; margin-top: 10px;">
         <button class="back-btn" style="margin-bottom: 5px;">← Back</button><br>
         <input class="username-input" placeholder="Your Name">
-        <button class="make-network-btn">Create Blog</button>
+        <button class="make-network-btn">Create Account</button>
       </div>
       <div class="join-form" style="display: none; margin-top: 10px;">
         <button class="back-btn" style="margin-bottom: 5px;">← Back</button><br>
         <input class="invite-code-input" placeholder="Paste invite code here" style="width: 300px; margin-bottom: 5px;">
         <br>
-        <button class="join-with-invite-btn">Join with Invite</button>
+        <button class="join-with-invite-btn">Pair Device</button>
       </div>
       <div class="load-form" style="display: none; margin-top: 10px;">
         <button class="back-btn" style="margin-bottom: 5px;">← Back</button><br>
@@ -751,360 +37,152 @@ async function setup(vault) {
   `
   document.body.appendChild(container)
 
-  // Return a promise that resolves when authenticated
-  return new Promise((resolve, reject) => {
-    let api = null
+  // Seed: Create new account
+  async function handle_seed() {
+    const username = container.querySelector('.username-input').value.trim()
+    if (!username) return alert('Please enter your name.')
 
-    // Seed: Create new blog
-    async function handle_seed() {
-      const user = container.querySelector('.username-input').value.trim()
-      if (!user) return alert('Please enter your name.')
-
-      try {
-        container.querySelector('.status').textContent = 'Creating blog...'
-        
-        // Create blog app
-        api = blog_app(vault)
-        await api.init_blog({ username: user })
-        
-        // Save username
-        localStorage.setItem('username', user)
-        
-        // Remove UI and resolve promise to continue to webapp-ui
-        document.body.removeChild(container)
-        resolve({ 
-          authenticated: true, 
-          username: user, 
-          mode: 'seed',
-          api 
-        })
-      } catch (err) {
-        container.querySelector('.status').textContent = 'Error: ' + err.message
-        console.error('[vault-ui] Seed error:', err)
-      }
-    }
-
-    // Pair: Join existing blog
-    async function handle_pair() {
-      const invite_code = container.querySelector('.invite-code-input').value.trim()
-      if (!invite_code) return alert('Please enter an invite code.')
-
-      // Validate invite code
-      try {
-        const decoded = Buffer.from(invite_code, 'base64')
-        if (decoded.length < 32) {
-          return alert('Invite code is too short. Make sure you copied the entire code.')
-        }
-      } catch (err) {
-        return alert('Invalid invite code format. Make sure you copied it correctly.')
-      }
-
-      try {
-        container.querySelector('.status').textContent = 'Pairing...'
-        
-        // Create blog app
-        api = blog_app(vault)
-        
-        // Join with invite
-        await api.init_blog({
-          username: 'joining-user',
-          invite_code: invite_code,
-          on_verification_code_ready: (verification_code) => {
-            container.querySelector('.status').innerHTML = 
-              `🟡 Pairing...<br><strong style="font-size: 1.2em; color: #007bff;">Verification Code: ${verification_code}</strong><br><small>Share this code with Device A</small>`
-          }
-        })
-        
-        // Get username from pairing result
-        const pairing_result = api.get_pairing_result()
-        const username = pairing_result?.username || 'User'
-        
-        // Save username
-        localStorage.setItem('username', username)
-        
-        // Remove UI and resolve promise to continue to webapp-ui
-        document.body.removeChild(container)
-        resolve({ 
-          authenticated: true, 
-          username: username, 
-          mode: 'pair',
-          api 
-        })
-      } catch (err) {
-        let error_msg = err.message
-        
-        if (error_msg.includes('Pairing denied by user')) {
-          alert('Pairing was denied by Main Device. Click OK to restart.')
-          await handle_reset_all_data()
-          return
-        }
-        
-        if (error_msg.includes('Pairing rejected')) {
-          error_msg = 'Pairing rejected: Verification code does not match.'
-        } else if (error_msg.includes('Unknown invite version')) {
-          error_msg = 'Invite code is corrupted or incomplete.'
-        }
-        
-        container.querySelector('.status').textContent = '🔴 Error: ' + error_msg
-        console.error('[vault-ui] Pair error:', err)
-      }
-    }
-
-    // Load: Restore from mnemonic (NOT IMPLEMENTED YET)
-    function handle_load() {
-      const mnemonic = container.querySelector('.mnemonic-input').value.trim()
-      if (!mnemonic) return alert('Please enter a mnemonic phrase.')
-      alert('Load from mnemonic is not implemented yet.')
-      console.log('[vault-ui] Load mnemonic:', mnemonic)
-    }
-
-    // Reset all data
-    async function handle_reset_all_data() {
-      if (!confirm('Delete all data?')) return
+    try {
+      container.querySelector('.status').textContent = 'Creating account...'
       
-      try {
-        localStorage.clear()
-        const databases = await window.indexedDB.databases()
-        for (const db of databases) {
-          if (db.name && (db.name.includes('blogs-') || db.name.includes('random-access-web') || db.name.includes('identity-'))) {
-            window.indexedDB.deleteDatabase(db.name)
-          }
-        }
-        window.location.reload()
-      } catch (err) {
-        alert('Reset error: ' + err.message)
+      // Save username to localStorage (temporary - should use vault storage)
+      localStorage.setItem('username', username)
+      localStorage.setItem('auth_mode', 'seed')
+      
+      // Remove UI
+      document.body.removeChild(container)
+      
+      // Authenticate via vault
+      await vault.authenticate({ 
+        username: username, 
+        mode: 'seed'
+      })
+    } catch (err) {
+      container.querySelector('.status').textContent = 'Error: ' + err.message
+    }
+  }
+
+  // Pair: Join existing account
+  async function handle_pair() {
+    const invite_code = container.querySelector('.invite-code-input').value.trim()
+    if (!invite_code) return alert('Please enter an invite code.')
+
+    // Validate invite code
+    try {
+      const decoded = Buffer.from(invite_code, 'base64')
+      if (decoded.length < 32) {
+        return alert('Invite code is too short. Make sure you copied the entire code.')
       }
+    } catch (err) {
+      return alert('Invalid invite code format. Make sure you copied it correctly.')
     }
 
-    // Event listeners
-    container.querySelector('.make-btn').addEventListener('click', () => {
-      container.querySelector('.initial-buttons').style.display = 'none'
-      container.querySelector('.make-form').style.display = 'block'
-    })
-    
-    container.querySelector('.join-btn').addEventListener('click', () => {
-      container.querySelector('.initial-buttons').style.display = 'none'
-      container.querySelector('.join-form').style.display = 'block'
-    })
-    
-    container.querySelector('.load-btn').addEventListener('click', () => {
-      container.querySelector('.initial-buttons').style.display = 'none'
-      container.querySelector('.load-form').style.display = 'block'
-    })
-    
-    container.querySelectorAll('.back-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.make-form, .join-form, .load-form').forEach(form => {
-          form.style.display = 'none'
-        })
-        container.querySelector('.initial-buttons').style.display = 'block'
+    try {
+      container.querySelector('.status').textContent = 'Pairing...'
+      
+      // Store invite code for app to use
+      localStorage.setItem('pending_invite_code', invite_code)
+      localStorage.setItem('auth_mode', 'pair')
+      
+      // For now, use placeholder username
+      const username = 'pairing-user'
+      localStorage.setItem('username', username)
+      
+      // Remove UI
+      document.body.removeChild(container)
+      
+      // Authenticate via vault
+      await vault.authenticate({ 
+        username: username, 
+        mode: 'pair',
+        invite_code: invite_code
       })
-    })
+    } catch (err) {
+      let error_msg = err.message
+      
+      if (error_msg.includes('Pairing denied by user')) {
+        alert('Pairing was denied by Main Device. Click OK to restart.')
+        await handle_reset_all_data()
+        return
+      }
+      
+      if (error_msg.includes('Pairing rejected')) {
+        error_msg = 'Pairing rejected: Verification code does not match.'
+      } else if (error_msg.includes('Unknown invite version')) {
+        error_msg = 'Invite code is corrupted or incomplete.'
+      }
+      
+      container.querySelector('.status').textContent = '🔴 Error: ' + error_msg
+    }
+  }
+
+  // Load: Restore from mnemonic (NOT IMPLEMENTED YET)
+  function handle_load() {
+    const mnemonic = container.querySelector('.mnemonic-input').value.trim()
+    if (!mnemonic) return alert('Please enter a mnemonic phrase.')
+    alert('Load from mnemonic is not implemented yet.')
+  }
+
+  // Reset all data
+  async function handle_reset_all_data() {
+    if (!confirm('Delete all data?')) return
     
-    container.querySelector('.make-network-btn').addEventListener('click', handle_seed)
-    container.querySelector('.join-with-invite-btn').addEventListener('click', handle_pair)
-    container.querySelector('.load-mnemonic-btn').addEventListener('click', handle_load)
-    container.querySelector('.reset-all-btn').addEventListener('click', handle_reset_all_data)
+    try {
+      localStorage.clear()
+      const databases = await window.indexedDB.databases()
+      for (const db of databases) {
+        if (db.name && (db.name.includes('blogs-') || db.name.includes('random-access-web') || db.name.includes('identity-'))) {
+          window.indexedDB.deleteDatabase(db.name)
+        }
+      }
+      window.location.reload()
+    } catch (err) {
+      alert('Reset error: ' + err.message)
+    }
+  }
+
+  // Event listeners
+  container.querySelector('.make-btn').addEventListener('click', () => {
+    container.querySelector('.initial-buttons').style.display = 'none'
+    container.querySelector('.make-form').style.display = 'block'
   })
-}
-
-// Export the setup function for datashell
-module.exports = setup
-
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":5,"p2p-news-app":1}],3:[function(require,module,exports){
-(function (Buffer){(function (){
-function isBuffer(value) {
-  return Buffer.isBuffer(value) || value instanceof Uint8Array
-}
-
-function isEncoding(encoding) {
-  return Buffer.isEncoding(encoding)
-}
-
-function alloc(size, fill, encoding) {
-  return Buffer.alloc(size, fill, encoding)
-}
-
-function allocUnsafe(size) {
-  return Buffer.allocUnsafe(size)
-}
-
-function allocUnsafeSlow(size) {
-  return Buffer.allocUnsafeSlow(size)
-}
-
-function byteLength(string, encoding) {
-  return Buffer.byteLength(string, encoding)
-}
-
-function compare(a, b) {
-  return Buffer.compare(a, b)
-}
-
-function concat(buffers, totalLength) {
-  return Buffer.concat(buffers, totalLength)
-}
-
-function copy(source, target, targetStart, start, end) {
-  return toBuffer(source).copy(target, targetStart, start, end)
-}
-
-function equals(a, b) {
-  return toBuffer(a).equals(b)
-}
-
-function fill(buffer, value, offset, end, encoding) {
-  return toBuffer(buffer).fill(value, offset, end, encoding)
-}
-
-function from(value, encodingOrOffset, length) {
-  return Buffer.from(value, encodingOrOffset, length)
-}
-
-function includes(buffer, value, byteOffset, encoding) {
-  return toBuffer(buffer).includes(value, byteOffset, encoding)
-}
-
-function indexOf(buffer, value, byfeOffset, encoding) {
-  return toBuffer(buffer).indexOf(value, byfeOffset, encoding)
-}
-
-function lastIndexOf(buffer, value, byteOffset, encoding) {
-  return toBuffer(buffer).lastIndexOf(value, byteOffset, encoding)
-}
-
-function swap16(buffer) {
-  return toBuffer(buffer).swap16()
-}
-
-function swap32(buffer) {
-  return toBuffer(buffer).swap32()
-}
-
-function swap64(buffer) {
-  return toBuffer(buffer).swap64()
-}
-
-function toBuffer(buffer) {
-  if (Buffer.isBuffer(buffer)) return buffer
-  return Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength)
-}
-
-function toString(buffer, encoding, start, end) {
-  return toBuffer(buffer).toString(encoding, start, end)
-}
-
-function write(buffer, string, offset, length, encoding) {
-  return toBuffer(buffer).write(string, offset, length, encoding)
-}
-
-function readDoubleBE(buffer, offset) {
-  return toBuffer(buffer).readDoubleBE(offset)
-}
-
-function readDoubleLE(buffer, offset) {
-  return toBuffer(buffer).readDoubleLE(offset)
-}
-
-function readFloatBE(buffer, offset) {
-  return toBuffer(buffer).readFloatBE(offset)
-}
-
-function readFloatLE(buffer, offset) {
-  return toBuffer(buffer).readFloatLE(offset)
-}
-
-function readInt32BE(buffer, offset) {
-  return toBuffer(buffer).readInt32BE(offset)
-}
-
-function readInt32LE(buffer, offset) {
-  return toBuffer(buffer).readInt32LE(offset)
-}
-
-function readUInt32BE(buffer, offset) {
-  return toBuffer(buffer).readUInt32BE(offset)
-}
-
-function readUInt32LE(buffer, offset) {
-  return toBuffer(buffer).readUInt32LE(offset)
-}
-
-function writeDoubleBE(buffer, value, offset) {
-  return toBuffer(buffer).writeDoubleBE(value, offset)
-}
-
-function writeDoubleLE(buffer, value, offset) {
-  return toBuffer(buffer).writeDoubleLE(value, offset)
-}
-
-function writeFloatBE(buffer, value, offset) {
-  return toBuffer(buffer).writeFloatBE(value, offset)
-}
-
-function writeFloatLE(buffer, value, offset) {
-  return toBuffer(buffer).writeFloatLE(value, offset)
-}
-
-function writeInt32BE(buffer, value, offset) {
-  return toBuffer(buffer).writeInt32BE(value, offset)
-}
-
-function writeInt32LE(buffer, value, offset) {
-  return toBuffer(buffer).writeInt32LE(value, offset)
-}
-
-function writeUInt32BE(buffer, value, offset) {
-  return toBuffer(buffer).writeUInt32BE(value, offset)
-}
-
-function writeUInt32LE(buffer, value, offset) {
-  return toBuffer(buffer).writeUInt32LE(value, offset)
-}
-
-module.exports = {
-  isBuffer,
-  isEncoding,
-  alloc,
-  allocUnsafe,
-  allocUnsafeSlow,
-  byteLength,
-  compare,
-  concat,
-  copy,
-  equals,
-  fill,
-  from,
-  includes,
-  indexOf,
-  lastIndexOf,
-  swap16,
-  swap32,
-  swap64,
-  toBuffer,
-  toString,
-  write,
-  readDoubleBE,
-  readDoubleLE,
-  readFloatBE,
-  readFloatLE,
-  readInt32BE,
-  readInt32LE,
-  readUInt32BE,
-  readUInt32LE,
-  writeDoubleBE,
-  writeDoubleLE,
-  writeFloatBE,
-  writeFloatLE,
-  writeInt32BE,
-  writeInt32LE,
-  writeUInt32BE,
-  writeUInt32LE
-}
+  
+  container.querySelector('.join-btn').addEventListener('click', () => {
+    container.querySelector('.initial-buttons').style.display = 'none'
+    container.querySelector('.join-form').style.display = 'block'
+  })
+  
+  container.querySelector('.load-btn').addEventListener('click', () => {
+    container.querySelector('.initial-buttons').style.display = 'none'
+    container.querySelector('.load-form').style.display = 'block'
+  })
+  
+  container.querySelectorAll('.back-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.make-form, .join-form, .load-form').forEach(form => {
+        form.style.display = 'none'
+      })
+      container.querySelector('.initial-buttons').style.display = 'block'
+    })
+  })
+  
+  container.querySelector('.make-network-btn').addEventListener('click', handle_seed)
+  container.querySelector('.join-with-invite-btn').addEventListener('click', handle_pair)
+  container.querySelector('.load-mnemonic-btn').addEventListener('click', handle_load)
+  container.querySelector('.reset-all-btn').addEventListener('click', handle_reset_all_data)
+  
+  // Check if already authenticated
+  const existing_username = localStorage.getItem('username')
+  if (existing_username) {
+    document.body.removeChild(container)
+    vault.authenticate({ 
+      username: existing_username,
+      mode: localStorage.getItem('auth_mode') || 'seed'
+    })
+  }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":5}],4:[function(require,module,exports){
+},{"buffer":3}],2:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1256,7 +334,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],5:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3037,7 +2115,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":4,"buffer":5,"ieee754":6}],6:[function(require,module,exports){
+},{"base64-js":2,"buffer":3,"ieee754":4}],4:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -3124,5 +2202,4 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}]},{},[2])(2)
-});
+},{}]},{},[1]);
