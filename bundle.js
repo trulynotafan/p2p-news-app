@@ -157,70 +157,20 @@ const restore_subscribed_peers = () => {
 
 // Initialize blog
 const init_blog = async (options) => {
-  const { username, invite_code, relay, offline_mode, on_verification_code_ready } = options
+  const { username, relay, offline_mode } = options
   
-  const peer_name = invite_code ? 'joining-user' : username
-  const networking_options = {
-    name: peer_name,
-    store_name: `blogs-${peer_name}`,
-    topic: BLOG_TOPIC,
-    get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
-    get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
-    relay,
-    offline_mode
-  }
-  
-  const { store: _store, swarm: _swarm, dht, cleanup } = await identity.start_networking(networking_options)
-  
-  store = _store
-  const swarm_instance = _swarm
-  
-  // Set swarm in identity for app access
-  identity.set_swarm(swarm_instance)
-  
-  // Create datastructure manager from identity
-  ds_manager = identity.create_ds_manager()
-  
-  // Set ds_manager in identity for dynamic raw data access
-  identity.set_ds_manager(ds_manager)
-  
-  // Register all structures 
-  for (const config of STRUCTURES) {
-    ds_manager.register({ ...config, store })
-  }
+  // if pairing happened in this session, we can just use swarm and other things already set
+  // by the identity module
+  let swarm_instance
+  if (identity.get_ds_manager() && identity.store && identity.swarm) {
+    console.log('[p2p-news-app] Using identity-initialized structures (from pairing)')
+    ds_manager = identity.get_ds_manager()
+    store = identity.store
+    swarm_instance = identity.swarm
 
-  // JOINING EXISTING BLOG - All keys received from pairing
-  if (invite_code) {
-    // join_with_invite_and_init already initializes ALL structures with keys from pairing
-    const result = await ds_manager.join_with_invite_and_init(
-      invite_code, 
-      swarm_instance,
-      store,
-      on_verification_code_ready
-    )
-    pairing_result = result  // Store for later retrieval
-    
+    // Get structure instances
     const metadata = ds_manager.get('metadata')
-    const drive = ds_manager.get('drive')
-    const profile_drive = ds_manager.get('profile')
-    const events_drive = ds_manager.get('events')
-    
-    // Wait for all structures to be ready
-    await Promise.all([
-      metadata.ready(),
-      drive.ready(),
-      profile_drive.ready(),
-      events_drive.ready()
-    ])
-    
-    // Download content
-    await metadata.update()
-    await drive.download('/')
-    await profile_drive.download('/')
-    
-    // Setup identity events drive (for device management only)
-    identity.set_events_drive(events_drive, ds_manager.get_store('events'))
-    
+
     // Setup event handlers
     store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
       if (key === ds_manager.get_key('metadata')) return
@@ -231,11 +181,39 @@ const init_blog = async (options) => {
 
     metadata.on('update', () => emitter.emit('update'))
     restore_subscribed_peers()
-    
-    return { store, swarm: swarm_instance }
-  }
+
+  } else {
+    // Normal flow: Start networking and initialize blog
+    const networking_options = {
+      name: username,
+      store_name: `blogs-${username}`,
+      topic: BLOG_TOPIC,
+      get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
+      get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
+      relay,
+      offline_mode
+    }
   
-  // CREATING NEW BLOG - using the ds_manager
+    const { store: _store, swarm: _swarm } = await identity.start_networking(networking_options)
+
+    store = _store
+    swarm_instance = _swarm
+
+    // Set swarm in identity for app access
+    identity.set_swarm(swarm_instance)
+
+    // Create datastructure manager from identity
+    ds_manager = identity.create_ds_manager()
+
+    // Set ds_manager in identity for dynamic raw data access
+    identity.set_ds_manager(ds_manager)
+
+    // Register all structures 
+    for (const config of STRUCTURES) {
+      ds_manager.register({ ...config, store })
+    }
+
+    // Initialize all structures
   const instances = await ds_manager.init_all()
   const metadata = instances.metadata
   
@@ -318,7 +296,7 @@ const init_blog = async (options) => {
   metadata.on('update', () => emitter.emit('update'))
   
   restore_subscribed_peers()
-  
+}
   return { store, swarm: swarm_instance }
 }
 
@@ -577,7 +555,7 @@ const create_invite = async () => {
     pairing_manager = null
   }
   
-  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive')
+  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive', BLOG_TOPIC)
   
   // Store pairing_manager for later use (always update to the new one)
   pairing_manager = pm
@@ -696,12 +674,11 @@ const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
     get_profile_store,
     get_events_store,
     get_discovered_blogs,
-    get_pairing_result,
+
     get_structure_names,
-    on_update: (cb) => emitter.on('update', cb),
-    on_verification_needed: (cb) => emitter.on('verification_needed', cb)
+    on_update: (cb) => emitter.on('update', cb)
   }
-  
+
   return api
 }
 }).call(this)}).call(this,require("buffer").Buffer)
@@ -725,7 +702,7 @@ let username = uservault.username || localStorage.getItem('username') || ''
   let api = null
   let pairing_manager = null
   let default_relay = null
-  
+
 
   // Relay helpers
   const get_relays = () => {
@@ -826,26 +803,11 @@ let username = uservault.username || localStorage.getItem('username') || ''
         if (current_view) render_view(current_view)
       }
 
-      function handle_verification_needed(verification_digits) {
-        // Navigate to config tab and re-render to show pairing request
-        show_view('config')
-      }
-
       api.on_update(handle_blog_update)
-      api.on_verification_needed(handle_verification_needed)
 
-      // Init blog with user data
+    // Init blog with user data (identity already handled pairing if in pair mode)
       const init_options = { username }
-      
-      // Check if uservault is in pair mode
-      if (uservault.mode === 'pair' && uservault.invite_code) {
-        init_options.invite_code = uservault.invite_code
-        init_options.on_verification_code_ready = (verification_code) => {
-          document.querySelector('.connection-status').innerHTML = 
-            `🟡 Pairing...<br><strong style="font-size: 1.2em; color: #007bff;">Verification Code: ${verification_code}</strong><br><small>Share this code with Device A</small>`
-        }
-      }
-      
+
       if (default_relay) init_options.relay = default_relay
       
       console.log('[webapp-ui] Calling api.init_blog with options:', init_options)
@@ -854,13 +816,10 @@ let username = uservault.username || localStorage.getItem('username') || ''
       store = result.store
       swarm = result.swarm
 
-      // Update username if we got it from pairing
-      if (uservault.mode === 'pair') {
-        const pairing_result = api.get_pairing_result()
-        if (pairing_result?.username) {
-          username = pairing_result.username
-          localStorage.setItem('username', username)
-        }
+      // Update username if in pair mode (identity set it during authentication)
+      if (uservault.mode === 'pair' && uservault.username) {
+        username = uservault.username
+        localStorage.setItem('username', username)
       }
 
       setup_connection_status(swarm)

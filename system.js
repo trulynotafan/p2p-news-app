@@ -45,7 +45,6 @@ container.className = 'system-ui'
     try {
       container.querySelector('.status').textContent = 'Creating account...'
       
-      // Save username to localStorage (temporary - should use vault storage)
       localStorage.setItem('username', username)
       localStorage.setItem('auth_mode', 'seed')
       
@@ -87,32 +86,47 @@ container.className = 'system-ui'
       // For now, use placeholder username
       const username = 'pairing-user'
       localStorage.setItem('username', username)
-      
-      // Remove UI
-      document.body.removeChild(container)
-      
-      // Authenticate via vault
-      await vault.authenticate({ 
-        username: username, 
+    
+      let overlay = null
+    
+      vault.authenticate({
+        username: username,
         mode: 'pair',
-        invite_code: invite_code
+        invite_code: invite_code,
+        on_verification_code: (verification_code) => {
+          overlay = document.createElement('div')
+          overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; display: flex; align-items: center; justify-content: center;'
+          overlay.innerHTML = `
+            <div style="text-align: center;">
+              <p>Verification Code:</p>
+              <h1>${verification_code}</h1>
+              <p>Waiting for Device A to verify...</p>
+            </div>
+        `
+          document.body.appendChild(overlay)
+        }
       })
+    
+      // Wait for authentication to complete 
+      await vault.user
+    
+      // remove container after successful authentication
+      if (overlay) document.body.removeChild(overlay)
+      document.body.removeChild(container)
+    
     } catch (err) {
-      let error_msg = err.message
-      
-      if (error_msg.includes('Pairing denied by user')) {
+      // Remove overlay if it exists
+      const overlay = document.querySelector('div[style*="position: fixed"]')
+      if (overlay) document.body.removeChild(overlay)
+    
+      if (err.message.includes('Pairing denied by user')) {
         alert('Pairing was denied by Main Device. Click OK to restart.')
         await handle_reset_all_data()
         return
       }
       
-      if (error_msg.includes('Pairing rejected')) {
-        error_msg = 'Pairing rejected: Verification code does not match.'
-      } else if (error_msg.includes('Unknown invite version')) {
-        error_msg = 'Invite code is corrupted or incomplete.'
-      }
-      
-      container.querySelector('.status').textContent = '🔴 Error: ' + error_msg
+      alert('Pairing error: ' + err.message)
+      await handle_reset_all_data()
     }
   }
 
