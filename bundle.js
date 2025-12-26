@@ -12,279 +12,215 @@ module.exports = blog_app
 function blog_app (identity) {
   // identity is the vault object from the identity module
 
-  // ============================================================================
-  // DATA STRUCTURES, The only place we need to define structures.. 
-  // ============================================================================
-  // To add a new structure just add ONE line here:
-  // - name: identifier for the structure (e.g., 'comments', 'likes', 'media')
-  // - namespace: storage namespace (e.g., 'blog-comments', 'chat-messages')
-  // - type: 'autobase' for structured data, 'autodrive' for files (Both are multidevice obviously)
-  // - encoding: (autobase only) 'json' or something else
-  // - view_name: (autobase only) name for the view hypercore
-  //
-  // The datastructure-manager handles this automatically:
-  // registration, initialization, pairing, replication,  writer management
-  // ============================================================================
-  const STRUCTURES = [
-    { name: 'metadata', namespace: 'blog-metadata', type: 'autobase', encoding: 'json', view_name: 'blog-view' },
-    { name: 'drive', namespace: 'blog-files', type: 'autodrive' },
-    { name: 'profile', namespace: 'blog-profile', type: 'autodrive' },
-    { name: 'events', namespace: 'blog-events', type: 'autodrive' },
-    // ADD NEW STRUCTURES, Just one line. Example:
-    // { name: 'comments', namespace: 'blog-comments', type: 'autodrive' }
-  ]
-  // ============================================================================
+// ============================================================================
+// DATA STRUCTURES, The only place we need to define structures.. 
+// ============================================================================
+// To add a new structure just add ONE line here:
+// - name: identifier for the structure (e.g., 'comments', 'likes', 'media')
+// - namespace: storage namespace (e.g., 'blog-comments', 'chat-messages')
+// - type: 'autobase' for structured data, 'autodrive' for files (Both are multidevice obviously)
+// - encoding: (autobase only) 'json' or something else
+// - view_name: (autobase only) name for the view hypercore
+//
+// The datastructure-manager handles this automatically:
+// registration, initialization, pairing, replication,  writer management
+// ============================================================================
+const STRUCTURES = [
+  { name: 'metadata', namespace: 'blog-metadata', type: 'autobase', encoding: 'json', view_name: 'blog-view' },
+  { name: 'drive', namespace: 'blog-files', type: 'autodrive' },
+  { name: 'profile', namespace: 'blog-profile', type: 'autodrive' },
+  { name: 'events', namespace: 'blog-events', type: 'autodrive' },
+  // ADD NEW STRUCTURES, Just one line. Example:
+  // { name: 'comments', namespace: 'blog-comments', type: 'autodrive' }
+]
+// ============================================================================
 
-  // Emitter
-  const make_emitter = (state = {}) => ({
-    on: (type, cb) => (state[type] = state[type] || []).push(cb),
-    off: (type, cb) => (state[type] = state[type] || [])[state[type].indexOf(cb)] = undefined,
-    emit: (type, data) => (state[type] = state[type] || []).map(f => f && f(data))
-  })
+// Emitter
+const make_emitter = (state = {}) => ({
+  on: (type, cb) => (state[type] = state[type] || []).push(cb),
+  off: (type, cb) => (state[type] = state[type] || [])[state[type].indexOf(cb)] = undefined,
+  emit: (type, data) => (state[type] = state[type] || []).map(f => f && f(data))
+})
 
-  // Global state
-  let store, ds_manager, pairing_manager
-  const discovered_blogs = new Map()
-  const peer_relays = new Map() // Store relay URLs for peers
-  const autobase_cache = new Map()
-  const drive_cache = new Map()
-  const emitter = make_emitter()
+// Global state
+let store, ds_manager, pairing_manager, pairing_result = null
+const discovered_blogs = new Map()
+const peer_relays = new Map() // Store relay URLs for peers
+const autobase_cache = new Map()
+const drive_cache = new Map()
+const emitter = make_emitter()
 
-  // Validation
-  const validate_blog_init = (entry) => {
-    const { type, data = {} } = entry || {}
-    return type === 'blog-init' &&
-      typeof data.username === 'string' &&
-      typeof data.title === 'string' &&
-      typeof data.drive_key === 'string'
+// Validation
+const validate_blog_init = (entry) => {
+  const { type, data = {} } = entry || {}
+  return type === 'blog-init' &&
+         typeof data.username === 'string' &&
+         typeof data.title === 'string' &&
+         typeof data.drive_key === 'string'
+}
+
+const validate_blog_post = (entry) => {
+  const { type, data = {} } = entry || {}
+  return type === 'blog-post' &&
+         typeof data.filepath === 'string' &&
+         typeof data.created === 'number'
+}
+
+// LocalStorage helpers
+const get_subscribed_peers = () => {
+  try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
+}
+
+const add_subscribed_peer = (key) => {
+  const peers = get_subscribed_peers()
+  if (!peers.includes(key)) {
+    peers.push(key)
+    localStorage.setItem('subscribed_peers', JSON.stringify(peers))
   }
+}
 
-  const validate_blog_post = (entry) => {
-    const { type, data = {} } = entry || {}
-    return type === 'blog-post' &&
-      typeof data.filepath === 'string' &&
-      typeof data.created === 'number'
-  }
+const remove_subscribed_peer = (key) => {
+  localStorage.setItem('subscribed_peers', JSON.stringify(
+    get_subscribed_peers().filter(k => k !== key)
+  ))
+}
 
-  // LocalStorage helpers
-  const get_subscribed_peers = () => {
-    try { return JSON.parse(localStorage.getItem('subscribed_peers') || '[]') } catch { return [] }
-  }
+// Store relay URL for a peer (called from protocol exchange)
+const set_peer_relay = (key, relay_url) => {
+  if (relay_url) peer_relays.set(key, relay_url)
+}
 
-  const add_subscribed_peer = (key) => {
-    const peers = get_subscribed_peers()
-    if (!peers.includes(key)) {
-      peers.push(key)
-      localStorage.setItem('subscribed_peers', JSON.stringify(peers))
-    }
-  }
-
-  const remove_subscribed_peer = (key) => {
-    localStorage.setItem('subscribed_peers', JSON.stringify(
-      get_subscribed_peers().filter(k => k !== key)
-    ))
-  }
-
-  // Store relay URL for a peer (called from protocol exchange)
-  const set_peer_relay = (key, relay_url) => {
-    if (relay_url) peer_relays.set(key, relay_url)
-  }
-
-  // Setup peer autobase
-  const setup_peer_autobase = async (key, key_buffer) => {
-    // Check if already exists
-    if (autobase_cache.has(key)) return autobase_cache.get(key)
-
-    // Use datastructure-manager to create peer metadata autobase
-    const peer_autobase = await ds_manager.create_peer_structure('metadata', key, key_buffer, store)
-
-    // Wait for data if empty
-    if (peer_autobase.view.length === 0) {
-      await new Promise(resolve => peer_autobase.once('update', resolve))
-    }
-
-    const handle_peer_autobase_update = async () => {
-      if (peer_autobase.view.length > 0) {
-        try {
-          const init_raw_data = await peer_autobase.view.get(0)
-          const init_entry = JSON.parse(init_raw_data)
-
-          if (validate_blog_init(init_entry)) {
-            discovered_blogs.set(key, {
-              username: init_entry.data.username,
-              title: init_entry.data.title,
-              drive_key: init_entry.data.drive_key,
-              relay_url: peer_relays.get(key) || null
-            })
-
-            // Setup peer drive
-            if (!drive_cache.has(key) && init_entry.data.drive_key) {
-              const drive_key_buffer = b4a.from(init_entry.data.drive_key, 'hex')
-              const peer_drive = await ds_manager.create_peer_structure('drive', key, drive_key_buffer, store)
-              drive_cache.set(key, peer_drive)
-            }
-
-            emitter.emit('update')
-          }
-        } catch (err) {
-          console.error('[setup_peer_autobase] Error processing update:', err)
-        }
-      }
-    }
-
-    peer_autobase.on('update', handle_peer_autobase_update)
-    await handle_peer_autobase_update()
-
-    autobase_cache.set(key, peer_autobase)
-    return peer_autobase
-  }
-
-  // Restore subscribed peers
-  const restore_subscribed_peers = () => {
-    if (!store) return
-
-    const handle_peer_key = async (key) => {
-      try {
-        const key_buffer = b4a.from(key, 'hex')
-        await setup_peer_autobase(key, key_buffer)
-      } catch (err) {
-        console.error('Error restoring peer:', err)
-      }
-    }
-
-    get_subscribed_peers().forEach(handle_peer_key)
-  }
-
-  // Initialize blog
-  const init_blog = async (options) => {
-    const { username, relay, offline_mode } = options
+// Setup peer autobase
+const setup_peer_autobase = async (key, key_buffer) => {
+  // Check if already exists
+  if (autobase_cache.has(key)) return autobase_cache.get(key)
   
-  // if pairing happened in this session, we can just use swarm and other things already set
-  // by the identity module
-  let swarm_instance
-  if (identity.get_ds_manager() && identity.store && identity.swarm) {
-    console.log('[p2p-news-app] Using identity-initialized structures (from pairing)')
-    ds_manager = identity.get_ds_manager()
-    store = identity.store
-    swarm_instance = identity.swarm
+  // Use datastructure-manager to create peer metadata autobase
+  const peer_autobase = await ds_manager.create_peer_structure('metadata', key, key_buffer, store)
 
-    // Get structure instances
-    const metadata = ds_manager.get('metadata')
+  // Wait for data if empty
+  if (peer_autobase.view.length === 0) {
+    await new Promise(resolve => peer_autobase.once('update', resolve))
+  }
 
-    // Setup event handlers
-    store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
-      if (key === ds_manager.get_key('metadata')) return
-      if (relay_url) set_peer_relay(key, relay_url)
-      if (autobase_cache.has(key)) return
-      await setup_peer_autobase(key, key_buffer)
-    })
-
-    metadata.on('update', () => emitter.emit('update'))
-    restore_subscribed_peers()
-
-  } else {
-    // Normal flow: Start networking and initialize blog
-    const networking_options = {
-      name: username,
-      store_name: `blogs-${username}`,
-      topic: BLOG_TOPIC,
-      get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
-      get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
-      relay,
-      offline_mode
-    }
-
-    const { store: _store, swarm: _swarm } = await identity.start_networking(networking_options)
-
-    store = _store
-    swarm_instance = _swarm
-
-    // Set swarm in identity for app access
-    identity.set_swarm(swarm_instance)
-
-    // Create datastructure manager from identity
-    ds_manager = identity.create_ds_manager()
-
-    // Set ds_manager in identity for dynamic raw data access
-    identity.set_ds_manager(ds_manager)
-
-    // Register all structures 
-    for (const config of STRUCTURES) {
-      ds_manager.register({ ...config, store })
-    }
-
-    // Initialize all structures
-    const instances = await ds_manager.init_all()
-    const metadata = instances.metadata
-
-    // Write blog initialization entry
-    await metadata.append({
-      type: 'blog-init',
-      data: {
-        username,
-        title: `${username}'s Blog`,
-        drive_key: ds_manager.get_key('drive')
+  const handle_peer_autobase_update = async () => {
+    if (peer_autobase.view.length > 0) {
+      try {
+        const init_raw_data = await peer_autobase.view.get(0)
+        const init_entry = JSON.parse(init_raw_data)
+        
+        if (validate_blog_init(init_entry)) {
+          discovered_blogs.set(key, {
+            username: init_entry.data.username,
+            title: init_entry.data.title,
+            drive_key: init_entry.data.drive_key,
+            relay_url: peer_relays.get(key) || null
+          })
+          
+          // Setup peer drive
+          if (!drive_cache.has(key) && init_entry.data.drive_key) {
+            const drive_key_buffer = b4a.from(init_entry.data.drive_key, 'hex')
+            const peer_drive = await ds_manager.create_peer_structure('drive', key, drive_key_buffer, store)
+            drive_cache.set(key, peer_drive)
+          }
+          
+          emitter.emit('update')
+        }
+      } catch (err) {
+        console.error('[setup_peer_autobase] Error processing update:', err)
       }
-    })
+    }
+  }
 
-    // Setup identity (profile and events already initialized by init_all)
-    const profile_drive = instances.profile
-    const events_drive = instances.events
+  peer_autobase.on('update', handle_peer_autobase_update)
+  await handle_peer_autobase_update()
+  
+  autobase_cache.set(key, peer_autobase)
+  return peer_autobase
+}
 
-    await profile_drive.ready()
-    await events_drive.ready()
+// Restore subscribed peers
+const restore_subscribed_peers = () => {
+  if (!store) return
+  
+  const handle_peer_key = async (key) => {
+    try {
+      const key_buffer = b4a.from(key, 'hex')
+      await setup_peer_autobase(key, key_buffer)
+    } catch (err) {
+      console.error('Error restoring peer:', err)
+    }
+  }
+  
+  get_subscribed_peers().forEach(handle_peer_key)
+}
 
+// Initialize blog
+const init_blog = async (options) => {
+  const { username, invite_code, relay, offline_mode, on_verification_code_ready } = options
+  
+  const peer_name = invite_code ? 'joining-user' : username
+  const networking_options = {
+    name: peer_name,
+    store_name: `blogs-${peer_name}`,
+    topic: BLOG_TOPIC,
+    get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
+    get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
+    relay,
+    offline_mode
+  }
+  
+  const { store: _store, swarm: _swarm, dht, cleanup } = await identity.start_networking(networking_options)
+  
+  store = _store
+  const swarm_instance = _swarm
+  
+  // Set swarm in identity for app access
+  identity.set_swarm(swarm_instance)
+  
+  // Create datastructure manager from identity
+  ds_manager = identity.create_ds_manager()
+  
+  // Set ds_manager in identity for dynamic raw data access
+  identity.set_ds_manager(ds_manager)
+  
+  // Register all structures 
+  for (const config of STRUCTURES) {
+    ds_manager.register({ ...config, store })
+  }
+
+  // JOINING EXISTING BLOG - All keys received from pairing
+  if (invite_code) {
+    // join_with_invite_and_init already initializes ALL structures with keys from pairing
+    const result = await ds_manager.join_with_invite_and_init(
+      invite_code, 
+      swarm_instance,
+      store,
+      on_verification_code_ready
+    )
+    pairing_result = result  // Store for later retrieval
+    
+    const metadata = ds_manager.get('metadata')
+    const drive = ds_manager.get('drive')
+    const profile_drive = ds_manager.get('profile')
+    const events_drive = ds_manager.get('events')
+    
+    // Wait for all structures to be ready
+    await Promise.all([
+      metadata.ready(),
+      drive.ready(),
+      profile_drive.ready(),
+      events_drive.ready()
+    ])
+    
+    // Download content
+    await metadata.update()
+    await drive.download('/')
+    await profile_drive.download('/')
+    
     // Setup identity events drive (for device management only)
     identity.set_events_drive(events_drive, ds_manager.get_store('events'))
-
-    await create_default_profile(username)
-
-    // Log bootstrap device with ALL structure writer keys (also dynamic)
-    const device_keys = {}
-    for (const name of ds_manager.get_names()) {
-      const structure = ds_manager.get(name)
-      const config = ds_manager.get_config(name)
-
-      let writer_key = null
-      if (config.type === 'autobase') {
-        // For autobase: structure.local.key
-        writer_key = structure.local?.key
-      } else if (config.type === 'autodrive') {
-        // For autodrive: structure.base.local.key
-        writer_key = structure.base?.local?.key
-      }
-
-      if (writer_key) {
-        device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
-      } else {
-        console.warn(`[blog-helpers] No writer key found for structure: ${name}`)
-      }
-    }
-  
-  // Device keys initialized
-
-    // Only log device if it doesn't already exist (prevent duplicates on refresh)
-    const existing_devices = await get_paired_devices()
-    const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
-
-    if (!device_exists) {
-      await log_event('add', device_keys)
-    }
-
-    // Write ALL structure keys to metadata (dynamic!)
-    const all_structure_keys = {}
-    for (const name of ds_manager.get_names()) {
-      // Skip metadata and drive (already shared via pairing)
-      if (name !== 'metadata' && name !== 'drive') {
-        all_structure_keys[`${name}_key`] = ds_manager.get_key(name)
-      }
-    }
-
-    await metadata.append({
-      type: 'blog-init-extended',
-      data: all_structure_keys
-    })
-
+    
     // Setup event handlers
     store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
       if (key === ds_manager.get_key('metadata')) return
@@ -294,348 +230,434 @@ function blog_app (identity) {
     })
 
     metadata.on('update', () => emitter.emit('update'))
-
     restore_subscribed_peers()
+    
+    return { store, swarm: swarm_instance }
   }
+  
+  // CREATING NEW BLOG - using the ds_manager
+  const instances = await ds_manager.init_all()
+  const metadata = instances.metadata
+  
+  // Write blog initialization entry
+  await metadata.append({
+    type: 'blog-init',
+    data: {
+      username,
+      title: `${username}'s Blog`,
+      drive_key: ds_manager.get_key('drive')
+    }
+  })
+  
+  // Setup identity (profile and events already initialized by init_all)
+  const profile_drive = instances.profile
+  const events_drive = instances.events
+  
+  await profile_drive.ready()
+  await events_drive.ready()
+  
+  // Setup identity events drive (for device management only)
+  identity.set_events_drive(events_drive, ds_manager.get_store('events'))
+  
+  await create_default_profile(username)
+  
+  // Log bootstrap device with ALL structure writer keys (also dynamic)
+  const device_keys = {}
+  for (const name of ds_manager.get_names()) {
+    const structure = ds_manager.get(name)
+    const config = ds_manager.get_config(name)
+    
+    let writer_key = null
+    if (config.type === 'autobase') {
+      // For autobase: structure.local.key
+      writer_key = structure.local?.key
+    } else if (config.type === 'autodrive') {
+      // For autodrive: structure.base.local.key
+      writer_key = structure.base?.local?.key
+    }
+    
+    if (writer_key) {
+      device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
+    } else {
+      console.warn(`[blog-helpers] No writer key found for structure: ${name}`)
+    }
+  }
+  
+  // Device keys initialized
+  
+  // Only log device if it doesn't already exist (prevent duplicates on refresh)
+  const existing_devices = await get_paired_devices()
+  const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
+  
+  if (!device_exists) {
+    await log_event('add', device_keys)
+  }
+  
+  // Write ALL structure keys to metadata (dynamic!)
+  const all_structure_keys = {}
+  for (const name of ds_manager.get_names()) {
+    // Skip metadata and drive (already shared via pairing)
+    if (name !== 'metadata' && name !== 'drive') {
+      all_structure_keys[`${name}_key`] = ds_manager.get_key(name)
+    }
+  }
+  
+  await metadata.append({
+    type: 'blog-init-extended',
+    data: all_structure_keys
+  })
+
+  // Setup event handlers
+  store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
+    if (key === ds_manager.get_key('metadata')) return
+    if (relay_url) set_peer_relay(key, relay_url)
+    if (autobase_cache.has(key)) return
+    await setup_peer_autobase(key, key_buffer)
+  })
+
+  metadata.on('update', () => emitter.emit('update'))
+  
+  restore_subscribed_peers()
   
   return { store, swarm: swarm_instance }
 }
 
-  // Create post
-  const create_post = async (title, content) => {
-    const drive = ds_manager.get('drive')
-    const metadata = ds_manager.get('metadata')
+// Create post
+const create_post = async (title, content) => {
+  const drive = ds_manager.get('drive')
+  const metadata = ds_manager.get('metadata')
+  
+  const created = Date.now()
+  const filepath = `/posts/${created}.json`
+  const post_data = { title, content, created }
+  
+  await drive.put(filepath, Buffer.from(JSON.stringify(post_data)))
+  await metadata.append({
+    type: 'blog-post',
+    data: { filepath, created }
+  })
+}
 
-    const created = Date.now()
-    const filepath = `/posts/${created}.json`
-    const post_data = { title, content, created }
+// Profile management (app-specific, not in identity)
+const create_default_profile = async (username) => {
+  const profile_drive = ds_manager.get('profile')
+  
+  // use the profile pic if it exists
+  if (await profile_drive.get('/profile.json')) return
+  
+  const default_avatar = `<svg><text x="50%" y="50%" font-size="120" text-anchor="middle" dominant-baseline="middle">👤</text></svg>`
+  
+  await profile_drive.put('/avatar.svg', b4a.from(default_avatar))
+  await profile_drive.put('/profile.json', b4a.from(JSON.stringify({
+    name: username,
+    avatar: '/avatar.svg'
+  })))
+}
 
-    await drive.put(filepath, Buffer.from(JSON.stringify(post_data)))
-    await metadata.append({
-      type: 'blog-post',
-      data: { filepath, created }
-    })
+const upload_avatar = async (imageData, filename) => {
+  const profile_drive = ds_manager.get('profile')
+  if (!profile_drive) {
+    throw new Error('Profile drive not initialized')
   }
-
-  // Profile management (app-specific, not in identity)
-  const create_default_profile = async (username) => {
-    const profile_drive = ds_manager.get('profile')
-
-    // use the profile pic if it exists
-    if (await profile_drive.get('/profile.json')) return
-
-    const default_avatar = `<svg><text x="50%" y="50%" font-size="120" text-anchor="middle" dominant-baseline="middle">👤</text></svg>`
-
-    await profile_drive.put('/avatar.svg', b4a.from(default_avatar))
-    await profile_drive.put('/profile.json', b4a.from(JSON.stringify({
-      name: username,
-      avatar: '/avatar.svg'
-    })))
+  
+  // Get file extension from filename
+  const ext = filename.split('.').pop().toLowerCase()
+  const avatar_path = `/avatar.${ext}`
+  
+  // Store the image file
+  await profile_drive.put(avatar_path, b4a.from(imageData))
+  
+  // Update profile.json to point to the new avatar
+ const profile = await get_profile()
+  const updated_profile = {
+    ...profile,
+    avatar: avatar_path
   }
+  
+  await profile_drive.put('/profile.json', b4a.from(JSON.stringify(updated_profile)))
+  emitter.emit('update')
+}
 
-  const upload_avatar = async (imageData, filename) => {
-    const profile_drive = ds_manager.get('profile')
-    if (!profile_drive) {
-      throw new Error('Profile drive not initialized')
+const get_profile = async (profile_key = null) => {
+  // If string key passed, ignore it
+  if (typeof profile_key === 'string') return null
+  
+  const profile_drive = ds_manager.get('profile')
+  if (!profile_drive) return null
+  
+  try {
+    await profile_drive.ready()  
+    const profile_data = await profile_drive.get('/profile.json')
+    if (!profile_data) return null
+    return JSON.parse(b4a.toString(profile_data))
+  } catch (err) {
+    console.error('Error getting profile:', err)
+    return null
+  }
+}
+
+const get_avatar_content = async (profile_key = null) => {
+  const profile_drive = ds_manager.get('profile')
+  if (!profile_drive) return null
+  
+  try {
+    await profile_drive.ready()
+    
+    // Get profile to find avatar path
+    const profile = await get_profile(profile_key)
+    if (!profile || !profile.avatar) return null
+    
+    const avatar_data = await profile_drive.get(profile.avatar)
+    if (!avatar_data) return null
+    
+    // For SVG files, return as text
+    if (profile.avatar.endsWith('.svg')) {
+      return b4a.toString(avatar_data)
     }
+    
+    // For image files, return as data URL
+    const ext = profile.avatar.split('.').pop().toLowerCase()
+    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
+    const base64 = b4a.toString(avatar_data, 'base64')
+    return `data:${mimeType};base64,${base64}`
+  } catch (err) {
+    return null
+  }
+}
 
-    // Get file extension from filename
-    const ext = filename.split('.').pop().toLowerCase()
-    const avatar_path = `/avatar.${ext}`
+// Device/pairing management (delegates to identity with events_drive)
+const log_event = async (type, data) => {
+  const events_drive = ds_manager.get('events')
+  return identity.log_event(events_drive, type, data)
+}
 
-    // Store the image file
-    await profile_drive.put(avatar_path, b4a.from(imageData))
+const get_paired_devices = async () => {
+  const events_drive = ds_manager.get('events')
+  return identity.get_paired_devices(events_drive)
+}
 
-    // Update profile.json to point to the new avatar
-    const profile = await get_profile()
-    const updated_profile = {
-      ...profile,
-      avatar: avatar_path
-    }
+const remove_device = async (device) => {
+  const events_drive = ds_manager.get('events')
+  return identity.remove_device(events_drive, device)
+}
 
-    await profile_drive.put('/profile.json', b4a.from(JSON.stringify(updated_profile)))
+const get_raw_data = async (structure_name) => {
+  return identity.get_raw_data(structure_name)
+}
+
+// Subscribe to peer
+const subscribe = async (key) => {
+  if (!key || typeof key !== 'string') return false
+  
+  const my_key = ds_manager.get_key('metadata')
+  if (key === my_key) return false
+  
+  try {
+    const key_buffer = b4a.from(key, 'hex')
+    await setup_peer_autobase(key, key_buffer)
+    add_subscribed_peer(key)
     emitter.emit('update')
+    return true
+  } catch (err) {
+    console.error('Subscribe error:', err)
+    return false
   }
+}
 
-  const get_profile = async (profile_key = null) => {
-    // If string key passed, ignore it
-    if (typeof profile_key === 'string') return null
-
-    const profile_drive = ds_manager.get('profile')
-    if (!profile_drive) return null
-
-    try {
-      await profile_drive.ready()
-      const profile_data = await profile_drive.get('/profile.json')
-      if (!profile_data) return null
-      return JSON.parse(b4a.toString(profile_data))
-    } catch (err) {
-      console.error('Error getting profile:', err)
-      return null
-    }
+// Unsubscribe
+const unsubscribe = async (key) => {
+  remove_subscribed_peer(key)
+  
+  const peer_autobase = autobase_cache.get(key)
+  if (peer_autobase) {
+    await peer_autobase.close()
+    autobase_cache.delete(key)
   }
+  
+  const peer_drive = drive_cache.get(key)
+  if (peer_drive) {
+    await peer_drive.close()
+    drive_cache.delete(key)
+  }
+  
+  // Keep in discovered_blogs so it shows in "Discovered Peers" again
+  emitter.emit('update')
+}
 
-  const get_avatar_content = async (profile_key = null) => {
-    const profile_drive = ds_manager.get('profile')
-    if (!profile_drive) return null
+// Get blog username
+const get_blog_username = async () => {
+  if (!ds_manager) return null
+  const metadata = ds_manager.get('metadata')
+  if (!metadata || !metadata.view || metadata.view.length === 0) return null
+  
+  try {
+    const init_raw = await metadata.view.get(0)
+    const init_entry = JSON.parse(init_raw)
+    return validate_blog_init(init_entry) ? init_entry.data.username : null
+  } catch {
+    return null
+  }
+}
 
+// Get blog drive keys
+const get_blog_drive_key = async (key_name) => {
+  const metadata = ds_manager.get('metadata')
+  if (!metadata || metadata.view.length < 2) return null
+  
+  try {
+    const extended_raw = await metadata.view.get(1)
+    const extended_entry = JSON.parse(extended_raw)
+    return extended_entry.data?.[key_name] || null
+  } catch {
+    return null
+  }
+}
+
+const get_blog_profile_drive_key = () => get_blog_drive_key('profile_drive_key')
+const get_blog_events_drive_key = () => get_blog_drive_key('events_drive_key')
+
+// Get posts
+const get_posts = async (key = null) => {
+  const target_key = key || ds_manager.get_key('metadata')
+  const is_my_blog = !key || key === ds_manager.get_key('metadata')
+  
+  const metadata = is_my_blog ? ds_manager.get('metadata') : autobase_cache.get(target_key)
+  const drive = is_my_blog ? ds_manager.get('drive') : drive_cache.get(target_key)
+  
+  if (!metadata || !drive) return []
+  if (!metadata.view || !metadata.view.length) return []
+  
+  const posts = []
+  
+  for (let i = 0; i < metadata.view.length; i++) {
     try {
-      await profile_drive.ready()
-
-      // Get profile to find avatar path
-      const profile = await get_profile(profile_key)
-      if (!profile || !profile.avatar) return null
-
-      const avatar_data = await profile_drive.get(profile.avatar)
-      if (!avatar_data) return null
-
-      // For SVG files, return as text
-      if (profile.avatar.endsWith('.svg')) {
-        return b4a.toString(avatar_data)
+      const raw = await metadata.view.get(i)
+      const entry = JSON.parse(raw)
+      
+      if (validate_blog_post(entry)) {
+        const post_buffer = await drive.get(entry.data.filepath)
+        if (post_buffer) {
+          const post = JSON.parse(post_buffer.toString())
+          posts.push(post)
+        }
       }
-
-      // For image files, return as data URL
-      const ext = profile.avatar.split('.').pop().toLowerCase()
-      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
-      const base64 = b4a.toString(avatar_data, 'base64')
-      return `data:${mimeType};base64,${base64}`
     } catch (err) {
-      return null
+      console.error('Error reading post:', err)
     }
   }
+  
+  return posts.sort((a, b) => b.created - a.created)
+}
 
-  // Device/pairing management (delegates to identity with events_drive)
-  const log_event = async (type, data) => {
-    const events_drive = ds_manager.get('events')
-    return identity.log_event(events_drive, type, data)
+const get_my_posts = () => get_posts()
+
+// Get peer blogs
+const get_peer_blogs = async () => {
+  const blogs = new Map()
+  
+  for (const key of get_subscribed_peers()) {
+    const blog_data = discovered_blogs.get(key)
+    if (blog_data) {
+      const posts = await get_posts(key)
+      blogs.set(key, { ...blog_data, posts })
+    }
   }
+  
+  return blogs
+}
 
-  const get_paired_devices = async () => {
-    const events_drive = ds_manager.get('events')
-    return identity.get_paired_devices(events_drive)
+// Create invite - Use universal API
+const create_invite = async () => {
+  const swarm = identity.get_swarm()
+  const drive = ds_manager.get('drive')
+  
+  // Close previous pairing session if it exists
+  if (pairing_manager) {
+    await pairing_manager.close()
+    pairing_manager = null
   }
-
-  const remove_device = async (device) => {
-    const events_drive = ds_manager.get('events')
-    return identity.remove_device(events_drive, device)
-  }
-
-  const get_raw_data = async (structure_name) => {
-    return identity.get_raw_data(structure_name)
-  }
-
-  // Subscribe to peer
-  const subscribe = async (key) => {
-    if (!key || typeof key !== 'string') return false
-
-    const my_key = ds_manager.get_key('metadata')
-    if (key === my_key) return false
-
-    try {
-      const key_buffer = b4a.from(key, 'hex')
-      await setup_peer_autobase(key, key_buffer)
-      add_subscribed_peer(key)
+  
+  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive')
+  
+  // Store pairing_manager for later use (always update to the new one)
+  pairing_manager = pm
+  
+  // Get username from profile (using blog app's get_profile, not identity)
+  const profile = await get_profile()
+  const blog_username = profile?.name || 'Unknown'
+  
+  // Setup member to handle pairing requests
+  await pm.setup_member({
+    primary_discovery_key: drive.base.discoveryKey,
+    invite,
+    username: blog_username,
+    on_verification_needed: (verification_digits) => {
+      // Emit event so UI can show input box with the digits to verify
+      emitter.emit('verification_needed', verification_digits)
+    },
+    on_paired: async (writer_keys) => {
+      // Convert writer_keys from namespace format to structure_name_writer format
+      const device_keys = {}
+      for (const name of ds_manager.get_names()) {
+        const config = ds_manager.get_config(name)
+        if (writer_keys[config.namespace]) {
+          device_keys[`${name}_writer`] = writer_keys[config.namespace]
+        }
+      }
+      
+      // Log device add event with proper format
+      await log_event('add', device_keys)
       emitter.emit('update')
-      return true
-    } catch (err) {
-      console.error('Subscribe error:', err)
-      return false
     }
+  })
+  
+  return { invite_code, pairing_manager: pm }
+}
+
+// Verify and complete pairing
+const verify_pairing = async (entered_code) => {
+  if (!pairing_manager) {
+    throw new Error('No pairing manager available')
   }
-
-  // Unsubscribe
-  const unsubscribe = async (key) => {
-    remove_subscribed_peer(key)
-
-    const peer_autobase = autobase_cache.get(key)
-    if (peer_autobase) {
-      await peer_autobase.close()
-      autobase_cache.delete(key)
+  
+  const result = await pairing_manager.verify_and_complete_pairing({
+    entered_verification_code: entered_code,
+    username: await get_blog_username(),
+    on_paired: () => {
+      emitter.emit('update')
     }
+  })
+  
+  // Return result with multiple attempts info
+  return result
+}
 
-    const peer_drive = drive_cache.get(key)
-    if (peer_drive) {
-      await peer_drive.close()
-      drive_cache.delete(key)
-    }
-
-    // Keep in discovered_blogs so it shows in "Discovered Peers" again
-    emitter.emit('update')
+// Deny pairing
+const deny_pairing = () => {
+  if (!pairing_manager) {
+    throw new Error('No pairing manager available')
   }
+  
+  pairing_manager.deny_pairing()
+  emitter.emit('update')
+}
 
-  // Get blog username
-  const get_blog_username = async () => {
-    if (!ds_manager) return null
-    const metadata = ds_manager.get('metadata')
-    if (!metadata || !metadata.view || metadata.view.length === 0) return null
-
-    try {
-      const init_raw = await metadata.view.get(0)
-      const init_entry = JSON.parse(init_raw)
-      return validate_blog_init(init_entry) ? init_entry.data.username : null
-    } catch {
-      return null
-    }
-  }
-
-  // Get blog drive keys
-  const get_blog_drive_key = async (key_name) => {
-    const metadata = ds_manager.get('metadata')
-    if (!metadata || metadata.view.length < 2) return null
-
-    try {
-      const extended_raw = await metadata.view.get(1)
-      const extended_entry = JSON.parse(extended_raw)
-      return extended_entry.data?.[key_name] || null
-    } catch {
-      return null
-    }
-  }
-
-  const get_blog_profile_drive_key = () => get_blog_drive_key('profile_drive_key')
-  const get_blog_events_drive_key = () => get_blog_drive_key('events_drive_key')
-
-  // Get posts
-  const get_posts = async (key = null) => {
-    const target_key = key || ds_manager.get_key('metadata')
-    const is_my_blog = !key || key === ds_manager.get_key('metadata')
-
-    const metadata = is_my_blog ? ds_manager.get('metadata') : autobase_cache.get(target_key)
-    const drive = is_my_blog ? ds_manager.get('drive') : drive_cache.get(target_key)
-
-    if (!metadata || !drive) return []
-    if (!metadata.view || !metadata.view.length) return []
-
-    const posts = []
-
-    for (let i = 0; i < metadata.view.length; i++) {
-      try {
-        const raw = await metadata.view.get(i)
-        const entry = JSON.parse(raw)
-
-        if (validate_blog_post(entry)) {
-          const post_buffer = await drive.get(entry.data.filepath)
-          if (post_buffer) {
-            const post = JSON.parse(post_buffer.toString())
-            posts.push(post)
-          }
-        }
-      } catch (err) {
-        console.error('Error reading post:', err)
-      }
-    }
-
-    return posts.sort((a, b) => b.created - a.created)
-  }
-
-  const get_my_posts = () => get_posts()
-
-  // Get peer blogs
-  const get_peer_blogs = async () => {
-    const blogs = new Map()
-
-    for (const key of get_subscribed_peers()) {
-      const blog_data = discovered_blogs.get(key)
-      if (blog_data) {
-        const posts = await get_posts(key)
-        blogs.set(key, { ...blog_data, posts })
-      }
-    }
-
-    return blogs
-  }
-
-  // Create invite - Use universal API
-  const create_invite = async () => {
-    const swarm = identity.get_swarm()
-    const drive = ds_manager.get('drive')
-
-    // Close previous pairing session if it exists
-    if (pairing_manager) {
-      await pairing_manager.close()
-      pairing_manager = null
-    }
-
-    const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive', BLOG_TOPIC)
-
-    // Store pairing_manager for later use (always update to the new one)
-    pairing_manager = pm
-
-    // Get username from profile (using blog app's get_profile, not identity)
-    const profile = await get_profile()
-    const blog_username = profile?.name || 'Unknown'
-
-    // Setup member to handle pairing requests
-    await pm.setup_member({
-      primary_discovery_key: drive.base.discoveryKey,
-      invite,
-      username: blog_username,
-      on_verification_needed: (verification_digits) => {
-        // Emit event so UI can show input box with the digits to verify
-        emitter.emit('verification_needed', verification_digits)
-      },
-      on_paired: async (writer_keys) => {
-        // Convert writer_keys from namespace format to structure_name_writer format
-        const device_keys = {}
-        for (const name of ds_manager.get_names()) {
-          const config = ds_manager.get_config(name)
-          if (writer_keys[config.namespace]) {
-            device_keys[`${name}_writer`] = writer_keys[config.namespace]
-          }
-        }
-
-        // Log device add event with proper format
-        await log_event('add', device_keys)
-        emitter.emit('update')
-      }
-    })
-
-    return { invite_code, pairing_manager: pm }
-  }
-
-  // Verify and complete pairing
-  const verify_pairing = async (entered_code) => {
-    if (!pairing_manager) {
-      throw new Error('No pairing manager available')
-    }
-
-    const result = await pairing_manager.verify_and_complete_pairing({
-      entered_verification_code: entered_code,
-      username: await get_blog_username(),
-      on_paired: () => {
-        emitter.emit('update')
-      }
-    })
-
-    return result
-  }
-
-  // Deny pairing
-  const deny_pairing = () => {
-    if (!pairing_manager) {
-      throw new Error('No pairing manager available')
-    }
-
-    pairing_manager.deny_pairing()
-    emitter.emit('update')
-  }
-
-  // Getters
-  const get_drive = () => ds_manager ? ds_manager.get('drive') : null
-  const get_profile_drive = () => ds_manager ? ds_manager.get('profile') : null
-  const get_autobase_key = () => ds_manager ? ds_manager.get_key('metadata') : null
-  const get_autobase = () => ds_manager ? ds_manager.get('metadata') : null
-  const get_metadata_store = () => ds_manager ? ds_manager.get_store('metadata') : null
-  const get_drive_store = () => ds_manager ? ds_manager.get_store('drive') : null
-  const get_profile_store = () => ds_manager ? ds_manager.get_store('profile') : null
-  const get_events_store = () => ds_manager ? ds_manager.get_store('events') : null
-  const get_local_key = () => {
-    const metadata = ds_manager.get('metadata')
-    return metadata ? b4a.toString(metadata.local.key, 'hex') : null
-  }
-  const get_discovered_blogs = () => discovered_blogs
-
-  const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
+// Getters
+const get_drive = () => ds_manager ? ds_manager.get('drive') : null
+const get_profile_drive = () => ds_manager ? ds_manager.get('profile') : null
+const get_autobase_key = () => ds_manager ? ds_manager.get_key('metadata') : null
+const get_autobase = () => ds_manager ? ds_manager.get('metadata') : null
+const get_metadata_store = () => ds_manager ? ds_manager.get_store('metadata') : null
+const get_drive_store = () => ds_manager ? ds_manager.get_store('drive') : null
+const get_profile_store = () => ds_manager ? ds_manager.get_store('profile') : null
+const get_events_store = () => ds_manager ? ds_manager.get_store('events') : null
+const get_local_key = () => {
+  const metadata = ds_manager.get('metadata')
+  return metadata ? b4a.toString(metadata.local.key, 'hex') : null
+}
+const get_discovered_blogs = () => discovered_blogs
+const get_pairing_result = () => pairing_result
+const get_structure_names = () => ds_manager ? ds_manager.get_names() : []
 
   // Return the blog app API
   const api = {
@@ -674,11 +696,12 @@ function blog_app (identity) {
     get_profile_store,
     get_events_store,
     get_discovered_blogs,
-
+    get_pairing_result,
     get_structure_names,
-    on_update: (cb) => emitter.on('update', cb)
+    on_update: (cb) => emitter.on('update', cb),
+    on_verification_needed: (cb) => emitter.on('verification_needed', cb)
   }
-
+  
   return api
 }
 }).call(this)}).call(this,require("buffer").Buffer)
@@ -695,39 +718,39 @@ console.log('[webapp-ui] Starting app with uservault:', uservault)
 // Global state
 let store
 let username = uservault.username || localStorage.getItem('username') || ''
-let current_view
-let is_ready = false
-let is_joining = false
-let swarm = null
-let api = null
-let pairing_manager = null
-let default_relay = null
+  let current_view
+  let is_ready = false
+  let is_joining = false
+  let swarm = null
+  let api = null
+  let pairing_manager = null
+  let default_relay = null
+  
 
-
-// Relay helpers
-const get_relays = () => {
-  try { return JSON.parse(localStorage.getItem('relays') || '[]') } catch { return [] }
-}
-const get_default_relay = () => localStorage.getItem('default_relay') || null
-const add_relay = (url) => {
-  const relays = get_relays()
-  if (!relays.includes(url)) {
-    relays.push(url)
-    localStorage.setItem('relays', JSON.stringify(relays))
+  // Relay helpers
+  const get_relays = () => {
+    try { return JSON.parse(localStorage.getItem('relays') || '[]') } catch { return [] }
   }
-}
-const remove_relay = (url) => {
-  localStorage.setItem('relays', JSON.stringify(get_relays().filter(r => r !== url)))
-  if (get_default_relay() === url) localStorage.removeItem('default_relay')
-}
-const set_default_relay = (url) => {
-  localStorage.setItem('default_relay', url)
-  default_relay = url
-}
+  const get_default_relay = () => localStorage.getItem('default_relay') || null
+  const add_relay = (url) => {
+    const relays = get_relays()
+    if (!relays.includes(url)) {
+      relays.push(url)
+      localStorage.setItem('relays', JSON.stringify(relays))
+    }
+  }
+  const remove_relay = (url) => {
+    localStorage.setItem('relays', JSON.stringify(get_relays().filter(r => r !== url)))
+    if (get_default_relay() === url) localStorage.removeItem('default_relay')
+  }
+  const set_default_relay = (url) => {
+    localStorage.setItem('default_relay', url)
+    default_relay = url
+  }
 
-console.log('[webapp-ui] Setting up blog UI...')
-// Blog app HTML structure (no login UI, handled by vault-ui)
-document.body.innerHTML = `
+  console.log('[webapp-ui] Setting up blog UI...')
+  // Blog app HTML structure (no login UI, handled by vault-ui)
+  document.body.innerHTML = `
     <div class="app">
       <div class="main">
         <div>Status: <span class="connection-status">Disconnected</span></div>
@@ -747,558 +770,576 @@ document.body.innerHTML = `
     </div>
   `
 
-// Utility functions
-const format_date = timestamp => new Date(timestamp).toLocaleString()
-function escape_html(str) {
-  if (!str) return ''
-  function get_html_entity(tag) {
-    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
-    return entities[tag]
-  }
-  return str.replace(/[&<>"']/g, get_html_entity)
-}
-
-// Setup connection status UI
-function setup_connection_status(swarm) {
-  const status_el = document.querySelector('.connection-status')
-  if (swarm) {
-    // Set initial status
-    is_joining = false
-    if (swarm.connections.size > 0) {
-      status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-    } else {
-      status_el.textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
+  // Utility functions
+  const format_date = timestamp => new Date(timestamp).toLocaleString()
+  function escape_html(str) {
+    if (!str) return ''
+    function get_html_entity(tag) {
+      const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+      return entities[tag]
     }
-
-    function handle_swarm_connection() {
-      status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-      if (current_view) render_view(current_view)
-    }
-
-    function handle_swarm_disconnection() {
-      status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
-    }
-
-    swarm.on('connection', handle_swarm_connection)
-    swarm.on('disconnection', handle_swarm_disconnection)
-  } else {
-    is_joining = false
-    status_el.textContent = '🟠 Offline mode (relay not available)'
-  }
-}
-
-// Initialize blog app (called on page load)
-async function init_blog_app() {
-  try {
-    document.querySelector('.connection-status').textContent = 'Connecting to relay...'
-    is_joining = true
-
-    // Load default relay if set
-    default_relay = get_default_relay()
-
-    // Create blog app with vault
-    api = blog_app(uservault)
-
-    function handle_blog_update() {
-      if (current_view) render_view(current_view)
-    }
-
-    api.on_update(handle_blog_update)
-
-    // Init blog with user data (identity already handled pairing if in pair mode)
-    const init_options = { username }
-
-    if (default_relay) init_options.relay = default_relay
-
-    console.log('[webapp-ui] Calling api.init_blog with options:', init_options)
-    const result = await api.init_blog(init_options)
-    console.log('[webapp-ui] init_blog succeeded, result:', result)
-    store = result.store
-    swarm = result.swarm
-
-    // Update username if in pair mode (identity set it during authentication)
-    if (uservault.mode === 'pair' && uservault.username) {
-      username = uservault.username
-      localStorage.setItem('username', username)
-    }
-
-    setup_connection_status(swarm)
-
-    is_ready = true
-    is_joining = false
-
-    show_view('news')
-  } catch (err) {
-    is_joining = false
-    const error_msg = err.message
-    console.error('[webapp-ui] init_blog_app error:', err)
-    if (error_msg.includes('Relay connection failed') || error_msg.includes('Relay connection closed')) {
-      try {
-        const result = await api.init_blog({ username, offline_mode: true })
-        store = result.store
-        is_ready = true
-        setup_connection_status(null)
-        show_view('news')
-      } catch (e) { }
-
-      const status_el = document.querySelector('.connection-status')
-      status_el.innerHTML = `🔴 Relay Error: ${error_msg} <button id="relay_retry_btn">Retry</button> <button id="relay_reset_btn">Reset to Default</button>`
-      document.getElementById('relay_retry_btn').addEventListener('click', () => window.location.reload())
-      document.getElementById('relay_reset_btn').addEventListener('click', () => {
-        localStorage.removeItem('default_relay')
-        window.location.reload()
-      })
-    } else {
-      document.querySelector('.connection-status').textContent = `🔴 Error: ${error_msg}`
-    }
-  }
-}
-
-// View system
-function show_view(name) {
-  current_view = name
-  function handle_nav_button_toggle(btn) {
-    btn.classList.toggle('active', btn.dataset.view === name)
-  }
-  document.querySelectorAll('nav button').forEach(handle_nav_button_toggle)
-  render_view(name)
-}
-
-// Render function (a bit simplified than before..)
-async function render_view(view, ...args) {
-  const view_el = document.querySelector('.view')
-
-  if (is_joining) {
-    view_el.innerHTML = '<p>Joining, please wait...</p>'
-    return
+    return str.replace(/[&<>"']/g, get_html_entity)
   }
 
-  if (!is_ready && view !== 'explore') return
-  view_el.innerHTML = 'Loading...'
-
-  const renderers = {
-    news: async () => {
-      const peer_blogs = await api.get_peer_blogs()
-      if (peer_blogs.size === 0) {
-        view_el.innerHTML = '<p>No posts from subscribed peers yet. Go to the explore tab to find peers.</p>'
-        return
+  // Setup connection status UI
+  function setup_connection_status(swarm) {
+    const status_el = document.querySelector('.connection-status')
+    if (swarm) {
+      // Set initial status
+      is_joining = false
+      if (swarm.connections.size > 0) {
+        status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      } else {
+        status_el.textContent = `🟢 Joined swarm as ${username} (waiting for peers...)`
       }
-      let html = ''
-      for (const [key, blog] of peer_blogs) {
-        const profile = await api.get_profile(key)
-        const display_name = profile ? profile.name : blog.username
-        html += `<h2>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h2>`
-        if (blog.posts.length === 0) {
-          html += '<p>No posts from this peer yet.</p>'
-        } else {
-          for (const post of blog.posts) {
-            html += `<div class="post"><h3>${escape_html(post.title)}</h3><p>${escape_html(post.content)}</p><span>Posted by ${escape_html(display_name)} on: ${new Date(post.created).toLocaleString()}</span></div>`
-          }
+
+      function handle_swarm_connection() {
+        status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+        if (current_view) render_view(current_view)
+      }
+
+      function handle_swarm_disconnection() {
+        status_el.textContent = `🟢 Connected as ${username} (${swarm.connections.size} peers)`
+      }
+
+      swarm.on('connection', handle_swarm_connection)
+      swarm.on('disconnection', handle_swarm_disconnection)
+    } else {
+      is_joining = false
+      status_el.textContent = '🟠 Offline mode (relay not available)'
+    }
+  }
+
+  // Initialize blog app (called on page load)
+  async function init_blog_app() {
+    try {
+      document.querySelector('.connection-status').textContent = 'Connecting to relay...'
+      is_joining = true
+
+      // Load default relay if set
+      default_relay = get_default_relay()
+
+      // Create blog app with vault
+      api = blog_app(uservault)
+
+      function handle_blog_update() {
+        if (current_view) render_view(current_view)
+      }
+
+      function handle_verification_needed(verification_digits) {
+        // Navigate to config tab and re-render to show pairing request
+        show_view('config')
+      }
+
+      api.on_update(handle_blog_update)
+      api.on_verification_needed(handle_verification_needed)
+
+      // Init blog with user data
+      const init_options = { username }
+      
+      // Check if uservault is in pair mode
+      if (uservault.mode === 'pair' && uservault.invite_code) {
+        init_options.invite_code = uservault.invite_code
+        init_options.on_verification_code_ready = (verification_code) => {
+          document.querySelector('.connection-status').innerHTML = 
+            `🟡 Pairing...<br><strong style="font-size: 1.2em; color: #007bff;">Verification Code: ${verification_code}</strong><br><small>Share this code with Device A</small>`
         }
       }
-      view_el.innerHTML = html
-    },
+      
+      if (default_relay) init_options.relay = default_relay
+      
+      console.log('[webapp-ui] Calling api.init_blog with options:', init_options)
+      const result = await api.init_blog(init_options)
+      console.log('[webapp-ui] init_blog succeeded, result:', result)
+      store = result.store
+      swarm = result.swarm
 
-    blog: async () => {
-      const profile = await api.get_profile()
-      const display_name = profile ? profile.name : username
-      view_el.innerHTML = `<h3>${escape_html(display_name)}'s Blog</h3>`
-      const posts = await api.get_my_posts()
-      if (posts.length === 0) {
-        view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
-        return
-      }
-      for (const post of posts) {
-        const device_info = post.device_name ? ` • ${escape_html(post.device_name)}` : ''
-        view_el.innerHTML += `<div class="post"><h4>${escape_html(post.title)}</h4><p>${escape_html(post.content)}</p><small>Posted on: ${format_date(post.created)}${device_info}</small></div>`
-      }
-    },
-
-    explore: async () => {
-      let html = '<h3>Explore Peers</h3>'
-      const discovered = api.get_discovered_blogs()
-      const subscribed_blogs = await api.get_peer_blogs()
-      const subscribed_keys = Array.from(subscribed_blogs.keys())
-      const my_key = api.get_autobase_key()
-
-      if (discovered.size > 0) {
-        html += '<h4>Discovered Peers</h4>'
-        for (const [key, peer] of discovered) {
-          if (key === my_key || subscribed_keys.includes(key)) continue
-          const profile = await api.get_profile(key)
-          const display_name = profile ? profile.name : peer.username
-          const relay_info = peer.relay_url && !peer.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(peer.relay_url)}</small></p>` : ''
-          html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
+      // Update username if we got it from pairing
+      if (uservault.mode === 'pair') {
+        const pairing_result = api.get_pairing_result()
+        if (pairing_result?.username) {
+          username = pairing_result.username
+          localStorage.setItem('username', username)
         }
       }
 
-      if (subscribed_blogs.size > 0) {
-        html += '<h4>Subscribed Peers</h4>'
-        for (const [key, blog] of subscribed_blogs) {
-          if (key === my_key) continue
+      setup_connection_status(swarm)
+
+      is_ready = true
+      is_joining = false
+
+      show_view('news')
+    } catch (err) {
+      is_joining = false
+      const error_msg = err.message
+      console.error('[webapp-ui] init_blog_app error:', err)
+      if (error_msg.includes('Relay connection failed') || error_msg.includes('Relay connection closed')) {
+        try {
+          const result = await api.init_blog({ username, offline_mode: true })
+          store = result.store
+          is_ready = true
+          setup_connection_status(null)
+          show_view('news')
+        } catch (e) { }
+
+        const status_el = document.querySelector('.connection-status')
+        status_el.innerHTML = `🔴 Relay Error: ${error_msg} <button id="relay_retry_btn">Retry</button> <button id="relay_reset_btn">Reset to Default</button>`
+        document.getElementById('relay_retry_btn').addEventListener('click', () => window.location.reload())
+        document.getElementById('relay_reset_btn').addEventListener('click', () => {
+          localStorage.removeItem('default_relay')
+          window.location.reload()
+        })
+      } else {
+        document.querySelector('.connection-status').textContent = `🔴 Error: ${error_msg}`
+      }
+    }
+  }
+
+  // View system
+  function show_view(name) {
+    current_view = name
+    function handle_nav_button_toggle(btn) {
+      btn.classList.toggle('active', btn.dataset.view === name)
+    }
+    document.querySelectorAll('nav button').forEach(handle_nav_button_toggle)
+    render_view(name)
+  }
+
+  // Render function (a bit simplified than before..)
+  async function render_view(view, ...args) {
+    const view_el = document.querySelector('.view')
+
+    if (is_joining) {
+      view_el.innerHTML = '<p>Joining, please wait...</p>'
+      return
+    }
+
+    if (!is_ready && view !== 'explore') return
+    view_el.innerHTML = 'Loading...'
+
+    const renderers = {
+      news: async () => {
+        const peer_blogs = await api.get_peer_blogs()
+        if (peer_blogs.size === 0) {
+          view_el.innerHTML = '<p>No posts from subscribed peers yet. Go to the explore tab to find peers.</p>'
+          return
+        }
+        let html = ''
+        for (const [key, blog] of peer_blogs) {
           const profile = await api.get_profile(key)
           const display_name = profile ? profile.name : blog.username
-          const relay_info = blog.relay_url && !blog.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(blog.relay_url)}</small></p>` : ''
-          html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button></div><hr>`
-        }
-      }
-
-      if (discovered.size === 0 && subscribed_blogs.size === 0) {
-        html += '<p>No peers found yet. Wait for peers to be discovered.</p>'
-      }
-
-      view_el.innerHTML = html
-    },
-
-    post: () => {
-      view_el.innerHTML = '<h3>Create New Post</h3><input class="post-title" placeholder="Title"><textarea class="post-content" placeholder="Content"></textarea><button class="publish-btn">Publish</button>'
-      const publish_btn = view_el.querySelector('.publish-btn')
-      publish_btn.addEventListener('click', handle_publish)
-    },
-
-    config: async () => {
-      const my_key = api.get_autobase_key()
-      const profile = await api.get_profile()
-      const avatar_content = await api.get_avatar_content()
-      const raw_data_buttons = await generate_raw_data_buttons()
-
-      // Check if there's a pending pairing request
-      const pending_verification = pairing_manager ? pairing_manager.get_pending_verification_digits() : null
-      const pairing_section = pending_verification
-        ? `<div><h4>Active Pairing Request</h4><p>Enter 6-digit code from new device:</p><input class="verification-input" placeholder="6-digit code" style="width: 150px; padding: 5px; margin-right: 5px;" maxlength="6"><button class="verify-btn" style="padding: 5px 10px; margin-right: 5px;">Verify</button><button class="deny-pairing-btn" style="padding: 5px 10px;">Deny</button><hr></div>`
-        : ''
-
-      // Build invite section
-      let invite_section = `<div><h4>Create Invite</h4><p>Create an invite to share write access to your blog.</p><button class="create-invite-btn">Create Invite</button><div class="invite-result" style="margin-top: 10px;"></div></div>`
-
-      // Build relay list
-      const relays = get_relays()
-      const current_default = get_default_relay()
-      let relay_list_html = relays.map(r => `<div style="margin: 5px 0;"><span>${escape_html(r)}</span> <button class="relay-default-btn" data-relay="${escape_html(r)}" style="margin-left: 10px;">${r === current_default ? '✓ Default' : 'Set Default'}</button> <button class="relay-remove-btn" data-relay="${escape_html(r)}" style="margin-left: 5px; background: #dc3545; color: white; border: none; padding: 2px 8px; cursor: pointer;">Remove</button></div>`).join('')
-
-      view_el.innerHTML = `<h3>Configuration</h3>${pairing_section}<div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Relays</h4><p>Add custom relays to connect through:</p><input class="relay-input" placeholder="ws://localhost:8080 or wss://relay.example.com" style="width: 400px;"><button class="relay-add-btn">Add Relay</button><div style="margin-top: 10px;">${relay_list_html || '<p style="color: #666;">No custom relays added</p>'}</div></div><hr>${invite_section}<hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Paired Devices</h4><p>Devices that have write access to this blog:</p><div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">Loading devices...</div></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
-
-      // Load paired devices after HTML is set
-      const devices = await api.get_paired_devices()
-      const devices_list = document.querySelector('.paired-devices-list')
-      if (devices_list) {
-        const my_key = api.get_local_key()
-
-        if (devices.length === 0) {
-          devices_list.innerHTML = '<p style="color: #666;">No paired devices yet. Create an invite to add devices.</p>'
-        } else {
-          let devices_html = ''
-          for (const device of devices) {
-            const is_my_device = device.metadata_writer === my_key
-            let remove_data_attrs = ''
-            for (const [key, value] of Object.entries(device)) {
-              if (key.endsWith('_writer')) {
-                remove_data_attrs += ` data-${key.replace('_', '-')}="${escape_html(value)}"`
-              }
+          html += `<h2>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h2>`
+          if (blog.posts.length === 0) {
+            html += '<p>No posts from this peer yet.</p>'
+          } else {
+            for (const post of blog.posts) {
+              html += `<div class="post"><h3>${escape_html(post.title)}</h3><p>${escape_html(post.content)}</p><span>Posted by ${escape_html(display_name)} on: ${new Date(post.created).toLocaleString()}</span></div>`
             }
-            const remove_btn = is_my_device ? '' : `<button class="remove-device-btn"${remove_data_attrs} style="margin-top: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove Device</button>`
-            const my_device_label = is_my_device ? ' <span style="color: #28a745;">(This Device)</span>' : ''
-            let keys_html = ''
-            for (const [key, value] of Object.entries(device)) {
-              if (key.endsWith('_writer')) {
-                const structure_name = key.replace('_writer', '')
-                const display_name = structure_name.charAt(0).toUpperCase() + structure_name.slice(1)
-                keys_html += `<p><strong>${escape_html(display_name)}:</strong> ${escape_html(value)}</p>`
-              }
-            }
-            devices_html += `<div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 3px;"><p style="margin: 5px 0;"><strong>${escape_html(device.name)}</strong>${my_device_label}</p><p style="margin: 5px 0; font-size: 0.9em; color: #666;">Added: ${escape_html(device.added_date)}</p><details style="margin-top: 5px;"><summary style="cursor: pointer; color: #007bff;">Show Keys</summary><div style="margin-top: 10px; font-family: monospace; font-size: 11px; word-break: break-all;">${keys_html}</div></details>${remove_btn}</div>`
           }
-          devices_list.innerHTML = devices_html
+        }
+        view_el.innerHTML = html
+      },
+
+      blog: async () => {
+        const profile = await api.get_profile()
+        const display_name = profile ? profile.name : username
+        view_el.innerHTML = `<h3>${escape_html(display_name)}'s Blog</h3>`
+        const posts = await api.get_my_posts()
+        if (posts.length === 0) {
+          view_el.innerHTML += '<p>You have not written any posts yet. Go to New Post to create one.</p>'
+          return
+        }
+        for (const post of posts) {
+          const device_info = post.device_name ? ` • ${escape_html(post.device_name)}` : ''
+          view_el.innerHTML += `<div class="post"><h4>${escape_html(post.title)}</h4><p>${escape_html(post.content)}</p><small>Posted on: ${format_date(post.created)}${device_info}</small></div>`
+        }
+      },
+
+      explore: async () => {
+        let html = '<h3>Explore Peers</h3>'
+        const discovered = api.get_discovered_blogs()
+        const subscribed_blogs = await api.get_peer_blogs()
+        const subscribed_keys = Array.from(subscribed_blogs.keys())
+        const my_key = api.get_autobase_key()
+
+        if (discovered.size > 0) {
+          html += '<h4>Discovered Peers</h4>'
+          for (const [key, peer] of discovered) {
+            if (key === my_key || subscribed_keys.includes(key)) continue
+            const profile = await api.get_profile(key)
+            const display_name = profile ? profile.name : peer.username
+            const relay_info = peer.relay_url && !peer.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(peer.relay_url)}</small></p>` : ''
+            html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
+          }
+        }
+
+        if (subscribed_blogs.size > 0) {
+          html += '<h4>Subscribed Peers</h4>'
+          for (const [key, blog] of subscribed_blogs) {
+            if (key === my_key) continue
+            const profile = await api.get_profile(key)
+            const display_name = profile ? profile.name : blog.username
+            const relay_info = blog.relay_url && !blog.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(blog.relay_url)}</small></p>` : ''
+            html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button></div><hr>`
+          }
+        }
+
+        if (discovered.size === 0 && subscribed_blogs.size === 0) {
+          html += '<p>No peers found yet. Wait for peers to be discovered.</p>'
+        }
+
+        view_el.innerHTML = html
+      },
+
+      post: () => {
+        view_el.innerHTML = '<h3>Create New Post</h3><input class="post-title" placeholder="Title"><textarea class="post-content" placeholder="Content"></textarea><button class="publish-btn">Publish</button>'
+        const publish_btn = view_el.querySelector('.publish-btn')
+        publish_btn.addEventListener('click', handle_publish)
+      },
+
+      config: async () => {
+        const my_key = api.get_autobase_key()
+        const profile = await api.get_profile()
+        const avatar_content = await api.get_avatar_content()
+        const raw_data_buttons = await generate_raw_data_buttons()
+
+        // Check if there's a pending pairing request
+        const pending_verification = pairing_manager ? pairing_manager.get_pending_verification_digits() : null
+        const pairing_section = pending_verification
+          ? `<div><h4>Active Pairing Request</h4><p>Enter 6-digit code from new device:</p><input class="verification-input" placeholder="6-digit code" style="width: 150px; padding: 5px; margin-right: 5px;" maxlength="6"><button class="verify-btn" style="padding: 5px 10px; margin-right: 5px;">Verify</button><button class="deny-pairing-btn" style="padding: 5px 10px;">Deny</button><hr></div>`
+          : ''
+
+        // Build invite section
+        let invite_section = `<div><h4>Create Invite</h4><p>Create an invite to share write access to your blog.</p><button class="create-invite-btn">Create Invite</button><div class="invite-result" style="margin-top: 10px;"></div></div>`
+
+        // Build relay list
+        const relays = get_relays()
+        const current_default = get_default_relay()
+        let relay_list_html = relays.map(r => `<div style="margin: 5px 0;"><span>${escape_html(r)}</span> <button class="relay-default-btn" data-relay="${escape_html(r)}" style="margin-left: 10px;">${r === current_default ? '✓ Default' : 'Set Default'}</button> <button class="relay-remove-btn" data-relay="${escape_html(r)}" style="margin-left: 5px; background: #dc3545; color: white; border: none; padding: 2px 8px; cursor: pointer;">Remove</button></div>`).join('')
+
+        view_el.innerHTML = `<h3>Configuration</h3>${pairing_section}<div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Relays</h4><p>Add custom relays to connect through:</p><input class="relay-input" placeholder="ws://localhost:8080 or wss://relay.example.com" style="width: 400px;"><button class="relay-add-btn">Add Relay</button><div style="margin-top: 10px;">${relay_list_html || '<p style="color: #666;">No custom relays added</p>'}</div></div><hr>${invite_section}<hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Paired Devices</h4><p>Devices that have write access to this blog:</p><div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">Loading devices...</div></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
+
+        // Load paired devices after HTML is set
+        const devices = await api.get_paired_devices()
+        const devices_list = document.querySelector('.paired-devices-list')
+        if (devices_list) {
+          const my_key = api.get_local_key()
+
+          if (devices.length === 0) {
+            devices_list.innerHTML = '<p style="color: #666;">No paired devices yet. Create an invite to add devices.</p>'
+          } else {
+            let devices_html = ''
+            for (const device of devices) {
+              const is_my_device = device.metadata_writer === my_key
+              let remove_data_attrs = ''
+              for (const [key, value] of Object.entries(device)) {
+                if (key.endsWith('_writer')) {
+                  remove_data_attrs += ` data-${key.replace('_', '-')}="${escape_html(value)}"`
+                }
+              }
+              const remove_btn = is_my_device ? '' : `<button class="remove-device-btn"${remove_data_attrs} style="margin-top: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove Device</button>`
+              const my_device_label = is_my_device ? ' <span style="color: #28a745;">(This Device)</span>' : ''
+              let keys_html = ''
+              for (const [key, value] of Object.entries(device)) {
+                if (key.endsWith('_writer')) {
+                  const structure_name = key.replace('_writer', '')
+                  const display_name = structure_name.charAt(0).toUpperCase() + structure_name.slice(1)
+                  keys_html += `<p><strong>${escape_html(display_name)}:</strong> ${escape_html(value)}</p>`
+                }
+              }
+              devices_html += `<div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 3px;"><p style="margin: 5px 0;"><strong>${escape_html(device.name)}</strong>${my_device_label}</p><p style="margin: 5px 0; font-size: 0.9em; color: #666;">Added: ${escape_html(device.added_date)}</p><details style="margin-top: 5px;"><summary style="cursor: pointer; color: #007bff;">Show Keys</summary><div style="margin-top: 10px; font-family: monospace; font-size: 11px; word-break: break-all;">${keys_html}</div></details>${remove_btn}</div>`
+            }
+            devices_list.innerHTML = devices_html
+          }
         }
       }
     }
+
+    if (renderers[view]) await renderers[view]()
+    else view_el.innerHTML = `View '${view}' not found.`
   }
 
-  if (renderers[view]) await renderers[view]()
-  else view_el.innerHTML = `View '${view}' not found.`
-}
-
-// Action handlers
-async function handle_publish() {
-  const title = document.querySelector('.post-title').value
-  const content = document.querySelector('.post-content').value
-  if (!title || !content) return alert('Title and content are required.')
-  try {
-    await api.create_post(title, content)
-    show_view('blog')
-  } catch (err) {
-    alert('Publish error: ' + err.message)
+  // Action handlers
+  async function handle_publish() {
+    const title = document.querySelector('.post-title').value
+    const content = document.querySelector('.post-content').value
+    if (!title || !content) return alert('Title and content are required.')
+    try {
+      await api.create_post(title, content)
+      show_view('blog')
+    } catch (err) {
+      alert('Publish error: ' + err.message)
+    }
   }
-}
 
-async function handle_subscribe(key) {
-  await api.subscribe(key)
-  render_view('explore')
-}
+  async function handle_subscribe(key) {
+    await api.subscribe(key)
+    render_view('explore')
+  }
 
-async function handle_unsubscribe(key) {
-  await api.unsubscribe(key)
-  render_view('explore')
-}
+  async function handle_unsubscribe(key) {
+    await api.unsubscribe(key)
+    render_view('explore')
+  }
 
-async function handle_create_invite() {
-  try {
-    const result = await api.create_invite()
-    const { invite_code, pairing_manager: pm } = result
-    pairing_manager = pm
-    const invite_result = document.querySelector('.invite-result')
-    invite_result.innerHTML = `
+  async function handle_create_invite() {
+    try {
+      const result = await api.create_invite()
+      const { invite_code, pairing_manager: pm } = result
+      pairing_manager = pm
+      const invite_result = document.querySelector('.invite-result')
+      invite_result.innerHTML = `
         <p>Invite Code:</p>
         <input class="invite-code-display" readonly value="${invite_code}" style="width: 400px;">
         <button class="copy-invite-btn">Copy</button>
         <p><small>Keep this page open. When a device tries to pair, go to the Config tab to verify the 6-digit code.</small></p>
       `
-    const copy_btn = invite_result.querySelector('.copy-invite-btn')
-    copy_btn.addEventListener('click', () => {
-      if (navigator.clipboard) navigator.clipboard.writeText(invite_code)
-      else { const el = document.createElement('textarea'); el.value = invite_code; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
-      const orig = copy_btn.textContent
-      copy_btn.textContent = 'Copied!'
-      setTimeout(() => { copy_btn.textContent = orig }, 2000)
-    })
-  } catch (err) {
-    alert('Error creating invite: ' + err.message)
+      const copy_btn = invite_result.querySelector('.copy-invite-btn')
+      copy_btn.addEventListener('click', () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(invite_code)
+        else { const el = document.createElement('textarea'); el.value = invite_code; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
+        const orig = copy_btn.textContent
+        copy_btn.textContent = 'Copied!'
+        setTimeout(() => { copy_btn.textContent = orig }, 2000)
+      })
+    } catch (err) {
+      alert('Error creating invite: ' + err.message)
+    }
   }
-}
 
-async function handle_manual_subscribe() {
-  const key = document.querySelector('.manual-key-input').value.trim()
-  if (!key) return alert('Please enter a blog address.')
-  const my_key = api.get_autobase_key()
-  if (key === my_key) return alert("You can't subscribe to yourself.")
-  const success = await api.subscribe(key)
-  if (success) {
-    alert('Successfully subscribed!')
-    show_view('news')
-  } else {
-    alert('Failed to subscribe. The key may be invalid or the peer is offline.')
-  }
-}
-
-async function handle_remove_device(button) {
-  const device = {}
-  for (const [key, value] of Object.entries(button.dataset)) {
-    const snake_key = key.replace(/([A-Z])/g, '_$1').toLowerCase()
-    device[snake_key] = value
-  }
-  if (!confirm('Remove this device? This will revoke write access from all drives.')) return
-  try {
-    button.disabled = true
-    button.textContent = 'Removing...'
-    const success = await api.remove_device(device)
+  async function handle_manual_subscribe() {
+    const key = document.querySelector('.manual-key-input').value.trim()
+    if (!key) return alert('Please enter a blog address.')
+    const my_key = api.get_autobase_key()
+    if (key === my_key) return alert("You can't subscribe to yourself.")
+    const success = await api.subscribe(key)
     if (success) {
-      show_view('config')
+      alert('Successfully subscribed!')
+      show_view('news')
     } else {
-      alert('Failed to remove device')
+      alert('Failed to subscribe. The key may be invalid or the peer is offline.')
+    }
+  }
+
+  async function handle_remove_device(button) {
+    const device = {}
+    for (const [key, value] of Object.entries(button.dataset)) {
+      const snake_key = key.replace(/([A-Z])/g, '_$1').toLowerCase()
+      device[snake_key] = value
+    }
+    if (!confirm('Remove this device? This will revoke write access from all drives.')) return
+    try {
+      button.disabled = true
+      button.textContent = 'Removing...'
+      const success = await api.remove_device(device)
+      if (success) {
+        show_view('config')
+      } else {
+        alert('Failed to remove device')
+        button.disabled = false
+        button.textContent = 'Remove Device'
+      }
+    } catch (err) {
+      alert('Error: ' + err.message)
       button.disabled = false
       button.textContent = 'Remove Device'
     }
-  } catch (err) {
-    alert('Error: ' + err.message)
-    button.disabled = false
-    button.textContent = 'Remove Device'
   }
-}
 
-async function handle_reset_all_data() {
-  if (!confirm('Delete all data?')) return
-  try {
-    localStorage.clear()
-    const databases = await window.indexedDB.databases()
-    for (const db of databases) {
-      if (db.name && (db.name.includes('blogs-') || db.name.includes('random-access-web') || db.name.includes('identity-'))) {
-        window.indexedDB.deleteDatabase(db.name)
+  async function handle_reset_all_data() {
+    if (!confirm('Delete all data?')) return
+    try {
+      localStorage.clear()
+      const databases = await window.indexedDB.databases()
+      for (const db of databases) {
+        if (db.name && (db.name.includes('blogs-') || db.name.includes('random-access-web') || db.name.includes('identity-'))) {
+          window.indexedDB.deleteDatabase(db.name)
+        }
       }
-    }
 
-    if (window.requestFileSystem || window.webkitRequestFileSystem) {
-      const requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem
-      function handle_file_system_cleanup(resolve, reject) {
-        function handle_file_system_success(fs) {
-          function handle_entries_read(entries) {
-            if (!entries.length) return resolve()
-            let completed = 0
+      if (window.requestFileSystem || window.webkitRequestFileSystem) {
+        const requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem
+        function handle_file_system_cleanup(resolve, reject) {
+          function handle_file_system_success(fs) {
+            function handle_entries_read(entries) {
+              if (!entries.length) return resolve()
+              let completed = 0
 
-            function handle_entry_removal() {
-              completed++
-              if (completed === entries.length) resolve()
+              function handle_entry_removal() {
+                completed++
+                if (completed === entries.length) resolve()
+              }
+
+              function handle_entry_cleanup(entry) {
+                entry.isFile ? entry.remove(handle_entry_removal, handle_entry_removal) : entry.removeRecursively(handle_entry_removal, handle_entry_removal)
+              }
+
+              entries.forEach(handle_entry_cleanup)
             }
 
-            function handle_entry_cleanup(entry) {
-              entry.isFile ? entry.remove(handle_entry_removal, handle_entry_removal) : entry.removeRecursively(handle_entry_removal, handle_entry_removal)
-            }
-
-            entries.forEach(handle_entry_cleanup)
+            fs.root.createReader().readEntries(handle_entries_read, reject)
           }
 
-          fs.root.createReader().readEntries(handle_entries_read, reject)
+          requestFileSystem(window.PERSISTENT, 1024 * 1024, handle_file_system_success, reject)
         }
 
-        requestFileSystem(window.PERSISTENT, 1024 * 1024, handle_file_system_success, reject)
+        await new Promise(handle_file_system_cleanup)
       }
 
-      await new Promise(handle_file_system_cleanup)
-    }
+      if (store) {
+        try { await store.close() } catch (err) { }
+      }
 
-    if (store) {
-      try { await store.close() } catch (err) { }
+      window.location.reload()
+    } catch (err) {
+      alert('Reset error: ' + err.message)
     }
-
-    window.location.reload()
-  } catch (err) {
-    alert('Reset error: ' + err.message)
   }
-}
 
-// Generate raw data buttons dynamically (meaning based on the amount of data structures)
-async function generate_raw_data_buttons() {
-  if (!api.get_structure_names) {
-    // Fallback for old api
-    return `
+  // Generate raw data buttons dynamically (meaning based on the amount of data structures)
+  async function generate_raw_data_buttons() {
+    if (!api.get_structure_names) {
+      // Fallback for old api
+      return `
         <button class="raw-metadata-btn">Metadata</button>
         <button class="raw-drive-btn">Drive</button>
         <button class="raw-profile-btn">Profile</button>
         <button class="raw-events-btn">Events</button>
       `
-  }
-
-  const structure_names = api.get_structure_names()
-  let buttons_html = ''
-
-  for (const name of structure_names) {
-    const display_name = name.charAt(0).toUpperCase() + name.slice(1)
-    buttons_html += `<button class="raw-${name}-btn">${display_name}</button>`
-  }
-
-  return buttons_html
-}
-
-// Raw data handler
-function handle_raw_data(action, type) {
-  const options = document.querySelector('.raw-data-options')
-  const display = document.querySelector('.raw-data-display')
-
-  if (action === 'toggle') {
-    options.style.display = options.style.display === 'none' ? 'block' : 'none'
-    display.style.display = 'none'
-    return
-  }
-
-  display.textContent = 'Loading...'
-  display.style.display = 'block'
-  api.get_raw_data(type).then(data => { display.textContent = data }).catch(err => { display.textContent = 'Error: ' + err.message })
-}
-
-function handle_upload_avatar() {
-  const file_input = document.querySelector('.avatar-upload')
-  const file = file_input.files[0]
-  if (!file) {
-    alert('Please select a file first')
-    return
-  }
-  if (!file.type.startsWith('image/')) {
-    alert('Please select an image file')
-    return
-  }
-  const max_file_size = 1024 * 1024 // 1MB limit
-  if (file.size > max_file_size) {
-    alert(`File too large! Maximum size is 1MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
-    return
-  }
-  const reader = new FileReader()
-  reader.onload = async function (e) {
-    try {
-      const image_data = new Uint8Array(e.target.result)
-      await api.upload_avatar(image_data, file.name)
-      alert('Profile picture uploaded successfully!')
-      if (current_view === 'config') render_view('config')
-    } catch (err) {
-      alert('Upload failed: ' + err.message)
     }
-  }
-  reader.readAsArrayBuffer(file)
-}
 
-// Event listeners setup
-document.querySelectorAll('nav button').forEach(btn => {
-  btn.addEventListener('click', () => show_view(btn.dataset.view))
-})
-document.addEventListener('click', (event) => {
-  const target = event.target
-  if (target.classList.contains('verify-btn')) {
-    const entered_code = document.querySelector('.verification-input').value.trim()
-    if (!entered_code || entered_code.length !== 6) {
-      return alert('Please enter exactly 6 digits')
+    const structure_names = api.get_structure_names()
+    let buttons_html = ''
+
+    for (const name of structure_names) {
+      const display_name = name.charAt(0).toUpperCase() + name.slice(1)
+      buttons_html += `<button class="raw-${name}-btn">${display_name}</button>`
     }
-    api.verify_pairing(entered_code).then((result) => {
-      // Check if multiple pairing attempts were detected
-      if (result && result.multiple_attempts) {
-        alert(`NOTICE\n\nPairing successful, but ${result.total_attempts} device(s) attempted to pair simultaneously.\n\nThis could indicate:\n- Someone tried to steal your invite code\n- You accidentally pasted the invite on multiple devices\nIf you didn't initiate multiple pairing attempts, your invite code may have been compromised. Consider this a security warning.`)
+
+    return buttons_html
+  }
+
+  // Raw data handler
+  function handle_raw_data(action, type) {
+    const options = document.querySelector('.raw-data-options')
+    const display = document.querySelector('.raw-data-display')
+
+    if (action === 'toggle') {
+      options.style.display = options.style.display === 'none' ? 'block' : 'none'
+      display.style.display = 'none'
+      return
+    }
+
+    display.textContent = 'Loading...'
+    display.style.display = 'block'
+    api.get_raw_data(type).then(data => { display.textContent = data }).catch(err => { display.textContent = 'Error: ' + err.message })
+  }
+
+  function handle_upload_avatar() {
+    const file_input = document.querySelector('.avatar-upload')
+    const file = file_input.files[0]
+    if (!file) {
+      alert('Please select a file first')
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+    const max_file_size = 1024 * 1024 // 1MB limit
+    if (file.size > max_file_size) {
+      alert(`File too large! Maximum size is 1MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = async function (e) {
+      try {
+        const image_data = new Uint8Array(e.target.result)
+        await api.upload_avatar(image_data, file.name)
+        alert('Profile picture uploaded successfully!')
+        if (current_view === 'config') render_view('config')
+      } catch (err) {
+        alert('Upload failed: ' + err.message)
       }
-      show_view('config')
-    }).catch(err => {
-      alert('Verification failed: ' + err.message)
-    })
+    }
+    reader.readAsArrayBuffer(file)
   }
-  if (target.classList.contains('deny-pairing-btn')) {
-    api.deny_pairing()
-    show_view('config')
-  }
-  if (target.classList.contains('subscribe-btn')) handle_subscribe(target.dataset.key)
-  if (target.classList.contains('unsubscribe-btn')) handle_unsubscribe(target.dataset.key)
-  if (target.classList.contains('copy-address-btn')) {
-    const text = document.querySelector('.blog-address-input').value
-    if (navigator.clipboard) navigator.clipboard.writeText(text)
-    else { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
-  }
-  if (target.classList.contains('copy-invite-btn')) {
-    const invite_input = document.querySelector('.invite-code-display')
-    const code_to_copy = invite_input ? invite_input.value : ''
-    if (navigator.clipboard) navigator.clipboard.writeText(code_to_copy)
-    else { const el = document.createElement('textarea'); el.value = code_to_copy; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
-    const orig = target.textContent
-    target.textContent = 'Copied!'
-    setTimeout(() => { target.textContent = orig }, 2000)
-  }
-  if (target.classList.contains('relay-add-btn')) {
-    const relay_input = document.querySelector('.relay-input')
-    const relay_url = relay_input.value.trim()
-    if (!relay_url) return alert('Please enter a relay URL')
-    add_relay(relay_url)
-    relay_input.value = ''
-    render_view('config')
-  }
-  if (target.classList.contains('relay-default-btn')) {
-    set_default_relay(target.dataset.relay)
-    render_view('config')
-  }
-  if (target.classList.contains('relay-remove-btn')) {
-    remove_relay(target.dataset.relay)
-    render_view('config')
-  }
-  if (target.classList.contains('create-invite-btn')) handle_create_invite()
-  if (target.classList.contains('manual-subscribe-btn')) handle_manual_subscribe()
-  if (target.classList.contains('remove-device-btn')) handle_remove_device(target)
-  if (event.target.classList.contains('reset-data-btn')) handle_reset_all_data()
-  if (event.target.classList.contains('upload-avatar-btn')) handle_upload_avatar()
-  if (target.classList.contains('show-raw-data-btn')) handle_raw_data('toggle')
-  const classList = Array.from(target.classList)
-  const rawBtnClass = classList.find(c => c.startsWith('raw-') && c.endsWith('-btn'))
-  if (rawBtnClass) {
-    const structure_name = rawBtnClass.replace('raw-', '').replace('-btn', '')
-    handle_raw_data('show', structure_name)
-  }
-})
 
-// Start app initialization
-if (username) {
-  init_blog_app()
-}
+  // Event listeners setup
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => show_view(btn.dataset.view))
+  })
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    if (target.classList.contains('verify-btn')) {
+      const entered_code = document.querySelector('.verification-input').value.trim()
+      if (!entered_code || entered_code.length !== 6) {
+        return alert('Please enter exactly 6 digits')
+      }
+      api.verify_pairing(entered_code).then((result) => {
+        // Check if multiple pairing attempts were detected
+        if (result && result.multiple_attempts) {
+          alert(`NOTICE\n\nPairing successful, but ${result.total_attempts} device(s) attempted to pair simultaneously.\n\nThis could indicate:\n- Someone tried to steal your invite code\n- You accidentally pasted the invite on multiple devices\nIf you didn't initiate multiple pairing attempts, your invite code may have been compromised. Consider this a security warning.`)
+        }
+        show_view('config')
+      }).catch(err => {
+        alert('Verification failed: ' + err.message)
+      })
+    }
+    if (target.classList.contains('deny-pairing-btn')) {
+      api.deny_pairing()
+      show_view('config')
+    }
+    if (target.classList.contains('subscribe-btn')) handle_subscribe(target.dataset.key)
+    if (target.classList.contains('unsubscribe-btn')) handle_unsubscribe(target.dataset.key)
+    if (target.classList.contains('copy-address-btn')) {
+      const text = document.querySelector('.blog-address-input').value
+      if (navigator.clipboard) navigator.clipboard.writeText(text)
+      else { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
+    }
+    if (target.classList.contains('copy-invite-btn')) {
+      const invite_input = document.querySelector('.invite-code-display')
+      const code_to_copy = invite_input ? invite_input.value : ''
+      if (navigator.clipboard) navigator.clipboard.writeText(code_to_copy)
+      else { const el = document.createElement('textarea'); el.value = code_to_copy; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
+      const orig = target.textContent
+      target.textContent = 'Copied!'
+      setTimeout(() => { target.textContent = orig }, 2000)
+    }
+    if (target.classList.contains('relay-add-btn')) {
+      const relay_input = document.querySelector('.relay-input')
+      const relay_url = relay_input.value.trim()
+      if (!relay_url) return alert('Please enter a relay URL')
+      add_relay(relay_url)
+      relay_input.value = ''
+      render_view('config')
+    }
+    if (target.classList.contains('relay-default-btn')) {
+      set_default_relay(target.dataset.relay)
+      render_view('config')
+    }
+    if (target.classList.contains('relay-remove-btn')) {
+      remove_relay(target.dataset.relay)
+      render_view('config')
+    }
+    if (target.classList.contains('create-invite-btn')) handle_create_invite()
+    if (target.classList.contains('manual-subscribe-btn')) handle_manual_subscribe()
+    if (target.classList.contains('remove-device-btn')) handle_remove_device(target)
+    if (event.target.classList.contains('reset-data-btn')) handle_reset_all_data()
+    if (event.target.classList.contains('upload-avatar-btn')) handle_upload_avatar()
+    if (target.classList.contains('show-raw-data-btn')) handle_raw_data('toggle')
+    const classList = Array.from(target.classList)
+    const rawBtnClass = classList.find(c => c.startsWith('raw-') && c.endsWith('-btn'))
+    if (rawBtnClass) {
+      const structure_name = rawBtnClass.replace('raw-', '').replace('-btn', '')
+      handle_raw_data('show', structure_name)
+    }
+  })
+
+  // Start app initialization
+  if (username) {
+    init_blog_app()
+  }
 
 },{"p2p-news-app":1}],3:[function(require,module,exports){
 (function (Buffer){(function (){
