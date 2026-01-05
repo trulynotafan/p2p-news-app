@@ -3137,6 +3137,156 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
+module.exports = {
+  '/my-stories/story-1': {
+    title: 'My First Post on P2P Stories',
+    author: 'You',
+    date: '3h ago',
+    description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
+    tags: [],
+    color: '#a78bfa',
+    content: '<p>Excited to join this decentralized blogging platform!</p>'
+  },
+  '/my-stories/story-2': {
+    title: 'Building a P2P Network from Scratch',
+    author: 'You',
+    date: '2d ago',
+    description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
+    tags: ['#Tech', '#Tutorial'],
+    color: '#a78bfa',
+    content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
+  },
+  '/my-stories/story-3': {
+    title: 'The Future of Decentralized Publishing',
+    author: 'You',
+    date: '5d ago',
+    description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
+    tags: ['#Opinion', '#Blockchain'],
+    color: '#a78bfa',
+    content: '<p>Traditional platforms face centralization issues...</p>'
+  },
+  '/my-stories/story-4': {
+    title: 'Why Decentralization Matters in 2025',
+    author: 'You',
+    date: '1w ago',
+    description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
+    tags: ['#Opinion', '#Tech'],
+    color: '#a78bfa',
+    content: '<p>As we enter a hyper-connected world...</p>'
+  },
+  '/feeds/off-the-grid/mesh-network': {
+    title: 'Building a mesh network in your neighborhood',
+    author: 'Off the Grid',
+    date: '2h ago',
+    description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
+    tags: ['#tech', '#p2p'],
+    color: '#e0e7ff',
+    content: '<p>Community-owned internet is possible...</p>'
+  },
+  '/feeds/off-the-grid/fediverse': {
+    title: 'Why I left social media for the fediverse',
+    author: 'Off the Grid',
+    date: '5h ago',
+    description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
+    tags: ['#opinion', '#blockchain'],
+    color: '#fecaca',
+    content: '<p>After 10 years on corporate platforms...</p>'
+  },
+  '/feeds/off-the-grid/self-hosting': {
+    title: 'Self-hosting 101: Start with these apps',
+    author: 'Off the Grid',
+    date: '1d ago',
+    description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
+    tags: ['#tutorials'],
+    color: '#22d3ee',
+    content: '<p>You don\'t need to be a sysadmin...</p>'
+  },
+  '/feeds/hackers-digest/code-coffee': {
+    title: 'Code & Coffee: Episode 42',
+    author: 'Hacker Digest',
+    date: '3h ago',
+    description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
+    tags: ['#podcast', '#debugging', '#coffee'],
+    color: '#fcd34d',
+    content: `
+      <h2>Espresso & Error Handling</h2>
+      <p>This week we discuss why your try-catch blocks are hiding bugs.</p>
+    `
+  },
+  '/feeds/hackers-digest/system-design': {
+    title: 'System Design: Scaling to 1M Users',
+    author: 'Hacker Digest',
+    date: '6h ago',
+    description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
+    tags: ['#system-design', '#scaling', '#architecture'],
+    color: '#6ee7b7',
+    content: `
+      <h2>Horizontal vs Vertical Scaling</h2>
+      <p>A deep dive into sharding databases and load balancing.</p>
+    `
+  },
+  '/feeds/peer-review/network-notes': {
+    title: 'Network Topologies in 2025',
+    author: 'Peer Review',
+    date: '12h ago',
+    description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
+    tags: ['#networking', '#mesh', '#future'],
+    color: '#93c5fd',
+    content: `
+      <p>Mesh networks are finally becoming viable for consumer apps.</p>
+    `
+  },
+  '/feeds/peer-review/security-chronicles': {
+    title: 'Security Chronicles',
+    author: 'Peer Review',
+    date: '1d ago',
+    description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
+    tags: ['#security', '#privacy', '#collection'],
+    color: '#fca5a5',
+    content: ''
+  },
+  '/feeds/peer-review/security-chronicles/privacy-matters': {
+    title: 'Why Privacy Matters',
+    author: 'Security Chronicles',
+    date: '2d ago',
+    description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
+    tags: ['#privacy', '#rights', '#philosophy'],
+    color: '#fca5a5',
+    content: `
+      <p>Privacy is not about hiding; it's about consent.</p>
+    `
+  },
+  '/feeds/peer-review/security-chronicles/zero-trust': {
+    title: 'Zero Trust Architecture',
+    author: 'Security Chronicles',
+    date: '3d ago',
+    description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
+    tags: ['#security', '#cloud', '#enterprise'],
+    color: '#fca5a5',
+    content: `
+      <p>Traditional perimeter security is obsolete.</p>
+    `
+  },
+  '/lists/best-of-tech': {
+    title: 'Best Tech of 2024',
+    author: 'TechDaily',
+    date: '2024-12-30',
+    content: `
+      <p>1. P2P News App</p>
+      <p>2. The rest...</p>
+    `
+  },
+  '/lists/morning-read': {
+    title: 'Morning Read: Stoicism for Devs',
+    author: 'Daily Stoic',
+    date: '2025-01-01',
+    content: `
+      <p>Accept the bugs you cannot fix. Have courage to fix the ones you can.</p>
+    `
+  }
+}
+
+},{}],4:[function(require,module,exports){
 module.exports = graphdb
 
 function graphdb(entries) {
@@ -3181,7 +3331,7 @@ function graphdb(entries) {
     }
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] news/index.js running')
@@ -3193,7 +3343,7 @@ const wrapper = require('./wrapper')
 
 module.exports = news_app
 
-async function news_app(opts = {}) {
+async function news_app (opts = {}) {
   console.log('[news_app] called with opts:', opts)
   const { sid, vault } = opts
 
@@ -3241,7 +3391,7 @@ async function news_app(opts = {}) {
   return container
 }
 
-async function init(vault, sidebarEl, mainEl, sid) {
+async function init (vault, sidebarEl, mainEl, sid) {
   try {
     /*
             const api = blog_app(vault)
@@ -3293,8 +3443,8 @@ async function init(vault, sidebarEl, mainEl, sid) {
   }
 }
 
-function fallback_module() {
-  function fallback_instance() {
+function fallback_module () {
+  function fallback_instance () {
     return {
       _: {
         './wrapper': {
@@ -3335,7 +3485,7 @@ function fallback_module() {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
+},{"./wrapper":6,"STATE":1}],6:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] wrapper.js running, filename:', __filename)
@@ -3344,6 +3494,8 @@ const statedb = STATE(__filename)
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
+
+const dummy_content = require('./dummy_content')
 
 module.exports = my_component_with_graph
 
@@ -3362,15 +3514,81 @@ async function my_component_with_graph(opts, protocol) {
   }
 
   const el = document.createElement('div')
-  el.style.height = '100%'
-  el.style.width = '100%'
+  el.style.position = 'absolute'
+  el.style.top = '0'
+  el.style.left = '0'
+  el.style.right = '0'
+  el.style.bottom = '0'
+  el.style.display = 'flex' // Flexbox layout
+
   const shadow = el.attachShadow({ mode: 'closed' })
   const sheet = new CSSStyleSheet()
   shadow.adoptedStyleSheets = [sheet]
 
   const subs = await sdb.watch(onbatch)
   const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
+
+
+  explorer_el.style.width = '250px'
+  explorer_el.style.flexShrink = '0'
+  explorer_el.style.borderRight = '1px solid #e5e7eb'
+
+
+  const main_content = document.createElement('div')
+  main_content.style.flex = '1'
+  main_content.style.padding = '40px'
+  main_content.style.overflowY = 'auto'
+  main_content.style.backgroundColor = '#ffffff'
+  main_content.style.color = '#1f2937'
+  main_content.style.fontFamily = "'Inter', sans-serif"
+  main_content.innerHTML = `
+    <div style="text-align: center; margin-top: 100px; color: #9ca3af;">
+      <h2>Select an item to read</h2>
+      <p>← Choose a story or feed from the sidebar</p>
+    </div>
+  `
+
   shadow.append(explorer_el)
+  shadow.append(main_content)
+
+
+
+  explorer_el.addEventListener('click', (e) => {
+    const nodeEl = e.target.closest('.node')
+    if (!nodeEl) return
+
+
+    if (e.target.closest('.name') || e.target.closest('.prefix')) return
+
+
+    const instance_path = nodeEl.dataset.instance_path
+    if (instance_path && send_to_graph_explorer) {
+      console.log('[Interaction] Whitespace/Icon toggle:', instance_path)
+      const head = [id, 'graph_explorer', mid++]
+      send_to_graph_explorer({
+        head,
+        type: 'toggle_node',
+        data: { instance_path, toggle_type: 'subs' }
+      })
+    }
+  })
+
+
+  window.addEventListener('news-select', (e) => {
+    const instance_path = e.detail
+    if (instance_path && send_to_graph_explorer) {
+      console.log('[Interaction] List Item Click:', instance_path)
+      const head = [id, 'graph_explorer', mid++]
+
+
+      send_to_graph_explorer({
+        head,
+        type: 'select_node',
+        data: { instance_path }
+      })
+
+    }
+  })
 
   return el
 
@@ -3388,11 +3606,9 @@ async function my_component_with_graph(opts, protocol) {
     sheet.replaceSync(data.join('\n'))
   }
 
-
-
   function on_entries(data) {
     if (!data || !data[0]) {
-      // console.error('Entries data is missing or empty.')
+
       db = graphdb({})
       notify_db_initialized({})
       return
@@ -3431,10 +3647,243 @@ async function my_component_with_graph(opts, protocol) {
     return on_graph_explorer_message
 
     function on_graph_explorer_message(msg) {
-      const { type } = msg
+      const { type, data } = msg
+
+
+      if (type === 'selection_changed') {
+        const { selected } = data
+        if (selected && selected.length > 0) {
+          const path = selected[0]
+          console.log('[Sidebar] Selection Changed:', path)
+          render_content(path)
+        }
+      }
+
+
+      if (type === 'confirmed_nodes') {
+      }
+
       if (type.startsWith('db_')) {
         handle_db_request(msg, send)
       }
+    }
+
+    function render_content(path) {
+      let data = dummy_content[path]
+
+      if (!data) {
+        const key = Object.keys(dummy_content).find(k => path.includes(k) || path.endsWith(k))
+        if (key) data = dummy_content[key]
+      }
+
+
+      if (data && data.content && data.content.trim().length > 0) {
+        main_content.innerHTML = `
+          <article style="max-width: 800px; margin: 0 auto;">
+            <header style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+              <h1 style="font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">${data.title}</h1>
+              <div style="color: #6b7280; font-size: 0.9rem;">
+                <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
+              </div>
+            </header>
+            <div style="font-size: 1.1rem; line-height: 1.7; color: #374151;">
+              ${data.content}
+            </div>
+          </article>
+        `
+      } else {
+
+        let folderName = path
+        let subs = []
+
+
+        // Instance path format: |/|/grandparent|/parent|/node
+        let dbPath = path
+        if (typeof path === 'string' && path.includes('|')) {
+          dbPath = path.split('|').pop()
+        }
+
+        if (db) {
+
+          const entry = db.get(dbPath)
+          if (entry) {
+            if (entry.name) folderName = entry.name
+            if (entry.subs) subs = entry.subs
+          } else {
+
+            const rawEntry = db.get(path)
+            if (rawEntry) {
+              if (rawEntry.name) folderName = rawEntry.name
+              if (rawEntry.subs) subs = rawEntry.subs
+            }
+          }
+        }
+
+
+        if (subs.length > 0) {
+          const listItems = subs.map(subPath => {
+
+            let itemData = dummy_content[subPath]
+            if (!itemData) {
+              const key = Object.keys(dummy_content).find(k => subPath.includes(k) || subPath.endsWith(k))
+              if (key) itemData = dummy_content[key]
+            }
+            return { path: subPath, data: itemData }
+          }).filter(item => item.data)
+
+          if (listItems.length > 0) {
+            const isMyStories = path.includes('/my-stories')
+
+
+            const filtersHtml = ''
+
+
+            const fabHtml = isMyStories ? `
+               <button style="position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: transform 0.2s;"
+                       onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                 +
+               </button>
+             ` : ''
+
+            const cardsHtml = listItems.map(({ path, data }) => {
+
+
+              const metaTop = isMyStories ? `
+                   <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">
+                     <span style="font-weight: 600; color: #111827;">${data.author}</span>
+                     <span>•</span>
+                     <span>${data.date}</span>
+                     <span>•</span>
+                     <span>${Math.floor(Math.random() * 10) + 2} min</span>
+                   </div>
+                ` : ''
+
+              const metaBottom = !isMyStories ? `
+                   <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                     <span style="font-weight: 600; color: #6b7280;">${data.author}</span>
+                     <span>•</span>
+                     <span>${data.date}</span>
+                     ${data.tags ? data.tags.map(tag => `<span style="color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">${tag}</span>`).join('') : ''}
+                   </div>
+                ` : ''
+
+              const tagsBottom = isMyStories ? `
+                   <div style="display: flex; align-items: center; gap: 0.5rem;">
+                     ${data.tags ? data.tags.map(tag => `<span style="color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">${tag}</span>`).join('') : ''}
+                   </div>
+                ` : ''
+
+              return `
+               <div onclick="window.dispatchEvent(new CustomEvent('news-select', { detail: '${path}' }))" 
+                    style="display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;"
+                    onmouseover="this.style.background='rgba(0,0,0,0.01)'" 
+                    onmouseout="this.style.background='transparent'">
+                 
+                 <!-- Avatar/Icon -->
+                 <div style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; background-color: ${data.color || '#e5e7eb'}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600;">
+                    ${data.title.charAt(0)}
+                 </div>
+
+                 <!-- Content -->
+                 <div style="flex: 1;">
+                   ${metaTop}
+                   
+                   <h3 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0;">${data.title}</h3>
+                   <p style="color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0;">
+                     ${data.description || 'No description available.'}
+                   </p>
+                   
+                   ${metaBottom}
+                   ${tagsBottom}
+                 </div>
+               </div>
+             `}).join('')
+
+            main_content.innerHTML = `
+               <div style="max-width: 900px; margin: 0 auto; padding-bottom: 80px;">
+                 <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                   <div>
+                     <h2 style="font-size: 2rem; font-weight: 700; color: #111827; margin: 0;">${folderName}</h2>
+                     ${isMyStories ? '<p style="color: #6b7280; margin-top: 0.5rem;">Your published posts</p>' : ''}
+                   </div>
+                   ${''}
+                 </header>
+                 
+                 ${filtersHtml}
+                 
+                 <div>
+                   ${cardsHtml}
+                 </div>
+               </div>
+               ${fabHtml}
+             `
+
+            return
+          }
+        }
+
+
+        main_content.innerHTML = `
+          <div style="text-align: center; margin-top: 50px; color: #9ca3af;">
+            <div style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;">📂</div>
+            <h2 style="color: #374151;">${folderName}</h2>
+            <p>Select a file inside to view content.</p>
+          </div>
+        `
+      }
+    }
+
+    function render_card(path, data, isMyStories) {
+      const metaTop = isMyStories ? `
+         <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">
+           <span style="font-weight: 600; color: #111827;">${data.author}</span>
+           <span>•</span>
+           <span>${data.date}</span>
+           <span>•</span>
+           <span>${Math.floor(Math.random() * 10) + 2} min</span>
+         </div>
+      ` : ''
+
+      const metaBottom = !isMyStories ? `
+         <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+           <span style="font-weight: 600; color: #6b7280;">${data.author}</span>
+           <span>•</span>
+           <span>${data.date}</span>
+           ${data.tags ? data.tags.map(tag => `<span style="color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">${tag}</span>`).join('') : ''}
+         </div>
+      ` : ''
+
+      const tagsBottom = isMyStories ? `
+         <div style="display: flex; align-items: center; gap: 0.5rem;">
+           ${data.tags ? data.tags.map(tag => `<span style="color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">${tag}</span>`).join('') : ''}
+         </div>
+      ` : ''
+
+      return `
+     <div onclick="window.dispatchEvent(new CustomEvent('news-select', { detail: '${path}' }))" 
+          style="display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;"
+          onmouseover="this.style.background='rgba(0,0,0,0.01)'" 
+          onmouseout="this.style.background='transparent'">
+       
+       <!-- Avatar/Icon -->
+       <div style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; background-color: ${data.color || '#e5e7eb'}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600;">
+          ${data.title.charAt(0)}
+       </div>
+
+       <!-- Content -->
+       <div style="flex: 1;">
+         ${metaTop}
+         
+         <h3 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0;">${data.title}</h3>
+         <p style="color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0;">
+           ${data.description || 'No description available.'}
+         </p>
+         
+         ${metaBottom}
+         ${tagsBottom}
+       </div>
+     </div>
+   `
     }
 
     async function handle_db_request(request_msg, send) {
@@ -3449,20 +3898,6 @@ async function my_component_with_graph(opts, protocol) {
 
       if (operation === 'db_get') {
         result = db.get(params.path)
-        if (!result) {
-          // Fallback: Try to get from sdb drive directly (for runtime/, mode/ etc)
-          // Only try if it looks like a config file path (heuristic)
-          // and NOT an internal instance path (|) or entry path (/)
-          if (typeof params.path === 'string' && !params.path.startsWith('/') && !params.path.startsWith('|')) {
-            console.log('Attempting drive.get for:', params.path)
-            try {
-              const file = await drive.get(params.path)
-              if (file) result = file
-            } catch (err) {
-              console.error(`Error fetching "${params.path}" from drive:`, err)
-            }
-          }
-        }
       } else if (operation === 'db_has') {
         result = db.has(params.path)
       } else if (operation === 'db_is_empty') {
@@ -3497,7 +3932,8 @@ function fallback_module() {
   return {
     _: {
       'graph-explorer': { $: '' },
-      './graphdb': { $: '' }
+      './graphdb': { $: '' },
+      './dummy_content': { $: '' }
     },
     api: fallback_instance
   }
@@ -3518,38 +3954,15 @@ function fallback_module() {
         },
         './graphdb': {
           0: ''
+        },
+        './dummy_content': {
+          0: '' // Static load
         }
       },
       drive: {
         'theme/': {
           'style.css': {
-            raw: `
-              :host {
-                display: block;
-                height: 100%;
-                width: 100%;
-              }
-              .graph-container {
-                color: #abb2bf;
-                background-color: #282c34;
-                padding: 10px;
-                height: 100vh;
-                overflow: auto;
-              }
-              .node {
-                display: flex;
-                align-items: center;
-                white-space: nowrap;
-                cursor: default;
-                height: 22px;
-              }
-              .clickable {
-                cursor: pointer;
-              }
-              .node.type-folder > .icon::before { content: '📁'; }
-              .node.type-js-file > .icon::before { content: '📜'; }
-              .node.type-file > .icon::before { content: '📄'; }
-            `
+            raw: ''
           }
         },
         'entries/': {
@@ -3559,15 +3972,40 @@ function fallback_module() {
         },
         'runtime/': {},
         'mode/': {},
-        'flags/': {},
-        'keybinds/': {},
+        'flags/': {
+          'hubs.json': { raw: '"default"' },
+          'selection.json': { raw: 'true' },
+          'recursive_collapse.json': { raw: 'true' }
+        },
+        'keybinds/': {
+          'navigation.json': {
+            raw: JSON.stringify({
+              ArrowUp: 'navigate_up',
+              ArrowDown: 'navigate_down',
+              ArrowLeft: 'navigate_left',
+              ArrowRight: 'navigate_right',
+              ' ': 'toggle_expansion',
+              Enter: 'toggle_expansion'
+            })
+          }
+        },
         'undo/': {}
       }
     }
   }
+
   function override_theme() {
     return {
-      _: {},
+      _: {
+        mapping: {
+          style: 'theme',
+          runtime: 'runtime',
+          mode: 'mode',
+          flags: 'flags',
+          keybinds: 'keybinds',
+          undo: 'undo'
+        }
+      },
       drive: {
         'style/': {
           'style.css': {
@@ -3612,7 +4050,7 @@ function fallback_module() {
               font-size: 0.9rem;
               color: var(--text-main);
               transition: background 0.15s;
-              height: 32px; /* Fixed height for consistency */
+              height: 32px; /* Fixed height for consistency */ 
               box-sizing: border-box;
               user-select: none;
             }
@@ -3622,8 +4060,32 @@ function fallback_module() {
             }
 
             .node:hover {
-              /* .tree-item:hover */
               background: rgba(0, 0, 0, 0.04);
+            }
+
+          
+            .node > .name:hover {
+              color: var(--primary);
+            }
+
+            input[type="checkbox"] {
+              display: none !important;
+            }
+
+       
+            .node.type-stories,
+            .node.type-feeds,
+            .node.type-lists,
+            .node.type-discover,
+            .node.type-folder {
+              font-weight: 600;
+              color: #111827; /* Darker text */
+            }
+
+       
+            .node.type-file, .node.type-js-file {
+              font-weight: 400;
+              color: var(--text-main);
             }
 
             /* Map .sidebar-item.active styles */
@@ -3633,14 +4095,14 @@ function fallback_module() {
               font-weight: 600;
             }
 
-            /* HIDE THE MAGIC WAND */
+  
             .wand {
               display: none !important;
             }
-            /* Root node hidden for flat sidebar look */
+         
             .node.type-root { display: none !important; }
 
-            /* .folder-icon */
+
             .icon {
               color: var(--text-muted);
               width: 16px;
@@ -3652,7 +4114,7 @@ function fallback_module() {
               opacity: 1;      
             }
 
-            /* Expansion/Collapse Trigger (Prefix) */
+        
             .prefix {
               cursor: pointer;
               min-width: 16px; 
@@ -3667,14 +4129,14 @@ function fallback_module() {
               display: inline-flex;
             }
             
-            /* Indentation Steps */
+       
             .pipe, .blank {
               display: inline-block;
               width: 24px; /* Width per indentation level */
               height: 100%;
             }
             
-            /* Visual indicator for expansion if missing */
+            
             .prefix::after {
               content: '▸';
               font-size: 10px;
@@ -3685,33 +4147,23 @@ function fallback_module() {
             .prefix.expanded::after {
                transform: rotate(90deg);
             }
-            /* Hide prefix content if it was something else, and rely on our after */
-            /* This is a guess, but if graph-explorer leaves it empty, we are good. */
-
-            /* Custom Icons for Main Sections */
+           
             .node.type-stories > .icon::before { content: '📝'; font-size: 14px; }
             .node.type-feeds > .icon::before   { content: '📡'; font-size: 14px; }
             .node.type-lists > .icon::before   { content: '📋'; font-size: 14px; }
             .node.type-discover > .icon::before { content: '🧭'; font-size: 14px; }
 
-            /* Specific Icons - Simplifying to Standard Sidebar look */
-            /* Generic Folders */
+      
             .node.type-folder > .icon { 
               display: none;
             }
             
-            /* Files - Removing "Word" icon look, making it generic */
-            .node.type-file > .icon::before,
-            .node.type-js-file > .icon::before { 
-              content: ''; /* Remove emoji */
-              width: 6px;
-              height: 6px;
-              background-color: var(--text-muted);
-              border-radius: 50%; /* Simple dot for files */
-              display: block;
+    
+            .node.type-file > .icon, .node.type-js-file > .icon {
+              display: none;
             }
             
-            /* Selected State Icon Color Override */
+           
             .node.selected .icon {
               color: var(--primary);
             }
@@ -3720,7 +4172,7 @@ function fallback_module() {
               background-color: var(--primary);
             }
             
-            /* Clean Scrollbars */
+
             .graph-container::-webkit-scrollbar {
               width: 6px;
             }
@@ -3768,7 +4220,7 @@ function fallback_module() {
         },
         'flags/': {
           'hubs.json': { raw: '"default"' },
-          'selection.json': { raw: 'false' },
+          'selection.json': { raw: 'true' },
           'recursive_collapse.json': { raw: 'true' }
         },
         'keybinds/': {
@@ -3794,14 +4246,14 @@ function fallback_module() {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
+},{"./dummy_content":3,"./graphdb":4,"STATE":1,"graph-explorer":2}],7:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       news: {
@@ -3856,7 +4308,7 @@ const customVault = {
   }
 }
 
-async function init () {
+async function init() {
   console.log('[page.js] init started')
 
   const start = await sdb.watch(async (batch) => {
@@ -3881,4 +4333,4 @@ async function init () {
 init().catch(console.error)
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":4}]},{},[6]);
+},{"STATE":1,"news":5}]},{},[7]);
