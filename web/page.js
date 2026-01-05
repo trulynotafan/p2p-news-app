@@ -3,7 +3,7 @@ const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       news: {
@@ -58,7 +58,7 @@ const customVault = {
   }
 }
 
-async function init () {
+async function init() {
   console.log('[page.js] init started')
 
   const start = await sdb.watch(async (batch) => {
