@@ -3137,6 +3137,156 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
+module.exports = {
+  '/my-stories/story-1': {
+    title: 'My First Post on P2P Stories',
+    author: 'You',
+    date: '3h ago',
+    description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
+    tags: [],
+    color: '#a78bfa',
+    content: '<p>Excited to join this decentralized blogging platform!</p>'
+  },
+  '/my-stories/story-2': {
+    title: 'Building a P2P Network from Scratch',
+    author: 'You',
+    date: '2d ago',
+    description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
+    tags: ['#Tech', '#Tutorial'],
+    color: '#a78bfa',
+    content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
+  },
+  '/my-stories/story-3': {
+    title: 'The Future of Decentralized Publishing',
+    author: 'You',
+    date: '5d ago',
+    description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
+    tags: ['#Opinion', '#Blockchain'],
+    color: '#a78bfa',
+    content: '<p>Traditional platforms face centralization issues...</p>'
+  },
+  '/my-stories/story-4': {
+    title: 'Why Decentralization Matters in 2025',
+    author: 'You',
+    date: '1w ago',
+    description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
+    tags: ['#Opinion', '#Tech'],
+    color: '#a78bfa',
+    content: '<p>As we enter a hyper-connected world...</p>'
+  },
+  '/feeds/off-the-grid/mesh-network': {
+    title: 'Building a mesh network in your neighborhood',
+    author: 'Off the Grid',
+    date: '2h ago',
+    description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
+    tags: ['#tech', '#p2p'],
+    color: '#e0e7ff',
+    content: '<p>Community-owned internet is possible...</p>'
+  },
+  '/feeds/off-the-grid/fediverse': {
+    title: 'Why I left social media for the fediverse',
+    author: 'Off the Grid',
+    date: '5h ago',
+    description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
+    tags: ['#opinion', '#blockchain'],
+    color: '#fecaca',
+    content: '<p>After 10 years on corporate platforms...</p>'
+  },
+  '/feeds/off-the-grid/self-hosting': {
+    title: 'Self-hosting 101: Start with these apps',
+    author: 'Off the Grid',
+    date: '1d ago',
+    description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
+    tags: ['#tutorials'],
+    color: '#22d3ee',
+    content: '<p>You don\'t need to be a sysadmin...</p>'
+  },
+  '/feeds/hackers-digest/code-coffee': {
+    title: 'Code & Coffee: Episode 42',
+    author: 'Hacker Digest',
+    date: '3h ago',
+    description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
+    tags: ['#podcast', '#debugging', '#coffee'],
+    color: '#fcd34d',
+    content: `
+      <h2>Espresso & Error Handling</h2>
+      <p>This week we discuss why your try-catch blocks are hiding bugs.</p>
+    `
+  },
+  '/feeds/hackers-digest/system-design': {
+    title: 'System Design: Scaling to 1M Users',
+    author: 'Hacker Digest',
+    date: '6h ago',
+    description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
+    tags: ['#system-design', '#scaling', '#architecture'],
+    color: '#6ee7b7',
+    content: `
+      <h2>Horizontal vs Vertical Scaling</h2>
+      <p>A deep dive into sharding databases and load balancing.</p>
+    `
+  },
+  '/feeds/peer-review/network-notes': {
+    title: 'Network Topologies in 2025',
+    author: 'Peer Review',
+    date: '12h ago',
+    description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
+    tags: ['#networking', '#mesh', '#future'],
+    color: '#93c5fd',
+    content: `
+      <p>Mesh networks are finally becoming viable for consumer apps.</p>
+    `
+  },
+  '/feeds/peer-review/security-chronicles': {
+    title: 'Security Chronicles',
+    author: 'Peer Review',
+    date: '1d ago',
+    description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
+    tags: ['#security', '#privacy', '#collection'],
+    color: '#fca5a5',
+    content: ''
+  },
+  '/feeds/peer-review/security-chronicles/privacy-matters': {
+    title: 'Why Privacy Matters',
+    author: 'Security Chronicles',
+    date: '2d ago',
+    description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
+    tags: ['#privacy', '#rights', '#philosophy'],
+    color: '#fca5a5',
+    content: `
+      <p>Privacy is not about hiding; it's about consent.</p>
+    `
+  },
+  '/feeds/peer-review/security-chronicles/zero-trust': {
+    title: 'Zero Trust Architecture',
+    author: 'Security Chronicles',
+    date: '3d ago',
+    description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
+    tags: ['#security', '#cloud', '#enterprise'],
+    color: '#fca5a5',
+    content: `
+      <p>Traditional perimeter security is obsolete.</p>
+    `
+  },
+  '/lists/best-of-tech': {
+    title: 'Best Tech of 2024',
+    author: 'TechDaily',
+    date: '2024-12-30',
+    content: `
+      <p>1. P2P News App</p>
+      <p>2. The rest...</p>
+    `
+  },
+  '/lists/morning-read': {
+    title: 'Morning Read: Stoicism for Devs',
+    author: 'Daily Stoic',
+    date: '2025-01-01',
+    content: `
+      <p>Accept the bugs you cannot fix. Have courage to fix the ones you can.</p>
+    `
+  }
+}
+
+},{}],4:[function(require,module,exports){
 module.exports = graphdb
 
 function graphdb(entries) {
@@ -3181,7 +3331,7 @@ function graphdb(entries) {
     }
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] news/index.js running')
@@ -3205,6 +3355,34 @@ async function news_app (opts = {}) {
 
   const container = document.createElement('div')
   container.classList.add('container')
+
+  const style = document.createElement('style')
+  style.textContent = `
+    body { margin: 0; padding: 0; overflow: hidden; }
+    .container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .sidebar {
+      width: 250px;
+      min-width: 250px;
+      border-right: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+    }
+    .main {
+      flex: 1;
+      overflow: auto;
+      padding: 2rem;
+      background: #ffffff;
+    }
+  `
+  container.appendChild(style)
+
   container.appendChild(sidebar)
   container.appendChild(main)
 
@@ -3307,7 +3485,7 @@ function fallback_module () {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
+},{"./wrapper":6,"STATE":1}],6:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] wrapper.js running, filename:', __filename)
@@ -3317,9 +3495,11 @@ const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
 
+const dummy_content = require('./dummy_content')
+
 module.exports = my_component_with_graph
 
-async function my_component_with_graph (opts, protocol) {
+async function my_component_with_graph(opts, protocol) {
   const { id, sdb } = await get(opts.sid)
   const { drive } = sdb
 
@@ -3327,6 +3507,7 @@ async function my_component_with_graph (opts, protocol) {
   let db = null
   let send_to_graph_explorer = null
   let mid = 0
+  const cardMap = new WeakMap()
 
   const on = {
     theme: inject,
@@ -3334,19 +3515,105 @@ async function my_component_with_graph (opts, protocol) {
   }
 
   const el = document.createElement('div')
-  el.style.height = '100%'
-  el.style.width = '100%'
+
+
   const shadow = el.attachShadow({ mode: 'closed' })
+
+
+  const layoutSheet = new CSSStyleSheet();
+  layoutSheet.replaceSync(`
+      :host { 
+        position: absolute; top: 0; left: 0; bottom: 0; right: 0; 
+        display: flex; 
+        font-family: 'Inter', sans-serif;
+      }
+      .explorer-panel { 
+        width: 250px; 
+        flex-shrink: 0; 
+        border-right: 1px solid #e5e7eb; 
+      }
+      .main-viewer { 
+        flex: 1; 
+        padding: 40px; 
+        overflow-y: auto; 
+        background-color: #ffffff; 
+        color: #1f2937; 
+      }
+      .empty-container {
+        text-align: center;
+        margin-top: 100px;
+        color: #9ca3af;
+      }
+      .empty-title {
+        color: #374151;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+      .empty-hint {
+        color: #9ca3af;
+      }
+      .article-container { max-width: 800px; margin: 0 auto; }
+      .article-header { margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+      .article-title { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+      .article-meta { color: #6b7280; font-size: 0.9rem; }
+      .article-body { font-size: 1.1rem; line-height: 1.7; color: #374151; }
+      .empty-folder-container { text-align: center; margin-top: 50px; color: #9ca3af; }
+      .empty-folder-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
+      .empty-folder-title { color: #374151; }
+  `);
+
   const sheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [sheet]
+  shadow.adoptedStyleSheets = [layoutSheet, sheet]
 
   const subs = await sdb.watch(onbatch)
   const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
+
+
+  explorer_el.className = 'explorer-panel'
+
+
+
+
+  const main_content = document.createElement('div')
+  main_content.className = 'main-viewer'
+  main_content.innerHTML = `
+    <div class="empty-container">
+      <h2 class="empty-title">Select an item to read</h2>
+      <p class="empty-hint">← Choose a story or feed from the sidebar</p>
+    </div>
+  `
+
   shadow.append(explorer_el)
+  shadow.append(main_content)
+
+
+
+  explorer_el.addEventListener('click', (e) => {
+    const nodeEl = e.target.closest('.node')
+    if (!nodeEl) return
+
+
+    if (e.target.closest('.name') || e.target.closest('.prefix')) return
+
+
+    const instance_path = nodeEl.dataset.instance_path
+    if (instance_path && send_to_graph_explorer) {
+      console.log('[Interaction] Whitespace/Icon toggle:', instance_path)
+      const head = [id, 'graph_explorer', mid++]
+      send_to_graph_explorer({
+        head,
+        type: 'toggle_node',
+        data: { instance_path, toggle_type: 'subs' }
+      })
+    }
+  })
+
+
+
 
   return el
 
-  async function onbatch (batch) {
+  async function onbatch(batch) {
     for (const { type, paths } of batch) {
       const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
       const valid_data = data.filter(d => d !== null)
@@ -3356,13 +3623,13 @@ async function my_component_with_graph (opts, protocol) {
     }
   }
 
-  function inject (data) {
+  function inject(data) {
     sheet.replaceSync(data.join('\n'))
   }
 
-  function on_entries (data) {
+  function on_entries(data) {
     if (!data || !data[0]) {
-      // console.error('Entries data is missing or empty.')
+
       db = graphdb({})
       notify_db_initialized({})
       return
@@ -3385,7 +3652,7 @@ async function my_component_with_graph (opts, protocol) {
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized (entries) {
+  function notify_db_initialized(entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({
@@ -3396,18 +3663,261 @@ async function my_component_with_graph (opts, protocol) {
     }
   }
 
-  function graph_explorer_protocol (send) {
+  function graph_explorer_protocol(send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message (msg) {
-      const { type } = msg
+    function on_graph_explorer_message(msg) {
+      const { type, data } = msg
+
+
+      if (type === 'selection_changed') {
+        const { selected } = data
+        if (selected && selected.length > 0) {
+          const path = selected[0]
+          console.log('[Sidebar] Selection Changed:', path)
+          render_content(path)
+        }
+      }
+
+
+      if (type === 'confirmed_nodes') {
+      }
+
       if (type.startsWith('db_')) {
         handle_db_request(msg, send)
       }
     }
 
-    function handle_db_request (request_msg, send) {
+    function render_content(path) {
+      let data = dummy_content[path]
+
+      if (!data) {
+        const key = Object.keys(dummy_content).find(k => path.includes(k) || path.endsWith(k))
+        if (key) data = dummy_content[key]
+      }
+
+
+      if (data && data.content && data.content.trim().length > 0) {
+        main_content.innerHTML = `
+          <article class="article-container">
+            <header class="article-header">
+              <h1 class="article-title">${data.title}</h1>
+              <div class="article-meta">
+                <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
+              </div>
+            </header>
+            <div class="article-body">
+              ${data.content}
+            </div>
+          </article>
+        `
+      } else {
+
+        let folderName = path
+        let subs = []
+
+
+        // Instance path format: |/|/grandparent|/parent|/node
+        let dbPath = path
+        if (typeof path === 'string' && path.includes('|')) {
+          dbPath = path.split('|').pop()
+        }
+
+        if (db) {
+
+          const entry = db.get(dbPath)
+          if (entry) {
+            if (entry.name) folderName = entry.name
+            if (entry.subs) subs = entry.subs
+          } else {
+
+            const rawEntry = db.get(path)
+            if (rawEntry) {
+              if (rawEntry.name) folderName = rawEntry.name
+              if (rawEntry.subs) subs = rawEntry.subs
+            }
+          }
+        }
+
+
+        if (subs.length > 0) {
+
+
+          const listItems = subs.map(subPath => {
+            let itemData = dummy_content[subPath]
+            if (!itemData) {
+              const key = Object.keys(dummy_content).find(k => subPath.includes(k) || subPath.endsWith(k))
+              if (key) itemData = dummy_content[key]
+            }
+            return { path: subPath, data: itemData }
+          }).filter(item => item.data)
+
+          if (listItems.length > 0) {
+            const isMyStories = path.includes('/my-stories')
+
+
+
+            main_content.innerHTML = ''
+
+
+            const container = document.createElement('div')
+            container.className = 'news-container'
+
+
+            const header = document.createElement('header')
+            header.className = 'news-header'
+
+
+            const style = document.createElement('style')
+            style.textContent = `
+            .news-author { font-weight: 600; color: #111827; }
+            .news-author-muted { font-weight: 600; color: #6b7280; }
+            .news-separator { margin: 0 4px; }
+            .news-date-text { color: inherit; }
+
+            .main-empty-state { text-align: center; margin-top: 100px; color: #9ca3af; }
+            .main-empty-folder { text-align: center; margin-top: 50px; color: #9ca3af; }
+            .empty-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
+            .empty-title { color: #374151; }
+            
+            .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
+            .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
+            .news-card:hover { background: rgba(0,0,0,0.01); }
+            .news-avatar { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600; background-color: var(--avatar-bg, #e5e7eb); }
+            .news-content { flex: 1; }
+            .news-title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
+            .news-description { color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0; }
+            .news-meta-top { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
+            .news-meta-bottom { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
+            .news-tags { display: flex; align-items: center; gap: 0.5rem; }
+            .news-tag-pill { color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
+            .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s; z-index: 50; font-size: 1.5rem; }
+            .news-fab:hover { transform: scale(1.1); }
+            .news-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
+            .news-header h2 { font-size: 2rem; font-weight: 700; color: #111827; margin: 0; }
+            .news-subheader { color: #6b7280; margin-top: 0.5rem; }
+            `
+            container.appendChild(style)
+
+
+            container.addEventListener('click', (e) => {
+
+              let target = e.target;
+              while (target && target !== container) {
+                const path = cardMap.get(target);
+                if (path) {
+                  console.log('[Interaction] WeakMap Lookup Success:', path);
+                  const head = [id, 'graph_explorer', mid++]
+                  send_to_graph_explorer({
+                    head,
+                    type: 'select_node',
+                    data: { instance_path: path }
+                  });
+                  break;
+                }
+                target = target.parentNode;
+              }
+            });
+
+            header.innerHTML = `
+               <div>
+                  <h2>${folderName}</h2>
+                  ${isMyStories ? '<p class="news-subheader">Your published posts</p>' : ''}
+               </div>
+            `
+            container.appendChild(header)
+
+
+            const listContainer = document.createElement('div')
+            listItems.forEach(({ path, data }) => {
+              const card = document.createElement('div')
+              card.className = 'news-card'
+
+
+
+              cardMap.set(card, path);
+
+
+              let metaTopHtml = ''
+              if (isMyStories) {
+                metaTopHtml = `
+                  <div class="news-meta-top">
+                     <span class="news-author">${data.author}</span>
+                     <span class="news-separator">•</span>
+                     <span class="news-date-text">${data.date}</span>
+                     <span class="news-separator">•</span>
+                     <span class="news-date-text">${Math.floor(Math.random() * 10) + 2} min</span>
+                  </div>`
+              }
+
+
+              let metaBottomHtml = ''
+              if (!isMyStories) {
+                const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
+                metaBottomHtml = `
+                  <div class="news-meta-bottom">
+                     <span class="news-author-muted">${data.author}</span>
+                     <span class="news-separator">•</span>
+                     <span class="news-date-text">${data.date}</span>
+                     ${tags}
+                  </div>`
+              }
+
+
+              let tagsBottomHtml = ''
+              if (isMyStories) {
+                const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
+                tagsBottomHtml = `<div class="news-tags">${tags}</div>`
+              }
+
+              card.innerHTML = `
+                  <div class="news-avatar" style="--avatar-bg: ${data.color || '#e5e7eb'};">
+                     ${data.title.charAt(0)}
+                  </div>
+                  <div class="news-content">
+                     ${metaTopHtml}
+                     <h3 class="news-title">${data.title}</h3>
+                     <p class="news-description">${data.description || 'No description available.'}</p>
+                     ${metaBottomHtml}
+                     ${tagsBottomHtml}
+                  </div>
+               `
+
+              listContainer.appendChild(card)
+            })
+
+            container.appendChild(listContainer)
+            main_content.appendChild(container)
+
+
+            if (isMyStories) {
+              const fab = document.createElement('div')
+              fab.className = 'news-fab'
+              fab.textContent = '+'
+
+              fab.onclick = () => alert('Create new story')
+              main_content.appendChild(fab)
+            }
+
+            return
+          }
+        }
+
+
+        main_content.innerHTML = `
+          <div class="empty-folder-container">
+            <div class="empty-folder-icon">📂</div>
+            <h2 class="empty-folder-title">${folderName}</h2>
+            <p>Select a file inside to view content.</p>
+          </div>
+        `
+      }
+    }
+
+
+
+    async function handle_db_request(request_msg, send) {
       const { head: request_head, type: operation, data: params } = request_msg
       let result
 
@@ -3436,7 +3946,7 @@ async function my_component_with_graph (opts, protocol) {
 
       send_response(request_head, result)
 
-      function send_response (request_head, result) {
+      function send_response(request_head, result) {
         const response_head = [by, 'graph_explorer', mid++]
         send({
           head: response_head,
@@ -3449,20 +3959,21 @@ async function my_component_with_graph (opts, protocol) {
   }
 }
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       'graph-explorer': { $: '' },
-      './graphdb': { $: '' }
+      './graphdb': { $: '' },
+      './dummy_content': { $: '' }
     },
     api: fallback_instance
   }
 
-  function fallback_instance () {
+  function fallback_instance() {
     return {
       _: {
         'graph-explorer': {
-          0: '',
+          0: override_theme,
           mapping: {
             style: 'theme',
             runtime: 'runtime',
@@ -3474,38 +3985,15 @@ function fallback_module () {
         },
         './graphdb': {
           0: ''
+        },
+        './dummy_content': {
+          0: ''
         }
       },
       drive: {
         'theme/': {
           'style.css': {
-            raw: `
-              :host {
-                display: block;
-                height: 100%;
-                width: 100%;
-              }
-              .graph-container {
-                color: #abb2bf;
-                background-color: #282c34;
-                padding: 10px;
-                height: 100vh;
-                overflow: auto;
-              }
-              .node {
-                display: flex;
-                align-items: center;
-                white-space: nowrap;
-                cursor: default;
-                height: 22px;
-              }
-              .clickable {
-                cursor: pointer;
-              }
-              .node.type-folder > .icon::before { content: '📁'; }
-              .node.type-js-file > .icon::before { content: '📜'; }
-              .node.type-file > .icon::before { content: '📄'; }
-            `
+            raw: ''
           }
         },
         'entries/': {
@@ -3515,23 +4003,415 @@ function fallback_module () {
         },
         'runtime/': {},
         'mode/': {},
-        'flags/': {},
-        'keybinds/': {},
+        'flags/': {
+          'hubs.json': { raw: '"default"' },
+          'selection.json': { raw: 'true' },
+          'recursive_collapse.json': { raw: 'true' }
+        },
+        'keybinds/': {
+          'navigation.json': {
+            raw: JSON.stringify({
+              ArrowUp: 'navigate_up',
+              ArrowDown: 'navigate_down',
+              ArrowLeft: 'navigate_left',
+              ArrowRight: 'navigate_right',
+              ' ': 'toggle_expansion',
+              Enter: 'toggle_expansion'
+            })
+          }
+        },
         'undo/': {}
+      }
+    }
+  }
+
+  function override_theme() {
+    return {
+      _: {
+        mapping: {
+          style: 'theme',
+          runtime: 'runtime',
+          mode: 'mode',
+          flags: 'flags',
+          keybinds: 'keybinds',
+          undo: 'undo'
+        }
+      },
+      drive: {
+        'style/': {
+          'style.css': {
+            raw: `
+            :host {
+              --primary: #6366f1;
+              --bg-sidebar: #f9fafb;
+              --border-color: #e5e7eb;
+              --text-main: #1f2937;
+              --text-muted: #6b7280;
+
+              display: block;
+              height: 100%;
+              width: 100%;
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: var(--text-main);
+              background-color: var(--bg-sidebar);
+            }
+
+            .graph-container {
+              /* aside */
+              width: 100%;
+              height: 100vh;
+              background: var(--bg-sidebar);
+              border-right: 1px solid var(--border-color);
+              padding: 1rem 0;
+              display: flex;
+              flex-direction: column;
+              overflow: auto;
+              box-sizing: border-box;
+            }
+
+            .node {
+              /* .tree-item */
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              padding: 0.4rem 0.75rem; 
+              margin: 0.1rem 0.5rem;   
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              color: var(--text-main);
+              transition: background 0.15s;
+              height: 32px; 
+              box-sizing: border-box;
+              user-select: none;
+            }
+
+            .wrapper-root {
+               position: absolute;
+               top: 0; left: 0; right: 0; bottom: 0;
+               display: flex;
+            }
+            
+            .explorer-panel {
+               flex-shrink: 0;
+               border-right: 1px solid #e5e7eb;
+               /* width is set on instance */
+            }
+            
+            .main-viewer {
+               flex: 1;
+               padding: 40px;
+               overflow-y: auto;
+               background-color: #ffffff;
+               color: #1f2937;
+               font-family: 'Inter', sans-serif;
+            }
+
+            .clickable {
+              cursor: pointer;
+            }
+
+            .node:hover {
+              background: rgba(0, 0, 0, 0.04);
+            }
+
+          
+            .node > .name:hover {
+              color: var(--primary);
+            }
+
+            input[type="checkbox"] {
+              display: none !important;
+            }
+
+       
+            .node.type-stories,
+            .node.type-feeds,
+            .node.type-lists,
+            .node.type-discover,
+            .node.type-folder {
+              font-weight: 600;
+              color: #111827; 
+            }
+
+       
+            .node.type-file, .node.type-js-file {
+              font-weight: 400;
+              color: var(--text-main);
+            }
+
+            /* Map .sidebar-item.active styles */
+            .node.selected {
+              background: rgba(99, 102, 241, 0.1);
+              color: var(--primary);
+              font-weight: 600;
+            }
+
+  
+            .wand {
+              display: none !important;
+            }
+         
+            .node.type-root { display: none !important; }
+
+
+            .icon {
+              color: var(--text-muted);
+              width: 16px;
+              height: 16px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 0; 
+              opacity: 1;      
+            }
+
+        
+            .prefix {
+              cursor: pointer;
+              min-width: 16px; 
+              height: 100%;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .indent {
+              height: 100%;
+              display: inline-flex;
+            }
+            
+       
+            .pipe, .blank {
+              display: inline-block;
+              width: 24px; /* Width per indentation level */
+              height: 100%;
+            }
+            
+            
+            .prefix::after {
+              content: '▸';
+              font-size: 10px;
+              color: var(--text-muted);
+              display: inline-block;
+              transition: transform 0.15s;
+            }
+    
+            .prefix.expanded::after {
+               transform: rotate(90deg);
+            }
+
+            
+            
+            .news-container {
+               max-width: 900px; 
+               margin: 0 auto; 
+               padding-bottom: 80px;
+            }
+
+            .news-container .news-card {
+               display: flex;
+               gap: 1.5rem;
+               padding: 1.5rem 0;
+               border-bottom: 1px solid #f3f4f6;
+               cursor: pointer;
+               transition: background 0.2s;
+            }
+
+            .news-container .news-card:hover {
+               background: rgba(0,0,0,0.01);
+            }
+
+            .news-container .news-avatar {
+               flex-shrink: 0;
+               width: 48px;
+               height: 48px;
+               border-radius: 50%;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               font-size: 1.25rem;
+               color: white;
+               font-weight: 600;
+            }
+
+            .news-container .news-content {
+               flex: 1;
+            }
+
+            .news-container .news-title {
+               font-size: 1.25rem;
+               font-weight: 700;
+               color: #111827;
+               margin: 0 0 0.5rem 0;
+            }
+
+            .news-container .news-description {
+               color: #4b5563;
+               font-size: 1rem;
+               line-height: 1.5;
+               margin: 0 0 0.5rem 0;
+            }
+
+            .news-container .news-meta-top {
+               display: flex;
+               align-items: center;
+               gap: 0.5rem;
+               font-size: 0.875rem;
+               color: #6b7280;
+               margin-bottom: 0.25rem;
+            }
+
+            .news-container .news-meta-bottom {
+               display: flex;
+               align-items: center;
+               gap: 0.75rem;
+               font-size: 0.875rem;
+               color: #6b7280;
+               margin-top: 0.5rem;
+            }
+
+            .news-container .news-tags {
+               display: flex;
+               align-items: center;
+               gap: 0.5rem;
+            }
+            
+            .news-container .news-tag-pill {
+               color: #6366f1;
+               background: #e0e7ff;
+               padding: 2px 10px;
+               border-radius: 4px;
+               font-size: 0.75rem;
+               font-weight: 500;
+            }
+
+            .news-container .news-header {
+               margin-bottom: 2rem; 
+               display: flex; 
+               justify-content: space-between; 
+               align-items: flex-start;
+            }
+            
+            .news-container .news-header h2 {
+               font-size: 2rem; 
+               font-weight: 700; 
+               color: #111827; 
+               margin: 0;
+            }
+
+            .news-container .news-subheader {
+               color: #6b7280; 
+               margin-top: 0.5rem;
+            }
+
+           
+            .node.type-stories > .icon::before { content: '📝'; font-size: 14px; }
+            .node.type-feeds > .icon::before   { content: '📡'; font-size: 14px; }
+            .node.type-lists > .icon::before   { content: '📋'; font-size: 14px; }
+            .node.type-discover > .icon::before { content: '🧭'; font-size: 14px; }
+
+      
+            .node.type-folder > .icon { 
+              display: none;
+            }
+            
+    
+            .node.type-file > .icon, .node.type-js-file > .icon {
+              display: none;
+            }
+            
+           
+            .node.selected .icon {
+              color: var(--primary);
+            }
+            .node.selected.type-file > .icon::before,
+            .node.selected.type-js-file > .icon::before {
+              background-color: var(--primary);
+            }
+            
+
+            .graph-container::-webkit-scrollbar {
+              width: 6px;
+            }
+            .graph-container::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .graph-container::-webkit-scrollbar-thumb {
+              background: #d1d5db;
+              border-radius: 3px;
+            }
+            .graph-container::-webkit-scrollbar-thumb:hover {
+              background: #9ca3af;
+            }
+          `
+          }
+        },
+        'runtime/': {
+          'node_height.json': { raw: '16' },
+          'vertical_scroll_value.json': { raw: '0' },
+          'horizontal_scroll_value.json': { raw: '0' },
+          'selected_instance_paths.json': { raw: '[]' },
+          'confirmed_selected.json': { raw: '[]' },
+          'instance_states.json': {
+            raw: JSON.stringify({
+              '|/': { expanded_subs: true },
+              '|/my-stories': { expanded_subs: true },
+              '|/feeds': { expanded_subs: true },
+              '|/feeds/hackers-digest': { expanded_subs: true },
+              '|/feeds/peer-review': { expanded_subs: true },
+              '|/feeds/peer-review/security-chronicles': { expanded_subs: true },
+              '|/lists': { expanded_subs: true },
+              '|/discover': { expanded_subs: true }
+            })
+          },
+          'search_entry_states.json': { raw: '{}' },
+          'last_clicked_node.json': { raw: 'null' },
+          'view_order_tracking.json': { raw: '{}' }
+        },
+        'mode/': {
+          'current_mode.json': { raw: '"menubar"' },
+          'previous_mode.json': { raw: '"menubar"' },
+          'search_query.json': { raw: '""' },
+          'multi_select_enabled.json': { raw: 'false' },
+          'select_between_enabled.json': { raw: 'false' }
+        },
+        'flags/': {
+          'hubs.json': { raw: '"default"' },
+          'selection.json': { raw: 'true' },
+          'recursive_collapse.json': { raw: 'true' }
+        },
+        'keybinds/': {
+          'navigation.json': {
+            raw: JSON.stringify({
+              ArrowUp: 'navigate_up_current_node',
+              ArrowDown: 'navigate_down_current_node',
+              'Control+ArrowDown': 'toggle_subs_for_current_node',
+              'Control+ArrowUp': 'toggle_hubs_for_current_node',
+              'Alt+s': 'multiselect_current_node',
+              'Alt+b': 'select_between_current_node',
+              'Control+m': 'toggle_search_mode',
+              'Alt+j': 'jump_to_next_duplicate'
+            })
+          }
+        },
+        'undo/': {
+          'stack.json': { raw: '[]' }
+        }
       }
     }
   }
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
+},{"./dummy_content":3,"./graphdb":4,"STATE":1,"graph-explorer":2}],7:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       news: {
@@ -3586,7 +4466,7 @@ const customVault = {
   }
 }
 
-async function init () {
+async function init() {
   console.log('[page.js] init started')
 
   const start = await sdb.watch(async (batch) => {
@@ -3611,4 +4491,4 @@ async function init () {
 init().catch(console.error)
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":4}]},{},[6]);
+},{"STATE":1,"news":5}]},{},[7]);
