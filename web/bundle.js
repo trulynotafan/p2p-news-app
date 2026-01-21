@@ -3138,152 +3138,152 @@ function fallback_module () {
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
 module.exports = {
-  '/my-stories/story-1': {
-    title: 'My First Post on P2P Stories',
-    author: 'You',
-    date: '3h ago',
-    description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
-    tags: [],
-    color: '#a78bfa',
-    content: '<p>Excited to join this decentralized blogging platform!</p>'
-  },
-  '/my-stories/story-2': {
-    title: 'Building a P2P Network from Scratch',
-    author: 'You',
-    date: '2d ago',
-    description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
-    tags: ['#Tech', '#Tutorial'],
-    color: '#a78bfa',
-    content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
-  },
-  '/my-stories/story-3': {
-    title: 'The Future of Decentralized Publishing',
-    author: 'You',
-    date: '5d ago',
-    description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
-    tags: ['#Opinion', '#Blockchain'],
-    color: '#a78bfa',
-    content: '<p>Traditional platforms face centralization issues...</p>'
-  },
-  '/my-stories/story-4': {
-    title: 'Why Decentralization Matters in 2025',
-    author: 'You',
-    date: '1w ago',
-    description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
-    tags: ['#Opinion', '#Tech'],
-    color: '#a78bfa',
-    content: '<p>As we enter a hyper-connected world...</p>'
-  },
-  '/feeds/off-the-grid/mesh-network': {
-    title: 'Building a mesh network in your neighborhood',
-    author: 'Off the Grid',
-    date: '2h ago',
-    description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
-    tags: ['#tech', '#p2p'],
-    color: '#e0e7ff',
-    content: '<p>Community-owned internet is possible...</p>'
-  },
-  '/feeds/off-the-grid/fediverse': {
-    title: 'Why I left social media for the fediverse',
-    author: 'Off the Grid',
-    date: '5h ago',
-    description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
-    tags: ['#opinion', '#blockchain'],
-    color: '#fecaca',
-    content: '<p>After 10 years on corporate platforms...</p>'
-  },
-  '/feeds/off-the-grid/self-hosting': {
-    title: 'Self-hosting 101: Start with these apps',
-    author: 'Off the Grid',
-    date: '1d ago',
-    description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
-    tags: ['#tutorials'],
-    color: '#22d3ee',
-    content: '<p>You don\'t need to be a sysadmin...</p>'
-  },
-  '/feeds/hackers-digest/code-coffee': {
-    title: 'Code & Coffee: Episode 42',
-    author: 'Hacker Digest',
-    date: '3h ago',
-    description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
-    tags: ['#podcast', '#debugging', '#coffee'],
-    color: '#fcd34d',
-    content: `
+    '/my-stories/story-1': {
+        title: 'My First Post on P2P Stories',
+        author: 'You',
+        date: '3h ago',
+        description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
+        tags: [],
+        color: '#a78bfa',
+        content: '<p>Excited to join this decentralized blogging platform!</p>'
+    },
+    '/my-stories/story-2': {
+        title: 'Building a P2P Network from Scratch',
+        author: 'You',
+        date: '2d ago',
+        description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
+        tags: ['#Tech', '#Tutorial'],
+        color: '#a78bfa',
+        content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
+    },
+    '/my-stories/story-3': {
+        title: 'The Future of Decentralized Publishing',
+        author: 'You',
+        date: '5d ago',
+        description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
+        tags: ['#Opinion', '#Blockchain'],
+        color: '#a78bfa',
+        content: '<p>Traditional platforms face centralization issues...</p>'
+    },
+    '/my-stories/story-4': {
+        title: 'Why Decentralization Matters in 2025',
+        author: 'You',
+        date: '1w ago',
+        description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
+        tags: ['#Opinion', '#Tech'],
+        color: '#a78bfa',
+        content: '<p>As we enter a hyper-connected world...</p>'
+    },
+    '/feeds/off-the-grid/mesh-network': {
+        title: 'Building a mesh network in your neighborhood',
+        author: 'Off the Grid',
+        date: '2h ago',
+        description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
+        tags: ['#tech', '#p2p'],
+        color: '#e0e7ff',
+        content: '<p>Community-owned internet is possible...</p>'
+    },
+    '/feeds/off-the-grid/fediverse': {
+        title: 'Why I left social media for the fediverse',
+        author: 'Off the Grid',
+        date: '5h ago',
+        description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
+        tags: ['#opinion', '#blockchain'],
+        color: '#fecaca',
+        content: '<p>After 10 years on corporate platforms...</p>'
+    },
+    '/feeds/off-the-grid/self-hosting': {
+        title: 'Self-hosting 101: Start with these apps',
+        author: 'Off the Grid',
+        date: '1d ago',
+        description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
+        tags: ['#tutorials'],
+        color: '#22d3ee',
+        content: '<p>You don\'t need to be a sysadmin...</p>'
+    },
+    '/feeds/hackers-digest/code-coffee': {
+        title: 'Code & Coffee: Episode 42',
+        author: 'Hacker Digest',
+        date: '3h ago',
+        description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
+        tags: ['#podcast', '#debugging', '#coffee'],
+        color: '#fcd34d',
+        content: `
       <h2>Espresso & Error Handling</h2>
       <p>This week we discuss why your try-catch blocks are hiding bugs.</p>
     `
-  },
-  '/feeds/hackers-digest/system-design': {
-    title: 'System Design: Scaling to 1M Users',
-    author: 'Hacker Digest',
-    date: '6h ago',
-    description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
-    tags: ['#system-design', '#scaling', '#architecture'],
-    color: '#6ee7b7',
-    content: `
+    },
+    '/feeds/hackers-digest/system-design': {
+        title: 'System Design: Scaling to 1M Users',
+        author: 'Hacker Digest',
+        date: '6h ago',
+        description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
+        tags: ['#system-design', '#scaling', '#architecture'],
+        color: '#6ee7b7',
+        content: `
       <h2>Horizontal vs Vertical Scaling</h2>
       <p>A deep dive into sharding databases and load balancing.</p>
     `
-  },
-  '/feeds/peer-review/network-notes': {
-    title: 'Network Topologies in 2025',
-    author: 'Peer Review',
-    date: '12h ago',
-    description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
-    tags: ['#networking', '#mesh', '#future'],
-    color: '#93c5fd',
-    content: `
+    },
+    '/feeds/peer-review/network-notes': {
+        title: 'Network Topologies in 2025',
+        author: 'Peer Review',
+        date: '12h ago',
+        description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
+        tags: ['#networking', '#mesh', '#future'],
+        color: '#93c5fd',
+        content: `
       <p>Mesh networks are finally becoming viable for consumer apps.</p>
     `
-  },
-  '/feeds/peer-review/security-chronicles': {
-    title: 'Security Chronicles',
-    author: 'Peer Review',
-    date: '1d ago',
-    description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
-    tags: ['#security', '#privacy', '#collection'],
-    color: '#fca5a5',
-    content: ''
-  },
-  '/feeds/peer-review/security-chronicles/privacy-matters': {
-    title: 'Why Privacy Matters',
-    author: 'Security Chronicles',
-    date: '2d ago',
-    description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
-    tags: ['#privacy', '#rights', '#philosophy'],
-    color: '#fca5a5',
-    content: `
+    },
+    '/feeds/peer-review/security-chronicles': {
+        title: 'Security Chronicles',
+        author: 'Peer Review',
+        date: '1d ago',
+        description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
+        tags: ['#security', '#privacy', '#collection'],
+        color: '#fca5a5',
+        content: ''
+    },
+    '/feeds/peer-review/security-chronicles/privacy-matters': {
+        title: 'Why Privacy Matters',
+        author: 'Security Chronicles',
+        date: '2d ago',
+        description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
+        tags: ['#privacy', '#rights', '#philosophy'],
+        color: '#fca5a5',
+        content: `
       <p>Privacy is not about hiding; it's about consent.</p>
     `
-  },
-  '/feeds/peer-review/security-chronicles/zero-trust': {
-    title: 'Zero Trust Architecture',
-    author: 'Security Chronicles',
-    date: '3d ago',
-    description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
-    tags: ['#security', '#cloud', '#enterprise'],
-    color: '#fca5a5',
-    content: `
+    },
+    '/feeds/peer-review/security-chronicles/zero-trust': {
+        title: 'Zero Trust Architecture',
+        author: 'Security Chronicles',
+        date: '3d ago',
+        description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
+        tags: ['#security', '#cloud', '#enterprise'],
+        color: '#fca5a5',
+        content: `
       <p>Traditional perimeter security is obsolete.</p>
     `
-  },
-  '/lists/best-of-tech': {
-    title: 'Best Tech of 2024',
-    author: 'TechDaily',
-    date: '2024-12-30',
-    content: `
+    },
+    '/lists/best-of-tech': {
+        title: 'Best Tech of 2024',
+        author: 'TechDaily',
+        date: '2024-12-30',
+        content: `
       <p>1. P2P News App</p>
       <p>2. The rest...</p>
     `
-  },
-  '/lists/morning-read': {
-    title: 'Morning Read: Stoicism for Devs',
-    author: 'Daily Stoic',
-    date: '2025-01-01',
-    content: `
+    },
+    '/lists/morning-read': {
+        title: 'Morning Read: Stoicism for Devs',
+        author: 'Daily Stoic',
+        date: '2025-01-01',
+        content: `
       <p>Accept the bugs you cannot fix. Have courage to fix the ones you can.</p>
     `
-  }
+    }
 }
 
 },{}],4:[function(require,module,exports){
@@ -3560,6 +3560,148 @@ async function my_component_with_graph(opts, protocol) {
       .empty-folder-container { text-align: center; margin-top: 50px; color: #9ca3af; }
       .empty-folder-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
       .empty-folder-title { color: #374151; }
+
+      /* Write Page CSS */
+      .write-page-container {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+      }
+      .section-header {
+        margin-bottom: 2.5rem;
+      }
+      .section-header h1 {
+        font-size: 2.25rem;
+        font-weight: 900;
+        letter-spacing: -0.025em;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+        color: #1f2937;
+      }
+      .section-header p {
+        font-size: 1.125rem;
+        color: #6b7280;
+        font-weight: 300;
+        margin: 0;
+      }
+      .card {
+        background: white;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      .space-y-8 > * + * {
+        margin-top: 2rem;
+      }
+      .input-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+        margin-bottom: 0.75rem;
+      }
+      .input-title {
+        width: 100%;
+        font-family: inherit;
+        border: none;
+        background: transparent;
+        color: #1f2937;
+        outline: none;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .input-title::placeholder {
+        color: rgba(209, 213, 219, 0.6);
+      }
+      .input-content {
+        width: 100%;
+        font-family: inherit;
+        border: none;
+        background: transparent;
+        color: #1f2937;
+        outline: none;
+        min-height: 24rem;
+        resize: none;
+        font-size: 1rem;
+        line-height: 1.75;
+      }
+      .input-content::placeholder {
+        color: rgba(209, 213, 219, 0.6);
+      }
+      .divider {
+        height: 1px;
+        background: rgba(229, 231, 235, 0.3);
+        margin: 2rem 0;
+      }
+      .word-count {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-top: 1rem;
+      }
+      .btn-publish {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s;
+      }
+      .btn-publish:hover {
+        background: #4f46e5;
+      }
+      .action-text {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        font-weight: 300;
+      }
+      .tips {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-top: 4rem;
+      }
+      .tip {
+        text-align: center;
+      }
+      .tip h3 {
+        font-weight: 600;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+        color: #1f2937;
+      }
+      .tip p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 300;
+      }
+      /* Select styling */
+      .blog-select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        color: #1f2937;
+        background-color: white;
+        margin-bottom: 1rem;
+      }
   `);
 
   const sheet = new CSSStyleSheet()
@@ -3718,7 +3860,7 @@ async function my_component_with_graph(opts, protocol) {
         let subs = []
 
 
-        // Instance path format: |/|/grandparent|/parent|/node
+
         let dbPath = path
         if (typeof path === 'string' && path.includes('|')) {
           dbPath = path.split('|').pop()
@@ -3753,8 +3895,19 @@ async function my_component_with_graph(opts, protocol) {
             return { path: subPath, data: itemData }
           }).filter(item => item.data)
 
+
+          if (path.includes('my-stories')) {
+            const localStories = get_local_stories()
+            localStories.forEach(story => {
+              listItems.push({
+                path: 'local-' + Date.now(),
+                data: story
+              })
+            })
+          }
+
           if (listItems.length > 0) {
-            const isMyStories = path.includes('/my-stories')
+            const isMyStories = path.includes('my-stories') || path.includes('My Stories')
 
 
 
@@ -3807,6 +3960,28 @@ async function my_component_with_graph(opts, protocol) {
               while (target && target !== container) {
                 const path = cardMap.get(target);
                 if (path) {
+
+                  if (typeof path === 'object' || path.startsWith('local-')) {
+
+                    const data = listItems.find(item => item.path === path)?.data
+                    if (data) {
+                      main_content.innerHTML = `
+                          <article class="article-container">
+                            <header class="article-header">
+                              <h1 class="article-title">${data.title}</h1>
+                              <div class="article-meta">
+                                <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
+                              </div>
+                            </header>
+                            <div class="article-body">
+                              ${data.content}
+                            </div>
+                          </article>
+                        `
+                      return;
+                    }
+                  }
+
                   console.log('[Interaction] WeakMap Lookup Success:', path);
                   const head = [id, 'graph_explorer', mid++]
                   send_to_graph_explorer({
@@ -3896,7 +4071,7 @@ async function my_component_with_graph(opts, protocol) {
               fab.className = 'news-fab'
               fab.textContent = '+'
 
-              fab.onclick = () => alert('Create new story')
+              fab.onclick = () => render_write_page(folderName)
               main_content.appendChild(fab)
             }
 
@@ -3912,10 +4087,207 @@ async function my_component_with_graph(opts, protocol) {
             <p>Select a file inside to view content.</p>
           </div>
         `
+
+        if (folderName === 'My Stories' || folderName.includes('my-stories')) {
+          const fab = document.createElement('div')
+          fab.className = 'news-fab'
+          fab.textContent = '+'
+
+          fab.onclick = () => render_write_page(folderName)
+          main_content.appendChild(fab)
+        }
       }
     }
 
 
+
+    function get_local_stories() {
+      try {
+        const stories = localStorage.getItem('p2p_stories')
+        return stories ? JSON.parse(stories) : []
+      } catch (e) {
+        console.error('Failed to load local stories:', e)
+        return []
+      }
+    }
+
+    function save_local_story(story) {
+      const stories = get_local_stories()
+      stories.unshift(story)
+      localStorage.setItem('p2p_stories', JSON.stringify(stories))
+    }
+
+    function render_write_page(currentFolder) {
+
+      const writeState = {
+        title: '',
+        content: '',
+        blog: 'Main Blog'
+      }
+
+      const followedBlogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
+
+      main_content.innerHTML = ''
+
+      const container = document.createElement('div')
+      container.className = 'write-page-container'
+
+
+      const header = document.createElement('div')
+      header.className = 'section-header'
+      header.innerHTML = `
+            <h1>Write a Story</h1>
+            <p>Share your thoughts with the network</p>
+        `
+      container.appendChild(header)
+
+
+      const card = document.createElement('div')
+      card.className = 'card'
+
+
+      const spaceY = document.createElement('div')
+      spaceY.className = 'space-y-8'
+      card.appendChild(spaceY)
+
+
+      const blogGroup = document.createElement('div')
+      blogGroup.className = 'input-group'
+      const blogLabel = document.createElement('label')
+      blogLabel.textContent = 'Publishing To'
+      blogGroup.appendChild(blogLabel)
+
+      const blogSelect = document.createElement('select')
+      blogSelect.className = 'blog-select'
+      followedBlogs.forEach(blog => {
+        const opt = document.createElement('option')
+        opt.value = blog
+        opt.textContent = blog
+        if (blog === 'Main Blog') opt.selected = true
+        blogSelect.appendChild(opt)
+      })
+      blogSelect.addEventListener('change', (e) => {
+        writeState.blog = e.target.value
+      })
+      blogGroup.appendChild(blogSelect)
+      spaceY.appendChild(blogGroup)
+
+
+
+      const titleGroup = document.createElement('div')
+      titleGroup.className = 'input-group'
+      const titleLabel = document.createElement('label')
+      titleLabel.textContent = 'Story Title'
+      titleGroup.appendChild(titleLabel)
+
+      const titleInput = document.createElement('input')
+      titleInput.type = 'text'
+      titleInput.className = 'input-title'
+      titleInput.placeholder = 'Give your story a captivating title...'
+      titleInput.addEventListener('input', (e) => {
+        writeState.title = e.target.value
+      })
+      titleGroup.appendChild(titleInput)
+      spaceY.appendChild(titleGroup)
+
+
+      const divider = document.createElement('div')
+      divider.className = 'divider'
+      spaceY.appendChild(divider)
+
+
+      const contentGroup = document.createElement('div')
+      contentGroup.className = 'input-group'
+      const contentLabel = document.createElement('label')
+      contentLabel.textContent = 'Your Story'
+      contentGroup.appendChild(contentLabel)
+
+      const contentArea = document.createElement('textarea')
+      contentArea.className = 'input-content'
+      contentArea.placeholder = 'Write your story here. Share your thoughts, experiences, and insights...'
+      contentArea.addEventListener('input', (e) => {
+        writeState.content = e.target.value
+
+        const words = e.target.value.trim().split(/\s+/).length
+        wordCountSpan.textContent = (e.target.value.trim() === '' ? 0 : words) + ' words'
+        readTimeSpan.textContent = '~' + Math.ceil(words / 200) + ' min read'
+      })
+      contentGroup.appendChild(contentArea)
+
+      const wordCountDiv = document.createElement('div')
+      wordCountDiv.className = 'word-count'
+      const wordCountSpan = document.createElement('span')
+      wordCountSpan.textContent = '0 words'
+      const readTimeSpan = document.createElement('span')
+      readTimeSpan.textContent = '~0 min read'
+      wordCountDiv.appendChild(wordCountSpan)
+      wordCountDiv.appendChild(readTimeSpan)
+      contentGroup.appendChild(wordCountDiv)
+
+      spaceY.appendChild(contentGroup)
+
+
+      const actionsDiv = document.createElement('div')
+      actionsDiv.className = 'actions'
+
+      const publishBtn = document.createElement('button')
+      publishBtn.className = 'btn-publish'
+      publishBtn.textContent = 'Publish Story'
+      publishBtn.addEventListener('click', () => {
+        if (!writeState.title || !writeState.content) {
+          alert('Please fill in both title and content.')
+          return
+        }
+
+        const newStory = {
+          title: writeState.title,
+          content: writeState.content,
+          author: 'You',
+          date: new Date().toLocaleDateString(),
+          description: writeState.content.slice(0, 100) + '...',
+          tags: ['#local', '#' + writeState.blog.replace(/\s+/g, '')],
+          color: '#6366f1'
+        }
+
+        save_local_story(newStory)
+        alert('Story published locally!')
+        let myStoriesPath = Object.keys(dummy_content).find(k => k.includes('my-stories')) || 'my-stories'
+        render_content(myStoriesPath)
+      })
+      actionsDiv.appendChild(publishBtn)
+
+      const actionText = document.createElement('p')
+      actionText.className = 'action-text'
+      actionText.textContent = 'Your story will be stored locally and synced with your network'
+      actionsDiv.appendChild(actionText)
+
+
+      spaceY.appendChild(actionsDiv)
+
+      container.appendChild(card)
+
+      // Tips
+      const tipsDiv = document.createElement('div')
+      tipsDiv.className = 'tips'
+
+      tipsDiv.innerHTML = `
+        <div class="tip">
+          <h3>Be Authentic</h3>
+          <p>Write what you genuinely think and feel, not what algorithms demand</p>
+        </div>
+        <div class="tip">
+          <h3>Tell a Story</h3>
+          <p>Use examples and narratives to engage readers and make ideas stick</p>
+        </div>
+        <div class="tip">
+          <h3>Add Value</h3>
+          <p>Help readers learn something new or see the world differently</p>
+        </div>
+        `
+      container.appendChild(tipsDiv)
+
+      main_content.appendChild(container)
+    }
 
     async function handle_db_request(request_msg, send) {
       const { head: request_head, type: operation, data: params } = request_msg
@@ -4095,7 +4467,7 @@ function fallback_module() {
             .explorer-panel {
                flex-shrink: 0;
                border-right: 1px solid #e5e7eb;
-               /* width is set on instance */
+        
             }
             
             .main-viewer {
