@@ -3138,152 +3138,152 @@ function fallback_module () {
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
 module.exports = {
-    '/my-stories/story-1': {
-        title: 'My First Post on P2P Stories',
-        author: 'You',
-        date: '3h ago',
-        description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
-        tags: [],
-        color: '#a78bfa',
-        content: '<p>Excited to join this decentralized blogging platform!</p>'
-    },
-    '/my-stories/story-2': {
-        title: 'Building a P2P Network from Scratch',
-        author: 'You',
-        date: '2d ago',
-        description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
-        tags: ['#Tech', '#Tutorial'],
-        color: '#a78bfa',
-        content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
-    },
-    '/my-stories/story-3': {
-        title: 'The Future of Decentralized Publishing',
-        author: 'You',
-        date: '5d ago',
-        description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
-        tags: ['#Opinion', '#Blockchain'],
-        color: '#a78bfa',
-        content: '<p>Traditional platforms face centralization issues...</p>'
-    },
-    '/my-stories/story-4': {
-        title: 'Why Decentralization Matters in 2025',
-        author: 'You',
-        date: '1w ago',
-        description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
-        tags: ['#Opinion', '#Tech'],
-        color: '#a78bfa',
-        content: '<p>As we enter a hyper-connected world...</p>'
-    },
-    '/feeds/off-the-grid/mesh-network': {
-        title: 'Building a mesh network in your neighborhood',
-        author: 'Off the Grid',
-        date: '2h ago',
-        description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
-        tags: ['#tech', '#p2p'],
-        color: '#e0e7ff',
-        content: '<p>Community-owned internet is possible...</p>'
-    },
-    '/feeds/off-the-grid/fediverse': {
-        title: 'Why I left social media for the fediverse',
-        author: 'Off the Grid',
-        date: '5h ago',
-        description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
-        tags: ['#opinion', '#blockchain'],
-        color: '#fecaca',
-        content: '<p>After 10 years on corporate platforms...</p>'
-    },
-    '/feeds/off-the-grid/self-hosting': {
-        title: 'Self-hosting 101: Start with these apps',
-        author: 'Off the Grid',
-        date: '1d ago',
-        description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
-        tags: ['#tutorials'],
-        color: '#22d3ee',
-        content: '<p>You don\'t need to be a sysadmin...</p>'
-    },
-    '/feeds/hackers-digest/code-coffee': {
-        title: 'Code & Coffee: Episode 42',
-        author: 'Hacker Digest',
-        date: '3h ago',
-        description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
-        tags: ['#podcast', '#debugging', '#coffee'],
-        color: '#fcd34d',
-        content: `
+  '/my-stories/story-1': {
+    title: 'My First Post on P2P Stories',
+    author: 'You',
+    date: '3h ago',
+    description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
+    tags: [],
+    color: '#a78bfa',
+    content: '<p>Excited to join this decentralized blogging platform!</p>'
+  },
+  '/my-stories/story-2': {
+    title: 'Building a P2P Network from Scratch',
+    author: 'You',
+    date: '2d ago',
+    description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
+    tags: ['#Tech', '#Tutorial'],
+    color: '#a78bfa',
+    content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
+  },
+  '/my-stories/story-3': {
+    title: 'The Future of Decentralized Publishing',
+    author: 'You',
+    date: '5d ago',
+    description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
+    tags: ['#Opinion', '#Blockchain'],
+    color: '#a78bfa',
+    content: '<p>Traditional platforms face centralization issues...</p>'
+  },
+  '/my-stories/story-4': {
+    title: 'Why Decentralization Matters in 2025',
+    author: 'You',
+    date: '1w ago',
+    description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
+    tags: ['#Opinion', '#Tech'],
+    color: '#a78bfa',
+    content: '<p>As we enter a hyper-connected world...</p>'
+  },
+  '/feeds/off-the-grid/mesh-network': {
+    title: 'Building a mesh network in your neighborhood',
+    author: 'Off the Grid',
+    date: '2h ago',
+    description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
+    tags: ['#tech', '#p2p'],
+    color: '#e0e7ff',
+    content: '<p>Community-owned internet is possible...</p>'
+  },
+  '/feeds/off-the-grid/fediverse': {
+    title: 'Why I left social media for the fediverse',
+    author: 'Off the Grid',
+    date: '5h ago',
+    description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
+    tags: ['#opinion', '#blockchain'],
+    color: '#fecaca',
+    content: '<p>After 10 years on corporate platforms...</p>'
+  },
+  '/feeds/off-the-grid/self-hosting': {
+    title: 'Self-hosting 101: Start with these apps',
+    author: 'Off the Grid',
+    date: '1d ago',
+    description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
+    tags: ['#tutorials'],
+    color: '#22d3ee',
+    content: '<p>You don\'t need to be a sysadmin...</p>'
+  },
+  '/feeds/hackers-digest/code-coffee': {
+    title: 'Code & Coffee: Episode 42',
+    author: 'Hacker Digest',
+    date: '3h ago',
+    description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
+    tags: ['#podcast', '#debugging', '#coffee'],
+    color: '#fcd34d',
+    content: `
       <h2>Espresso & Error Handling</h2>
       <p>This week we discuss why your try-catch blocks are hiding bugs.</p>
     `
-    },
-    '/feeds/hackers-digest/system-design': {
-        title: 'System Design: Scaling to 1M Users',
-        author: 'Hacker Digest',
-        date: '6h ago',
-        description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
-        tags: ['#system-design', '#scaling', '#architecture'],
-        color: '#6ee7b7',
-        content: `
+  },
+  '/feeds/hackers-digest/system-design': {
+    title: 'System Design: Scaling to 1M Users',
+    author: 'Hacker Digest',
+    date: '6h ago',
+    description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
+    tags: ['#system-design', '#scaling', '#architecture'],
+    color: '#6ee7b7',
+    content: `
       <h2>Horizontal vs Vertical Scaling</h2>
       <p>A deep dive into sharding databases and load balancing.</p>
     `
-    },
-    '/feeds/peer-review/network-notes': {
-        title: 'Network Topologies in 2025',
-        author: 'Peer Review',
-        date: '12h ago',
-        description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
-        tags: ['#networking', '#mesh', '#future'],
-        color: '#93c5fd',
-        content: `
+  },
+  '/feeds/peer-review/network-notes': {
+    title: 'Network Topologies in 2025',
+    author: 'Peer Review',
+    date: '12h ago',
+    description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
+    tags: ['#networking', '#mesh', '#future'],
+    color: '#93c5fd',
+    content: `
       <p>Mesh networks are finally becoming viable for consumer apps.</p>
     `
-    },
-    '/feeds/peer-review/security-chronicles': {
-        title: 'Security Chronicles',
-        author: 'Peer Review',
-        date: '1d ago',
-        description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
-        tags: ['#security', '#privacy', '#collection'],
-        color: '#fca5a5',
-        content: ''
-    },
-    '/feeds/peer-review/security-chronicles/privacy-matters': {
-        title: 'Why Privacy Matters',
-        author: 'Security Chronicles',
-        date: '2d ago',
-        description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
-        tags: ['#privacy', '#rights', '#philosophy'],
-        color: '#fca5a5',
-        content: `
+  },
+  '/feeds/peer-review/security-chronicles': {
+    title: 'Security Chronicles',
+    author: 'Peer Review',
+    date: '1d ago',
+    description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
+    tags: ['#security', '#privacy', '#collection'],
+    color: '#fca5a5',
+    content: ''
+  },
+  '/feeds/peer-review/security-chronicles/privacy-matters': {
+    title: 'Why Privacy Matters',
+    author: 'Security Chronicles',
+    date: '2d ago',
+    description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
+    tags: ['#privacy', '#rights', '#philosophy'],
+    color: '#fca5a5',
+    content: `
       <p>Privacy is not about hiding; it's about consent.</p>
     `
-    },
-    '/feeds/peer-review/security-chronicles/zero-trust': {
-        title: 'Zero Trust Architecture',
-        author: 'Security Chronicles',
-        date: '3d ago',
-        description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
-        tags: ['#security', '#cloud', '#enterprise'],
-        color: '#fca5a5',
-        content: `
+  },
+  '/feeds/peer-review/security-chronicles/zero-trust': {
+    title: 'Zero Trust Architecture',
+    author: 'Security Chronicles',
+    date: '3d ago',
+    description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
+    tags: ['#security', '#cloud', '#enterprise'],
+    color: '#fca5a5',
+    content: `
       <p>Traditional perimeter security is obsolete.</p>
     `
-    },
-    '/lists/best-of-tech': {
-        title: 'Best Tech of 2024',
-        author: 'TechDaily',
-        date: '2024-12-30',
-        content: `
+  },
+  '/lists/best-of-tech': {
+    title: 'Best Tech of 2024',
+    author: 'TechDaily',
+    date: '2024-12-30',
+    content: `
       <p>1. P2P News App</p>
       <p>2. The rest...</p>
     `
-    },
-    '/lists/morning-read': {
-        title: 'Morning Read: Stoicism for Devs',
-        author: 'Daily Stoic',
-        date: '2025-01-01',
-        content: `
+  },
+  '/lists/morning-read': {
+    title: 'Morning Read: Stoicism for Devs',
+    author: 'Daily Stoic',
+    date: '2025-01-01',
+    content: `
       <p>Accept the bugs you cannot fix. Have courage to fix the ones you can.</p>
     `
-    }
+  }
 }
 
 },{}],4:[function(require,module,exports){
@@ -3499,7 +3499,7 @@ const dummy_content = require('./dummy_content')
 
 module.exports = my_component_with_graph
 
-async function my_component_with_graph(opts, protocol) {
+async function my_component_with_graph (opts, protocol) {
   const { id, sdb } = await get(opts.sid)
   const { drive } = sdb
 
@@ -3516,11 +3516,9 @@ async function my_component_with_graph(opts, protocol) {
 
   const el = document.createElement('div')
 
-
   const shadow = el.attachShadow({ mode: 'closed' })
 
-
-  const layoutSheet = new CSSStyleSheet();
+  const layoutSheet = new CSSStyleSheet()
   layoutSheet.replaceSync(`
       :host { 
         position: absolute; top: 0; left: 0; bottom: 0; right: 0; 
@@ -3702,7 +3700,7 @@ async function my_component_with_graph(opts, protocol) {
         background-color: white;
         margin-bottom: 1rem;
       }
-  `);
+  `)
 
   const sheet = new CSSStyleSheet()
   shadow.adoptedStyleSheets = [layoutSheet, sheet]
@@ -3710,11 +3708,7 @@ async function my_component_with_graph(opts, protocol) {
   const subs = await sdb.watch(onbatch)
   const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
 
-
   explorer_el.className = 'explorer-panel'
-
-
-
 
   const main_content = document.createElement('div')
   main_content.className = 'main-viewer'
@@ -3728,15 +3722,11 @@ async function my_component_with_graph(opts, protocol) {
   shadow.append(explorer_el)
   shadow.append(main_content)
 
-
-
   explorer_el.addEventListener('click', (e) => {
     const nodeEl = e.target.closest('.node')
     if (!nodeEl) return
 
-
     if (e.target.closest('.name') || e.target.closest('.prefix')) return
-
 
     const instance_path = nodeEl.dataset.instance_path
     if (instance_path && send_to_graph_explorer) {
@@ -3750,12 +3740,9 @@ async function my_component_with_graph(opts, protocol) {
     }
   })
 
-
-
-
   return el
 
-  async function onbatch(batch) {
+  async function onbatch (batch) {
     for (const { type, paths } of batch) {
       const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
       const valid_data = data.filter(d => d !== null)
@@ -3765,13 +3752,12 @@ async function my_component_with_graph(opts, protocol) {
     }
   }
 
-  function inject(data) {
+  function inject (data) {
     sheet.replaceSync(data.join('\n'))
   }
 
-  function on_entries(data) {
+  function on_entries (data) {
     if (!data || !data[0]) {
-
       db = graphdb({})
       notify_db_initialized({})
       return
@@ -3794,7 +3780,7 @@ async function my_component_with_graph(opts, protocol) {
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized(entries) {
+  function notify_db_initialized (entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({
@@ -3805,13 +3791,12 @@ async function my_component_with_graph(opts, protocol) {
     }
   }
 
-  function graph_explorer_protocol(send) {
+  function graph_explorer_protocol (send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message(msg) {
+    function on_graph_explorer_message (msg) {
       const { type, data } = msg
-
 
       if (type === 'selection_changed') {
         const { selected } = data
@@ -3822,8 +3807,8 @@ async function my_component_with_graph(opts, protocol) {
         }
       }
 
-
       if (type === 'confirmed_nodes') {
+        // TODO: Handle confirmed nodes
       }
 
       if (type.startsWith('db_')) {
@@ -3831,14 +3816,13 @@ async function my_component_with_graph(opts, protocol) {
       }
     }
 
-    function render_content(path) {
+    function render_content (path) {
       let data = dummy_content[path]
 
       if (!data) {
         const key = Object.keys(dummy_content).find(k => path.includes(k) || path.endsWith(k))
         if (key) data = dummy_content[key]
       }
-
 
       if (data && data.content && data.content.trim().length > 0) {
         main_content.innerHTML = `
@@ -3855,11 +3839,8 @@ async function my_component_with_graph(opts, protocol) {
           </article>
         `
       } else {
-
         let folderName = path
         let subs = []
-
-
 
         let dbPath = path
         if (typeof path === 'string' && path.includes('|')) {
@@ -3867,13 +3848,11 @@ async function my_component_with_graph(opts, protocol) {
         }
 
         if (db) {
-
           const entry = db.get(dbPath)
           if (entry) {
             if (entry.name) folderName = entry.name
             if (entry.subs) subs = entry.subs
           } else {
-
             const rawEntry = db.get(path)
             if (rawEntry) {
               if (rawEntry.name) folderName = rawEntry.name
@@ -3882,10 +3861,7 @@ async function my_component_with_graph(opts, protocol) {
           }
         }
 
-
         if (subs.length > 0) {
-
-
           const listItems = subs.map(subPath => {
             let itemData = dummy_content[subPath]
             if (!itemData) {
@@ -3894,7 +3870,6 @@ async function my_component_with_graph(opts, protocol) {
             }
             return { path: subPath, data: itemData }
           }).filter(item => item.data)
-
 
           if (path.includes('my-stories')) {
             const localStories = get_local_stories()
@@ -3909,18 +3884,13 @@ async function my_component_with_graph(opts, protocol) {
           if (listItems.length > 0) {
             const isMyStories = path.includes('my-stories') || path.includes('My Stories')
 
-
-
             main_content.innerHTML = ''
-
 
             const container = document.createElement('div')
             container.className = 'news-container'
 
-
             const header = document.createElement('header')
             header.className = 'news-header'
-
 
             const style = document.createElement('style')
             style.textContent = `
@@ -3953,16 +3923,12 @@ async function my_component_with_graph(opts, protocol) {
             `
             container.appendChild(style)
 
-
             container.addEventListener('click', (e) => {
-
-              let target = e.target;
+              let target = e.target
               while (target && target !== container) {
-                const path = cardMap.get(target);
+                const path = cardMap.get(target)
                 if (path) {
-
                   if (typeof path === 'object' || path.startsWith('local-')) {
-
                     const data = listItems.find(item => item.path === path)?.data
                     if (data) {
                       main_content.innerHTML = `
@@ -3978,22 +3944,22 @@ async function my_component_with_graph(opts, protocol) {
                             </div>
                           </article>
                         `
-                      return;
+                      return
                     }
                   }
 
-                  console.log('[Interaction] WeakMap Lookup Success:', path);
+                  console.log('[Interaction] WeakMap Lookup Success:', path)
                   const head = [id, 'graph_explorer', mid++]
                   send_to_graph_explorer({
                     head,
                     type: 'select_node',
                     data: { instance_path: path }
-                  });
-                  break;
+                  })
+                  break
                 }
-                target = target.parentNode;
+                target = target.parentNode
               }
-            });
+            })
 
             header.innerHTML = `
                <div>
@@ -4003,16 +3969,12 @@ async function my_component_with_graph(opts, protocol) {
             `
             container.appendChild(header)
 
-
             const listContainer = document.createElement('div')
             listItems.forEach(({ path, data }) => {
               const card = document.createElement('div')
               card.className = 'news-card'
 
-
-
-              cardMap.set(card, path);
-
+              cardMap.set(card, path)
 
               let metaTopHtml = ''
               if (isMyStories) {
@@ -4026,7 +3988,6 @@ async function my_component_with_graph(opts, protocol) {
                   </div>`
               }
 
-
               let metaBottomHtml = ''
               if (!isMyStories) {
                 const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
@@ -4038,7 +3999,6 @@ async function my_component_with_graph(opts, protocol) {
                      ${tags}
                   </div>`
               }
-
 
               let tagsBottomHtml = ''
               if (isMyStories) {
@@ -4065,7 +4025,6 @@ async function my_component_with_graph(opts, protocol) {
             container.appendChild(listContainer)
             main_content.appendChild(container)
 
-
             if (isMyStories) {
               const fab = document.createElement('div')
               fab.className = 'news-fab'
@@ -4078,7 +4037,6 @@ async function my_component_with_graph(opts, protocol) {
             return
           }
         }
-
 
         main_content.innerHTML = `
           <div class="empty-folder-container">
@@ -4099,9 +4057,7 @@ async function my_component_with_graph(opts, protocol) {
       }
     }
 
-
-
-    function get_local_stories() {
+    function get_local_stories () {
       try {
         const stories = localStorage.getItem('p2p_stories')
         return stories ? JSON.parse(stories) : []
@@ -4111,14 +4067,13 @@ async function my_component_with_graph(opts, protocol) {
       }
     }
 
-    function save_local_story(story) {
+    function save_local_story (story) {
       const stories = get_local_stories()
       stories.unshift(story)
       localStorage.setItem('p2p_stories', JSON.stringify(stories))
     }
 
-    function render_write_page(currentFolder) {
-
+    function render_write_page (currentFolder) {
       const writeState = {
         title: '',
         content: '',
@@ -4132,7 +4087,6 @@ async function my_component_with_graph(opts, protocol) {
       const container = document.createElement('div')
       container.className = 'write-page-container'
 
-
       const header = document.createElement('div')
       header.className = 'section-header'
       header.innerHTML = `
@@ -4141,15 +4095,12 @@ async function my_component_with_graph(opts, protocol) {
         `
       container.appendChild(header)
 
-
       const card = document.createElement('div')
       card.className = 'card'
-
 
       const spaceY = document.createElement('div')
       spaceY.className = 'space-y-8'
       card.appendChild(spaceY)
-
 
       const blogGroup = document.createElement('div')
       blogGroup.className = 'input-group'
@@ -4172,8 +4123,6 @@ async function my_component_with_graph(opts, protocol) {
       blogGroup.appendChild(blogSelect)
       spaceY.appendChild(blogGroup)
 
-
-
       const titleGroup = document.createElement('div')
       titleGroup.className = 'input-group'
       const titleLabel = document.createElement('label')
@@ -4190,11 +4139,9 @@ async function my_component_with_graph(opts, protocol) {
       titleGroup.appendChild(titleInput)
       spaceY.appendChild(titleGroup)
 
-
       const divider = document.createElement('div')
       divider.className = 'divider'
       spaceY.appendChild(divider)
-
 
       const contentGroup = document.createElement('div')
       contentGroup.className = 'input-group'
@@ -4226,7 +4173,6 @@ async function my_component_with_graph(opts, protocol) {
 
       spaceY.appendChild(contentGroup)
 
-
       const actionsDiv = document.createElement('div')
       actionsDiv.className = 'actions'
 
@@ -4251,7 +4197,7 @@ async function my_component_with_graph(opts, protocol) {
 
         save_local_story(newStory)
         alert('Story published locally!')
-        let myStoriesPath = Object.keys(dummy_content).find(k => k.includes('my-stories')) || 'my-stories'
+        const myStoriesPath = Object.keys(dummy_content).find(k => k.includes('my-stories')) || 'my-stories'
         render_content(myStoriesPath)
       })
       actionsDiv.appendChild(publishBtn)
@@ -4260,7 +4206,6 @@ async function my_component_with_graph(opts, protocol) {
       actionText.className = 'action-text'
       actionText.textContent = 'Your story will be stored locally and synced with your network'
       actionsDiv.appendChild(actionText)
-
 
       spaceY.appendChild(actionsDiv)
 
@@ -4289,7 +4234,7 @@ async function my_component_with_graph(opts, protocol) {
       main_content.appendChild(container)
     }
 
-    async function handle_db_request(request_msg, send) {
+    async function handle_db_request (request_msg, send) {
       const { head: request_head, type: operation, data: params } = request_msg
       let result
 
@@ -4318,7 +4263,7 @@ async function my_component_with_graph(opts, protocol) {
 
       send_response(request_head, result)
 
-      function send_response(request_head, result) {
+      function send_response (request_head, result) {
         const response_head = [by, 'graph_explorer', mid++]
         send({
           head: response_head,
@@ -4331,7 +4276,7 @@ async function my_component_with_graph(opts, protocol) {
   }
 }
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       'graph-explorer': { $: '' },
@@ -4341,7 +4286,7 @@ function fallback_module() {
     api: fallback_instance
   }
 
-  function fallback_instance() {
+  function fallback_instance () {
     return {
       _: {
         'graph-explorer': {
@@ -4397,7 +4342,7 @@ function fallback_module() {
     }
   }
 
-  function override_theme() {
+  function override_theme () {
     return {
       _: {
         mapping: {
