@@ -3137,156 +3137,6 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
-module.exports = {
-  '/my-stories/story-1': {
-    title: 'My First Post on P2P Stories',
-    author: 'You',
-    date: '3h ago',
-    description: 'Excited to join this decentralized blogging platform! Here I share my thoughts on why peer-to-peer networks are the future...',
-    tags: [],
-    color: '#a78bfa',
-    content: '<p>Excited to join this decentralized blogging platform!</p>'
-  },
-  '/my-stories/story-2': {
-    title: 'Building a P2P Network from Scratch',
-    author: 'You',
-    date: '2d ago',
-    description: 'Learn how to create a decentralized peer-to-peer network using modern web technologies. This guide covers WebRTC, DHTs...',
-    tags: ['#Tech', '#Tutorial'],
-    color: '#a78bfa',
-    content: '<p>Learn how to create a decentralized peer-to-peer network...</p>'
-  },
-  '/my-stories/story-3': {
-    title: 'The Future of Decentralized Publishing',
-    author: 'You',
-    date: '5d ago',
-    description: 'Traditional platforms face centralization issues. Let\'s explore how blockchain + P2P tech give creators freedom...',
-    tags: ['#Opinion', '#Blockchain'],
-    color: '#a78bfa',
-    content: '<p>Traditional platforms face centralization issues...</p>'
-  },
-  '/my-stories/story-4': {
-    title: 'Why Decentralization Matters in 2025',
-    author: 'You',
-    date: '1w ago',
-    description: 'As we enter a hyper-connected world, decentralization becomes essential for privacy, security and independence...',
-    tags: ['#Opinion', '#Tech'],
-    color: '#a78bfa',
-    content: '<p>As we enter a hyper-connected world...</p>'
-  },
-  '/feeds/off-the-grid/mesh-network': {
-    title: 'Building a mesh network in your neighborhood',
-    author: 'Off the Grid',
-    date: '2h ago',
-    description: 'Community-owned internet is possible. Here\'s how we set up a local mesh network connecting 50+ homes without ISPs...',
-    tags: ['#tech', '#p2p'],
-    color: '#e0e7ff',
-    content: '<p>Community-owned internet is possible...</p>'
-  },
-  '/feeds/off-the-grid/fediverse': {
-    title: 'Why I left social media for the fediverse',
-    author: 'Off the Grid',
-    date: '5h ago',
-    description: 'After 10 years on corporate platforms, I finally made the switch. Here\'s what I learned about digital independence...',
-    tags: ['#opinion', '#blockchain'],
-    color: '#fecaca',
-    content: '<p>After 10 years on corporate platforms...</p>'
-  },
-  '/feeds/off-the-grid/self-hosting': {
-    title: 'Self-hosting 101: Start with these apps',
-    author: 'Off the Grid',
-    date: '1d ago',
-    description: 'You don\'t need to be a sysadmin to take control of your data. Here are 5 easy self-hosted apps anyone can set up...',
-    tags: ['#tutorials'],
-    color: '#22d3ee',
-    content: '<p>You don\'t need to be a sysadmin...</p>'
-  },
-  '/feeds/hackers-digest/code-coffee': {
-    title: 'Code & Coffee: Episode 42',
-    author: 'Hacker Digest',
-    date: '3h ago',
-    description: 'This week we discuss why your try-catch blocks are hiding bugs. Stop swallowing errors, log everything, and drink better coffee.',
-    tags: ['#podcast', '#debugging', '#coffee'],
-    color: '#fcd34d',
-    content: `
-      <h2>Espresso & Error Handling</h2>
-      <p>This week we discuss why your try-catch blocks are hiding bugs.</p>
-    `
-  },
-  '/feeds/hackers-digest/system-design': {
-    title: 'System Design: Scaling to 1M Users',
-    author: 'Hacker Digest',
-    date: '6h ago',
-    description: 'A deep dive into sharding databases and load balancing. Horizontal vs Vertical Scaling explained for modern distributed systems.',
-    tags: ['#system-design', '#scaling', '#architecture'],
-    color: '#6ee7b7',
-    content: `
-      <h2>Horizontal vs Vertical Scaling</h2>
-      <p>A deep dive into sharding databases and load balancing.</p>
-    `
-  },
-  '/feeds/peer-review/network-notes': {
-    title: 'Network Topologies in 2025',
-    author: 'Peer Review',
-    date: '12h ago',
-    description: 'Mesh networks are finally becoming viable for consumer apps. We explore the latest advancements in DHTs and gossip protocols.',
-    tags: ['#networking', '#mesh', '#future'],
-    color: '#93c5fd',
-    content: `
-      <p>Mesh networks are finally becoming viable for consumer apps.</p>
-    `
-  },
-  '/feeds/peer-review/security-chronicles': {
-    title: 'Security Chronicles',
-    author: 'Peer Review',
-    date: '1d ago',
-    description: 'A collection of the latest security findings, vulnerabilities, and privacy discussions from around the decentralized web.',
-    tags: ['#security', '#privacy', '#collection'],
-    color: '#fca5a5',
-    content: ''
-  },
-  '/feeds/peer-review/security-chronicles/privacy-matters': {
-    title: 'Why Privacy Matters',
-    author: 'Security Chronicles',
-    date: '2d ago',
-    description: 'Privacy is not about hiding; it is about consent. Understanding the fundamental human right to digital privacy in the age of surveillance.',
-    tags: ['#privacy', '#rights', '#philosophy'],
-    color: '#fca5a5',
-    content: `
-      <p>Privacy is not about hiding; it's about consent.</p>
-    `
-  },
-  '/feeds/peer-review/security-chronicles/zero-trust': {
-    title: 'Zero Trust Architecture',
-    author: 'Security Chronicles',
-    date: '3d ago',
-    description: 'Traditional perimeter security is obsolete. Implement zero trust security in your organization by verifying every request, regardless of origin.',
-    tags: ['#security', '#cloud', '#enterprise'],
-    color: '#fca5a5',
-    content: `
-      <p>Traditional perimeter security is obsolete.</p>
-    `
-  },
-  '/lists/best-of-tech': {
-    title: 'Best Tech of 2024',
-    author: 'TechDaily',
-    date: '2024-12-30',
-    content: `
-      <p>1. P2P News App</p>
-      <p>2. The rest...</p>
-    `
-  },
-  '/lists/morning-read': {
-    title: 'Morning Read: Stoicism for Devs',
-    author: 'Daily Stoic',
-    date: '2025-01-01',
-    content: `
-      <p>Accept the bugs you cannot fix. Have courage to fix the ones you can.</p>
-    `
-  }
-}
-
-},{}],4:[function(require,module,exports){
 module.exports = graphdb
 
 function graphdb(entries) {
@@ -3331,7 +3181,7 @@ function graphdb(entries) {
     }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] news/index.js running')
@@ -3393,19 +3243,6 @@ async function news_app (opts = {}) {
 
 async function init (vault, sidebarEl, mainEl, sid) {
   try {
-    /*
-            const api = blog_app(vault)
-
-            let username = localStorage.getItem('username')
-            if (!username) {
-                username = prompt('Enter your username:')
-                if (username) localStorage.setItem('username', username)
-                else return
-            }
-
-            await api.init_blog({ username })
-            */
-
     console.log('[news/index.js] init called with sid:', sid)
     const { id, sdb } = await get(sid) // Pass sid to get()
 
@@ -3456,7 +3293,11 @@ function fallback_module () {
             mode: 'mode',
             flags: 'flags',
             keybinds: 'keybinds',
-            undo: 'undo'
+            undo: 'undo',
+            'my-stories': 'my-stories',
+            feeds: 'feeds',
+            lists: 'lists',
+            discover: 'discover'
           }
         }
       },
@@ -3471,7 +3312,11 @@ function fallback_module () {
         'mode/': {},
         'flags/': {},
         'keybinds/': {},
-        'undo/': {}
+        'undo/': {},
+        'my-stories/': {},
+        'feeds/': {},
+        'lists/': {},
+        'discover/': {}
       }
     }
   }
@@ -3485,7 +3330,7 @@ function fallback_module () {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":6,"STATE":1}],6:[function(require,module,exports){
+},{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] wrapper.js running, filename:', __filename)
@@ -3495,8 +3340,6 @@ const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
 
-const dummy_content = require('./dummy_content')
-
 module.exports = my_component_with_graph
 
 async function my_component_with_graph (opts, protocol) {
@@ -3505,8 +3348,9 @@ async function my_component_with_graph (opts, protocol) {
 
   const by = id
   let db = null
-  let send_to_graph_explorer = null
   let mid = 0
+  let send_to_graph_explorer = null
+  let explorer_el = null
   const cardMap = new WeakMap()
 
   const on = {
@@ -3515,20 +3359,28 @@ async function my_component_with_graph (opts, protocol) {
   }
 
   const el = document.createElement('div')
-
   const shadow = el.attachShadow({ mode: 'closed' })
 
+  // 1. Wrapper Layout CSS (Positions the sidebar)
   const layoutSheet = new CSSStyleSheet()
   layoutSheet.replaceSync(`
       :host { 
-        position: absolute; top: 0; left: 0; bottom: 0; right: 0; 
+        position: fixed; /* Force full screen overlay */
+        top: 0; left: 0; bottom: 0; right: 0; 
         display: flex; 
-        font-family: 'Inter', sans-serif;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
       .explorer-panel { 
         width: 250px; 
         flex-shrink: 0; 
         border-right: 1px solid #e5e7eb; 
+        height: 100%;
+        position: relative;
+        z-index: 10;
+        background-color: #f9fafb;
       }
       .main-viewer { 
         flex: 1; 
@@ -3537,178 +3389,50 @@ async function my_component_with_graph (opts, protocol) {
         background-color: #ffffff; 
         color: #1f2937; 
       }
-      .empty-container {
-        text-align: center;
-        margin-top: 100px;
-        color: #9ca3af;
-      }
-      .empty-title {
-        color: #374151;
-        font-size: 1.5rem;
-        font-weight: 600;
-      }
-      .empty-hint {
-        color: #9ca3af;
-      }
-      .article-container { max-width: 800px; margin: 0 auto; }
-      .article-header { margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
-      .article-title { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
-      .article-meta { color: #6b7280; font-size: 0.9rem; }
-      .article-body { font-size: 1.1rem; line-height: 1.7; color: #374151; }
-      .empty-folder-container { text-align: center; margin-top: 50px; color: #9ca3af; }
-      .empty-folder-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
-      .empty-folder-title { color: #374151; }
+      .empty-container { text-align: center; margin-top: 100px; color: #9ca3af; }
+      .empty-title { color: #374151; font-size: 1.5rem; font-weight: 600; }
+      
+      /* Write Page Styles */
+      .write-page-container { max-width: 48rem; margin: 0 auto; padding-bottom: 4rem; }
+      .section-header { margin-bottom: 2.5rem; }
+      .section-header h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; margin-top: 0; color: #1f2937; }
+      .section-header p { font-size: 1.125rem; color: #6b7280; font-weight: 300; margin: 0; }
 
-      /* Write Page CSS */
-      .write-page-container {
-        max-width: 48rem;
-        margin: 0 auto;
-        padding-bottom: 4rem;
-      }
-      .section-header {
-        margin-bottom: 2.5rem;
-      }
-      .section-header h1 {
-        font-size: 2.25rem;
-        font-weight: 900;
-        letter-spacing: -0.025em;
-        margin-bottom: 0.5rem;
-        margin-top: 0;
-        color: #1f2937;
-      }
-      .section-header p {
-        font-size: 1.125rem;
-        color: #6b7280;
-        font-weight: 300;
-        margin: 0;
-      }
-      .card {
-        background: white;
-        border: 1px solid rgba(229, 231, 235, 0.5);
-        border-radius: 0.75rem;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      }
-      .space-y-8 > * + * {
-        margin-top: 2rem;
-      }
-      .input-group label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #9ca3af;
-        margin-bottom: 0.75rem;
-      }
-      .input-title {
-        width: 100%;
-        font-family: inherit;
-        border: none;
-        background: transparent;
-        color: #1f2937;
-        outline: none;
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1.2;
-      }
-      .input-title::placeholder {
-        color: rgba(209, 213, 219, 0.6);
-      }
-      .input-content {
-        width: 100%;
-        font-family: inherit;
-        border: none;
-        background: transparent;
-        color: #1f2937;
-        outline: none;
-        min-height: 24rem;
-        resize: none;
-        font-size: 1rem;
-        line-height: 1.75;
-      }
-      .input-content::placeholder {
-        color: rgba(209, 213, 219, 0.6);
-      }
-      .divider {
-        height: 1px;
-        background: rgba(229, 231, 235, 0.3);
-        margin: 2rem 0;
-      }
-      .word-count {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 1rem;
-        font-size: 0.875rem;
-        color: #9ca3af;
-        font-weight: 500;
-      }
-      .actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding-top: 1rem;
-      }
-      .btn-publish {
-        background: #6366f1;
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 1rem;
-        transition: background 0.3s;
-      }
-      .btn-publish:hover {
-        background: #4f46e5;
-      }
-      .action-text {
-        font-size: 0.75rem;
-        color: #9ca3af;
-        font-weight: 300;
-      }
-      .tips {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 2rem;
-        margin-top: 4rem;
-      }
-      .tip {
-        text-align: center;
-      }
-      .tip h3 {
-        font-weight: 600;
-        font-size: 1.125rem;
-        margin-bottom: 0.5rem;
-        color: #1f2937;
-      }
-      .tip p {
-        font-size: 0.875rem;
-        color: #6b7280;
-        font-weight: 300;
-      }
-      /* Select styling */
-      .blog-select {
-        width: 100%;
-        padding: 0.5rem;
-        font-size: 1rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        color: #1f2937;
-        background-color: white;
-        margin-bottom: 1rem;
-      }
+      .card { background: white; border: 1px solid rgba(229, 231, 235, 0.5); border-radius: 0.75rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+      .space-y-8 > * + * { margin-top: 2rem; }
+      .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.75rem; }
+      .input-title { width: 100%; border: none; font-size: 2rem; font-weight: 700; outline: none; }
+      .input-content { width: 100%; border: none; min-height: 24rem; resize: none; font-size: 1rem; outline: none; }
+      
+      .btn-publish { background: #6366f1; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
+      .btn-publish:hover { background: #4f46e5; }
+      
+      .divider { height: 1px; background: rgba(229, 231, 235, 0.3); margin: 2rem 0; }
+      .word-count { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; font-weight: 500; }
+      .actions { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; }
+      .action-text { font-size: 0.75rem; color: #9ca3af; font-weight: 300; }
+      .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 4rem; }
+      .tip { text-align: center; }
+      .tip h3 { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; color: #1f2937; }
+      .tip p { font-size: 0.875rem; color: #6b7280; font-weight: 300; }
+      .blog-select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; color: #1f2937; background-color: white; margin-bottom: 1rem; }
+
+      .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
   `)
 
   const sheet = new CSSStyleSheet()
   shadow.adoptedStyleSheets = [layoutSheet, sheet]
 
   const subs = await sdb.watch(onbatch)
-  const explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
 
-  explorer_el.className = 'explorer-panel'
+  if (subs && subs.length > 0) {
+    console.log('[Wrapper] Rendering Graph Explorer with sub:', subs[0])
+    explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
+    explorer_el.classList.add('explorer-panel')
+    shadow.append(explorer_el)
+  } else {
+    console.warn('[Wrapper] No graph-explorer instance found in subs')
+  }
 
   const main_content = document.createElement('div')
   main_content.className = 'main-viewer'
@@ -3718,36 +3442,36 @@ async function my_component_with_graph (opts, protocol) {
       <p class="empty-hint">← Choose a story or feed from the sidebar</p>
     </div>
   `
-
-  shadow.append(explorer_el)
   shadow.append(main_content)
 
-  explorer_el.addEventListener('click', (e) => {
+  shadow.addEventListener('click', (e) => {
     const nodeEl = e.target.closest('.node')
-    if (!nodeEl) return
-
-    if (e.target.closest('.name') || e.target.closest('.prefix')) return
-
-    const instance_path = nodeEl.dataset.instance_path
-    if (instance_path && send_to_graph_explorer) {
-      console.log('[Interaction] Whitespace/Icon toggle:', instance_path)
-      const head = [id, 'graph_explorer', mid++]
-      send_to_graph_explorer({
-        head,
-        type: 'toggle_node',
-        data: { instance_path, toggle_type: 'subs' }
-      })
+    if (nodeEl && !e.target.closest('.name') && !e.target.closest('.prefix')) {
+      const instance_path = nodeEl.dataset.instance_path
+      if (instance_path && send_to_graph_explorer) {
+        const head = [id, 'graph_explorer', mid++]
+        send_to_graph_explorer({
+          head,
+          type: 'toggle_node',
+          data: { instance_path, toggle_type: 'subs' }
+        })
+      }
     }
   })
 
   return el
 
   async function onbatch (batch) {
+    console.log('[Wrapper] onbatch:', batch)
     for (const { type, paths } of batch) {
+      console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
       const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
       const valid_data = data.filter(d => d !== null)
       if (valid_data.length > 0) {
+        console.log('[Wrapper] valid_data found for type:', type, valid_data)
         on[type] && on[type](valid_data)
+      } else {
+        console.warn('[Wrapper] No valid data found for paths:', paths)
       }
     }
   }
@@ -3757,25 +3481,20 @@ async function my_component_with_graph (opts, protocol) {
   }
 
   function on_entries (data) {
+    console.log('[Wrapper] on_entries called with:', data)
     if (!data || !data[0]) {
+      console.warn('[Wrapper] No entries data, initializing empty db')
       db = graphdb({})
       notify_db_initialized({})
       return
     }
-
-    let parsed_data
+    let parsed_data = {}
     try {
       parsed_data = typeof data[0] === 'string' ? JSON.parse(data[0]) : data[0]
+      console.log('[Wrapper] Parsed entries data:', parsed_data)
     } catch (e) {
-      console.error('Failed to parse entries data:', e)
-      parsed_data = {}
+      console.error('[Wrapper] Error parsing entries data:', e)
     }
-
-    if (typeof parsed_data !== 'object' || !parsed_data) {
-      console.error('Parsed entries data is not a valid object.')
-      parsed_data = {}
-    }
-
     db = graphdb(parsed_data)
     notify_db_initialized(parsed_data)
   }
@@ -3783,11 +3502,7 @@ async function my_component_with_graph (opts, protocol) {
   function notify_db_initialized (entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
-      send_to_graph_explorer({
-        head,
-        type: 'db_initialized',
-        data: { entries }
-      })
+      send_to_graph_explorer({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
@@ -3797,51 +3512,38 @@ async function my_component_with_graph (opts, protocol) {
 
     function on_graph_explorer_message (msg) {
       const { type, data } = msg
-
       if (type === 'selection_changed') {
         const { selected } = data
-        if (selected && selected.length > 0) {
-          const path = selected[0]
-          console.log('[Sidebar] Selection Changed:', path)
-          render_content(path)
-        }
+        if (selected && selected.length > 0) render_content(selected[0])
       }
-
-      if (type === 'confirmed_nodes') {
-        // TODO: Handle confirmed nodes
-      }
-
-      if (type.startsWith('db_')) {
-        handle_db_request(msg, send)
-      }
+      if (type.startsWith('db_')) handle_db_request(msg, send)
     }
 
-    function render_content (path) {
-      let data = dummy_content[path]
+    async function render_content (path) {
+      let drivePath = path
+      if (drivePath.startsWith('/')) drivePath = drivePath.slice(1)
+      const parts = drivePath.split('/')
+      if (parts.length > 2) drivePath = `${parts[0]}/${parts[parts.length - 1]}`
 
-      if (!data) {
-        const key = Object.keys(dummy_content).find(k => path.includes(k) || path.endsWith(k))
-        if (key) data = dummy_content[key]
-      }
+      let data
+      try {
+        const file = await drive.get(drivePath)
+        if (file && file.raw) data = JSON.parse(file.raw)
+      } catch (e) { /* ignore */ }
 
-      if (data && data.content && data.content.trim().length > 0) {
+      if (data && data.content) {
         main_content.innerHTML = `
           <article class="article-container">
             <header class="article-header">
               <h1 class="article-title">${data.title}</h1>
-              <div class="article-meta">
-                <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
-              </div>
+              <div class="article-meta"><span>By <strong>${data.author}</strong></span> • <span>${data.date}</span></div>
             </header>
-            <div class="article-body">
-              ${data.content}
-            </div>
-          </article>
-        `
+            <div class="article-body">${data.content}</div>
+          </article>`
       } else {
-        let folderName = path
+        // Folder Rendering Logic
+        let folderName = path.split('/').pop() || path
         let subs = []
-
         let dbPath = path
         if (typeof path === 'string' && path.includes('|')) {
           dbPath = path.split('|').pop()
@@ -3861,34 +3563,36 @@ async function my_component_with_graph (opts, protocol) {
           }
         }
 
+        // [FEATURE] List items if available
         if (subs.length > 0) {
-          const listItems = subs.map(subPath => {
-            let itemData = dummy_content[subPath]
-            if (!itemData) {
-              const key = Object.keys(dummy_content).find(k => subPath.includes(k) || subPath.endsWith(k))
-              if (key) itemData = dummy_content[key]
-            }
+          const listItems = (await Promise.all(subs.map(async subPath => {
+            let itemData
+            try {
+              let subDrivePath = subPath
+              if (subDrivePath.startsWith('/')) subDrivePath = subDrivePath.slice(1)
+              const subParts = subDrivePath.split('/')
+              if (subParts.length > 2) {
+                subDrivePath = `${subParts[0]}/${subParts[subParts.length - 1]}`
+              }
+              const file = await drive.get(subDrivePath)
+              if (file && file.raw) itemData = JSON.parse(file.raw)
+            } catch (e) { /* ignore */ }
+            if (!itemData) return null
             return { path: subPath, data: itemData }
-          }).filter(item => item.data)
+          }))).filter(item => item && item.data)
 
           if (path.includes('my-stories')) {
             const localStories = get_local_stories()
             localStories.forEach(story => {
-              listItems.push({
-                path: 'local-' + Date.now(),
-                data: story
-              })
+              listItems.push({ path: 'local-' + Date.now(), data: story })
             })
           }
 
           if (listItems.length > 0) {
             const isMyStories = path.includes('my-stories') || path.includes('My Stories')
-
             main_content.innerHTML = ''
-
             const container = document.createElement('div')
             container.className = 'news-container'
-
             const header = document.createElement('header')
             header.className = 'news-header'
 
@@ -3898,12 +3602,6 @@ async function my_component_with_graph (opts, protocol) {
             .news-author-muted { font-weight: 600; color: #6b7280; }
             .news-separator { margin: 0 4px; }
             .news-date-text { color: inherit; }
-
-            .main-empty-state { text-align: center; margin-top: 100px; color: #9ca3af; }
-            .main-empty-folder { text-align: center; margin-top: 50px; color: #9ca3af; }
-            .empty-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
-            .empty-title { color: #374151; }
-            
             .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
             .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
             .news-card:hover { background: rgba(0,0,0,0.01); }
@@ -3939,86 +3637,47 @@ async function my_component_with_graph (opts, protocol) {
                                 <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
                               </div>
                             </header>
-                            <div class="article-body">
-                              ${data.content}
-                            </div>
-                          </article>
-                        `
+                            <div class="article-body">${data.content}</div>
+                          </article>`
                       return
                     }
                   }
-
-                  console.log('[Interaction] WeakMap Lookup Success:', path)
                   const head = [id, 'graph_explorer', mid++]
-                  send_to_graph_explorer({
-                    head,
-                    type: 'select_node',
-                    data: { instance_path: path }
-                  })
+                  send_to_graph_explorer({ head, type: 'select_node', data: { instance_path: path } })
                   break
                 }
                 target = target.parentNode
               }
             })
 
-            header.innerHTML = `
-               <div>
-                  <h2>${folderName}</h2>
-                  ${isMyStories ? '<p class="news-subheader">Your published posts</p>' : ''}
-               </div>
-            `
+            header.innerHTML = `<div><h2>${folderName}</h2>${isMyStories ? '<p class="news-subheader">Your published posts</p>' : ''}</div>`
             container.appendChild(header)
 
             const listContainer = document.createElement('div')
             listItems.forEach(({ path, data }) => {
               const card = document.createElement('div')
               card.className = 'news-card'
-
               cardMap.set(card, path)
 
               let metaTopHtml = ''
               if (isMyStories) {
-                metaTopHtml = `
-                  <div class="news-meta-top">
-                     <span class="news-author">${data.author}</span>
-                     <span class="news-separator">•</span>
-                     <span class="news-date-text">${data.date}</span>
-                     <span class="news-separator">•</span>
-                     <span class="news-date-text">${Math.floor(Math.random() * 10) + 2} min</span>
-                  </div>`
+                metaTopHtml = `<div class="news-meta-top"><span class="news-author">${data.author}</span><span class="news-separator">•</span><span class="news-date-text">${data.date}</span></div>`
               }
 
               let metaBottomHtml = ''
               if (!isMyStories) {
                 const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
-                metaBottomHtml = `
-                  <div class="news-meta-bottom">
-                     <span class="news-author-muted">${data.author}</span>
-                     <span class="news-separator">•</span>
-                     <span class="news-date-text">${data.date}</span>
-                     ${tags}
-                  </div>`
-              }
-
-              let tagsBottomHtml = ''
-              if (isMyStories) {
-                const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
-                tagsBottomHtml = `<div class="news-tags">${tags}</div>`
+                metaBottomHtml = `<div class="news-meta-bottom"><span class="news-author-muted">${data.author}</span><span class="news-separator">•</span><span class="news-date-text">${data.date}</span>${tags}</div>`
               }
 
               card.innerHTML = `
-                  <div class="news-avatar" style="--avatar-bg: ${data.color || '#e5e7eb'};">
-                     ${data.title.charAt(0)}
-                  </div>
+                  <div class="news-avatar" style="--avatar-bg: ${data.color || '#e5e7eb'};">${data.title.charAt(0)}</div>
                   <div class="news-content">
                      ${metaTopHtml}
                      <h3 class="news-title">${data.title}</h3>
                      <p class="news-description">${data.description || 'No description available.'}</p>
                      ${metaBottomHtml}
-                     ${tagsBottomHtml}
-                  </div>
-               `
-
+                  </div>`
               listContainer.appendChild(card)
             })
 
@@ -4029,11 +3688,9 @@ async function my_component_with_graph (opts, protocol) {
               const fab = document.createElement('div')
               fab.className = 'news-fab'
               fab.textContent = '+'
-
               fab.onclick = () => render_write_page(folderName)
               main_content.appendChild(fab)
             }
-
             return
           }
         }
@@ -4043,14 +3700,12 @@ async function my_component_with_graph (opts, protocol) {
             <div class="empty-folder-icon">📂</div>
             <h2 class="empty-folder-title">${folderName}</h2>
             <p>Select a file inside to view content.</p>
-          </div>
-        `
+          </div>`
 
-        if (folderName === 'My Stories' || folderName.includes('my-stories')) {
+        if (folderName.includes('My Stories') || path.includes('my-stories')) {
           const fab = document.createElement('div')
           fab.className = 'news-fab'
           fab.textContent = '+'
-
           fab.onclick = () => render_write_page(folderName)
           main_content.appendChild(fab)
         }
@@ -4079,198 +3734,126 @@ async function my_component_with_graph (opts, protocol) {
         content: '',
         blog: 'Main Blog'
       }
-
       const followedBlogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
 
-      main_content.innerHTML = ''
-
-      const container = document.createElement('div')
-      container.className = 'write-page-container'
-
-      const header = document.createElement('div')
-      header.className = 'section-header'
-      header.innerHTML = `
+      main_content.innerHTML = `
+        <div class="write-page-container">
+          <div class="section-header">
             <h1>Write a Story</h1>
             <p>Share your thoughts with the network</p>
-        `
-      container.appendChild(header)
+          </div>
+          
+          <div class="card">
+            <div class="space-y-8">
+              <div class="input-group">
+                <label>Publishing To</label>
+                <select class="blog-select" id="blog-select">
+                  ${followedBlogs.map(blog => `<option value="${blog}" ${blog === 'Main Blog' ? 'selected' : ''}>${blog}</option>`).join('')}
+                </select>
+              </div>
 
-      const card = document.createElement('div')
-      card.className = 'card'
+              <div class="input-group">
+                <label>Story Title</label>
+                <input type="text" class="input-title" placeholder="Give your story a captivating title..." id="input-title">
+              </div>
 
-      const spaceY = document.createElement('div')
-      spaceY.className = 'space-y-8'
-      card.appendChild(spaceY)
+              <div class="divider"></div>
 
-      const blogGroup = document.createElement('div')
-      blogGroup.className = 'input-group'
-      const blogLabel = document.createElement('label')
-      blogLabel.textContent = 'Publishing To'
-      blogGroup.appendChild(blogLabel)
+              <div class="input-group">
+                <label>Your Story</label>
+                <textarea class="input-content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." id="input-content"></textarea>
+                <div class="word-count">
+                  <span id="word-count-span">0 words</span>
+                  <span id="read-time-span">~0 min read</span>
+                </div>
+              </div>
 
-      const blogSelect = document.createElement('select')
-      blogSelect.className = 'blog-select'
-      followedBlogs.forEach(blog => {
-        const opt = document.createElement('option')
-        opt.value = blog
-        opt.textContent = blog
-        if (blog === 'Main Blog') opt.selected = true
-        blogSelect.appendChild(opt)
-      })
-      blogSelect.addEventListener('change', (e) => {
-        writeState.blog = e.target.value
-      })
-      blogGroup.appendChild(blogSelect)
-      spaceY.appendChild(blogGroup)
+              <div class="actions">
+                <button class="btn-publish" id="btn-publish">Publish Story</button>
+                <p class="action-text">Your story will be stored locally and synced with your network</p>
+              </div>
+            </div>
+          </div>
 
-      const titleGroup = document.createElement('div')
-      titleGroup.className = 'input-group'
-      const titleLabel = document.createElement('label')
-      titleLabel.textContent = 'Story Title'
-      titleGroup.appendChild(titleLabel)
+          <div class="tips">
+            <div class="tip">
+              <h3>Be Authentic</h3>
+              <p>Write what you genuinely think and feel, not what algorithms demand</p>
+            </div>
+            <div class="tip">
+              <h3>Tell a Story</h3>
+              <p>Use examples and narratives to engage readers and make ideas stick</p>
+            </div>
+            <div class="tip">
+              <h3>Add Value</h3>
+              <p>Help readers learn something new or see the world differently</p>
+            </div>
+          </div>
+        </div>
+      `
 
-      const titleInput = document.createElement('input')
-      titleInput.type = 'text'
-      titleInput.className = 'input-title'
-      titleInput.placeholder = 'Give your story a captivating title...'
-      titleInput.addEventListener('input', (e) => {
-        writeState.title = e.target.value
-      })
-      titleGroup.appendChild(titleInput)
-      spaceY.appendChild(titleGroup)
+      // Add event listeners after rendering
+      setTimeout(() => {
+        const blogSelect = main_content.querySelector('#blog-select')
+        const titleInput = main_content.querySelector('#input-title')
+        const contentArea = main_content.querySelector('#input-content')
+        const wordCountSpan = main_content.querySelector('#word-count-span')
+        const readTimeSpan = main_content.querySelector('#read-time-span')
+        const publishBtn = main_content.querySelector('#btn-publish')
 
-      const divider = document.createElement('div')
-      divider.className = 'divider'
-      spaceY.appendChild(divider)
-
-      const contentGroup = document.createElement('div')
-      contentGroup.className = 'input-group'
-      const contentLabel = document.createElement('label')
-      contentLabel.textContent = 'Your Story'
-      contentGroup.appendChild(contentLabel)
-
-      const contentArea = document.createElement('textarea')
-      contentArea.className = 'input-content'
-      contentArea.placeholder = 'Write your story here. Share your thoughts, experiences, and insights...'
-      contentArea.addEventListener('input', (e) => {
-        writeState.content = e.target.value
-
-        const words = e.target.value.trim().split(/\s+/).length
-        wordCountSpan.textContent = (e.target.value.trim() === '' ? 0 : words) + ' words'
-        readTimeSpan.textContent = '~' + Math.ceil(words / 200) + ' min read'
-      })
-      contentGroup.appendChild(contentArea)
-
-      const wordCountDiv = document.createElement('div')
-      wordCountDiv.className = 'word-count'
-      const wordCountSpan = document.createElement('span')
-      wordCountSpan.textContent = '0 words'
-      const readTimeSpan = document.createElement('span')
-      readTimeSpan.textContent = '~0 min read'
-      wordCountDiv.appendChild(wordCountSpan)
-      wordCountDiv.appendChild(readTimeSpan)
-      contentGroup.appendChild(wordCountDiv)
-
-      spaceY.appendChild(contentGroup)
-
-      const actionsDiv = document.createElement('div')
-      actionsDiv.className = 'actions'
-
-      const publishBtn = document.createElement('button')
-      publishBtn.className = 'btn-publish'
-      publishBtn.textContent = 'Publish Story'
-      publishBtn.addEventListener('click', () => {
-        if (!writeState.title || !writeState.content) {
-          alert('Please fill in both title and content.')
-          return
+        if (blogSelect) blogSelect.addEventListener('change', (e) => { writeState.blog = e.target.value })
+        if (titleInput) titleInput.addEventListener('input', (e) => { writeState.title = e.target.value })
+        if (contentArea) {
+          contentArea.addEventListener('input', (e) => {
+            writeState.content = e.target.value
+            const words = e.target.value.trim().split(/\s+/).length
+            wordCountSpan.textContent = (e.target.value.trim() === '' ? 0 : words) + ' words'
+            readTimeSpan.textContent = '~' + Math.ceil(words / 200) + ' min read'
+          })
         }
 
-        const newStory = {
-          title: writeState.title,
-          content: writeState.content,
-          author: 'You',
-          date: new Date().toLocaleDateString(),
-          description: writeState.content.slice(0, 100) + '...',
-          tags: ['#local', '#' + writeState.blog.replace(/\s+/g, '')],
-          color: '#6366f1'
+        if (publishBtn) {
+          publishBtn.addEventListener('click', () => {
+            if (!writeState.title || !writeState.content) {
+              alert('Please fill in both title and content.')
+              return
+            }
+            const newStory = {
+              title: writeState.title,
+              content: writeState.content,
+              author: 'You',
+              date: new Date().toLocaleDateString(),
+              description: writeState.content.slice(0, 100) + '...',
+              tags: ['#local', '#' + writeState.blog.replace(/\s+/g, '')],
+              color: '#6366f1'
+            }
+            save_local_story(newStory)
+            alert('Story published locally!')
+            const myStoriesPath = 'my-stories'
+            render_content(myStoriesPath)
+          })
         }
-
-        save_local_story(newStory)
-        alert('Story published locally!')
-        const myStoriesPath = Object.keys(dummy_content).find(k => k.includes('my-stories')) || 'my-stories'
-        render_content(myStoriesPath)
-      })
-      actionsDiv.appendChild(publishBtn)
-
-      const actionText = document.createElement('p')
-      actionText.className = 'action-text'
-      actionText.textContent = 'Your story will be stored locally and synced with your network'
-      actionsDiv.appendChild(actionText)
-
-      spaceY.appendChild(actionsDiv)
-
-      container.appendChild(card)
-
-      // Tips
-      const tipsDiv = document.createElement('div')
-      tipsDiv.className = 'tips'
-
-      tipsDiv.innerHTML = `
-        <div class="tip">
-          <h3>Be Authentic</h3>
-          <p>Write what you genuinely think and feel, not what algorithms demand</p>
-        </div>
-        <div class="tip">
-          <h3>Tell a Story</h3>
-          <p>Use examples and narratives to engage readers and make ideas stick</p>
-        </div>
-        <div class="tip">
-          <h3>Add Value</h3>
-          <p>Help readers learn something new or see the world differently</p>
-        </div>
-        `
-      container.appendChild(tipsDiv)
-
-      main_content.appendChild(container)
+      }, 0)
     }
 
     async function handle_db_request (request_msg, send) {
       const { head: request_head, type: operation, data: params } = request_msg
       let result
+      if (!db) { send_response(request_head, null); return }
 
-      if (!db) {
-        // console.error('[my_component] Database not initialized yet')
-        send_response(request_head, null)
-        return
-      }
-
-      if (operation === 'db_get') {
-        result = db.get(params.path)
-      } else if (operation === 'db_has') {
-        result = db.has(params.path)
-      } else if (operation === 'db_is_empty') {
-        result = db.is_empty()
-      } else if (operation === 'db_root') {
-        result = db.root()
-      } else if (operation === 'db_keys') {
-        result = db.keys()
-      } else if (operation === 'db_raw') {
-        result = db.raw()
-      } else {
-        console.warn('[my_component] Unknown db operation:', operation)
-        result = null
-      }
+      if (operation === 'db_get') result = db.get(params.path)
+      else if (operation === 'db_has') result = db.has(params.path)
+      else if (operation === 'db_is_empty') result = db.is_empty()
+      else if (operation === 'db_root') result = db.root()
+      else if (operation === 'db_keys') result = db.keys()
+      else if (operation === 'db_raw') result = db.raw()
+      else result = null
 
       send_response(request_head, result)
 
       function send_response (request_head, result) {
         const response_head = [by, 'graph_explorer', mid++]
-        send({
-          head: response_head,
-          refs: { cause: request_head },
-          type: 'db_response',
-          data: { result }
-        })
+        send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
       }
     }
   }
@@ -4280,8 +3863,7 @@ function fallback_module () {
   return {
     _: {
       'graph-explorer': { $: '' },
-      './graphdb': { $: '' },
-      './dummy_content': { $: '' }
+      './graphdb': { $: '' }
     },
     api: fallback_instance
   }
@@ -4290,9 +3872,11 @@ function fallback_module () {
     return {
       _: {
         'graph-explorer': {
-          0: override_theme,
+          0: override_theme, // [1] Use Override
           mapping: {
+            // style mapping MUST exist for graph-explorer to validate state
             style: 'theme',
+            entries: 'entries',
             runtime: 'runtime',
             mode: 'mode',
             flags: 'flags',
@@ -4300,48 +3884,66 @@ function fallback_module () {
             undo: 'undo'
           }
         },
-        './graphdb': {
-          0: ''
-        },
-        './dummy_content': {
-          0: ''
-        }
+        './graphdb': { 0: '' }
       },
       drive: {
-        'theme/': {
-          'style.css': {
-            raw: ''
-          }
+        'entries/': { 'entries.json': { $ref: 'entries.json' } },
+        'theme/': {},
+        'runtime/': {
+          'node_height.json': { raw: '32' },
+          'vertical_scroll_value.json': { raw: '0' },
+          'horizontal_scroll_value.json': { raw: '0' },
+          'selected_instance_paths.json': { raw: '[]' },
+          'confirmed_selected.json': { raw: '[]' },
+          'instance_states.json': { raw: '{}' },
+          'search_entry_states.json': { raw: '{}' },
+          'last_clicked_node.json': { raw: 'null' },
+          'view_order_tracking.json': { raw: '{}' }
         },
-        'entries/': {
-          'entries.json': {
-            $ref: 'entries.json'
-          }
-        },
-        'runtime/': {},
-        'mode/': {},
         'flags/': {
           'hubs.json': { raw: '"default"' },
           'selection.json': { raw: 'true' },
           'recursive_collapse.json': { raw: 'true' }
         },
-        'keybinds/': {
-          'navigation.json': {
-            raw: JSON.stringify({
-              ArrowUp: 'navigate_up',
-              ArrowDown: 'navigate_down',
-              ArrowLeft: 'navigate_left',
-              ArrowRight: 'navigate_right',
-              ' ': 'toggle_expansion',
-              Enter: 'toggle_expansion'
-            })
-          }
+        'keybinds/': { 'navigation.json': { raw: '{}' } },
+        'undo/': { 'stack.json': { raw: '[]' } },
+        'my-stories/': {
+          'story-1': { raw: JSON.stringify({ title: 'My First Post', author: 'You', date: 'Jan 28', content: "This is my first post on the P2P network! I'm excited to share my thoughts here." }) },
+          'story-2': { raw: JSON.stringify({ title: 'Building a P2P Network', author: 'You', date: 'Jan 27', content: 'Decentralized networks are the future. Here is how we are building one...' }) },
+          'story-3': { raw: JSON.stringify({ title: 'Future of Decentralized', author: 'You', date: 'Jan 26', content: 'Web3 is evolving rapidly. Smart contracts and IPFS are changing the game.' }) },
+          'story-4': { raw: JSON.stringify({ title: 'Why Decentralization Matters', author: 'You', date: 'Jan 25', content: "Control over your own data is a fundamental right. Let's discuss why." }) }
         },
-        'undo/': {}
+        'feeds/': {},
+        'feeds/hackers-digest/': {
+          'code-coffee': { raw: JSON.stringify({ title: 'Code & Coffee', author: 'HackerOne', date: '2h ago', description: 'Best spots for coding in the city', tags: ['#lifestyle', '#remote'], content: 'Here is a list of the best cafes with strong WiFi and good vibes...' }) },
+          'system-design': { raw: JSON.stringify({ title: 'System Design Weekly', author: 'Archie', date: '5h ago', description: 'Deep dive into distributed systems', tags: ['#tech', '#architecture'], content: 'Today we explore consistent hashing and its applications...' }) }
+        },
+        'feeds/off-the-grid/': {
+          'mesh-network': { raw: JSON.stringify({ title: 'Building a mesh network', author: 'GridFree', date: '1d ago', description: 'Hardware guide', tags: ['#hardware', '#iot'], content: 'Using LoRaWAN for off-grid comms...' }) },
+          fediverse: { raw: JSON.stringify({ title: 'Why I left social media', author: 'Anon', date: '2d ago', description: 'Personal journey', tags: ['#privacy'], content: 'The centralized web is broken...' }) },
+          'self-hosting': { raw: JSON.stringify({ title: 'Self-hosting 101', author: 'HomeLab', date: '3d ago', description: 'Getting started with Docker', tags: ['#guides'], content: 'Start small with a Raspberry Pi...' }) }
+        },
+        'feeds/peer-review/': {
+          'network-notes': { raw: JSON.stringify({ title: 'Network Notes', author: 'NetSec', date: '4h ago', content: 'Analyzing traffic patterns in P2P gossip protocols...' }) }
+        },
+        'feeds/peer-review/security-chronicles/': {
+          'privacy-matters': { raw: JSON.stringify({ title: 'Why Privacy Matters', author: 'SecGuru', date: '5h ago', content: 'Privacy is not secrecy, it is control...' }) },
+          'zero-trust': { raw: JSON.stringify({ title: 'Zero Trust Architecture', author: 'EntSec', date: '6h ago', content: 'Never trust, always verify...' }) }
+        },
+        'lists/': {
+          'best-of-tech': { raw: JSON.stringify({ title: 'Best of Tech', author: 'Curator', date: 'Weekly', content: 'Top tech links for this week...' }) },
+          'morning-read': { raw: JSON.stringify({ title: 'Morning Read', author: 'Daily', date: 'Daily', content: '5 things you need to know today...' }) }
+        },
+        'discover/': {},
+        'discover/random-peer-99/': {},
+        'discover/satoshi-fan/': {},
+        'discover/rust-evangelist/': {}
       }
     }
   }
 
+  // --- OVERRIDE FUNCTION ---
+  // Using user's provided logic verbatim
   function override_theme () {
     return {
       _: {
@@ -4351,7 +3953,8 @@ function fallback_module () {
           mode: 'mode',
           flags: 'flags',
           keybinds: 'keybinds',
-          undo: 'undo'
+          undo: 'undo',
+          entries: 'entries'
         }
       },
       drive: {
@@ -4368,6 +3971,9 @@ function fallback_module () {
               display: block;
               height: 100%;
               width: 100%;
+              position: fixed; /* Keep fixed to ensure full screen */
+              top: 0; left: 0; bottom: 0; right: 0;
+              z-index: 9999;
               font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
               color: var(--text-main);
               background-color: var(--bg-sidebar);
@@ -4375,7 +3981,7 @@ function fallback_module () {
 
             .graph-container {
               /* aside */
-              width: 100%;
+              width: 250px;
               height: 100vh;
               background: var(--bg-sidebar);
               border-right: 1px solid var(--border-color);
@@ -4407,41 +4013,16 @@ function fallback_module () {
                position: absolute;
                top: 0; left: 0; right: 0; bottom: 0;
                display: flex;
+               /* This logic seems to be inside shadow dom of graph-explorer or how styles are applied? */
+               /* It expects graph explorer to use these classes? */
             }
             
-            .explorer-panel {
-               flex-shrink: 0;
-               border-right: 1px solid #e5e7eb;
-        
-            }
-            
-            .main-viewer {
-               flex: 1;
-               padding: 40px;
-               overflow-y: auto;
-               background-color: #ffffff;
-               color: #1f2937;
-               font-family: 'Inter', sans-serif;
-            }
-
-            .clickable {
-              cursor: pointer;
-            }
+            /* Assuming graph explorer uses .graph-container, and we rely on :host for the layout. */
 
             .node:hover {
               background: rgba(0, 0, 0, 0.04);
             }
 
-          
-            .node > .name:hover {
-              color: var(--primary);
-            }
-
-            input[type="checkbox"] {
-              display: none !important;
-            }
-
-       
             .node.type-stories,
             .node.type-feeds,
             .node.type-lists,
@@ -4451,26 +4032,23 @@ function fallback_module () {
               color: #111827; 
             }
 
-       
             .node.type-file, .node.type-js-file {
               font-weight: 400;
               color: var(--text-main);
             }
 
-            /* Map .sidebar-item.active styles */
             .node.selected {
               background: rgba(99, 102, 241, 0.1);
               color: var(--primary);
               font-weight: 600;
             }
 
-  
-            .wand {
+            input[type="checkbox"] {
               display: none !important;
             }
-         
+  
+            .wand { display: none !important; }
             .node.type-root { display: none !important; }
-
 
             .icon {
               color: var(--text-muted);
@@ -4482,7 +4060,6 @@ function fallback_module () {
               margin-right: 0; 
               opacity: 1;      
             }
-
         
             .prefix {
               cursor: pointer;
@@ -4498,14 +4075,13 @@ function fallback_module () {
               display: inline-flex;
             }
             
-       
             .pipe, .blank {
-              display: inline-block;
-              width: 24px; /* Width per indentation level */
-              height: 100%;
+               display: inline-block;
+               width: 12px; /* Indent step size */
+               height: 100%;
             }
-            
-            
+
+
             .prefix::after {
               content: '▸';
               font-size: 10px;
@@ -4518,154 +4094,26 @@ function fallback_module () {
                transform: rotate(90deg);
             }
 
-            
-            
-            .news-container {
-               max-width: 900px; 
-               margin: 0 auto; 
-               padding-bottom: 80px;
-            }
-
-            .news-container .news-card {
-               display: flex;
-               gap: 1.5rem;
-               padding: 1.5rem 0;
-               border-bottom: 1px solid #f3f4f6;
-               cursor: pointer;
-               transition: background 0.2s;
-            }
-
-            .news-container .news-card:hover {
-               background: rgba(0,0,0,0.01);
-            }
-
-            .news-container .news-avatar {
-               flex-shrink: 0;
-               width: 48px;
-               height: 48px;
-               border-radius: 50%;
-               display: flex;
-               align-items: center;
-               justify-content: center;
-               font-size: 1.25rem;
-               color: white;
-               font-weight: 600;
-            }
-
-            .news-container .news-content {
-               flex: 1;
-            }
-
-            .news-container .news-title {
-               font-size: 1.25rem;
-               font-weight: 700;
-               color: #111827;
-               margin: 0 0 0.5rem 0;
-            }
-
-            .news-container .news-description {
-               color: #4b5563;
-               font-size: 1rem;
-               line-height: 1.5;
-               margin: 0 0 0.5rem 0;
-            }
-
-            .news-container .news-meta-top {
-               display: flex;
-               align-items: center;
-               gap: 0.5rem;
-               font-size: 0.875rem;
-               color: #6b7280;
-               margin-bottom: 0.25rem;
-            }
-
-            .news-container .news-meta-bottom {
-               display: flex;
-               align-items: center;
-               gap: 0.75rem;
-               font-size: 0.875rem;
-               color: #6b7280;
-               margin-top: 0.5rem;
-            }
-
-            .news-container .news-tags {
-               display: flex;
-               align-items: center;
-               gap: 0.5rem;
-            }
-            
-            .news-container .news-tag-pill {
-               color: #6366f1;
-               background: #e0e7ff;
-               padding: 2px 10px;
-               border-radius: 4px;
-               font-size: 0.75rem;
-               font-weight: 500;
-            }
-
-            .news-container .news-header {
-               margin-bottom: 2rem; 
-               display: flex; 
-               justify-content: space-between; 
-               align-items: flex-start;
-            }
-            
-            .news-container .news-header h2 {
-               font-size: 2rem; 
-               font-weight: 700; 
-               color: #111827; 
-               margin: 0;
-            }
-
-            .news-container .news-subheader {
-               color: #6b7280; 
-               margin-top: 0.5rem;
-            }
-
-           
+            /* Icons for types */
             .node.type-stories > .icon::before { content: '📝'; font-size: 14px; }
             .node.type-feeds > .icon::before   { content: '📡'; font-size: 14px; }
             .node.type-lists > .icon::before   { content: '📋'; font-size: 14px; }
             .node.type-discover > .icon::before { content: '🧭'; font-size: 14px; }
-
       
-            .node.type-folder > .icon { 
-              display: none;
-            }
+            .node.type-folder > .icon { display: none; }
+            .node.type-file > .icon, .node.type-js-file > .icon { display: none; }
             
-    
-            .node.type-file > .icon, .node.type-js-file > .icon {
-              display: none;
-            }
-            
-           
-            .node.selected .icon {
-              color: var(--primary);
-            }
-            .node.selected.type-file > .icon::before,
-            .node.selected.type-js-file > .icon::before {
-              background-color: var(--primary);
-            }
-            
+            .node.selected .icon { color: var(--primary); }
 
-            .graph-container::-webkit-scrollbar {
-              width: 6px;
-            }
-            .graph-container::-webkit-scrollbar-track {
-              background: transparent;
-            }
-            .graph-container::-webkit-scrollbar-thumb {
-              background: #d1d5db;
-              border-radius: 3px;
-            }
-            .graph-container::-webkit-scrollbar-thumb:hover {
-              background: #9ca3af;
-            }
+            .graph-container::-webkit-scrollbar { width: 6px; }
+            .graph-container::-webkit-scrollbar-track { background: transparent; }
+            .graph-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+            .graph-container::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
           `
           }
         },
         'runtime/': {
-          'node_height.json': { raw: '16' },
+          'node_height.json': { raw: '32' }, // Adjusted to 32 to match user's explicit height in CSS if they want, but use logic
           'vertical_scroll_value.json': { raw: '0' },
           'horizontal_scroll_value.json': { raw: '0' },
           'selected_instance_paths.json': { raw: '[]' },
@@ -4721,14 +4169,14 @@ function fallback_module () {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./dummy_content":3,"./graphdb":4,"STATE":1,"graph-explorer":2}],7:[function(require,module,exports){
+},{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       news: {
@@ -4741,7 +4189,11 @@ function fallback_module() {
           mode: 'mode',
           flags: 'flags',
           keybinds: 'keybinds',
-          undo: 'undo'
+          undo: 'undo',
+          'my-stories': 'my-stories',
+          feeds: 'feeds',
+          lists: 'lists',
+          discover: 'discover'
         }
       }
     },
@@ -4752,7 +4204,11 @@ function fallback_module() {
       'mode/': {},
       'flags/': {},
       'keybinds/': {},
-      'undo/': {}
+      'undo/': {},
+      'my-stories/': {},
+      'feeds/': {},
+      'lists/': {},
+      'discover/': {}
     }
   }
 }
@@ -4783,7 +4239,7 @@ const customVault = {
   }
 }
 
-async function init() {
+async function init () {
   console.log('[page.js] init started')
 
   const start = await sdb.watch(async (batch) => {
@@ -4808,4 +4264,4 @@ async function init() {
 init().catch(console.error)
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":5}]},{},[7]);
+},{"STATE":1,"news":4}]},{},[6]);
