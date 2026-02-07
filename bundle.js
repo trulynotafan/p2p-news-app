@@ -7,6 +7,9 @@ const b4a = require('b4a')
 // Blog-specific topic for swarm discovery
 const BLOG_TOPIC = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
 
+// App ID for vault registration
+const APP_ID = 'p2p-news-app'
+
 module.exports = blog_app
 
 function blog_app (identity) {
@@ -30,6 +33,7 @@ const STRUCTURES = [
   { name: 'drive', namespace: 'blog-files', type: 'autodrive' },
   { name: 'profile', namespace: 'blog-profile', type: 'autodrive' },
   { name: 'events', namespace: 'blog-events', type: 'autodrive' },
+  { name: 'app_audit', namespace: 'blog-audit', type: 'auditcore' },
   // ADD NEW STRUCTURES, Just one line. Example:
   // { name: 'comments', namespace: 'blog-comments', type: 'autodrive' }
 ]
@@ -49,6 +53,12 @@ const peer_relays = new Map() // Store relay URLs for peers
 const autobase_cache = new Map()
 const drive_cache = new Map()
 const emitter = make_emitter()
+
+// Audit logging helper
+const audit_log = async (op, data = {}) => {
+  const app_audit = ds_manager?.get('app_audit')
+  if (app_audit) await app_audit.append({ type: op, data })
+}
 
 // Validation
 const validate_blog_init = (entry) => {
@@ -155,137 +165,176 @@ const restore_subscribed_peers = () => {
   get_subscribed_peers().forEach(handle_peer_key)
 }
 
+
+// VAULT REGISTRATION - Register app structures with vault on init
+
+const register_app_with_vault = async () => {
+  const vault_bee = identity.get_vault_bee()
+
+  // Get structure keys for registration
+  const structure_keys = {}
+  for (const config of STRUCTURES) {
+    const key = ds_manager.get_key(config.name)
+    if (key) {
+      structure_keys[config.name] = key
+    }
+  }
+
+  // Register app with vault
+  await identity.register_app(APP_ID, {
+    name: 'P2P News App',
+    structures: STRUCTURES.map(s => ({
+      name: s.name,
+      namespace: s.namespace,
+      type: s.type,
+      key: structure_keys[s.name]
+    })),
+    registered_at: Date.now()
+  })
+
+  // Link app auditcore to vault's root auditcore
+  const vault_audit = identity.get_vault_audit()
+  const app_audit_key = structure_keys.app_audit
+  if (vault_audit && app_audit_key) {
+    await vault_audit.append({ type: 'app_audit_linked', data: { app_id: APP_ID, audit_key: app_audit_key } })
+  }
+}
+
+
+// WRITER KEY WATCHER - Watch vault for writer key requests from paired devices
+
+const start_writer_watcher = async () => {
+  const vault_bee = identity.get_vault_bee()
+  if (!vault_bee) return
+
+  const watcher = vault_bee.watch({ gte: `writer_requests/${APP_ID}`, lt: `writer_requests/${APP_ID}0` })
+
+  ;(async () => {
+    for await (const _ of watcher) {
+      const requests = await identity.vault_get(`writer_requests/${APP_ID}`)
+      if (!requests) continue
+
+      let processed_any = false
+      for (const req of requests) {
+        if (req.processed) continue
+        processed_any = true
+        for (const [name, key] of Object.entries(req.writer_keys)) {
+          try {
+            await ds_manager.add_writer(name, key)
+            console.log(`[p2p-news-app] Added writer to ${name}:`, key)
+          } catch (err) {
+            console.error(`[p2p-news-app] Failed to add writer to ${name}:`, err.message)
+          }
+        }
+        req.processed = true
+        req.processed_at = Date.now()
+
+        // Log Device B as a paired device with all its writer keys
+        const device_keys = {}
+        for (const [name, key] of Object.entries(req.writer_keys)) {
+          device_keys[`${name}_writer`] = key
+        }
+        await log_event('add', device_keys)
+      }
+      if (processed_any) {
+        await identity.vault_put(`writer_requests/${APP_ID}`, requests)
+        emitter.emit('update')
+      }
+    }
+  })()
+}
+
 // Initialize blog
 const init_blog = async (options) => {
   const { username, relay, offline_mode } = options
-  
-  // if pairing happened in this session, we can just use swarm and other things already set
-  // by the identity module
-  let swarm_instance
-  if (identity.get_ds_manager() && identity.store && identity.swarm) {
-    console.log('[p2p-news-app] Using identity-initialized structures (from pairing)')
-    ds_manager = identity.get_ds_manager()
-    store = identity.store
-    swarm_instance = identity.swarm
 
-    // Get structure instances
-    const metadata = ds_manager.get('metadata')
+  // Check if vault already exists (pair mode)
+  const vault_bee = identity.get_vault_bee()
+  const network_store = identity.get_network_store()
+  const swarm_instance = identity.get_swarm()
 
-    // Setup event handlers
-    store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
-      if (key === ds_manager.get_key('metadata')) return
-      if (relay_url) set_peer_relay(key, relay_url)
-      if (autobase_cache.has(key)) return
-      await setup_peer_autobase(key, key_buffer)
-    })
-
-    metadata.on('update', () => emitter.emit('update'))
-    restore_subscribed_peers()
-
-  } else {
-    // Normal flow: Start networking and initialize blog
-    const networking_options = {
-      name: username,
-      store_name: `blogs-${username}`,
-      topic: BLOG_TOPIC,
-      get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
-      get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
-      relay,
-      offline_mode
-    }
-  
-    const { store: _store, swarm: _swarm } = await identity.start_networking(networking_options)
-
-    store = _store
-    swarm_instance = _swarm
-
-    // Set swarm in identity for app access
-    identity.set_swarm(swarm_instance)
-
-    // Create datastructure manager from identity
+  if (vault_bee && network_store && swarm_instance) {
+    store = network_store
     ds_manager = identity.create_ds_manager()
-
-    // Set ds_manager in identity for dynamic raw data access
     identity.set_ds_manager(ds_manager)
+    STRUCTURES.forEach(c => ds_manager.register({ ...c, store }))
 
-    // Register all structures 
-    for (const config of STRUCTURES) {
-      ds_manager.register({ ...config, store })
-    }
+    const app = await identity.get_app(APP_ID)
+    if (!app?.structures) throw new Error('Could not sync with vault. Make sure Device A is online.')
 
-    // Initialize all structures
-  const instances = await ds_manager.init_all()
-  const metadata = instances.metadata
-  
-  // Write blog initialization entry
+    const keys_map = Object.fromEntries(app.structures.filter(s => s.key).map(s => [s.name, s.key]))
+    await ds_manager.init_all_with_keys(keys_map)
+    await request_app_writer_access()
+    await wait_for_writer_access()
+
+    identity.set_events_drive(ds_manager.get('events'), ds_manager.get_store('events'))
+    setup_peer_handlers()
+    return { store, swarm: swarm_instance }
+  }
+
+  // SEED MODE: Start networking, create vault, then app structures
+  const networking_options = {
+    name: username,
+    store_name: `storage-${username}`,
+    topic: BLOG_TOPIC,
+    get_primary_key: () => ds_manager ? ds_manager.get_key('metadata') : null,
+    get_primary_structure: () => ds_manager ? ds_manager.get('metadata') : null,
+    relay,
+    offline_mode
+  }
+
+  const { store: _store, swarm: _swarm } = await identity.start_networking(networking_options)
+  store = _store
+
+  identity.set_swarm(_swarm)
+
+  // Create vault structures in this store
+  await identity.init_vault_structures(store, null, null)
+
+  // Save vault keys to localStorage
+  const vault_bee_key = identity.get_vault_bee()?.key
+  const vault_audit_key = identity.get_vault_audit()?.key
+  if (vault_bee_key && vault_audit_key && typeof localStorage !== 'undefined') {
+    const b4a = require('b4a')
+    localStorage.setItem(`vault_keys_${username}`, JSON.stringify({
+      vault_bee: b4a.toString(vault_bee_key, 'hex'),
+      vault_audit: b4a.toString(vault_audit_key, 'hex')
+    }))
+  }
+
+  // Now create app structures
+  ds_manager = identity.create_ds_manager()
+  identity.set_ds_manager(ds_manager)
+  for (const config of STRUCTURES) {
+    ds_manager.register({ ...config, store })
+  }
+
+  await ds_manager.init_all()
+  const metadata = ds_manager.get('metadata')
   await metadata.append({
     type: 'blog-init',
-    data: {
-      username,
-      title: `${username}'s Blog`,
-      drive_key: ds_manager.get_key('drive')
-    }
-  })
-  
-  // Setup identity (profile and events already initialized by init_all)
-  const profile_drive = instances.profile
-  const events_drive = instances.events
-  
-  await profile_drive.ready()
-  await events_drive.ready()
-  
-  // Setup identity events drive (for device management only)
-  identity.set_events_drive(events_drive, ds_manager.get_store('events'))
-  
-  await create_default_profile(username)
-  
-  // Log bootstrap device with ALL structure writer keys (also dynamic)
-  const device_keys = {}
-  for (const name of ds_manager.get_names()) {
-    const structure = ds_manager.get(name)
-    const config = ds_manager.get_config(name)
-    
-    let writer_key = null
-    if (config.type === 'autobase') {
-      // For autobase: structure.local.key
-      writer_key = structure.local?.key
-    } else if (config.type === 'autodrive') {
-      // For autodrive: structure.base.local.key
-      writer_key = structure.base?.local?.key
-    }
-    
-    if (writer_key) {
-      device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
-    } else {
-      console.warn(`[blog-helpers] No writer key found for structure: ${name}`)
-    }
-  }
-  
-  // Device keys initialized
-  
-  // Only log device if it doesn't already exist (prevent duplicates on refresh)
-  const existing_devices = await get_paired_devices()
-  const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
-  
-  if (!device_exists) {
-    await log_event('add', device_keys)
-  }
-  
-  // Write ALL structure keys to metadata (dynamic!)
-  const all_structure_keys = {}
-  for (const name of ds_manager.get_names()) {
-    // Skip metadata and drive (already shared via pairing)
-    if (name !== 'metadata' && name !== 'drive') {
-      all_structure_keys[`${name}_key`] = ds_manager.get_key(name)
-    }
-  }
-  
-  await metadata.append({
-    type: 'blog-init-extended',
-    data: all_structure_keys
+    data: { username, title: `${username}'s Blog`, drive_key: ds_manager.get_key('drive') }
   })
 
-  // Setup event handlers
+  await create_default_profile(username)
+  await log_bootstrap_device()
+
+  // Register app in vault
+  await register_app_with_vault()
+
+  const events_drive = ds_manager.get('events')
+  identity.set_events_drive(events_drive, ds_manager.get_store('events'))
+
+  start_writer_watcher()
+  setup_peer_handlers()
+
+  return { store, swarm: _swarm }
+}
+
+// Setup peer discovery handlers
+const setup_peer_handlers = () => {
+  const metadata = ds_manager.get('metadata')
+
   store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
     if (key === ds_manager.get_key('metadata')) return
     if (relay_url) set_peer_relay(key, relay_url)
@@ -294,10 +343,92 @@ const init_blog = async (options) => {
   })
 
   metadata.on('update', () => emitter.emit('update'))
-  
   restore_subscribed_peers()
 }
-  return { store, swarm: swarm_instance }
+
+  // Log bootstrap device with ALL structure writer keys (also dynamic)
+const log_bootstrap_device = async () => {
+  const device_keys = {}
+  for (const name of ds_manager.get_names()) {
+    const structure = ds_manager.get(name)
+    const config = ds_manager.get_config(name)
+
+    let writer_key = null
+    if (config.type === 'autobase') {
+      writer_key = structure.local?.key
+    } else if (config.type === 'autodrive') {
+      writer_key = structure.base?.local?.key
+    } else if (config.type === 'auditcore') {
+      writer_key = structure.base?.local?.key
+    }
+    if (writer_key) {
+      device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
+    }
+  }
+  const existing_devices = await get_paired_devices()
+  const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
+
+  if (!device_exists) {
+    await log_event('add', device_keys)
+  }
+}
+
+// Create invite
+const create_invite = async () => {
+  const { invite_code, invite } = await identity.create_vault_invite(BLOG_TOPIC)
+  const profile = await get_profile()
+
+  pairing_manager = await identity.setup_vault_pairing({
+    invite,
+    username: profile?.name || 'Unknown',
+    on_verification_needed: (digits) => emitter.emit('verification_needed', digits),
+    on_paired: async ({ vault_bee_writer, vault_audit_writer }) => {
+      // Vault pairing complete - vault keys are handled by identity module
+      // Device entries are created when app structures get writer access, not here
+      console.log('[p2p-news-app] Vault paired with new device')
+      emitter.emit('update')
+    }
+  })
+  return { invite_code, pairing_manager }
+}
+
+const verify_pairing = (code) => identity.verify_vault_pairing(code)
+const deny_pairing = () => { identity.deny_vault_pairing(); emitter.emit('update') }
+
+// Helper to get local writer key from any structure type
+const get_local_writer_key = (structure, type) => {
+  if (type === 'autobase') return structure.local?.key
+  if (type === 'autodrive' || type === 'auditcore') return structure.base?.local?.key
+  return null
+}
+
+// Request writer access (Device B side)
+const request_app_writer_access = async () => {
+  if (!identity.get_vault_bee()) return
+
+  const writer_keys = {}
+  for (const name of ds_manager.get_names()) {
+    const key = get_local_writer_key(ds_manager.get(name), ds_manager.get_config(name).type)
+    if (key) writer_keys[name] = b4a.toString(key, 'hex')
+  }
+
+  const requests = await identity.vault_get(`writer_requests/${APP_ID}`) || []
+  requests.push({ writer_keys, requested_at: Date.now(), processed: false })
+  await identity.vault_put(`writer_requests/${APP_ID}`, requests)
+  return writer_keys
+}
+
+// Wait for Device A to process our writer access request
+const wait_for_writer_access = async () => {
+  const vault_bee = identity.get_vault_bee()
+  const our_key = ds_manager.get('metadata')?.local?.key
+  if (!vault_bee || !our_key) return false
+
+  const our_hex = b4a.toString(our_key, 'hex')
+  for await (const _ of vault_bee.watch({ gte: `writer_requests/${APP_ID}`, lt: `writer_requests/${APP_ID}0` })) {
+    const reqs = await identity.vault_get(`writer_requests/${APP_ID}`)
+    if (reqs?.find(r => r.writer_keys?.metadata === our_hex && r.processed)) return true
+  }
 }
 
 // Create post
@@ -314,6 +445,7 @@ const create_post = async (title, content) => {
     type: 'blog-post',
     data: { filepath, created }
   })
+  await audit_log('create_post', { title, filepath })
 }
 
 // Profile management (app-specific, not in identity)
@@ -353,6 +485,7 @@ const upload_avatar = async (imageData, filename) => {
   }
   
   await profile_drive.put('/profile.json', b4a.from(JSON.stringify(updated_profile)))
+  await audit_log('upload_avatar', { avatar_path })
   emitter.emit('update')
 }
 
@@ -416,6 +549,7 @@ const get_paired_devices = async () => {
 
 const remove_device = async (device) => {
   const events_drive = ds_manager.get('events')
+  await audit_log('remove_device', { device })
   return identity.remove_device(events_drive, device)
 }
 
@@ -434,6 +568,7 @@ const subscribe = async (key) => {
     const key_buffer = b4a.from(key, 'hex')
     await setup_peer_autobase(key, key_buffer)
     add_subscribed_peer(key)
+    await audit_log('subscribe', { peer_key: key })
     emitter.emit('update')
     return true
   } catch (err) {
@@ -458,6 +593,7 @@ const unsubscribe = async (key) => {
     drive_cache.delete(key)
   }
   
+  await audit_log('unsubscribe', { peer_key: key })
   // Keep in discovered_blogs so it shows in "Discovered Peers" again
   emitter.emit('update')
 }
@@ -542,82 +678,6 @@ const get_peer_blogs = async () => {
   }
   
   return blogs
-}
-
-// Create invite - Use universal API
-const create_invite = async () => {
-  const swarm = identity.get_swarm()
-  const drive = ds_manager.get('drive')
-  
-  // Close previous pairing session if it exists
-  if (pairing_manager) {
-    await pairing_manager.close()
-    pairing_manager = null
-  }
-  
-  const { invite_code, invite, pairing_manager: pm } = await ds_manager.create_invite_with_pairing(swarm, 'drive', BLOG_TOPIC)
-  
-  // Store pairing_manager for later use (always update to the new one)
-  pairing_manager = pm
-  
-  // Get username from profile (using blog app's get_profile, not identity)
-  const profile = await get_profile()
-  const blog_username = profile?.name || 'Unknown'
-  
-  // Setup member to handle pairing requests
-  await pm.setup_member({
-    primary_discovery_key: drive.base.discoveryKey,
-    invite,
-    username: blog_username,
-    on_verification_needed: (verification_digits) => {
-      // Emit event so UI can show input box with the digits to verify
-      emitter.emit('verification_needed', verification_digits)
-    },
-    on_paired: async (writer_keys) => {
-      // Convert writer_keys from namespace format to structure_name_writer format
-      const device_keys = {}
-      for (const name of ds_manager.get_names()) {
-        const config = ds_manager.get_config(name)
-        if (writer_keys[config.namespace]) {
-          device_keys[`${name}_writer`] = writer_keys[config.namespace]
-        }
-      }
-      
-      // Log device add event with proper format
-      await log_event('add', device_keys)
-      emitter.emit('update')
-    }
-  })
-  
-  return { invite_code, pairing_manager: pm }
-}
-
-// Verify and complete pairing
-const verify_pairing = async (entered_code) => {
-  if (!pairing_manager) {
-    throw new Error('No pairing manager available')
-  }
-  
-  const result = await pairing_manager.verify_and_complete_pairing({
-    entered_verification_code: entered_code,
-    username: await get_blog_username(),
-    on_paired: () => {
-      emitter.emit('update')
-    }
-  })
-  
-  // Return result with multiple attempts info
-  return result
-}
-
-// Deny pairing
-const deny_pairing = () => {
-  if (!pairing_manager) {
-    throw new Error('No pairing manager available')
-  }
-  
-  pairing_manager.deny_pairing()
-  emitter.emit('update')
 }
 
 // Getters
@@ -751,6 +811,7 @@ let username = uservault.username || localStorage.getItem('username') || ''
   const format_date = timestamp => new Date(timestamp).toLocaleString()
   function escape_html(str) {
     if (!str) return ''
+    if (typeof str !== 'string') str = String(str)
     function get_html_entity(tag) {
       const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
       return entities[tag]

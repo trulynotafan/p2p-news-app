@@ -26,6 +26,11 @@ container.className = 'system-ui'
         <input class="mnemonic-input" placeholder="Enter mnemonic phrase" style="width: 300px;">
         <button class="load-mnemonic-btn">Load from Mnemonic</button>
       </div>
+      <div class="apps-form" style="display: none; margin-top: 10px;">
+        <h4>Apps found in vault:</h4>
+        <div class="apps-list"></div>
+        <div class="apps-status" style="margin-top: 10px; color: #666;"></div>
+      </div>
       <div class="initial-buttons">
         <button class="make-btn">Seed</button>
         <button class="join-btn">Pair</button>
@@ -88,6 +93,30 @@ container.className = 'system-ui'
       localStorage.setItem('username', username)
     
       let overlay = null
+      
+      // Listen for vault_ready event (fires when vault is paired but before user resolves)
+      vault.on_vault_ready(async (auth_data) => {
+        console.log('[websys-ui] Vault ready, starting app discovery')
+        
+        // Remove overlay
+        if (overlay) {
+          document.body.removeChild(overlay)
+          overlay = null
+        }
+        
+        // Update username from pairing result
+        if (auth_data.username && auth_data.username !== 'pairing-user') {
+          localStorage.setItem('username', auth_data.username)
+        }
+        
+        // Now show apps discovery UI
+        container.querySelector('.status').textContent = 'Vault paired! Discovering apps...'
+        container.querySelector('.join-form').style.display = 'none'
+        container.querySelector('.apps-form').style.display = 'block'
+        
+        // Discover and show apps from vault
+        await discover_and_show_apps()
+      })
     
       vault.authenticate({
         username: username,
@@ -107,27 +136,62 @@ container.className = 'system-ui'
         }
       })
     
-      // Wait for authentication to complete 
-      await vault.user
-    
-      // remove container after successful authentication
-      if (overlay) document.body.removeChild(overlay)
-      document.body.removeChild(container)
+      vault.user.catch(err => {
+        if (overlay) document.body.removeChild(overlay)
+        alert('Pairing failed: ' + err.message)
+        localStorage.clear()
+        window.location.reload()
+      })
     
     } catch (err) {
-      // Remove overlay if it exists
-      const overlay = document.querySelector('div[style*="position: fixed"]')
-      if (overlay) document.body.removeChild(overlay)
-    
-      if (err.message.includes('Pairing denied by user')) {
-        alert('Pairing was denied by Main Device. Click OK to restart.')
-        await handle_reset_all_data()
-        return
-      }
-      
-      alert('Pairing error: ' + err.message)
-      await handle_reset_all_data()
+      container.querySelector('.status').textContent = 'Error: ' + err.message
     }
+  }
+
+  async function discover_and_show_apps () {
+    const apps_list = container.querySelector('.apps-list')
+    const apps_status = container.querySelector('.apps-status')
+    const vault_bee = vault.get_vault_bee()
+    
+    apps_status.textContent = 'Syncing vault...'
+    await vault_bee.update()
+    let apps = await vault.list_apps()
+    
+    if (!apps || apps.length === 0) {
+      apps_status.textContent = 'Waiting for vault to sync...'
+      for await (const _ of vault_bee.watch({ gte: 'apps/', lt: 'apps0' })) {
+        apps = await vault.list_apps()
+        if (apps && apps.length > 0) break
+      }
+    }
+    
+    apps_status.textContent = ''
+    apps_list.innerHTML = apps.map(app => `
+      <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0;">
+        <strong>${app.name || app.id}</strong>
+        <p>${app.structures.length} structure(s)</p>
+        <button class="join-app-btn" data-app-id="${app.id}">Join App</button>
+      </div>
+    `).join('')
+    
+    apps_list.querySelectorAll('.join-app-btn').forEach(btn => {
+      btn.addEventListener('click', () => handle_join_app(btn.dataset.appId))
+    })
+  }
+
+  async function handle_join_app (app_id) {
+    const apps_status = container.querySelector('.apps-status')
+    apps_status.textContent = `Joining ${app_id}...`
+    
+    const app = await vault.get_app(app_id)
+    if (!app || !app.structures) {
+      apps_status.textContent = 'Error: App not found'
+      return
+    }
+    
+    localStorage.setItem('joined_app', app_id)
+    vault.complete_authentication()
+    document.body.removeChild(container)
   }
 
   // Load: Restore from mnemonic (NOT IMPLEMENTED YET)
@@ -187,11 +251,15 @@ container.className = 'system-ui'
   
   // Check if already authenticated
   const existing_username = localStorage.getItem('username')
-  if (existing_username) {
+  const auth_mode = localStorage.getItem('auth_mode') || 'seed'
+  const joined_app = localStorage.getItem('joined_app')
+  
+  // For pair mode, only auto-authenticate if user has joined an app
+  if (existing_username && (auth_mode === 'seed' || joined_app)) {
     document.body.removeChild(container)
     vault.authenticate({ 
       username: existing_username,
-      mode: localStorage.getItem('auth_mode') || 'seed'
+      mode: auth_mode
     })
   }
 
