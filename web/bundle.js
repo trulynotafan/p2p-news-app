@@ -3137,6 +3137,131 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
+module.exports = function ArticleViewer (data) {
+  const article = document.createElement('article')
+  article.classList.add('article-container')
+
+  const header = document.createElement('header')
+  header.classList.add('article-header')
+
+  const h1 = document.createElement('h1')
+  h1.classList.add('article-title')
+  h1.textContent = data.title
+
+  const meta = document.createElement('div')
+  meta.classList.add('article-meta')
+
+  const bySpan = document.createElement('span')
+  bySpan.textContent = 'By '
+  const authorStrong = document.createElement('strong')
+  authorStrong.textContent = data.author
+  bySpan.appendChild(authorStrong)
+
+  const separator = document.createTextNode(' • ')
+
+  const dateSpan = document.createElement('span')
+  dateSpan.textContent = data.date
+
+  meta.appendChild(bySpan)
+  meta.appendChild(separator)
+  meta.appendChild(dateSpan)
+
+  header.appendChild(h1)
+  header.appendChild(meta)
+
+  const body = document.createElement('div')
+  body.classList.add('article-body')
+
+  // Basic Markdown Rendering
+  const htmlFromMarkdown = data.content
+    .split('\n\n')
+    .map(block => {
+      block = block.trim()
+      if (!block) return ''
+
+      // Headers
+      if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
+      if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
+      if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
+
+      // Lists
+      if (block.startsWith('- ')) {
+        const items = block.split('\n').map(line => `<li>${line.replace(/^- /, '')}</li>`).join('')
+        return `<ul>${items}</ul>`
+      }
+
+      // Paragraph handling with inline styles
+      let p = block
+
+      // Bold
+      p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Links
+      p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+
+      return `<p>${p}</p>`
+    })
+    .join('')
+
+  body.innerHTML = htmlFromMarkdown
+
+  article.appendChild(header)
+  article.appendChild(body)
+
+  return article
+}
+
+},{}],4:[function(require,module,exports){
+module.exports = function parseContent (raw) {
+  if (!raw) return null
+
+  try {
+    const data = JSON.parse(raw)
+    if (data && typeof data === 'object') return data
+  } catch (e) { }
+
+  const fmRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
+  const match = raw.match(fmRegex)
+
+  if (match) {
+    const metadataStr = match[1]
+    const content = match[2]
+    const metadata = {}
+
+    metadataStr.split('\n').forEach(line => {
+      const colonIndex = line.indexOf(':')
+      if (colonIndex !== -1) {
+        const key = line.slice(0, colonIndex).trim()
+        let value = line.slice(colonIndex + 1).trim()
+
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1)
+        }
+
+        // Handle arrays (simple comma separated)
+        if (value.startsWith('[') && value.endsWith(']')) {
+          value = value.slice(1, -1).split(',').map(s => {
+            s = s.trim()
+            if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+              return s.slice(1, -1)
+            }
+            return s
+          })
+        }
+
+        metadata[key] = value
+      }
+    })
+
+    return { ...metadata, content: content.trim() }
+  }
+
+  return { content: raw }
+}
+
+},{}],5:[function(require,module,exports){
 module.exports = graphdb
 
 function graphdb(entries) {
@@ -3181,7 +3306,7 @@ function graphdb(entries) {
     }
 }
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] news/index.js running')
@@ -3206,47 +3331,33 @@ async function news_app (opts = {}) {
   const container = document.createElement('div')
   container.classList.add('container')
 
-  const style = document.createElement('style')
-  style.textContent = `
-    body { margin: 0; padding: 0; overflow: hidden; }
-    .container {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    .sidebar {
-      width: 250px;
-      min-width: 250px;
-      border-right: 1px solid #e5e7eb;
-      background: #f9fafb;
-      display: flex;
-      flex-direction: column;
-    }
-    .main {
-      flex: 1;
-      overflow: auto;
-      padding: 2rem;
-      background: #ffffff;
-    }
-  `
-  container.appendChild(style)
+  // Styles moved to init
+  // container.appendChild(style)
 
   container.appendChild(sidebar)
   container.appendChild(main)
 
-  await init(vault, sidebar, main, sid)
+  await init(vault, sidebar, main, sid, container)
 
   return container
 }
 
-async function init (vault, sidebarEl, mainEl, sid) {
+async function init (vault, sidebarEl, mainEl, sid, container) {
   try {
     console.log('[news/index.js] init called with sid:', sid)
-    const { id, sdb } = await get(sid) // Pass sid to get()
+    const { id, sdb } = await get(sid)
 
     console.log('[news/index.js] Got id:', id)
+
+    // Load shell.css from drive
+    if (sdb && sdb.drive) {
+      const cssFile = await sdb.drive.get('theme/shell.css').catch(() => null)
+      if (cssFile && cssFile.raw) {
+        const style = document.createElement('style')
+        style.textContent = cssFile.raw
+        container.appendChild(style)
+      }
+    }
 
     const subs = await sdb.watch(async (batch) => {
       console.log('[news/index.js] Watch batch:', batch)
@@ -3276,7 +3387,11 @@ async function init (vault, sidebarEl, mainEl, sid) {
     sidebarEl.appendChild(sidebar_component)
   } catch (err) {
     console.error('Error initializing news app:', err)
-    mainEl.innerHTML = `<p style="color:red">Error: ${err.message}</p>`
+    const errorMsg = document.createElement('p')
+    errorMsg.style.color = 'red'
+    errorMsg.textContent = `Error: ${err.message}`
+    mainEl.innerHTML = ''
+    mainEl.appendChild(errorMsg)
   }
 }
 
@@ -3307,7 +3422,34 @@ function fallback_module () {
             $ref: 'entries.json'
           }
         },
-        'theme/': {},
+        'theme/': {
+          'shell.css': {
+            raw: `
+    body { margin: 0; padding: 0; overflow: hidden; }
+    .container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .sidebar {
+      width: 250px;
+      min-width: 250px;
+      border-right: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+    }
+    .main {
+      flex: 1;
+      overflow: auto;
+      padding: 2rem;
+      background: #ffffff;
+    }
+                `
+          }
+        },
         'runtime/': {},
         'mode/': {},
         'flags/': {},
@@ -3330,7 +3472,91 @@ function fallback_module () {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":5,"STATE":1}],5:[function(require,module,exports){
+},{"./wrapper":8,"STATE":1}],7:[function(require,module,exports){
+module.exports = function NewsCard (data, isMyStories) {
+  const card = document.createElement('div')
+  card.className = 'news-card'
+
+  const avatar = document.createElement('div')
+  avatar.className = 'news-avatar'
+  avatar.textContent = data.title ? data.title.charAt(0) : '?'
+  if (data.color) avatar.style.setProperty('--avatar-bg', data.color)
+  else avatar.style.setProperty('--avatar-bg', '#e5e7eb')
+
+  const content = document.createElement('div')
+  content.className = 'news-content'
+
+  if (isMyStories) {
+    const metaTop = document.createElement('div')
+    metaTop.className = 'news-meta-top'
+    const authorSpan = document.createElement('span')
+    authorSpan.className = 'news-author'
+    authorSpan.textContent = data.author
+
+    const sep = document.createElement('span')
+    sep.className = 'news-separator'
+    sep.textContent = '•'
+
+    const dateSpan = document.createElement('span')
+    dateSpan.className = 'news-date-text'
+    dateSpan.textContent = data.date
+
+    metaTop.appendChild(authorSpan)
+    metaTop.appendChild(sep)
+    metaTop.appendChild(dateSpan)
+    content.appendChild(metaTop)
+  }
+
+  const title = document.createElement('h3')
+  title.className = 'news-title'
+  title.textContent = data.title
+  content.appendChild(title)
+
+  const description = document.createElement('p')
+  description.className = 'news-description'
+  description.textContent = data.description || 'No description available.'
+  content.appendChild(description)
+
+  if (!isMyStories) {
+    const metaBottom = document.createElement('div')
+    metaBottom.className = 'news-meta-bottom'
+
+    const authorSpan = document.createElement('span')
+    authorSpan.className = 'news-author-muted'
+    authorSpan.textContent = data.author
+
+    const sep = document.createElement('span')
+    sep.className = 'news-separator'
+    sep.textContent = '•'
+
+    const dateSpan = document.createElement('span')
+    dateSpan.className = 'news-date-text'
+    dateSpan.textContent = data.date
+
+    metaBottom.appendChild(authorSpan)
+    metaBottom.appendChild(sep)
+    metaBottom.appendChild(dateSpan)
+
+    if (data.tags && Array.isArray(data.tags)) {
+      // To be safe and avoid innerHTML here too, let's do it properly
+      data.tags.forEach(tag => {
+        const tagSpan = document.createElement('span')
+        tagSpan.className = 'news-tag-pill'
+        tagSpan.textContent = tag
+        metaBottom.appendChild(tagSpan)
+      })
+    }
+
+    content.appendChild(metaBottom)
+  }
+
+  card.appendChild(avatar)
+  card.appendChild(content)
+
+  return card
+}
+
+},{}],8:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 console.log('[DEBUG] wrapper.js running, filename:', __filename)
@@ -3339,6 +3565,10 @@ const statedb = STATE(__filename)
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
 const graphdb = require('./graphdb')
+const ArticleViewer = require('./article-viewer')
+const parseContent = require('./content-parser')
+const NewsCard = require('./news-card')
+const WritePage = require('./write-page')
 
 module.exports = my_component_with_graph
 
@@ -3361,66 +3591,15 @@ async function my_component_with_graph (opts, protocol) {
   const el = document.createElement('div')
   const shadow = el.attachShadow({ mode: 'closed' })
 
-  // 1. Wrapper Layout CSS (Positions the sidebar)
   const layoutSheet = new CSSStyleSheet()
-  layoutSheet.replaceSync(`
-      :host { 
-        position: fixed; /* Force full screen overlay */
-        top: 0; left: 0; bottom: 0; right: 0; 
-        display: flex; 
-        width: 100vw;
-        height: 100vh;
-        z-index: 9999;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-      .explorer-panel { 
-        width: 250px; 
-        flex-shrink: 0; 
-        border-right: 1px solid #e5e7eb; 
-        height: 100%;
-        position: relative;
-        z-index: 10;
-        background-color: #f9fafb;
-      }
-      .main-viewer { 
-        flex: 1; 
-        padding: 40px; 
-        overflow-y: auto; 
-        background-color: #ffffff; 
-        color: #1f2937; 
-      }
-      .empty-container { text-align: center; margin-top: 100px; color: #9ca3af; }
-      .empty-title { color: #374151; font-size: 1.5rem; font-weight: 600; }
-      
-      /* Write Page Styles */
-      .write-page-container { max-width: 48rem; margin: 0 auto; padding-bottom: 4rem; }
-      .section-header { margin-bottom: 2.5rem; }
-      .section-header h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; margin-top: 0; color: #1f2937; }
-      .section-header p { font-size: 1.125rem; color: #6b7280; font-weight: 300; margin: 0; }
-
-      .card { background: white; border: 1px solid rgba(229, 231, 235, 0.5); border-radius: 0.75rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
-      .space-y-8 > * + * { margin-top: 2rem; }
-      .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.75rem; }
-      .input-title { width: 100%; border: none; font-size: 2rem; font-weight: 700; outline: none; }
-      .input-content { width: 100%; border: none; min-height: 24rem; resize: none; font-size: 1rem; outline: none; }
-      
-      .btn-publish { background: #6366f1; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
-      .btn-publish:hover { background: #4f46e5; }
-      
-      .divider { height: 1px; background: rgba(229, 231, 235, 0.3); margin: 2rem 0; }
-      .word-count { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; font-weight: 500; }
-      .actions { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; }
-      .action-text { font-size: 0.75rem; color: #9ca3af; font-weight: 300; }
-      .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 4rem; }
-      .tip { text-align: center; }
-      .tip h3 { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; color: #1f2937; }
-      .tip p { font-size: 0.875rem; color: #6b7280; font-weight: 300; }
-      .blog-select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; color: #1f2937; background-color: white; margin-bottom: 1rem; }
-
-      .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
-  `)
+  drive.get('theme/layout.css').then(file => {
+    if (file && file.raw) {
+      layoutSheet.replaceSync(file.raw)
+    }
+  }).catch(e => console.error('Failed to load layout.css', e))
 
   const sheet = new CSSStyleSheet()
+  const newsCardSheet = new CSSStyleSheet()
   shadow.adoptedStyleSheets = [layoutSheet, sheet]
 
   const subs = await sdb.watch(onbatch)
@@ -3477,7 +3656,9 @@ async function my_component_with_graph (opts, protocol) {
   }
 
   function inject (data) {
-    sheet.replaceSync(data.join('\n'))
+    if (Array.isArray(data)) {
+      sheet.replaceSync(data.join('\n'))
+    }
   }
 
   function on_entries (data) {
@@ -3490,7 +3671,12 @@ async function my_component_with_graph (opts, protocol) {
     }
     let parsed_data = {}
     try {
-      parsed_data = typeof data[0] === 'string' ? JSON.parse(data[0]) : data[0]
+      if (typeof data[0] === 'string') {
+        const res = parseContent(data[0])
+        parsed_data = res || {}
+      } else {
+        parsed_data = data[0]
+      }
       console.log('[Wrapper] Parsed entries data:', parsed_data)
     } catch (e) {
       console.error('[Wrapper] Error parsing entries data:', e)
@@ -3528,20 +3714,13 @@ async function my_component_with_graph (opts, protocol) {
       let data
       try {
         const file = await drive.get(drivePath)
-        if (file && file.raw) data = JSON.parse(file.raw)
-      } catch (e) { /* ignore */ }
+        if (file && file.raw) data = parseContent(file.raw)
+      } catch (e) { }
 
       if (data && data.content) {
-        main_content.innerHTML = `
-          <article class="article-container">
-            <header class="article-header">
-              <h1 class="article-title">${data.title}</h1>
-              <div class="article-meta"><span>By <strong>${data.author}</strong></span> • <span>${data.date}</span></div>
-            </header>
-            <div class="article-body">${data.content}</div>
-          </article>`
+        main_content.innerHTML = ''
+        main_content.appendChild(ArticleViewer(data))
       } else {
-        // Folder Rendering Logic
         let folderName = path.split('/').pop() || path
         let subs = []
         let dbPath = path
@@ -3563,7 +3742,6 @@ async function my_component_with_graph (opts, protocol) {
           }
         }
 
-        // [FEATURE] List items if available
         if (subs.length > 0) {
           const listItems = (await Promise.all(subs.map(async subPath => {
             let itemData
@@ -3575,8 +3753,8 @@ async function my_component_with_graph (opts, protocol) {
                 subDrivePath = `${subParts[0]}/${subParts[subParts.length - 1]}`
               }
               const file = await drive.get(subDrivePath)
-              if (file && file.raw) itemData = JSON.parse(file.raw)
-            } catch (e) { /* ignore */ }
+              if (file && file.raw) itemData = parseContent(file.raw)
+            } catch (e) { }
             if (!itemData) return null
             return { path: subPath, data: itemData }
           }))).filter(item => item && item.data)
@@ -3596,30 +3774,13 @@ async function my_component_with_graph (opts, protocol) {
             const header = document.createElement('header')
             header.className = 'news-header'
 
-            const style = document.createElement('style')
-            style.textContent = `
-            .news-author { font-weight: 600; color: #111827; }
-            .news-author-muted { font-weight: 600; color: #6b7280; }
-            .news-separator { margin: 0 4px; }
-            .news-date-text { color: inherit; }
-            .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
-            .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
-            .news-card:hover { background: rgba(0,0,0,0.01); }
-            .news-avatar { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600; background-color: var(--avatar-bg, #e5e7eb); }
-            .news-content { flex: 1; }
-            .news-title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
-            .news-description { color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0; }
-            .news-meta-top { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
-            .news-meta-bottom { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
-            .news-tags { display: flex; align-items: center; gap: 0.5rem; }
-            .news-tag-pill { color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
-            .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s; z-index: 50; font-size: 1.5rem; }
-            .news-fab:hover { transform: scale(1.1); }
-            .news-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
-            .news-header h2 { font-size: 2rem; font-weight: 700; color: #111827; margin: 0; }
-            .news-subheader { color: #6b7280; margin-top: 0.5rem; }
-            `
-            container.appendChild(style)
+            if (!shadow.adoptedStyleSheets.includes(newsCardSheet)) {
+              const cssFile = await drive.get('theme/news-card.css').catch(() => null)
+              if (cssFile && cssFile.raw) {
+                newsCardSheet.replaceSync(cssFile.raw)
+                shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, newsCardSheet]
+              }
+            }
 
             container.addEventListener('click', (e) => {
               let target = e.target
@@ -3655,29 +3816,8 @@ async function my_component_with_graph (opts, protocol) {
 
             const listContainer = document.createElement('div')
             listItems.forEach(({ path, data }) => {
-              const card = document.createElement('div')
-              card.className = 'news-card'
+              const card = NewsCard(data, isMyStories)
               cardMap.set(card, path)
-
-              let metaTopHtml = ''
-              if (isMyStories) {
-                metaTopHtml = `<div class="news-meta-top"><span class="news-author">${data.author}</span><span class="news-separator">•</span><span class="news-date-text">${data.date}</span></div>`
-              }
-
-              let metaBottomHtml = ''
-              if (!isMyStories) {
-                const tags = data.tags ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('') : ''
-                metaBottomHtml = `<div class="news-meta-bottom"><span class="news-author-muted">${data.author}</span><span class="news-separator">•</span><span class="news-date-text">${data.date}</span>${tags}</div>`
-              }
-
-              card.innerHTML = `
-                  <div class="news-avatar" style="--avatar-bg: ${data.color || '#e5e7eb'};">${data.title.charAt(0)}</div>
-                  <div class="news-content">
-                     ${metaTopHtml}
-                     <h3 class="news-title">${data.title}</h3>
-                     <p class="news-description">${data.description || 'No description available.'}</p>
-                     ${metaBottomHtml}
-                  </div>`
               listContainer.appendChild(card)
             })
 
@@ -3728,112 +3868,28 @@ async function my_component_with_graph (opts, protocol) {
       localStorage.setItem('p2p_stories', JSON.stringify(stories))
     }
 
-    function render_write_page (currentFolder) {
-      const writeState = {
-        title: '',
-        content: '',
-        blog: 'Main Blog'
-      }
-      const followedBlogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
+    function render_write_page (folderName) {
+      main_content.innerHTML = ''
 
-      main_content.innerHTML = `
-        <div class="write-page-container">
-          <div class="section-header">
-            <h1>Write a Story</h1>
-            <p>Share your thoughts with the network</p>
-          </div>
-          
-          <div class="card">
-            <div class="space-y-8">
-              <div class="input-group">
-                <label>Publishing To</label>
-                <select class="blog-select" id="blog-select">
-                  ${followedBlogs.map(blog => `<option value="${blog}" ${blog === 'Main Blog' ? 'selected' : ''}>${blog}</option>`).join('')}
-                </select>
-              </div>
-
-              <div class="input-group">
-                <label>Story Title</label>
-                <input type="text" class="input-title" placeholder="Give your story a captivating title..." id="input-title">
-              </div>
-
-              <div class="divider"></div>
-
-              <div class="input-group">
-                <label>Your Story</label>
-                <textarea class="input-content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." id="input-content"></textarea>
-                <div class="word-count">
-                  <span id="word-count-span">0 words</span>
-                  <span id="read-time-span">~0 min read</span>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button class="btn-publish" id="btn-publish">Publish Story</button>
-                <p class="action-text">Your story will be stored locally and synced with your network</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="tips">
-            <div class="tip">
-              <h3>Be Authentic</h3>
-              <p>Write what you genuinely think and feel, not what algorithms demand</p>
-            </div>
-            <div class="tip">
-              <h3>Tell a Story</h3>
-              <p>Use examples and narratives to engage readers and make ideas stick</p>
-            </div>
-            <div class="tip">
-              <h3>Add Value</h3>
-              <p>Help readers learn something new or see the world differently</p>
-            </div>
-          </div>
-        </div>
-      `
-
-      // Add event listeners after rendering
-      setTimeout(() => {
-        const blogSelect = main_content.querySelector('#blog-select')
-        const titleInput = main_content.querySelector('#input-title')
-        const contentArea = main_content.querySelector('#input-content')
-        const wordCountSpan = main_content.querySelector('#word-count-span')
-        const readTimeSpan = main_content.querySelector('#read-time-span')
-        const publishBtn = main_content.querySelector('#btn-publish')
-
-        if (blogSelect) blogSelect.addEventListener('change', (e) => { writeState.blog = e.target.value })
-        if (titleInput) titleInput.addEventListener('input', (e) => { writeState.title = e.target.value })
-        if (contentArea) {
-          contentArea.addEventListener('input', (e) => {
-            writeState.content = e.target.value
-            const words = e.target.value.trim().split(/\s+/).length
-            wordCountSpan.textContent = (e.target.value.trim() === '' ? 0 : words) + ' words'
-            readTimeSpan.textContent = '~' + Math.ceil(words / 200) + ' min read'
-          })
+      const writePageComponent = WritePage({
+        onPublish: (data) => {
+          const newStory = {
+            title: data.title,
+            content: data.content,
+            author: 'You',
+            date: new Date().toLocaleDateString(),
+            description: data.content.slice(0, 100) + '...',
+            tags: ['#local', '#' + data.blog.replace(/\s+/g, '')],
+            color: '#6366f1'
+          }
+          save_local_story(newStory)
+          alert('Story published locally!')
+          const myStoriesPath = 'my-stories'
+          render_content(myStoriesPath)
         }
+      })
 
-        if (publishBtn) {
-          publishBtn.addEventListener('click', () => {
-            if (!writeState.title || !writeState.content) {
-              alert('Please fill in both title and content.')
-              return
-            }
-            const newStory = {
-              title: writeState.title,
-              content: writeState.content,
-              author: 'You',
-              date: new Date().toLocaleDateString(),
-              description: writeState.content.slice(0, 100) + '...',
-              tags: ['#local', '#' + writeState.blog.replace(/\s+/g, '')],
-              color: '#6366f1'
-            }
-            save_local_story(newStory)
-            alert('Story published locally!')
-            const myStoriesPath = 'my-stories'
-            render_content(myStoriesPath)
-          })
-        }
-      }, 0)
+      main_content.appendChild(writePageComponent)
     }
 
     async function handle_db_request (request_msg, send) {
@@ -3863,7 +3919,11 @@ function fallback_module () {
   return {
     _: {
       'graph-explorer': { $: '' },
-      './graphdb': { $: '' }
+      './graphdb': { $: '' },
+      './article-viewer': { $: '' },
+      './content-parser': { $: '' },
+      './news-card': { $: '' },
+      './write-page': { $: '' }
     },
     api: fallback_instance
   }
@@ -3872,9 +3932,8 @@ function fallback_module () {
     return {
       _: {
         'graph-explorer': {
-          0: override_theme, // [1] Use Override
+          0: override_theme,
           mapping: {
-            // style mapping MUST exist for graph-explorer to validate state
             style: 'theme',
             entries: 'entries',
             runtime: 'runtime',
@@ -3884,11 +3943,98 @@ function fallback_module () {
             undo: 'undo'
           }
         },
-        './graphdb': { 0: '' }
+        './graphdb': { 0: '' },
+        './article-viewer': { 0: '' },
+        './content-parser': { 0: '' },
+        './news-card': { 0: '' },
+        './write-page': { 0: '' }
       },
       drive: {
         'entries/': { 'entries.json': { $ref: 'entries.json' } },
-        'theme/': {},
+        'theme/': {
+          'layout.css': {
+            raw: `
+      :host { 
+        position: fixed; /* Force full screen overlay */
+        top: 0; left: 0; bottom: 0; right: 0; 
+        display: flex; 
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      .explorer-panel { 
+        width: 250px; 
+        flex-shrink: 0; 
+        border-right: 1px solid #e5e7eb; 
+        height: 100%;
+        position: relative;
+        z-index: 10;
+        background-color: #f9fafb;
+      }
+      .main-viewer { 
+        flex: 1; 
+        padding: 40px; 
+        overflow-y: auto; 
+        background-color: #ffffff; 
+        color: #1f2937; 
+      }
+      .empty-container { text-align: center; margin-top: 100px; color: #9ca3af; }
+      .empty-title { color: #374151; font-size: 1.5rem; font-weight: 600; }
+      
+      /* Write Page Styles */
+      .write-page-container { max-width: 48rem; margin: 0 auto; padding-bottom: 4rem; }
+      .section-header { margin-bottom: 2.5rem; }
+      .section-header h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; margin-top: 0; color: #1f2937; }
+      .section-header p { font-size: 1.125rem; color: #6b7280; font-weight: 300; margin: 0; }
+
+      .card { background: white; border: 1px solid rgba(229, 231, 235, 0.5); border-radius: 0.75rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+      .space-y-8 > * + * { margin-top: 2rem; }
+      .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.75rem; }
+      .input-title { width: 100%; border: none; font-size: 2rem; font-weight: 700; outline: none; }
+      .input-content { width: 100%; border: none; min-height: 24rem; resize: none; font-size: 1rem; outline: none; }
+      
+      .btn-publish { background: #6366f1; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
+      .btn-publish:hover { background: #4f46e5; }
+      
+      .divider { height: 1px; background: rgba(229, 231, 235, 0.3); margin: 2rem 0; }
+      .word-count { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; font-weight: 500; }
+      .actions { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; }
+      .action-text { font-size: 0.75rem; color: #9ca3af; font-weight: 300; }
+      .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 4rem; }
+      .tip { text-align: center; }
+      .tip h3 { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; color: #1f2937; }
+      .tip p { font-size: 0.875rem; color: #6b7280; font-weight: 300; }
+      .blog-select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; color: #1f2937; background-color: white; margin-bottom: 1rem; }
+
+      .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
+            `
+          },
+          'news-card.css': {
+            raw: `
+            .news-author { font-weight: 600; color: #111827; }
+            .news-author-muted { font-weight: 600; color: #6b7280; }
+            .news-separator { margin: 0 4px; }
+            .news-date-text { color: inherit; }
+            .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
+            .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
+            .news-card:hover { background: rgba(0,0,0,0.01); }
+            .news-avatar { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600; background-color: var(--avatar-bg, #e5e7eb); }
+            .news-content { flex: 1; }
+            .news-title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
+            .news-description { color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0; }
+            .news-meta-top { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
+            .news-meta-bottom { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
+            .news-tags { display: flex; align-items: center; gap: 0.5rem; }
+            .news-tag-pill { color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
+            .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s; z-index: 50; font-size: 1.5rem; }
+            .news-fab:hover { transform: scale(1.1); }
+            .news-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
+            .news-header h2 { font-size: 2rem; font-weight: 700; color: #111827; margin: 0; }
+            .news-subheader { color: #6b7280; margin-top: 0.5rem; }
+            `
+          }
+        },
         'runtime/': {
           'node_height.json': { raw: '32' },
           'vertical_scroll_value.json': { raw: '0' },
@@ -3908,31 +4054,161 @@ function fallback_module () {
         'keybinds/': { 'navigation.json': { raw: '{}' } },
         'undo/': { 'stack.json': { raw: '[]' } },
         'my-stories/': {
-          'story-1': { raw: JSON.stringify({ title: 'My First Post', author: 'You', date: 'Jan 28', content: "This is my first post on the P2P network! I'm excited to share my thoughts here." }) },
-          'story-2': { raw: JSON.stringify({ title: 'Building a P2P Network', author: 'You', date: 'Jan 27', content: 'Decentralized networks are the future. Here is how we are building one...' }) },
-          'story-3': { raw: JSON.stringify({ title: 'Future of Decentralized', author: 'You', date: 'Jan 26', content: 'Web3 is evolving rapidly. Smart contracts and IPFS are changing the game.' }) },
-          'story-4': { raw: JSON.stringify({ title: 'Why Decentralization Matters', author: 'You', date: 'Jan 25', content: "Control over your own data is a fundamental right. Let's discuss why." }) }
+          'story-1': {
+            raw: `---
+title: My First Post
+author: You
+date: Jan 28
+description: "This is my first post on the P2P network! I'm excited to share my thoughts here."
+---
+This is my first post on the P2P network!
+
+I'm excited to share my thoughts here. This platform allows us to connect directly.
+
+## Why P2P?
+It's about **freedom** and **control**. `
+          },
+          'story-2': {
+            raw: `---
+title: Building a P2P Network
+author: You
+date: Jan 27
+description: "Decentralized networks are the future. Here is how we are building one."
+---
+Decentralized networks are the future.
+
+Here is how we are building one:
+- Using Hyperswarm for discovery
+- Using Hypercore for storage
+- Using blind-pairing for privacy`
+          },
+          'story-3': {
+            raw: `---
+title: Future of Decentralized
+author: You
+date: Jan 26
+description: "Web3 is evolving rapidly. Smart contracts and IPFS are changing the game."
+---
+Web3 is evolving rapidly. **Smart contracts** and **IPFS** are changing the game.`
+          },
+          'story-4': {
+            raw: `---
+title: Why Decentralization Matters
+author: You
+date: Jan 25
+description: "Control over your own data is a fundamental right. Let's discuss why."
+---
+Control over your own data is a fundamental right.
+
+Let's discuss why:
+1. Censorship resistance
+2. Data ownership
+3. Resilience`
+          }
         },
         'feeds/': {},
         'feeds/hackers-digest/': {
-          'code-coffee': { raw: JSON.stringify({ title: 'Code & Coffee', author: 'HackerOne', date: '2h ago', description: 'Best spots for coding in the city', tags: ['#lifestyle', '#remote'], content: 'Here is a list of the best cafes with strong WiFi and good vibes...' }) },
-          'system-design': { raw: JSON.stringify({ title: 'System Design Weekly', author: 'Archie', date: '5h ago', description: 'Deep dive into distributed systems', tags: ['#tech', '#architecture'], content: 'Today we explore consistent hashing and its applications...' }) }
+          'code-coffee': {
+            raw: `---
+title: Code & Coffee
+author: HackerOne
+date: 2h ago
+description: Best spots for coding in the city
+tags: ["#lifestyle", "#remote"]
+---
+Here is a list of the best cafes with strong WiFi and good vibes:
+- The Grind
+- Java Script
+- Bean There`
+          },
+          'system-design': {
+            raw: `---
+title: System Design Weekly
+author: Archie
+date: 5h ago
+description: Deep dive into distributed systems
+tags: ["#tech", "#architecture"]
+---
+Today we explore **consistent hashing** and its applications in load balancing.`
+          }
         },
         'feeds/off-the-grid/': {
-          'mesh-network': { raw: JSON.stringify({ title: 'Building a mesh network', author: 'GridFree', date: '1d ago', description: 'Hardware guide', tags: ['#hardware', '#iot'], content: 'Using LoRaWAN for off-grid comms...' }) },
-          fediverse: { raw: JSON.stringify({ title: 'Why I left social media', author: 'Anon', date: '2d ago', description: 'Personal journey', tags: ['#privacy'], content: 'The centralized web is broken...' }) },
-          'self-hosting': { raw: JSON.stringify({ title: 'Self-hosting 101', author: 'HomeLab', date: '3d ago', description: 'Getting started with Docker', tags: ['#guides'], content: 'Start small with a Raspberry Pi...' }) }
+          'mesh-network': {
+            raw: `---
+title: Building a mesh network
+author: GridFree
+date: 1d ago
+description: Hardware guide
+tags: ["#hardware", "#iot"]
+---
+Using **LoRaWAN** for off-grid comms is easier than you think.`
+          },
+          fediverse: {
+            raw: `---
+title: Why I left social media
+author: Anon
+date: 2d ago
+description: Personal journey
+tags: ["#privacy"]
+---
+The centralized web is broken. It mines our attention for profit.`
+          },
+          'self-hosting': {
+            raw: `---
+title: Self-hosting 101
+author: HomeLab
+date: 3d ago
+description: Getting started with Docker
+tags: ["#guides"]
+---
+Start small with a **Raspberry Pi**.`
+          }
         },
         'feeds/peer-review/': {
-          'network-notes': { raw: JSON.stringify({ title: 'Network Notes', author: 'NetSec', date: '4h ago', content: 'Analyzing traffic patterns in P2P gossip protocols...' }) }
+          'network-notes': {
+            raw: `---
+title: Network Notes
+author: NetSec
+date: 4h ago
+---
+Analyzing traffic patterns in P2P gossip protocols...`
+          }
         },
         'feeds/peer-review/security-chronicles/': {
-          'privacy-matters': { raw: JSON.stringify({ title: 'Why Privacy Matters', author: 'SecGuru', date: '5h ago', content: 'Privacy is not secrecy, it is control...' }) },
-          'zero-trust': { raw: JSON.stringify({ title: 'Zero Trust Architecture', author: 'EntSec', date: '6h ago', content: 'Never trust, always verify...' }) }
+          'privacy-matters': {
+            raw: `---
+title: Why Privacy Matters
+author: SecGuru
+date: 5h ago
+---
+Privacy is not secrecy, it is **control**.`
+          },
+          'zero-trust': {
+            raw: `---
+title: Zero Trust Architecture
+author: EntSec
+date: 6h ago
+---
+Never trust, always verify.`
+          }
         },
         'lists/': {
-          'best-of-tech': { raw: JSON.stringify({ title: 'Best of Tech', author: 'Curator', date: 'Weekly', content: 'Top tech links for this week...' }) },
-          'morning-read': { raw: JSON.stringify({ title: 'Morning Read', author: 'Daily', date: 'Daily', content: '5 things you need to know today...' }) }
+          'best-of-tech': {
+            raw: `---
+title: Best of Tech
+author: Curator
+date: Weekly
+---
+Top tech links for this week...`
+          },
+          'morning-read': {
+            raw: `---
+title: Morning Read
+author: Daily
+date: Daily
+---
+5 things you need to know today...`
+          }
         },
         'discover/': {},
         'discover/random-peer-99/': {},
@@ -3942,8 +4218,6 @@ function fallback_module () {
     }
   }
 
-  // --- OVERRIDE FUNCTION ---
-  // Using user's provided logic verbatim
   function override_theme () {
     return {
       _: {
@@ -4113,7 +4387,7 @@ function fallback_module () {
           }
         },
         'runtime/': {
-          'node_height.json': { raw: '32' }, // Adjusted to 32 to match user's explicit height in CSS if they want, but use logic
+          'node_height.json': { raw: '32' },
           'vertical_scroll_value.json': { raw: '0' },
           'horizontal_scroll_value.json': { raw: '0' },
           'selected_instance_paths.json': { raw: '[]' },
@@ -4169,7 +4443,174 @@ function fallback_module () {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./graphdb":3,"STATE":1,"graph-explorer":2}],6:[function(require,module,exports){
+},{"./article-viewer":3,"./content-parser":4,"./graphdb":5,"./news-card":7,"./write-page":9,"STATE":1,"graph-explorer":2}],9:[function(require,module,exports){
+module.exports = function WritePage ({ onPublish }) {
+  const container = document.createElement('div')
+  container.className = 'write-page-container'
+
+  const header = document.createElement('div')
+  header.className = 'section-header'
+
+  const h1 = document.createElement('h1')
+  h1.textContent = 'Write a Story'
+
+  const p = document.createElement('p')
+  p.textContent = 'Share your thoughts with the network'
+
+  header.appendChild(h1)
+  header.appendChild(p)
+  container.appendChild(header)
+
+  const card = document.createElement('div')
+  card.className = 'card'
+
+  const spaceY = document.createElement('div')
+  spaceY.className = 'space-y-8'
+
+  const group1 = document.createElement('div')
+  group1.className = 'input-group'
+
+  const label1 = document.createElement('label')
+  label1.textContent = 'Publishing To'
+
+  const blogSelect = document.createElement('select')
+  blogSelect.className = 'blog-select'
+  const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
+  blogs.forEach(blog => {
+    const opt = document.createElement('option')
+    opt.value = blog
+    opt.textContent = blog
+    if (blog === 'Main Blog') opt.selected = true
+    blogSelect.appendChild(opt)
+  })
+
+  group1.appendChild(label1)
+  group1.appendChild(blogSelect)
+  spaceY.appendChild(group1)
+
+  const group2 = document.createElement('div')
+  group2.className = 'input-group'
+
+  const label2 = document.createElement('label')
+  label2.textContent = 'Story Title'
+
+  const titleInput = document.createElement('input')
+  titleInput.type = 'text'
+  titleInput.className = 'input-title'
+  titleInput.placeholder = 'Give your story a captivating title...'
+
+  group2.appendChild(label2)
+  group2.appendChild(titleInput)
+  spaceY.appendChild(group2)
+
+  const divider = document.createElement('div')
+  divider.className = 'divider'
+  spaceY.appendChild(divider)
+
+  const group3 = document.createElement('div')
+  group3.className = 'input-group'
+
+  const label3 = document.createElement('label')
+  label3.textContent = 'Your Story'
+
+  const contentArea = document.createElement('textarea')
+  contentArea.className = 'input-content'
+  contentArea.placeholder = 'Write your story here. Share your thoughts, experiences, and insights...'
+
+  const wordCountDiv = document.createElement('div')
+  wordCountDiv.className = 'word-count'
+
+  const wordCountSpan = document.createElement('span')
+  wordCountSpan.textContent = '0 words'
+
+  const readTimeSpan = document.createElement('span')
+  readTimeSpan.textContent = '~0 min read'
+
+  wordCountDiv.appendChild(wordCountSpan)
+  wordCountDiv.appendChild(readTimeSpan)
+
+  group3.appendChild(label3)
+  group3.appendChild(contentArea)
+  group3.appendChild(wordCountDiv)
+  spaceY.appendChild(group3)
+
+  const actions = document.createElement('div')
+  actions.className = 'actions'
+
+  const publishBtn = document.createElement('button')
+  publishBtn.className = 'btn-publish'
+  publishBtn.textContent = 'Publish Story'
+
+  const actionText = document.createElement('p')
+  actionText.className = 'action-text'
+  actionText.textContent = 'Your story will be stored locally and synced with your network'
+
+  actions.appendChild(publishBtn)
+  actions.appendChild(actionText)
+  spaceY.appendChild(actions)
+
+  card.appendChild(spaceY)
+  container.appendChild(card)
+
+  const tips = document.createElement('div')
+  tips.className = 'tips'
+
+  const tipData = [
+    { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
+    { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
+    { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
+  ]
+
+  tipData.forEach(t => {
+    const tipDiv = document.createElement('div')
+    tipDiv.className = 'tip'
+    const h3 = document.createElement('h3')
+    h3.textContent = t.title
+    const p = document.createElement('p')
+    p.textContent = t.text
+    tipDiv.appendChild(h3)
+    tipDiv.appendChild(p)
+    tips.appendChild(tipDiv)
+  })
+
+  container.appendChild(tips)
+
+  const state = {
+    blog: 'Main Blog',
+    title: '',
+    content: ''
+  }
+
+  blogSelect.addEventListener('change', (e) => { state.blog = e.target.value })
+
+  titleInput.addEventListener('input', (e) => { state.title = e.target.value })
+
+  contentArea.addEventListener('input', (e) => {
+    state.content = e.target.value
+    const words = e.target.value.trim() === '' ? 0 : e.target.value.trim().split(/\s+/).length
+    wordCountSpan.textContent = `${words} words`
+    readTimeSpan.textContent = `~${Math.ceil(words / 200)} min read`
+  })
+
+  publishBtn.addEventListener('click', () => {
+    if (!state.title || !state.content) {
+      alert('Please fill in both title and content.')
+      return
+    }
+
+    if (onPublish) {
+      onPublish({
+        title: state.title,
+        content: state.content,
+        blog: state.blog
+      })
+    }
+  })
+
+  return container
+}
+
+},{}],10:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
@@ -4264,4 +4705,4 @@ async function init () {
 init().catch(console.error)
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":4}]},{},[6]);
+},{"STATE":1,"news":6}]},{},[10]);
