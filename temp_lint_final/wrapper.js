@@ -96,9 +96,8 @@ async function my_component_with_graph (opts, protocol) {
   }
 
   function inject (data) {
-    if (Array.isArray(data)) {
-      sheet.replaceSync(data.join('\n'))
-    }
+    if (typeof data === 'string') { }
+    sheet.replaceSync(data.join('\n'))
   }
 
   function on_entries (data) {
