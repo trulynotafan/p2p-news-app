@@ -3,7 +3,7 @@ const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       news: {
@@ -16,7 +16,11 @@ function fallback_module() {
           mode: 'mode',
           flags: 'flags',
           keybinds: 'keybinds',
-          undo: 'undo'
+          undo: 'undo',
+          'my-stories': 'my-stories',
+          feeds: 'feeds',
+          lists: 'lists',
+          discover: 'discover'
         }
       }
     },
@@ -27,7 +31,11 @@ function fallback_module() {
       'mode/': {},
       'flags/': {},
       'keybinds/': {},
-      'undo/': {}
+      'undo/': {},
+      'my-stories/': {},
+      'feeds/': {},
+      'lists/': {},
+      'discover/': {}
     }
   }
 }
@@ -58,7 +66,7 @@ const customVault = {
   }
 }
 
-async function init() {
+async function init () {
   console.log('[page.js] init started')
 
   const start = await sdb.watch(async (batch) => {
