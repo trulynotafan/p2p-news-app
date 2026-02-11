@@ -59,6 +59,7 @@ async function boot (load, input) {
 const Autobase = require('autobase')
 const { EventEmitter } = require('events')
 const b4a = require('b4a')
+const { Readable } = require('streamx')
 
 function create_auditcore(options) {
     const { store, bootstrap, opts = {} } = options
@@ -154,7 +155,6 @@ function create_auditcore(options) {
         },
 
         create_read_stream(opts = {}) {
-            const { Readable } = require('streamx')
             const entries = state.entries
             let index = opts.start || 0
             const end = opts.end !== undefined ? Math.min(opts.end, entries.length) : entries.length
@@ -366,6 +366,7 @@ const Autobase = require('autobase')
 const Hyperdrive = require('hyperdrive')
 const b4a = require('b4a')
 const { EventEmitter } = require('events')
+const messages = require('autobase/lib/messages')
 
 function create_autodrive (options) {
   const { store, bootstrap, opts = {} } = options
@@ -601,7 +602,6 @@ function create_autodrive (options) {
 
 function get_local_core (options) {
   const { store, handlers, encryptionKey } = options
-  const messages = require('autobase/lib/messages')
   const opts = { 
     ...handlers, 
     compat: false, 
@@ -616,7 +616,7 @@ function get_local_core (options) {
 module.exports = { create_autodrive, get_local_core }
 },{"autobase":95,"autobase/lib/messages":103,"b4a":113,"events":290,"hyperdrive":392}],5:[function(require,module,exports){
 const b4a = require('b4a')
-const sodium = require('../sodium')
+const sodium = require('sodium')
 const bip39 = require('bip39-mnemonic')
 
 const isBrowser = (typeof window !== 'undefined')
@@ -672,11 +672,11 @@ module.exports = {
   load
 }
 
-},{"../sodium":10,"b4a":113,"bip39-mnemonic":139}],6:[function(require,module,exports){
+},{"b4a":113,"bip39-mnemonic":139,"sodium":10}],6:[function(require,module,exports){
 const b4a = require('b4a')
-const { create_autodrive, get_local_core } = require('../autodrive')
-const { create_autobee } = require('../autobee')
-const { create_auditcore } = require('../auditcore')
+const { create_autodrive, get_local_core } = require('autodrive')
+const { create_autobee } = require('autobee')
+const { create_auditcore } = require('auditcore')
 const autobase = require('autobase')
 
 // Datastructure manager. handles multiple data structures with unified API
@@ -936,7 +936,7 @@ function datastructure_manager (opts = {}) {
   }
 }
 
-},{"../auditcore":2,"../autobee":3,"../autodrive":4,"autobase":95,"b4a":113}],7:[function(require,module,exports){
+},{"auditcore":2,"autobase":95,"autobee":3,"autodrive":4,"b4a":113}],7:[function(require,module,exports){
 // Identity module which is app independent
 // This module handles: keypairs, pairing, networking, data structures
 // Doesnt contain app-specific things
@@ -951,16 +951,20 @@ const is_cli = typeof globalThis.open === 'undefined'
 
 const Hyperswarm = require('hyperswarm')
 const Protomux = require('protomux')
+const BlindPairing = require('blind-pairing')
+const pairing_manager_constructor = require('pairing-manager')
+const datastructure_manager = require('datastructure-manager')
+const { create_mnemonic_keypair, save, load: load_mnemonic } = require('crypto-helpers')
+const { identity_exchange_protocol } = require('protocol-helpers')
+const { create_autobee } = require('autobee')
+const { create_auditcore } = require('auditcore')
 
 // Browser-only modules (would break in CLI environment)
 const RAW = is_cli ? null : require('random-access-web')
 const DHT = require('@hyperswarm/dht-relay')
 const Stream = require('@hyperswarm/dht-relay/ws')
 const HyperWebRTC = is_cli ? null : require('hyper-webrtc')
-const { create_mnemonic_keypair, save, load: load_mnemonic } = require('../crypto-helpers')
-const { identity_exchange_protocol } = require('../protocol-helpers')
-const { create_autobee } = require('../autobee')
-const { create_auditcore } = require('../auditcore')
+
 
 
 // Emitter helper
@@ -1302,8 +1306,6 @@ function identity (config = {}) {
         const { store: _network_store, swarm: swarm_instance } = await start_networking(networking_options)
         network_store = _network_store
         swarm = swarm_instance
-
-        const pairing_manager_constructor = require('../pairing-manager')
         pairing_manager = pairing_manager_constructor(swarm)
 
         const result = await pairing_manager.join_with_invite({
@@ -1389,7 +1391,6 @@ function identity (config = {}) {
   async function create_vault_invite (topic = null) {
     if (!vault_bee || !vault_audit) throw new Error('Vault not initialized')
 
-    const BlindPairing = require('blind-pairing')
     const vault_bee_key = b4a.toString(vault_bee.key, 'hex')
     const vault_audit_key = b4a.toString(vault_audit.key, 'hex')
     const invite_obj = BlindPairing.createInvite(vault_bee.key)
@@ -1409,7 +1410,6 @@ function identity (config = {}) {
   async function setup_vault_pairing (config) {
     if (!vault_bee || !vault_audit || !swarm) throw new Error('Vault not initialized')
 
-    const pairing_manager_constructor = require('../pairing-manager')
     pairing_manager = pairing_manager_constructor(swarm)
     await pairing_manager.setup_member({ ...config, vault_bee, vault_audit })
     return pairing_manager
@@ -1631,7 +1631,6 @@ function identity (config = {}) {
 
   // Create and return a datastructure manager instance
   const create_ds_manager = () => {
-    const datastructure_manager = require('../datastructure-manager')
     return datastructure_manager()
   }
 
@@ -1786,11 +1785,13 @@ function identity (config = {}) {
   return vault_api
 }
 
-},{"../auditcore":2,"../autobee":3,"../crypto-helpers":5,"../datastructure-manager":6,"../pairing-manager":8,"../protocol-helpers":9,"@hyperswarm/dht-relay":26,"@hyperswarm/dht-relay/ws":70,"b4a":113,"blind-pairing":160,"corestore":215,"hyper-webrtc":324,"hyperswarm":394,"protomux":471,"random-access-web":492}],8:[function(require,module,exports){
+},{"@hyperswarm/dht-relay":26,"@hyperswarm/dht-relay/ws":70,"auditcore":2,"autobee":3,"b4a":113,"blind-pairing":160,"corestore":215,"crypto-helpers":5,"datastructure-manager":6,"hyper-webrtc":324,"hyperswarm":394,"pairing-manager":8,"protocol-helpers":9,"protomux":471,"random-access-web":492}],8:[function(require,module,exports){
 const b4a = require('b4a')
 const BlindPairing = require('blind-pairing')
 const extend = require('@geut/sodium-javascript-plus/extend')
 const sodium = extend(require('sodium-universal'))
+const crypto = require('hypercore-crypto')
+const { get_local_core } = require('autodrive')
 
 // Simplified pairing manager for vault-only pairing
 // Only handles pairing of vault_bee and vault_audit structures
@@ -1805,7 +1806,6 @@ function pairing_manager(swarm) {
   let multiple_attempts_detected = false
 
   const extract_verification_digits = (key_hex) => {
-    const crypto = require('hypercore-crypto')
     const key_buffer = b4a.from(key_hex, 'hex')
     const discovery_key = crypto.discoveryKey(key_buffer)
     return b4a.toString(discovery_key, 'hex').slice(-6).toUpperCase()
@@ -1813,7 +1813,6 @@ function pairing_manager(swarm) {
 
   const setup_member = async (config) => {
     const { vault_bee, vault_audit, invite, on_verification_needed, on_paired, username } = config
-    const crypto = require('hypercore-crypto')
 
     const blind_pairing = new BlindPairing(swarm)
     await blind_pairing.ready()
@@ -1876,7 +1875,6 @@ function pairing_manager(swarm) {
 
   const verify_and_complete_pairing = async (config) => {
     const { entered_verification_code, vault_bee, vault_audit } = config
-    const crypto = require('hypercore-crypto')
 
     const matched_index = pending_pairing_requests.findIndex(r => r.verification_digits === entered_verification_code)
     if (matched_index === -1) throw new Error('Verification code does not match any pending pairing request.')
@@ -1930,7 +1928,6 @@ function pairing_manager(swarm) {
     await blind_pairing.ready()
 
     const invite_buffer = b4a.from(invite_data.blind_invite, 'base64')
-    const { get_local_core } = require('../autodrive')
 
     const vault_bee_store = store.namespace('vault-bee')
     const vault_bee_core = get_local_core({ store: vault_bee_store })
@@ -2012,7 +2009,7 @@ function pairing_manager(swarm) {
 }
 
 
-},{"../autodrive":4,"@geut/sodium-javascript-plus/extend":20,"b4a":113,"blind-pairing":160,"hypercore-crypto":337,"sodium-universal":588}],9:[function(require,module,exports){
+},{"@geut/sodium-javascript-plus/extend":20,"autodrive":4,"b4a":113,"blind-pairing":160,"hypercore-crypto":337,"sodium-universal":588}],9:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
 
@@ -46351,7 +46348,7 @@ const { Duplex } = require('streamx')
 const b4a = require('b4a')
 
 module.exports = class WebStream extends Duplex {
-  constructor(isInitiator, dc, opts = {}) {
+  constructor (isInitiator, dc, opts = {}) {
     super({ mapWritable: toBuffer })
 
     this._dc = dc
@@ -46383,7 +46380,7 @@ module.exports = class WebStream extends Duplex {
     this.resume().pause() // Open immediately
   }
 
-  _open(cb) {
+  _open (cb) {
     if (this._dc.readyState === 'closed' || this._dc.readyState === 'closing') {
       cb(new Error('Stream is closed'))
       return
@@ -46398,7 +46395,7 @@ module.exports = class WebStream extends Duplex {
     cb(null)
   }
 
-  _continueOpen(err) {
+  _continueOpen (err) {
     if (err) this.destroy(err)
 
     if (this._opening === null) return
@@ -46408,7 +46405,7 @@ module.exports = class WebStream extends Duplex {
     this._open(cb)
   }
 
-  _resolveOpened(opened) {
+  _resolveOpened (opened) {
     const cb = this._openedDone
 
     if (cb) {
@@ -46419,38 +46416,37 @@ module.exports = class WebStream extends Duplex {
     }
   }
 
-  _write(data, cb) {
+  _write (data, cb) {
     this._dc.send(data)
     cb(null)
   }
 
-  _predestroy() {
+  _predestroy () {
     this._continueOpen(new Error('Stream was destroyed'))
   }
 
-  _destroy(cb) {
+  _destroy (cb) {
     this._dc.close()
     this._resolveOpened(false)
     cb(null)
   }
 
-  setKeepAlive() { }
-  sendKeepAlive() { }
+  setKeepAlive () {} // TODO
 }
 
-function onopen() {
+function onopen () {
   this._continueOpen()
 }
 
-function onmessage(event) {
+function onmessage (event) {
   this.push(b4a.from(event.data))
 }
 
-function onerror(err) {
+function onerror (err) {
   this.destroy(err)
 }
 
-function onclose() {
+function onclose () {
   this._dc.removeEventListener('open', this._onopen)
   this._dc.removeEventListener('message', this._onmessage)
   this._dc.removeEventListener('error', this._onerror)
@@ -46459,7 +46455,7 @@ function onclose() {
   this.destroy()
 }
 
-function toBuffer(data) {
+function toBuffer (data) {
   return typeof data === 'string' ? b4a.from(data) : data
 }
 

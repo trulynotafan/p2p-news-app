@@ -295,7 +295,6 @@ const init_blog = async (options) => {
   const vault_bee_key = identity.get_vault_bee()?.key
   const vault_audit_key = identity.get_vault_audit()?.key
   if (vault_bee_key && vault_audit_key && typeof localStorage !== 'undefined') {
-    const b4a = require('b4a')
     localStorage.setItem(`vault_keys_${username}`, JSON.stringify({
       vault_bee: b4a.toString(vault_bee_key, 'hex'),
       vault_audit: b4a.toString(vault_audit_key, 'hex')
