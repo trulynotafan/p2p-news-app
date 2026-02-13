@@ -57,156 +57,262 @@ async function boot (load, input) {
 }
 },{"bare-process":127,"identity":7}],2:[function(require,module,exports){
 const Autobase = require('autobase')
-const { EventEmitter } = require('events')
 const b4a = require('b4a')
 const { Readable } = require('streamx')
 
-function create_auditcore(options) {
-    const { store, bootstrap, opts = {} } = options
-    const emitter = new EventEmitter()
-    const state = { store, bootstrap, opts, base: null, entries: [] }
-
-    function handle_autobase_open(store) {
-        const audit_store = store.base.store.namespace('auditcore')
-        const core = audit_store.get({ name: 'log' })
-        return { core, entries: [] }
-    }
-
-    async function handle_autobase_apply(nodes, view, base) {
-        for (const node of nodes) {
-            if (node.value === null) continue
-            const { type, data } = node.value
-            if (type === 'add_writer') {
-                await base.addWriter(b4a.from(data.key, 'hex'), { indexer: data.is_indexer })
-            } else if (type === 'remove_writer') {
-                await base.removeWriter(b4a.from(data.key, 'hex'))
-            } else {
-                view.entries.push(node.value)
-            }
-        }
-    }
-
-    state.base = new Autobase(store, bootstrap, {
-        valueEncoding: 'json',
-        open: handle_autobase_open,
-        apply: handle_autobase_apply,
-        ackInterval: opts.ack_interval || 1000,
-        ackThreshold: opts.ack_threshold || 1,
-        fastForward: false
-    })
-
-    state.base.on('update', () => {
-        if (state.base.view && state.base.view.entries) {
-            state.entries = state.base.view.entries
-        }
-        emitter.emit('update')
-    })
-
-    const api = {
-        on: (event, listener) => emitter.on(event, listener),
-        off: (event, listener) => emitter.off(event, listener),
-        get base() { return state.base },
-        get key() { return state.base ? state.base.key : null },
-        get writable() { return state.base ? state.base.writable : false },
-        get length() { return state.entries.length },
-
-        async ready() {
-            await state.base.ready()
-            await state.base.update()
-            if (state.base.view && state.base.view.entries) {
-                state.entries = state.base.view.entries
-            }
-        },
-
-        async close() {
-            if (state.base) await state.base.close()
-        },
-
-        async append(entry) {
-            if (!entry.type) throw new Error('Entry must have a type')
-            const full_entry = {
-                type: entry.type,
-                data: {
-                    ...entry.data || {},
-                    timestamp: Date.now()
-                }
-            }
-            await state.base.append(full_entry)
-            await state.base.update()
-            return state.entries.length - 1
-        },
-
-        async get(seq) {
-            if (seq < 0 || seq >= state.entries.length) return null
-            return state.entries[seq]
-        },
-
-        async read(start = 0, end) {
-            const stop = end !== undefined ? Math.min(end, state.entries.length) : state.entries.length
-            return state.entries.slice(start, stop)
-        },
-
-        async get_by_type(type) {
-            return state.entries.filter(e => e.type === type)
-        },
-
-        async get_by_device(device_id) {
-            return state.entries.filter(e => e.data && e.data.device_id === device_id)
-        },
-
-        create_read_stream(opts = {}) {
-            const entries = state.entries
-            let index = opts.start || 0
-            const end = opts.end !== undefined ? Math.min(opts.end, entries.length) : entries.length
-
-            return new Readable({
-                read(cb) {
-                    if (index >= end) {
-                        this.push(null)
-                    } else {
-                        this.push(entries[index++])
-                    }
-                    cb(null)
-                }
-            })
-        },
-
-        async add_writer(key, is_indexer = true) {
-            const key_str = typeof key === 'string' ? key : key.toString('hex')
-            await state.base.append({ type: 'add_writer', data: { key: key_str, is_indexer } })
-            await state.base.update()
-        },
-
-        async remove_writer(key) {
-            const key_str = typeof key === 'string' ? key : key.toString('hex')
-            await state.base.append({ type: 'remove_writer', data: { key: key_str } })
-            await state.base.update()
-        },
-
-        async update() {
-            return state.base.update()
-        },
-
-        replicate(stream_or_initiator, opts = {}) {
-            return state.store.replicate(stream_or_initiator, opts)
-        }
-    }
-
-    return api
-}
-
 module.exports = { create_auditcore }
 
-},{"autobase":95,"b4a":113,"events":290,"streamx":610}],3:[function(require,module,exports){
+function create_auditcore(options) {
+  const { store, bootstrap, opts = {} } = options
+  const emitter = make_emitter()
+  const state = { store, bootstrap, opts, base: null, entries: [] }
+
+  state.base = new Autobase(store, bootstrap, {
+    valueEncoding: 'json',
+    open: handle_autobase_open,
+    apply: handle_autobase_apply,
+    ackInterval: opts.ack_interval || 1000,
+    ackThreshold: opts.ack_threshold || 1,
+    fastForward: false
+  })
+
+  state.base.on('update', function () {
+    if (state.base.view && state.base.view.entries) {
+      state.entries = state.base.view.entries
+    }
+    emitter.emit('update')
+  })
+
+  const api = {
+    get base() { return state.base },
+    get key() { return state.base ? state.base.key : null },
+    get writable() { return state.base ? state.base.writable : false },
+    get length() { return state.entries.length },
+    on,
+    off,
+    ready,
+    close,
+    append,
+    get,
+    read,
+    get_by_type,
+    get_by_device,
+    create_read_stream,
+    add_writer,
+    remove_writer,
+    update,
+    replicate
+  }
+
+  return api
+// ============================================================================
+// Internal functions
+// ============================================================================
+
+  function on(event, listener) {
+    emitter.on(event, listener)
+  }
+
+  function off(event, listener) {
+    emitter.off(event, listener)
+  }
+
+  async function ready() {
+    await state.base.ready()
+    await state.base.update()
+    if (state.base.view && state.base.view.entries) {
+      state.entries = state.base.view.entries
+    }
+  }
+
+  async function close() {
+    if (state.base) await state.base.close()
+  }
+
+  async function append(entry) {
+    if (!entry.type) throw new Error('Entry must have a type')
+    const full_entry = {
+      type: entry.type,
+      data: {
+        ...entry.data || {},
+        timestamp: Date.now()
+      }
+    }
+    await state.base.append(full_entry)
+    await state.base.update()
+    return state.entries.length - 1
+  }
+
+  async function get(seq) {
+    if (seq < 0 || seq >= state.entries.length) return null
+    return state.entries[seq]
+  }
+
+  async function read(start = 0, end) {
+    const stop = end !== undefined ? Math.min(end, state.entries.length) : state.entries.length
+    return state.entries.slice(start, stop)
+  }
+
+  async function get_by_type(type) {
+    return state.entries.filter(function (e) {
+      return e.type === type
+    })
+  }
+
+  async function get_by_device(device_id) {
+    return state.entries.filter(function (e) {
+      return e.data && e.data.device_id === device_id
+    })
+  }
+
+  function create_read_stream(opts = {}) {
+    const entries = state.entries
+    let index = opts.start || 0
+    const end = opts.end !== undefined ? Math.min(opts.end, entries.length) : entries.length
+
+    return new Readable({
+      read(cb) {
+        if (index >= end) {
+          this.push(null)
+        } else {
+          this.push(entries[index++])
+        }
+        cb(null)
+      }
+    })
+  }
+
+  async function add_writer(key, is_indexer = true) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'add_writer', data: { key: key_str, is_indexer } })
+    await state.base.update()
+  }
+
+  async function remove_writer(key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'remove_writer', data: { key: key_str } })
+    await state.base.update()
+  }
+
+  async function update() {
+    return state.base.update()
+  }
+
+  function replicate(stream_or_initiator, opts = {}) {
+    return state.store.replicate(stream_or_initiator, opts)
+  }
+}
+
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
+
+/***************************************
+HANDLE AUTOBASE OPEN
+***************************************/
+function handle_autobase_open(store) {
+  const audit_store = store.base.store.namespace('auditcore')
+  const core = audit_store.get({ name: 'log' })
+  return { core, entries: [] }
+}
+
+/***************************************
+HANDLE AUTOBASE APPLY
+***************************************/
+async function handle_autobase_apply(nodes, view, base) {
+  for (const node of nodes) {
+    if (node.value === null) continue
+    const { type, data } = node.value
+    if (type === 'add_writer') {
+      await base.addWriter(b4a.from(data.key, 'hex'), { indexer: data.is_indexer })
+    } else if (type === 'remove_writer') {
+      await base.removeWriter(b4a.from(data.key, 'hex'))
+    } else {
+      view.entries.push(node.value)
+    }
+  }
+}
+
+/***************************************
+MAKE EMITTER
+***************************************/
+function make_emitter(state = {}) {
+  return { on, off, emit }
+  function on(type, callback) { (state[type] = state[type] || []).push(callback) }
+  function off(type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
+  function emit(type, data) {
+    function handle_callback(f) {
+      return f && f(data)
+    }
+    return (state[type] = state[type] || []).map(handle_callback)
+  }
+}
+},{"autobase":95,"b4a":113,"streamx":610}],3:[function(require,module,exports){
 const Autobase = require('autobase')
 const Hyperbee = require('hyperbee')
-const { EventEmitter } = require('events')
 const b4a = require('b4a')
+
+module.exports = { create_autobee }
 
 function create_autobee(options) {
   const { store, bootstrap, opts = {} } = options
-  const emitter = new EventEmitter()
+  const emitter = make_emitter()
   const state = { store, bee: null, bootstrap, opts, base: null }
+
+  state.base = new Autobase(store, bootstrap, {
+    valueEncoding: 'json',
+    open: handle_autobase_open,
+    apply: handle_autobase_apply,
+    ackInterval: opts.ack_interval || 1000,
+    ackThreshold: opts.ack_threshold || 1,
+    fastForward: false
+  })
+
+  state.base.on('update', () => {
+    if (state.base.view && state.base.view.bee) {
+      state.bee = state.base.view.bee
+    }
+    emitter.emit('update')
+  })
+
+  const api = {
+    get base() { return state.base },
+    get view() { return state.bee },
+    get version() { return state.bee ? state.bee.version : 0 },
+    get id() { return state.bee ? state.bee.id : null },
+    get key() { return state.base ? state.base.key : null },
+    get discovery_key() { return state.bee ? state.bee.discoveryKey : null },
+    get writable() { return state.base ? state.base.writable : false },
+    get readable() { return state.bee ? state.bee.readable : false },
+    get core() { return state.bee ? state.bee.core : null },
+    on,
+    off,
+    ready,
+    close,
+    put,
+    del,
+    get,
+    get_by_seq,
+    peek,
+    create_read_stream,
+    create_history_stream,
+    create_diff_stream,
+    watch,
+    get_and_watch,
+    checkout,
+    snapshot,
+    sub,
+    batch,
+    add_writer,
+    update,
+    replicate
+  }
+
+  return api
+
+// ============================================================================
+// Internal functions
+// ============================================================================
 
   function handle_autobase_open(store) {
     const bee_store = store.base.store.namespace('autobee')
@@ -235,142 +341,135 @@ function create_autobee(options) {
     await batch.flush()
   }
 
-  state.base = new Autobase(store, bootstrap, {
-    valueEncoding: 'json',
-    open: handle_autobase_open,
-    apply: handle_autobase_apply,
-    ackInterval: opts.ack_interval || 1000,
-    ackThreshold: opts.ack_threshold || 1,
-    fastForward: false
-  })
+  function on(event, listener) {
+    emitter.on(event, listener)
+  }
 
-  state.base.on('update', () => {
+  function off(event, listener) {
+    emitter.off(event, listener)
+  }
+
+  async function ready() {
+    await state.base.ready()
+    await state.base.update()
     if (state.base.view && state.base.view.bee) {
       state.bee = state.base.view.bee
     }
-    emitter.emit('update')
-  })
-
-  const api = {
-    on: (event, listener) => emitter.on(event, listener),
-    off: (event, listener) => emitter.off(event, listener),
-    get base() { return state.base },
-    get view() { return state.bee },
-    get version() { return state.bee ? state.bee.version : 0 },
-    get id() { return state.bee ? state.bee.id : null },
-    get key() { return state.base ? state.base.key : null },
-    get discovery_key() { return state.bee ? state.bee.discoveryKey : null },
-    get writable() { return state.base ? state.base.writable : false },
-    get readable() { return state.bee ? state.bee.readable : false },
-    get core() { return state.bee ? state.bee.core : null },
-
-    async ready() {
-      await state.base.ready()
-      await state.base.update()
-      if (state.base.view && state.base.view.bee) {
-        state.bee = state.base.view.bee
-      }
-    },
-
-    async close() {
-      if (state.bee) await state.bee.close()
-      if (state.base) await state.base.close()
-    },
-
-    async put(key, value) {
-      await state.base.append({ type: 'put', data: { key, value } })
-      await state.base.update()
-      return state.base.latest
-    },
-
-    async del(key) {
-      await state.base.append({ type: 'del', data: { key } })
-      await state.base.update()
-      return state.base.latest
-    },
-
-    async get(key, opts) {
-      if (!state.bee) await this.ready()
-      return state.bee.get(key, opts)
-    },
-
-    async get_by_seq(seq, opts) {
-      if (!state.bee) await this.ready()
-      return state.bee.getBySeq(seq, opts)
-    },
-
-    async peek(range, opts) {
-      if (!state.bee) await this.ready()
-      return state.bee.peek(range, opts)
-    },
-
-    create_read_stream(range, opts) {
-      return state.bee.createReadStream(range, opts)
-    },
-
-    create_history_stream(opts) {
-      return state.bee.createHistoryStream(opts)
-    },
-
-    create_diff_stream(other_version, range, opts) {
-      return state.bee.createDiffStream(other_version, range, opts)
-    },
-
-    watch(range, opts) {
-      return state.bee.watch(range, opts)
-    },
-
-    async get_and_watch(key, opts) {
-      if (!state.bee) await this.ready()
-      return state.bee.getAndWatch(key, opts)
-    },
-
-    checkout(version, opts) {
-      return state.bee.checkout(version, opts)
-    },
-
-    snapshot(opts) {
-      return state.bee.snapshot(opts)
-    },
-
-    sub(prefix, opts) {
-      return state.bee.sub(prefix, opts)
-    },
-
-    batch(opts) {
-      return state.bee.batch(opts)
-    },
-
-    async add_writer(key, is_indexer = true) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      await state.base.append({ type: 'add_writer', data: { key: key_str, is_indexer } })
-      await state.base.update()
-    },
-
-    async update() {
-      return state.base.update()
-    },
-
-    replicate(stream_or_initiator, opts = {}) {
-      return state.store.replicate(stream_or_initiator, opts)
-    }
   }
 
-  return api
+  async function close() {
+    if (state.bee) await state.bee.close()
+    if (state.base) await state.base.close()
+  }
+
+  async function put(key, value) {
+    await state.base.append({ type: 'put', data: { key, value } })
+    await state.base.update()
+    return state.base.latest
+  }
+
+  async function del(key) {
+    await state.base.append({ type: 'del', data: { key } })
+    await state.base.update()
+    return state.base.latest
+  }
+
+  async function get(key, opts) {
+    if (!state.bee) await ready()
+    return state.bee.get(key, opts)
+  }
+
+  async function get_by_seq(seq, opts) {
+    if (!state.bee) await ready()
+    return state.bee.getBySeq(seq, opts)
+  }
+
+  async function peek(range, opts) {
+    if (!state.bee) await ready()
+    return state.bee.peek(range, opts)
+  }
+
+  function create_read_stream(range, opts) {
+    return state.bee.createReadStream(range, opts)
+  }
+
+  function create_history_stream(opts) {
+    return state.bee.createHistoryStream(opts)
+  }
+
+  function create_diff_stream(other_version, range, opts) {
+    return state.bee.createDiffStream(other_version, range, opts)
+  }
+
+  function watch(range, opts) {
+    return state.bee.watch(range, opts)
+  }
+
+  async function get_and_watch(key, opts) {
+    if (!state.bee) await ready()
+    return state.bee.getAndWatch(key, opts)
+  }
+
+  function checkout(version, opts) {
+    return state.bee.checkout(version, opts)
+  }
+
+  function snapshot(opts) {
+    return state.bee.snapshot(opts)
+  }
+
+  function sub(prefix, opts) {
+    return state.bee.sub(prefix, opts)
+  }
+
+  function batch(opts) {
+    return state.bee.batch(opts)
+  }
+
+  async function add_writer(key, is_indexer = true) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'add_writer', data: { key: key_str, is_indexer } })
+    await state.base.update()
+  }
+
+  async function update() {
+    return state.base.update()
+  }
+
+  function replicate(stream_or_initiator, opts = {}) {
+    return state.store.replicate(stream_or_initiator, opts)
+  }
 }
 
-module.exports = { create_autobee }
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
 
-},{"autobase":95,"b4a":113,"events":290,"hyperbee":326}],4:[function(require,module,exports){
+/***************************************
+MAKE EMITTER
+***************************************/
+function make_emitter(state = {}) {
+  return { on, off, emit }
+  function on(type, callback) { (state[type] = state[type] || []).push(callback) }
+  function off(type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
+  function emit(type, data) {
+    function handle_callback(f) {
+      return f && f(data)
+    }
+    return (state[type] = state[type] || []).map(handle_callback)
+  }
+}
+},{"autobase":95,"b4a":113,"hyperbee":326}],4:[function(require,module,exports){
 const Autobase = require('autobase')
 const Hyperdrive = require('hyperdrive')
 const b4a = require('b4a')
-const { EventEmitter } = require('events')
 const messages = require('autobase/lib/messages')
+
+module.exports = { create_autodrive, get_local_core }
 
 function create_autodrive (options) {
   const { store, bootstrap, opts = {} } = options
-  const emitter = new EventEmitter()
+  const emitter = make_emitter()
   const state = {
     store,
     drive: null,
@@ -382,9 +481,59 @@ function create_autodrive (options) {
     view_ready: false
   }
 
-  // Autobase handlers
+  state.base = new Autobase(store, bootstrap, {
+    valueEncoding: 'json',
+    open: handle_autobase_open,
+    apply: handle_autobase_apply,
+    close: handle_autobase_close,
+    ackInterval: opts.ack_interval || 1000,
+    ackThreshold: opts.ack_threshold || 0,
+    fastForward: false
+  })
+
+  state.base.on('update', async function () {
+    try {
+      if (state.base.view && state.base.view.drive) {
+        state.drive = state.base.view.drive
+        state.view_ready = true
+      }
+      emitter.emit('update')
+    } catch (err) {
+      console.error('Error on base update:', err)
+    }
+  })
+
+  const api = {
+    get base () { return state.base },
+    on,
+    off,
+    emit,
+    ready,
+    close,
+    put,
+    del,
+    get,
+    list,
+    download,
+    add_writer,
+    add_reader,
+    remove_reader,
+    remove_writer,
+    get_readers,
+    get_writers,
+    is_reader,
+    is_writer,
+    exists,
+    replicate
+  }
+  
+  return api
+
+// ============================================================================
+// Internal functions
+// ============================================================================
+
   function handle_autobase_open (store) {
-    // FIX 1: Use a FIXED namespace for consistency
     const drive_store = store.base.store.namespace('autodrive')
     const drive = new Hyperdrive(drive_store)
     return { drive }
@@ -430,176 +579,163 @@ function create_autodrive (options) {
     if (view.drive) await view.drive.close()
   }
 
-  state.base = new Autobase(store, bootstrap, {
-    valueEncoding: 'json',
-    open: handle_autobase_open,
-    apply: handle_autobase_apply,
-    close: handle_autobase_close,
-    ackInterval: opts.ack_interval || 1000,
-    ackThreshold: opts.ack_threshold || 0,
-    fastForward: false
-  })
+  function on (event, listener) {
+    emitter.on(event, listener)
+  }
 
-  state.base.on('update', async () => {
-    try {
-      if (state.base.view && state.base.view.drive) {
-        state.drive = state.base.view.drive
-        state.view_ready = true
-      }
-      emitter.emit('update')
-    } catch (err) {
-      console.error('Error on base update:', err)
+  function off (event, listener) {
+    emitter.off(event, listener)
+  }
+
+  function emit (event, ...args) {
+    emitter.emit(event, ...args)
+  }
+
+  async function ready () {
+    await state.base.ready()
+    state.drive = state.base.view.drive
+    await state.drive.ready()
+    state.view_ready = true
+  }
+  
+  async function close () {
+    await state.base.close()
+  }
+  
+  async function put (path, content) {
+    await ready()
+    await state.base.append({ 
+      type: 'put', 
+      data: { 
+        path, 
+        content: b4a.toString(content, 'base64') 
+      } 
+    })
+    await state.base.update()
+  }
+
+  async function del (path) {
+    await ready()
+    await state.base.append({ type: 'del', data: { path } })
+    await state.base.update()
+  }
+  
+  async function get (path, opts) {
+    await ready()
+    await state.base.update()
+    return state.drive.get(path, opts)
+  }
+
+  async function list (folder = '/', opts = {}) {
+    await ready()
+    await state.base.update()
+    const entries = []
+    for await (const entry of state.drive.list(folder, { ...opts, recursive: false })) {
+      entries.push(entry.key)
     }
-  })
-
-  const api = {
-    on: (event, listener) => emitter.on(event, listener),
-    off: (event, listener) => emitter.off(event, listener),
-    emit: (event, ...args) => emitter.emit(event, ...args),
-    get base () { return state.base },
+    return entries
+  }
+  
+  async function download (folder = '/', opts) {
+    await ready()
+    if (typeof folder === 'object') {
+      opts = folder
+      folder = '/'
+    }
     
-    async ready () {
-      await state.base.ready()
-      state.drive = state.base.view.drive
-      await state.drive.ready()
-      state.view_ready = true
-    },
+    const dls = []
+    const entry = (!folder || folder.endsWith('/')) ? null : await state.drive.entry(folder)
     
-    async close () {
-      await state.base.close()
-    },
-    
-    async put (path, content) {
-      await api.ready()
-      await state.base.append({ 
-        type: 'put', 
-        data: { 
-          path, 
-          content: b4a.toString(content, 'base64') 
-        } 
-      })
-
-      await state.base.update()
-    },
-
-    async del (path) {
-      await api.ready()
-      await state.base.append({ type: 'del', data: { path } })
-      await state.base.update()
-    },
-    
-    async get (path, opts) {
-      await api.ready()
-      await state.base.update()
-      return state.drive.get(path, opts)
-    },
-
-    async list (folder = '/', opts = {}) {
-      await api.ready()
-      await state.base.update()
-      const entries = []
-      for await (const entry of state.drive.list(folder, { ...opts, recursive: false })) {
-        entries.push(entry.key)
-      }
-      return entries
-    },
-    
-    async download (folder = '/', opts) {
-      await api.ready()
-      if (typeof folder === 'object') {
-        opts = folder
-        folder = '/'
-      }
-      
-      const dls = []
-      const entry = (!folder || folder.endsWith('/')) ? null : await state.drive.entry(folder)
-      
-      if (entry) {
-        const b = entry.value.blob
-        if (!b) return
-        const blobs = await state.drive.getBlobs()
-        await blobs.core.download({ start: b.blockOffset, length: b.blockLength }).downloaded()
-        return
-      }
+    if (entry) {
+      const b = entry.value.blob
+      if (!b) return
+      const blobs = await state.drive.getBlobs()
+      await blobs.core.download({ start: b.blockOffset, length: b.blockLength }).downloaded()
+      return
+    }
 
       // Download the directory listing first
-      for await (const _ of state.drive.list(folder, opts)) {}
-      
+    for await (const _ of state.drive.list(folder, opts)) {}
+    
       // Then download all blobs
-      for await (const entry of state.drive.list(folder, opts)) {
-        const b = entry.value.blob
-        if (!b) continue
-        const blobs = await state.drive.getBlobs()
-        dls.push(blobs.core.download({ start: b.blockOffset, length: b.blockLength }))
-      }
-      
-      await Promise.allSettled(dls.map(r => r.downloaded()))
-    },
+    for await (const entry of state.drive.list(folder, opts)) {
+      const b = entry.value.blob
+      if (!b) continue
+      const blobs = await state.drive.getBlobs()
+      dls.push(blobs.core.download({ start: b.blockOffset, length: b.blockLength }))
+    }
     
-    async add_writer (key, opts = {}) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      const is_indexer = opts.is_indexer === undefined ? true : !!opts.is_indexer
-      
-      await state.base.append({ 
-        type: 'add_writer', 
-        data: { key: key_str, is_indexer } 
-      })
-      await state.base.update()
-    },
+    await Promise.allSettled(dls.map(function (r) { return r.downloaded() }))
+  }
+  
+  async function add_writer (key, opts = {}) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    const is_indexer = opts.is_indexer === undefined ? true : !!opts.is_indexer
     
-    async add_reader (key) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      await state.base.append({ type: 'add_reader', data: { key: key_str } })
-      await state.base.update()
-    },
-    
-    async remove_reader (key) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      await state.base.append({ type: 'remove_reader', data: { key: key_str } })
-      await state.base.update()
-    },
-    
-    async remove_writer (key) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      await state.base.append({ type: 'remove_writer', data: { key: key_str } })
-      await state.base.update()
-    },
-    
-    get_readers () { return Array.from(state.readers) },
-    get_writers () { return Array.from(state.writers) },
-    
-    is_reader (key) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      return state.readers.has(key_str)
-    },
-    
-    is_writer (key) {
-      const key_str = typeof key === 'string' ? key : key.toString('hex')
-      return state.writers.has(key_str) || 
-             key_str === state.base.key.toString('hex')
-    },
-    
-    async exists (path) {
-      await api.ready()
-      try {
-        const entry = await state.drive.entry(path)
-        return !!entry
-      } catch {
-        return false
-      }
-    },
-    
-    replicate (stream_or_initiator, opts = {}) {
-      if (typeof stream_or_initiator === 'boolean') {
-        return state.store.replicate(stream_or_initiator, opts)
-      }
-      return state.store.replicate(stream_or_initiator, opts)
+    await state.base.append({ 
+      type: 'add_writer', 
+      data: { key: key_str, is_indexer } 
+    })
+    await state.base.update()
+  }
+  
+  async function add_reader (key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'add_reader', data: { key: key_str } })
+    await state.base.update()
+  }
+  
+  async function remove_reader (key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'remove_reader', data: { key: key_str } })
+    await state.base.update()
+  }
+  
+  async function remove_writer (key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    await state.base.append({ type: 'remove_writer', data: { key: key_str } })
+    await state.base.update()
+  }
+  
+  function get_readers () { return Array.from(state.readers) }
+  function get_writers () { return Array.from(state.writers) }
+  
+  function is_reader (key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    return state.readers.has(key_str)
+  }
+  
+  function is_writer (key) {
+    const key_str = typeof key === 'string' ? key : key.toString('hex')
+    return state.writers.has(key_str) || 
+           key_str === state.base.key.toString('hex')
+  }
+  
+  async function exists (path) {
+    await ready()
+    try {
+      const entry = await state.drive.entry(path)
+      return !!entry
+    } catch {
+      return false
     }
   }
   
-  return api
+  function replicate (stream_or_initiator, opts = {}) {
+    if (typeof stream_or_initiator === 'boolean') {
+      return state.store.replicate(stream_or_initiator, opts)
+    }
+    return state.store.replicate(stream_or_initiator, opts)
+  }
 }
 
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
+
+/***************************************
+GET LOCAL CORE
+***************************************/
 function get_local_core (options) {
   const { store, handlers, encryptionKey } = options
   const opts = { 
@@ -613,11 +749,30 @@ function get_local_core (options) {
   return opts.keyPair ? store.get(opts) : store.get({ ...opts, name: 'local' })
 }
 
-module.exports = { create_autodrive, get_local_core }
-},{"autobase":95,"autobase/lib/messages":103,"b4a":113,"events":290,"hyperdrive":392}],5:[function(require,module,exports){
+/***************************************
+MAKE EMITTER
+***************************************/
+function make_emitter(state = {}) {
+  return { on, off, emit }
+  function on(type, callback) { (state[type] = state[type] || []).push(callback) }
+  function off(type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
+  function emit(type, ...args) {
+    function handle_callback(f) {
+      return f && f(...args)
+    }
+    return (state[type] = state[type] || []).map(handle_callback)
+  }
+}
+},{"autobase":95,"autobase/lib/messages":103,"b4a":113,"hyperdrive":392}],5:[function(require,module,exports){
 const b4a = require('b4a')
 const sodium = require('sodium')
 const bip39 = require('bip39-mnemonic')
+
+module.exports = {
+  create_mnemonic_keypair,
+  save,
+  load
+}
 
 const isBrowser = (typeof window !== 'undefined')
 
@@ -666,12 +821,6 @@ async function create_mnemonic_keypair (options = {}) {
   }
 }
 
-module.exports = {
-  create_mnemonic_keypair,
-  save,
-  load
-}
-
 },{"b4a":113,"bip39-mnemonic":139,"sodium":10}],6:[function(require,module,exports){
 const b4a = require('b4a')
 const { create_autodrive, get_local_core } = require('autodrive')
@@ -688,25 +837,40 @@ function datastructure_manager (opts = {}) {
   const structures = new Map()
   const writer_keys = new Map() // namespace -> writer_key
 
-  // For autobase we will use this opne and apply function
-  const create_autobase_opts = (encoding = 'json', view_name = 'view') => ({
-    valueEncoding: encoding,
-    open: (store) => store.get({ name: view_name }),
-    apply: async (batch, view, base) => {
-      for (const entry of batch) {
-        const { type, data = {} } = entry.value || {}
-        if (type === 'addWriter') {
-          const writer_key = b4a.from(data.key, 'hex')
-          await base.addWriter(writer_key, { isIndexer: true })
-        } else if (type) {
-          await view.append(JSON.stringify(entry.value))
-        }
-      }
-    }
-  })
+  const api = {
+    // Basic structure management
+    register,
+    init,
+    get,
+    get_key,
+    get_store,
+    
+    // Writer management
+    add_writer,
+    remove_writer,
+    set,
+    
+    // Structure info
+    get_names,
+    get_config,
+    get_all_configs,
+    
+    // Peer structures
+    create_peer_structure,
+    
+    // Universal apis for all the apps
+    init_all,
+    init_all_with_keys
+  }
+  
+  return api
+
+// ============================================================================
+// Internal functions
+// ============================================================================
 
   // Register a new data structure
-  const register = (config) => {
+  function register (config) {
     const { name, namespace, type, store, autobase_opts, encoding, view_name } = config
     
     if (structures.has(name)) {
@@ -727,7 +891,7 @@ function datastructure_manager (opts = {}) {
   }
 
   // Initialize a structure (create instance)
-  const init = async (name, bootstrap_key) => {
+  async function init (name, bootstrap_key) {
     const structure = structures.get(name)
     if (!structure) throw new Error(`Datastructure '${name}' not found`)
 
@@ -774,25 +938,25 @@ function datastructure_manager (opts = {}) {
   }
 
   // Get structure instance
-  const get = (name) => {
+  function get (name) {
     const structure = structures.get(name)
     return structure?.instance || null
   }
 
   // Get structure key
-  const get_key = (name) => {
+  function get_key (name) {
     const structure = structures.get(name)
     return structure?.writer_key ? structure.writer_key.toString('hex') : null
   }
 
   // Get structure store
-  const get_store = (name) => {
+  function get_store (name) {
     const structure = structures.get(name)
     return structure?.store || null
   }
 
   // Add writer to a structure
-  const add_writer = async (name, writer_key) => {
+  async function add_writer (name, writer_key) {
     const structure = structures.get(name)
     if (!structure?.instance) throw new Error(`Datastructure '${name}' not initialized`)
 
@@ -809,7 +973,7 @@ function datastructure_manager (opts = {}) {
   }
 
   // Remove writer from a structure
-  const remove_writer = async (name, writer_key) => {
+  async function remove_writer (name, writer_key) {
     const structure = structures.get(name)
     if (!structure?.instance) throw new Error(`Datastructure '${name}' not initialized`)
 
@@ -826,7 +990,7 @@ function datastructure_manager (opts = {}) {
   }
 
   // Set structure instance (for when initialized externally)
-  const set = (name, instance, writer_key) => {
+  function set (name, instance, writer_key) {
     const structure = structures.get(name)
     if (!structure) throw new Error(`Datastructure '${name}' not found`)
     
@@ -840,10 +1004,12 @@ function datastructure_manager (opts = {}) {
   }
 
   // Get all registered structure names
-  const get_names = () => Array.from(structures.keys())
+  function get_names () {
+    return Array.from(structures.keys())
+  }
 
   // Get structure config
-  const get_config = (name) => {
+  function get_config (name) {
     const structure = structures.get(name)
     if (!structure) return null
     
@@ -857,12 +1023,12 @@ function datastructure_manager (opts = {}) {
   }
 
   // Get all structures config
-  const get_all_configs = () => {
+  function get_all_configs () {
     return Array.from(structures.keys()).map(get_config)
   }
 
   // Create a peer structure (for subscribing to other peers)
-  const create_peer_structure = async (name, peer_key, peer_key_buffer, store_instance) => {
+  async function create_peer_structure (name, peer_key, peer_key_buffer, store_instance) {
     const structure = structures.get(name)
     if (!structure) throw new Error(`Datastructure '${name}' not found`)
 
@@ -871,7 +1037,7 @@ function datastructure_manager (opts = {}) {
 
     let peer_instance
     if (structure.type === 'autobase') {
-      const opts = structure.autobase_opts || create_autobase_opts()
+      const opts = structure.autobase_opts || create_autobase_opts(structure.encoding, structure.view_name)
       peer_instance = new autobase(peer_store, peer_key_buffer, opts)
     } else if (structure.type === 'autodrive') {
       peer_instance = create_autodrive({
@@ -889,7 +1055,7 @@ function datastructure_manager (opts = {}) {
   // ============================================================================
 
   // Initialize ALL structures at once (for new app instance)
-  const init_all = async () => {
+  async function init_all () {
     const instances = {}
     for (const name of structures.keys()) {
       instances[name] = await init(name)
@@ -898,7 +1064,7 @@ function datastructure_manager (opts = {}) {
   }
 
   // Initialize ALL structures with bootstrap keys (for joining existing app)
-  const init_all_with_keys = async (keys_map) => {
+  async function init_all_with_keys (keys_map) {
     // keys_map = { metadata: 'hex_key', drive: 'hex_key', ... }
     const instances = {}
     for (const [name, key] of Object.entries(keys_map)) {
@@ -908,34 +1074,29 @@ function datastructure_manager (opts = {}) {
     }
     return instances
   }
-
-  return {
-    // Basic structure management
-    register,
-    init,
-    get,
-    get_key,
-    get_store,
-    
-    // Writer management
-    add_writer,
-    remove_writer,
-    set,
-    
-    // Structure info
-    get_names,
-    get_config,
-    get_all_configs,
-    
-    // Peer structures
-    create_peer_structure,
-    
-    // Universal apis for all the apps
-    init_all,
-    init_all_with_keys
-  }
 }
 
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
+
+function create_autobase_opts (encoding = 'json', view_name = 'view') {
+  return {
+    valueEncoding: encoding,
+    open: (store) => store.get({ name: view_name }),
+    apply: async (batch, view, base) => {
+      for (const entry of batch) {
+        const { type, data = {} } = entry.value || {}
+        if (type === 'addWriter') {
+          const writer_key = b4a.from(data.key, 'hex')
+          await base.addWriter(writer_key, { isIndexer: true })
+        } else if (type) {
+          await view.append(JSON.stringify(entry.value))
+        }
+      }
+    }
+  }
+}
 },{"auditcore":2,"autobase":95,"autobee":3,"autodrive":4,"b4a":113}],7:[function(require,module,exports){
 // Identity module which is app independent
 // This module handles: keypairs, pairing, networking, data structures
@@ -965,22 +1126,466 @@ const DHT = require('@hyperswarm/dht-relay')
 const Stream = require('@hyperswarm/dht-relay/ws')
 const HyperWebRTC = is_cli ? null : require('hyper-webrtc')
 
+module.exports = identity
 
+function identity (config = {}) {
+  const {
+    name = 'browser-peer',
+    relay = null,
+    topic = null
+  } = config
 
-// Emitter helper
-function make_emitter (state = {}) {
-  return { on, off, emit }
-  function on (type, callback) { (state[type] = state[type] || []).push(callback) }
-  function off (type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
-  function emit (type, data) {
-    function handle_callback (f) {
-      return f && f(data)
+  // Create corestore for this identity
+  const store = is_cli ? 
+    new Corestore(`./storage-identity-${name}`) : 
+    new Corestore(RAW(`identity-${name}`))
+
+  // Global state for this identity instance
+  let events_drive, events_store, ds_manager, pairing_manager, swarm, dht, keypair, networking_ready = false
+  let vault_bee = null    // Key-value store for vault data
+  let vault_audit = null  // Audit log for all vault operations
+  let network_store = null  // Store reference for vault operations
+  let pending_auth = null  // Pending authentication data (for pair mode)
+  const emitter = make_emitter()
+  
+  // Store config for later use
+  const vault_config = config
+
+  // User auth promise, resolves when authentication completes
+  let user_resolve, user_reject
+  const user = new Promise((resolve, reject) => {
+    user_resolve = resolve
+    user_reject = reject
+  })
+
+  // Return vault object with all identity functions (app-independent only)
+  const vault_api = {
+    // Config for apps to access
+    config: vault_config,
+    
+    // User promise (replaces login)
+    user,
+    authenticate,
+    
+    // Networking setup
+    start_networking,
+
+    // Vault-only pairing
+    create_vault_invite,
+    setup_vault_pairing,
+    verify_vault_pairing,
+    deny_vault_pairing,
+
+    // Data structure management
+    create_ds_manager,
+    // Vault structure initialization (for apps to create vault in seed mode)
+    init_vault_structures,
+
+    // Events and device management (apps provide events_drive parameter)
+    log_event,
+    get_events,
+    get_paired_devices,
+    get_device_name,
+    remove_device,
+    
+    // Debugging
+    get_raw_data,
+    
+    // Setters 
+    set_events_drive,
+    set_ds_manager,
+    set_pairing_manager,
+    set_swarm,
+    set_dht,
+    set_keypair,
+    
+    // Getters
+    get_events_drive,
+    get_events_store,
+    get_store,
+    get_swarm,
+    get_dht,
+    get_keypair,
+    get_ds_manager,
+    get_vault_bee,
+    get_vault_audit,
+    get_network_store,
+
+    // Vault API methods (with audit logging)
+    register_app,
+    get_app,
+    list_apps,
+    vault_put,
+    vault_get,
+    vault_del,
+
+    // Complete authentication (called by websys-ui after app join flow)
+    complete_authentication,
+
+    // Events
+    on_update: handle_update_callback,
+    on_vault_ready
+  }
+  
+  return vault_api
+
+// ============================================================================
+// Internal functions
+// ============================================================================
+
+  async function authenticate (auth_data) {
+    const { username, mode, invite_code, on_verification_code } = auth_data
+
+    try {
+      if (mode === 'pair' && invite_code) {
+        const invite_data = parse_vault_invite(invite_code)
+        
+        const topic = invite_data.topic ? b4a.from(invite_data.topic, 'hex') : null
+        if (!topic) {
+          if (user_reject) user_reject(new Error('Invite missing topic'))
+          return
+        }
+        const networking_options = {
+          name: username,
+          store_name: `storage-${username}`,
+          topic,
+          relay: vault_config.relay
+        }
+
+        const { store: _network_store, swarm: swarm_instance } = await start_networking(networking_options)
+        network_store = _network_store
+        swarm = swarm_instance
+        pairing_manager = pairing_manager_constructor(swarm)
+
+        const result = await pairing_manager.join_with_invite({
+          invite_code,
+          store: network_store,
+          on_verification_code_ready: (code) => {
+            if (on_verification_code) on_verification_code(code)
+          }
+        })
+
+        await init_vault_structures(network_store, result.vault_bee_key, result.vault_audit_key)
+
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(`vault_keys_${username}`, JSON.stringify({
+            vault_bee: result.vault_bee_key,
+            vault_audit: result.vault_audit_key
+          }))
+        }
+
+        pending_auth = {
+          username: result.username || username,
+          mode,
+          store: network_store,
+          swarm
+        }
+
+        emitter.emit('vault_ready', pending_auth)
+        return
+      }
+
+      // Seed mode: resolve immediately, app will handle networking
+      const authenticated_vault = {
+        ...vault_api,
+        username,
+        mode,
+        authenticated: true
+      }
+
+      if (user_resolve) user_resolve(authenticated_vault)
+
+    } catch (err) {
+      console.error('[identity] Authentication error:', err)
+      if (user_reject) user_reject(err)
     }
-    return (state[type] = state[type] || []).map(handle_callback)
+  }
+
+  // Log event (generic event logging for apps)
+  async function log_event (events_drive, type, data) {
+    if (!events_drive) {
+      console.warn(`[log_event] Cannot log ${type} event: events_drive not provided`)
+      return
+    }
+    
+    try {
+      const event = {
+        type,
+        data,
+        meta: {
+          time: Date.now()
+        }
+      }
+      
+      const event_path = `/events/${event.meta.time}-${type}.json`
+      await events_drive.put(event_path, b4a.from(JSON.stringify(event)))
+    } catch (err) {
+      console.error('Error logging event:', err)
+    }
+  }
+
+  async function init_vault_structures (store_instance, vault_bee_key, vault_audit_key) {
+    vault_bee = create_autobee({
+      store: store_instance.namespace('vault-bee'),
+      bootstrap: vault_bee_key ? b4a.from(vault_bee_key, 'hex') : null
+    })
+    vault_audit = create_auditcore({
+      store: store_instance.namespace('vault-audit'),
+      bootstrap: vault_audit_key ? b4a.from(vault_audit_key, 'hex') : null
+    })
+    await vault_bee.ready()
+    await vault_audit.ready()
+  }
+
+  async function create_vault_invite (topic = null) {
+    if (!vault_bee || !vault_audit) throw new Error('Vault not initialized')
+
+    const vault_bee_key = b4a.toString(vault_bee.key, 'hex')
+    const vault_audit_key = b4a.toString(vault_audit.key, 'hex')
+    const invite_obj = BlindPairing.createInvite(vault_bee.key)
+    const topic_hex = topic ? b4a.toString(topic, 'hex') : null
+
+    const invite_data = { vault_bee_key, vault_audit_key, blind_invite: b4a.toString(invite_obj.invite, 'base64'), vault_only: true, topic: topic_hex }
+    await vault_audit.append({ type: 'invite_created', data: { topic: topic_hex } })
+
+    return {
+      invite_code: b4a.toString(b4a.from(JSON.stringify(invite_data)), 'base64'),
+      invite: invite_obj,
+      vault_bee_key,
+      vault_audit_key
+    }
+  }
+
+  async function setup_vault_pairing (config) {
+    if (!vault_bee || !vault_audit || !swarm) throw new Error('Vault not initialized')
+
+    pairing_manager = pairing_manager_constructor(swarm)
+    await pairing_manager.setup_member({ ...config, vault_bee, vault_audit })
+    return pairing_manager
+  }
+
+  async function verify_vault_pairing (entered_code) {
+    if (!pairing_manager) throw new Error('Pairing not setup')
+    return pairing_manager.verify_and_complete_pairing({ entered_verification_code: entered_code, vault_bee, vault_audit })
+  }
+
+  function deny_vault_pairing () {
+    if (!pairing_manager) throw new Error('Pairing not setup')
+    pairing_manager.deny_pairing()
+  }
+
+  async function audit_wrap (method, params, fn) {
+    const version_before = vault_bee?.version || 0
+    const result = await fn()
+    if (vault_audit) await vault_audit.append({ type: 'vault_api', data: { method, params, version_before, version_after: vault_bee?.version || 0 } })
+    return result
+  }
+
+  // Get all events from events drive
+  async function get_events (events_drive) {
+    if (!events_drive) return []
+    
+    try {
+      await events_drive.ready()
+      const files = await events_drive.list('/events')
+      return read_and_sort_events(events_drive, files)
+    } catch (err) {
+      console.error('Error getting events:', err)
+      return []
+    }
+  }
+
+  async function get_paired_devices (events_drive_param) {
+    const events = await get_events(events_drive_param)
+    return build_paired_devices_list(events)
+  }
+
+  async function get_device_name (events_drive_param, metadata_writer_key) {
+    const devices = await get_paired_devices(events_drive_param)
+    const device = devices.find(d => d.metadata_writer === metadata_writer_key)
+    return device ? device.name : null
+  }
+
+  // Remove device by removing writer access from all structures (dynamic)
+  async function remove_device (events_drive_param, device) {
+    if (!ds_manager) {
+      console.error('Datastructure manager not initialized')
+      return false
+    }
+    
+    try {
+      // Dynamically remove writers from ALL structures
+      const structure_names = ds_manager.get_names()
+      const removal_data = {}
+      
+      for (const name of structure_names) {
+        const writer_key_name = `${name}_writer`
+        const writer_key = device[writer_key_name]
+        
+        if (writer_key) {
+          removal_data[writer_key_name] = writer_key
+          
+          try {
+            await ds_manager.remove_writer(name, writer_key)
+            console.log(`Removed writer from ${name}`)
+          } catch (err) {
+            console.warn(`Failed to remove writer from ${name}:`, err.message)
+          }
+        }
+      }
+      
+      // Log the removal event with all writer keys
+      await log_event(events_drive_param, 'remove', removal_data)
+      
+      console.log('Device removed successfully')
+      emitter.emit('update')
+      return true
+    } catch (err) {
+      console.error('Error removing device:', err)
+      return false
+    }
+  }
+
+  // Get raw data from any structure (dynamic with ds_manager)
+  async function get_raw_data (structure_name) {
+    if (!ds_manager) return 'Datastructure manager not initialized'
+    
+    const structure = ds_manager.get(structure_name)
+    if (!structure) return `Structure '${structure_name}' not found`
+    
+    const config = ds_manager.get_config(structure_name)
+    return extract_raw_data(structure, config, structure_name)
+  }
+
+  function set_events_drive (drive, store_instance, setup_callback) {
+    events_drive = drive
+    events_store = store_instance
+    
+    // Setup event sync listeners if callback provided
+    if (setup_callback) {
+      setup_callback()
+    }
+    
+    emitter.emit('update')
+  }
+
+  // Create and return a datastructure manager instance
+  function create_ds_manager () {
+    return datastructure_manager()
+  }
+
+  // Set datastructure manager for dynamic raw data access
+  function set_ds_manager (manager) {
+    ds_manager = manager
+  }
+
+  // Set pairing manager
+  function set_pairing_manager (manager) {
+    pairing_manager = manager
+  }
+
+  // Set swarm
+  function set_swarm (swarm_instance) {
+    swarm = swarm_instance
+  }
+  
+  function set_dht (dht_instance) {
+    dht = dht_instance
+  }
+  
+  function set_keypair (keypair_instance) {
+    keypair = keypair_instance
+  }
+
+  function handle_update_callback (cb) {
+    return emitter.on('update', cb)
+  }
+
+  function get_events_drive () { return events_drive }
+  function get_events_store () { return events_store }
+  function get_store () { return store }
+  function get_swarm () { return swarm }
+  function get_dht () { return dht }
+  function get_keypair () { return keypair }
+  function get_ds_manager () { return ds_manager }
+  function get_vault_bee () { return vault_bee }
+  function get_vault_audit () { return vault_audit }
+  function get_network_store () { return network_store }
+
+  async function register_app (app_id, app_config) {
+    if (!vault_bee) throw new Error('Vault not initialized')
+    return audit_wrap('register_app', { app_id }, async function () {
+      await vault_bee.put(`apps/${app_id}`, app_config)
+      return { app_id, registered: true }
+    })
+  }
+
+  async function get_app (app_id) {
+    if (!vault_bee) return null
+    const entry = await vault_bee.get(`apps/${app_id}`)
+    return entry?.value || null
+  }
+
+  async function list_apps () {
+    if (!vault_bee) return []
+    const apps = []
+    for await (const entry of vault_bee.create_read_stream({ gte: 'apps/', lt: 'apps0' })) {
+      apps.push({ id: entry.key.replace('apps/', ''), ...entry.value })
+    }
+    return apps
+  }
+
+  async function vault_put (key, value) {
+    if (!vault_bee) throw new Error('Vault not initialized')
+    return audit_wrap('vault_put', { key }, async function () {
+      await vault_bee.put(key, value)
+      return { key, success: true }
+    })
+  }
+
+  async function vault_get (key) {
+    if (!vault_bee) return null
+    const entry = await vault_bee.get(key)
+    return entry?.value || null
+  }
+
+  async function vault_del (key) {
+    if (!vault_bee) throw new Error('Vault not initialized')
+    return audit_wrap('vault_del', { key }, async function () {
+      await vault_bee.del(key)
+      return { key, deleted: true }
+    })
+  }
+
+  // Complete authentication (called by websys-ui after app join flow)
+  function complete_authentication () {
+    if (!pending_auth) return
+
+    const authenticated_vault = {
+      ...vault_api,
+      username: pending_auth.username,
+      mode: pending_auth.mode,
+      authenticated: true,
+      store: pending_auth.store,
+      swarm: pending_auth.swarm
+    }
+
+    if (user_resolve) user_resolve(authenticated_vault)
+    pending_auth = null
+  }
+
+  function on_vault_ready (cb) {
+    return emitter.on('vault_ready', cb)
   }
 }
 
-// Browser networking setup
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
+
+/***************************************
+START NETWORKING
+***************************************/
 async function start_networking (options = {}) {
   const name = options.name || 'peer'
   const topic = options.topic // App must provide topic
@@ -1015,7 +1620,6 @@ async function start_networking (options = {}) {
     
     const swarm = new Hyperswarm({ key_pair: mnemonic_data.keypair })
     
-    // Use bare-peer connection handling pattern
     swarm.on('connection', (socket, info) => {
       const peer_id = info.publicKey.toString('hex')
       console.log(`Connected to peer: ${peer_id.slice(0, 8)}`)
@@ -1239,552 +1843,135 @@ async function start_networking (options = {}) {
   })
 }
 
-// Identity module constructor
-// Returns identity instance API directly (no make/load needed for single user apps)
-module.exports = identity
-
-function identity (config = {}) {
-  const {
-    name = 'browser-peer',
-    relay = null,
-    topic = null
-  } = config
-
-  // Create corestore for this identity
-  const store = is_cli ? 
-    new Corestore(`./storage-identity-${name}`) : 
-    new Corestore(RAW(`identity-${name}`))
-
-  // Global state for this identity instance
-  let events_drive, events_store, ds_manager, pairing_manager, swarm, dht, keypair, networking_ready = false
-  let vault_bee = null    // Key-value store for vault data
-  let vault_audit = null  // Audit log for all vault operations
-  let network_store = null  // Store reference for vault operations
-  let pending_auth = null  // Pending authentication data (for pair mode)
-  const emitter = make_emitter()
-  
-  // Store config for later use
-  const vault_config = config
-
-  // User auth promise, resolves when authentication completes
-  let user_resolve, user_reject
-  const user = new Promise((resolve, reject) => {
-    user_resolve = resolve
-    user_reject = reject
-  })
-
-  const authenticate = async (auth_data) => {
-    const { username, mode, invite_code, on_verification_code } = auth_data
-
-    try {
-      if (mode === 'pair' && invite_code) {
-        let invite_data
-        try {
-          invite_data = JSON.parse(b4a.toString(b4a.from(invite_code, 'base64')))
-        } catch (err) {
-          if (user_reject) user_reject(new Error(`Invalid invite code: ${err.message}`))
-          return
-        }
-
-        if (!invite_data.vault_only) {
-          if (user_reject) user_reject(new Error('Unsupported invite format'))
-          return
-        }
-
-        const topic = invite_data.topic ? b4a.from(invite_data.topic, 'hex') : null
-        if (!topic) {
-          if (user_reject) user_reject(new Error('Invite missing topic'))
-          return
-        }
-        const networking_options = {
-          name: username,
-          store_name: `storage-${username}`,
-          topic,
-          relay: vault_config.relay
-        }
-
-        const { store: _network_store, swarm: swarm_instance } = await start_networking(networking_options)
-        network_store = _network_store
-        swarm = swarm_instance
-        pairing_manager = pairing_manager_constructor(swarm)
-
-        const result = await pairing_manager.join_with_invite({
-          invite_code,
-          store: network_store,
-          on_verification_code_ready: (code) => {
-            if (on_verification_code) on_verification_code(code)
-          }
-        })
-
-        await init_vault_structures(network_store, result.vault_bee_key, result.vault_audit_key)
-
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem(`vault_keys_${username}`, JSON.stringify({
-            vault_bee: result.vault_bee_key,
-            vault_audit: result.vault_audit_key
-          }))
-        }
-
-        pending_auth = {
-          username: result.username || username,
-          mode,
-          store: network_store,
-          swarm
-        }
-
-        emitter.emit('vault_ready', pending_auth)
-        return
-      }
-
-      // Seed mode: resolve immediately, app will handle networking
-      const authenticated_vault = {
-        ...vault_api,
-        username,
-        mode,
-        authenticated: true
-      }
-
-      if (user_resolve) user_resolve(authenticated_vault)
-
-    } catch (err) {
-      console.error('[identity] Authentication error:', err)
-      if (user_reject) user_reject(err)
+/***************************************
+MAKE EMITTER
+***************************************/
+function make_emitter (state = {}) {
+  return { on, off, emit }
+  function on (type, callback) { (state[type] = state[type] || []).push(callback) }
+  function off (type, callback) { (state[type] = state[type] || [])[state[type].indexOf(callback)] = undefined }
+  function emit (type, data) {
+    function handle_callback (f) {
+      return f && f(data)
     }
+    return (state[type] = state[type] || []).map(handle_callback)
   }
-
-  // Log event (generic event logging for apps)
-  async function log_event (events_drive, type, data) {
-    if (!events_drive) {
-      console.warn(`[log_event] Cannot log ${type} event: events_drive not provided`)
-      return
-    }
-    
-    try {
-      const event = {
-        type,
-        data,
-        meta: {
-          time: Date.now()
-        }
-      }
-      
-      const event_path = `/events/${event.meta.time}-${type}.json`
-      await events_drive.put(event_path, b4a.from(JSON.stringify(event)))
-    } catch (err) {
-      console.error('Error logging event:', err)
-    }
-  }
-
-  async function init_vault_structures (store_instance, vault_bee_key, vault_audit_key) {
-    vault_bee = create_autobee({
-      store: store_instance.namespace('vault-bee'),
-      bootstrap: vault_bee_key ? b4a.from(vault_bee_key, 'hex') : null
-    })
-    vault_audit = create_auditcore({
-      store: store_instance.namespace('vault-audit'),
-      bootstrap: vault_audit_key ? b4a.from(vault_audit_key, 'hex') : null
-    })
-    await vault_bee.ready()
-    await vault_audit.ready()
-  }
-
-  async function create_vault_invite (topic = null) {
-    if (!vault_bee || !vault_audit) throw new Error('Vault not initialized')
-
-    const vault_bee_key = b4a.toString(vault_bee.key, 'hex')
-    const vault_audit_key = b4a.toString(vault_audit.key, 'hex')
-    const invite_obj = BlindPairing.createInvite(vault_bee.key)
-    const topic_hex = topic ? b4a.toString(topic, 'hex') : null
-
-    const invite_data = { vault_bee_key, vault_audit_key, blind_invite: b4a.toString(invite_obj.invite, 'base64'), vault_only: true, topic: topic_hex }
-    await vault_audit.append({ type: 'invite_created', data: { topic: topic_hex } })
-
-    return {
-      invite_code: b4a.toString(b4a.from(JSON.stringify(invite_data)), 'base64'),
-      invite: invite_obj,
-      vault_bee_key,
-      vault_audit_key
-    }
-  }
-
-  async function setup_vault_pairing (config) {
-    if (!vault_bee || !vault_audit || !swarm) throw new Error('Vault not initialized')
-
-    pairing_manager = pairing_manager_constructor(swarm)
-    await pairing_manager.setup_member({ ...config, vault_bee, vault_audit })
-    return pairing_manager
-  }
-
-  async function verify_vault_pairing (entered_code) {
-    if (!pairing_manager) throw new Error('Pairing not setup')
-    return pairing_manager.verify_and_complete_pairing({ entered_verification_code: entered_code, vault_bee, vault_audit })
-  }
-
-  function deny_vault_pairing () {
-    if (!pairing_manager) throw new Error('Pairing not setup')
-    pairing_manager.deny_pairing()
-  }
-
-  async function audit_wrap (method, params, fn) {
-    const version_before = vault_bee?.version || 0
-    const result = await fn()
-    if (vault_audit) await vault_audit.append({ type: 'vault_api', data: { method, params, version_before, version_after: vault_bee?.version || 0 } })
-    return result
-  }
-
-  // Get all events from events drive
-  async function get_events (events_drive) {
-    if (!events_drive) return []
-    
-    try {
-      await events_drive.ready()
-      const events = []
-      const files = await events_drive.list('/events')
-      
-      for (const file of files) {
-        try {
-          const content = await events_drive.get(file)
-          if (content) {
-            events.push(JSON.parse(b4a.toString(content)))
-          }
-        } catch (err) {
-          console.error('Error reading event file:', file, err)
-        }
-      }
-      
-      return events.sort((a, b) => a.meta.time - b.meta.time)
-    } catch (err) {
-      console.error('Error getting events:', err)
-      return []
-    }
-  }
-
-  // Get paired devices from events 
-  async function get_paired_devices (events_drive_param) {
-    const events = await get_events(events_drive_param)
-    const devices_map = new Map()
-    let device_counter = 0 // Start at 0 so bootstrap device is Device 1
-    
-    // Process events in order to track add/remove
-    for (const event of events) {
-      if (event.type === 'add') {
-        const device_id = event.data.metadata_writer
-        device_counter++
-        const device_name = `Device ${device_counter}`
-        
-        // Build device object dynamically with ALL writer keys from event data
-        const device = {
-          name: device_name,
-          timestamp: event.meta.time,
-          added_date: new Date(event.meta.time).toLocaleString()
-        }
-        
-        // Copy all writer keys from event data
-        for (const [key, value] of Object.entries(event.data)) {
-          if (key.endsWith('_writer')) {
-            device[key] = value
-          }
-        }
-        
-        devices_map.set(device_id, device)
-      } else if (event.type === 'remove') {
-        const device_id = event.data.metadata_writer
-        devices_map.delete(device_id)
-      }
-    }
-    
-    return Array.from(devices_map.values())
-  }
-
-  // Get device name by metadata writer key
-  async function get_device_name (events_drive_param, metadata_writer_key) {
-    const devices = await get_paired_devices(events_drive_param)
-    const device = devices.find(d => d.metadata_writer === metadata_writer_key)
-    return device ? device.name : null
-  }
-
-  // Remove device by removing writer access from all structures (dynamic)
-  async function remove_device (events_drive_param, device) {
-    if (!ds_manager) {
-      console.error('Datastructure manager not initialized')
-      return false
-    }
-    
-    try {
-      // Dynamically remove writers from ALL structures
-      const structure_names = ds_manager.get_names()
-      const removal_data = {}
-      
-      for (const name of structure_names) {
-        const writer_key_name = `${name}_writer`
-        const writer_key = device[writer_key_name]
-        
-        if (writer_key) {
-          removal_data[writer_key_name] = writer_key
-          
-          try {
-            await ds_manager.remove_writer(name, writer_key)
-            console.log(`Removed writer from ${name}`)
-          } catch (err) {
-            console.warn(`Failed to remove writer from ${name}:`, err.message)
-          }
-        }
-      }
-      
-      // Log the removal event with all writer keys
-      await log_event(events_drive_param, 'remove', removal_data)
-      
-      console.log('Device removed successfully')
-      emitter.emit('update')
-      return true
-    } catch (err) {
-      console.error('Error removing device:', err)
-      return false
-    }
-  }
-
-  // Get raw data from any structure (dynamic with ds_manager)
-  async function get_raw_data (structure_name) {
-    if (!ds_manager) return 'Datastructure manager not initialized'
-    
-    const structure = ds_manager.get(structure_name)
-    if (!structure) return `Structure '${structure_name}' not found`
-    
-    const config = ds_manager.get_config(structure_name)
-    
-    try {
-      if (config.type === 'autobase') {
-        // For autobase: show all entries
-        await structure.ready()
-        if (structure.view.length === 0) return `Autobase '${structure_name}' is empty`
-        
-        const entries = []
-        for (let i = 0; i < structure.view.length; i++) {
-          try {
-            const raw = await structure.view.get(i)
-            const parsed = JSON.parse(raw)
-            entries.push(`[${i}] ${JSON.stringify(parsed, null, 2)}`)
-          } catch (err) {
-            entries.push(`[${i}] Error: ${err.message}`)
-          }
-        }
-        return entries.join('\n\n')
-        
-      } else if (config.type === 'autodrive') {
-        // For autodrive: list all files
-        await structure.ready()
-        const files = []
-        
-        try {
-          const list = await structure.list('/')
-          if (list.length === 0) return `Autodrive '${structure_name}' is empty`
-          
-          for (const file of list) {
-            try {
-              const content = await structure.get(file)
-              files.push(`${file}:\n${content ? b4a.toString(content) : 'null'}`)
-            } catch (err) {
-              files.push(`${file}: Error: ${err.message}`)
-            }
-          }
-        } catch (err) {
-          return `List error: ${err.message}`
-        }
-
-        return files.join('\n\n---\n\n')
-
-      } else if (config.type === 'auditcore') {
-        // For auditcore: show all audit entries
-        await structure.ready()
-        if (structure.length === 0) return `Auditcore '${structure_name}' is empty`
-
-        const entries = []
-        for (let i = 0; i < structure.length; i++) {
-          try {
-            const entry = await structure.get(i)
-            entries.push(`[${i}] ${JSON.stringify(entry, null, 2)}`)
-          } catch (err) {
-            entries.push(`[${i}] Error: ${err.message}`)
-          }
-        }
-        return entries.join('\n\n')
-      }
-
-      return `Unknown structure type: ${config.type}`
-    } catch (err) {
-      return `Error reading ${structure_name}: ${err.message}`
-    }
-  }
-
-  // Set events drive (for device events only)
-  const set_events_drive = (drive, store_instance, setup_callback) => {
-    events_drive = drive
-    events_store = store_instance
-    
-    // Setup event sync listeners if callback provided
-    if (setup_callback) {
-      setup_callback()
-    }
-    
-    emitter.emit('update')
-  }
-
-  // Create and return a datastructure manager instance
-  const create_ds_manager = () => {
-    return datastructure_manager()
-  }
-
-  // Set datastructure manager for dynamic raw data access
-  const set_ds_manager = (manager) => {
-    ds_manager = manager
-  }
-
-  // Set pairing manager
-  const set_pairing_manager = (manager) => {
-    pairing_manager = manager
-  }
-
-  // Set swarm
-  const set_swarm = (swarm_instance) => {
-    swarm = swarm_instance
-  }
-  
-  const set_dht = (dht_instance) => {
-    dht = dht_instance
-  }
-  
-  const set_keypair = (keypair_instance) => {
-    keypair = keypair_instance
-  }
-
-  function handle_update_callback (cb) {
-    return emitter.on('update', cb)
-  }
-
-  // Return vault object with all identity functions (app-independent only)
-  const vault_api = {
-    // Config for apps to access
-    config: vault_config,
-    
-    // User promise (replaces login)
-    user,
-    authenticate,
-    
-    // Networking setup
-    start_networking,
-
-    // Vault-only pairing
-    create_vault_invite,
-    setup_vault_pairing,
-    verify_vault_pairing,
-    deny_vault_pairing,
-
-    // Data structure management
-    create_ds_manager,
-    // Vault structure initialization (for apps to create vault in seed mode)
-    init_vault_structures,
-
-    // Events and device management (apps provide events_drive parameter)
-    log_event,
-    get_events,
-    get_paired_devices,
-    get_device_name,
-    remove_device,
-    
-    // Debugging
-    get_raw_data,
-    
-    // Setters 
-    set_events_drive,
-    set_ds_manager,
-    set_pairing_manager,
-    set_swarm,
-    set_dht,
-    set_keypair,
-    
-    // Getters
-    get_events_drive: () => events_drive,
-    get_events_store: () => events_store,
-    get_store: () => store,
-    get_swarm: () => swarm,
-    get_dht: () => dht,
-    get_keypair: () => keypair,
-    get_ds_manager: () => ds_manager,
-    get_vault_bee: () => vault_bee,
-    get_vault_audit: () => vault_audit,
-    get_network_store: () => network_store,
-
-    // Vault API methods (with audit logging)
-    async register_app(app_id, app_config) {
-      if (!vault_bee) throw new Error('Vault not initialized')
-      return audit_wrap('register_app', { app_id }, async () => {
-        await vault_bee.put(`apps/${app_id}`, app_config)
-        return { app_id, registered: true }
-      })
-    },
-
-    async get_app(app_id) {
-      if (!vault_bee) return null
-      const entry = await vault_bee.get(`apps/${app_id}`)
-      return entry?.value || null
-    },
-
-    async list_apps() {
-      if (!vault_bee) return []
-      const apps = []
-      for await (const entry of vault_bee.create_read_stream({ gte: 'apps/', lt: 'apps0' })) {
-        apps.push({ id: entry.key.replace('apps/', ''), ...entry.value })
-      }
-      return apps
-    },
-
-    async vault_put(key, value) {
-      if (!vault_bee) throw new Error('Vault not initialized')
-      return audit_wrap('vault_put', { key }, async () => {
-        await vault_bee.put(key, value)
-        return { key, success: true }
-      })
-    },
-
-    async vault_get(key) {
-      if (!vault_bee) return null
-      const entry = await vault_bee.get(key)
-      return entry?.value || null
-    },
-
-    async vault_del(key) {
-      if (!vault_bee) throw new Error('Vault not initialized')
-      return audit_wrap('vault_del', { key }, async () => {
-        await vault_bee.del(key)
-        return { key, deleted: true }
-      })
-    },
-
-    // Complete authentication (called by websys-ui after app join flow)
-    complete_authentication () {
-      if (!pending_auth) return
-
-      const authenticated_vault = {
-        ...vault_api,
-        username: pending_auth.username,
-        mode: pending_auth.mode,
-        authenticated: true,
-        store: pending_auth.store,
-        swarm: pending_auth.swarm
-      }
-
-      if (user_resolve) user_resolve(authenticated_vault)
-      pending_auth = null
-    },
-
-    // Events
-    on_update: handle_update_callback,
-    on_vault_ready: (cb) => emitter.on('vault_ready', cb)
-  }
-  
-  return vault_api
 }
 
+/***************************************
+PARSE VAULT INVITE
+***************************************/
+function parse_vault_invite(invite_code) {
+  let invite_data
+  try {
+    invite_data = JSON.parse(b4a.toString(b4a.from(invite_code, 'base64')))
+  } catch (err) {
+    throw new Error(`Invalid invite code: ${err.message}`)
+  }
+
+  if (!invite_data.vault_only) {
+    throw new Error('Unsupported invite format')
+  }
+  
+  return invite_data
+}
+
+/***************************************
+READ AND SORT EVENTS
+***************************************/
+async function read_and_sort_events(events_drive, files) {
+  const events = []
+  for (const file of files) {
+    try {
+      const content = await events_drive.get(file)
+      if (content) {
+        events.push(JSON.parse(b4a.toString(content)))
+      }
+    } catch (err) {
+      console.error('Error reading event file:', file, err)
+    }
+  }
+  return events.sort((a, b) => a.meta.time - b.meta.time)
+}
+
+/***************************************
+BUILD PAIRED DEVICES LIST
+***************************************/
+function build_paired_devices_list(events) {
+  const devices_map = new Map()
+  let device_counter = 0
+  
+  events.forEach(event => {
+    const device_id = event.data.metadata_writer
+    
+    if (event.type === 'add') {
+      devices_map.set(device_id, {
+        name: `Device ${++device_counter}`,
+        timestamp: event.meta.time,
+        added_date: new Date(event.meta.time).toLocaleString(),
+        ...Object.fromEntries(
+          Object.entries(event.data).filter(([key]) => key.endsWith('_writer'))
+        )
+      })
+    } else if (event.type === 'remove') {
+      devices_map.delete(device_id)
+    }
+  })
+  
+  return Array.from(devices_map.values())
+}
+
+/***************************************
+EXTRACT RAW DATA
+***************************************/
+async function extract_raw_data(structure, config, structure_name) {
+  try {
+    await structure.ready()
+    
+    if (config.type === 'autobase') return extract_indexed(structure.view, structure_name, 'Autobase', true)
+    if (config.type === 'auditcore') return extract_indexed(structure, structure_name, 'Auditcore', false)
+    if (config.type === 'autodrive') return extract_files(structure, structure_name)
+    
+    return `Unknown structure type: ${config.type}`
+  } catch (err) {
+    return `Error reading ${structure_name}: ${err.message}`
+  }
+}
+
+async function extract_indexed(source, name, type, parse) {
+  if (source.length === 0) return `${type} '${name}' is empty`
+  
+  const entries = []
+  for (let i = 0; i < source.length; i++) {
+    try {
+      const data = parse ? JSON.parse(await source.get(i)) : await source.get(i)
+      entries.push(`[${i}] ${JSON.stringify(data, null, 2)}`)
+    } catch (err) {
+      entries.push(`[${i}] Error: ${err.message}`)
+    }
+  }
+  return entries.join('\n\n')
+}
+
+async function extract_files(drive, name) {
+  try {
+    const list = await drive.list('/')
+    if (list.length === 0) return `Autodrive '${name}' is empty`
+    
+    const files = []
+    for (const file of list) {
+      try {
+        const content = await drive.get(file)
+        files.push(`${file}:\n${content ? b4a.toString(content) : 'null'}`)
+      } catch (err) {
+        files.push(`${file}: Error: ${err.message}`)
+      }
+    }
+    return files.join('\n\n---\n\n')
+  } catch (err) {
+    return `List error: ${err.message}`
+  }
+}
 },{"@hyperswarm/dht-relay":26,"@hyperswarm/dht-relay/ws":70,"auditcore":2,"autobee":3,"b4a":113,"blind-pairing":160,"corestore":215,"crypto-helpers":5,"datastructure-manager":6,"hyper-webrtc":324,"hyperswarm":394,"pairing-manager":8,"protocol-helpers":9,"protomux":471,"random-access-web":492}],8:[function(require,module,exports){
 const b4a = require('b4a')
 const BlindPairing = require('blind-pairing')
@@ -1805,13 +1992,25 @@ function pairing_manager(swarm) {
   let pending_pairing_requests = []
   let multiple_attempts_detected = false
 
-  const extract_verification_digits = (key_hex) => {
-    const key_buffer = b4a.from(key_hex, 'hex')
-    const discovery_key = crypto.discoveryKey(key_buffer)
-    return b4a.toString(discovery_key, 'hex').slice(-6).toUpperCase()
+  const api = {
+    setup_member,
+    verify_and_complete_pairing,
+    deny_pairing,
+    join_with_invite,
+    close,
+    get_pending_verification_digits,
+    get_pending_requests_count,
+    has_multiple_attempts,
+    extract_verification_digits
   }
 
-  const setup_member = async (config) => {
+  return api
+
+  // ============================================================================
+  // Internal Functions
+  // ============================================================================
+
+  async function setup_member(config) {
     const { vault_bee, vault_audit, invite, on_verification_needed, on_paired, username } = config
 
     const blind_pairing = new BlindPairing(swarm)
@@ -1819,7 +2018,7 @@ function pairing_manager(swarm) {
 
     const vault_bee_discovery = crypto.discoveryKey(vault_bee.key)
 
-    const handle_pairing_request = async (request) => {
+    async function handle_pairing_request(request) {
       await request.open(invite.publicKey)
 
       const user_data = request.userData
@@ -1849,7 +2048,7 @@ function pairing_manager(swarm) {
         on_verification_needed(verification_digits)
       }
 
-      return new Promise((resolve, reject) => {
+      return new Promise(function (resolve, reject) {
         pairing_request_data.resolve = resolve
         pairing_request_data.reject = reject
       })
@@ -1866,17 +2065,10 @@ function pairing_manager(swarm) {
     return current_member
   }
 
-  const deny_all_requests = (except_index = -1) => {
-    pending_pairing_requests.forEach((req, i) => {
-      if (i === except_index) return
-      try { req.request.deny(); req.resolve?.() } catch {}
-    })
-  }
-
-  const verify_and_complete_pairing = async (config) => {
+  async function verify_and_complete_pairing(config) {
     const { entered_verification_code, vault_bee, vault_audit } = config
 
-    const matched_index = pending_pairing_requests.findIndex(r => r.verification_digits === entered_verification_code)
+    const matched_index = pending_pairing_requests.findIndex(function (r) { return r.verification_digits === entered_verification_code })
     if (matched_index === -1) throw new Error('Verification code does not match any pending pairing request.')
 
     const { request, vault_bee_writer, vault_audit_writer, invite_keypair, on_paired, username, resolve } = pending_pairing_requests[matched_index]
@@ -1884,60 +2076,46 @@ function pairing_manager(swarm) {
     await vault_bee.add_writer(vault_bee_writer)
     await vault_audit.add_writer(vault_audit_writer)
 
-    const pairing_data = { username, vault_bee_key: b4a.toString(vault_bee.key, 'hex'), vault_audit_key: b4a.toString(vault_audit.key, 'hex') }
-    const additional_data = b4a.from(JSON.stringify(pairing_data))
+    const additional = build_pairing_confirmation_data(vault_bee.key, vault_audit.key, invite_keypair.secretKey, username)
 
     request.confirm({
       key: vault_bee.key,
       encryptionKey: vault_audit.key,
-      additional: { data: additional_data, signature: crypto.sign(additional_data, invite_keypair.secretKey) }
+      additional
     })
 
     if (on_paired) await on_paired({ vault_bee_writer: b4a.toString(vault_bee_writer, 'hex'), vault_audit_writer: b4a.toString(vault_audit_writer, 'hex') })
     resolve?.()
 
     const result = { success: true, multiple_attempts: multiple_attempts_detected, total_attempts: pending_pairing_requests.length }
-    deny_all_requests(matched_index)
+    
+    // Explicitly pass the state array to the helper
+    deny_all_requests(pending_pairing_requests, matched_index)
     pending_pairing_requests = []
     multiple_attempts_detected = false
     return result
   }
 
-  const deny_pairing = () => {
+  function deny_pairing() {
     if (pending_pairing_requests.length === 0) throw new Error('No pending pairing request')
-    deny_all_requests()
+    // Explicitly pass the state array to the helper
+    deny_all_requests(pending_pairing_requests)
     pending_pairing_requests = []
     multiple_attempts_detected = false
   }
 
-  const join_with_invite = async (config) => {
+  async function join_with_invite(config) {
     const { invite_code, store, on_verification_code_ready } = config
 
-    let invite_data
-    try {
-      invite_data = JSON.parse(b4a.toString(b4a.from(invite_code, 'base64')))
-    } catch (err) {
-      throw new Error(`Invalid invite code: ${err.message}`)
-    }
-
-    if (!invite_data.vault_only) {
-      throw new Error('Expected vault-only invite')
-    }
+    const invite_data = parse_vault_invite(invite_code)
 
     const blind_pairing = new BlindPairing(swarm)
     await blind_pairing.ready()
 
     const invite_buffer = b4a.from(invite_data.blind_invite, 'base64')
 
-    const vault_bee_store = store.namespace('vault-bee')
-    const vault_bee_core = get_local_core({ store: vault_bee_store })
-    await vault_bee_core.ready()
-    const vault_bee_writer = vault_bee_core.key
-
-    const vault_audit_store = store.namespace('vault-audit')
-    const vault_audit_core = get_local_core({ store: vault_audit_store })
-    await vault_audit_core.ready()
-    const vault_audit_writer = vault_audit_core.key
+    const cores = await setup_local_vault_cores(store)
+    const { vault_bee_core, vault_audit_core, vault_bee_writer, vault_audit_writer } = cores
 
     const verification_digits = extract_verification_digits(b4a.toString(vault_bee_writer, 'hex'))
     if (on_verification_code_ready) {
@@ -1946,20 +2124,20 @@ function pairing_manager(swarm) {
 
     const user_data = b4a.concat([vault_bee_writer, vault_audit_writer])
 
-    return new Promise((resolve, reject) => {
-      const handle_add = async (result) => {
-        let username = null, vault_bee_key = null, vault_audit_key = null
-        if (result.data) {
-          try {
-            const data = JSON.parse(b4a.toString(result.data))
-            username = data.username
-            vault_bee_key = data.vault_bee_key
-            vault_audit_key = data.vault_audit_key
-          } catch {}
-        }
+    return new Promise(function (resolve, reject) {
+      async function handle_add(result) {
+        const parsed = parse_pairing_result(result)
+        
         await vault_bee_core.close()
         await vault_audit_core.close()
-        resolve({ username, vault_bee_key, vault_audit_key, vault_bee_writer: b4a.toString(vault_bee_writer, 'hex'), vault_audit_writer: b4a.toString(vault_audit_writer, 'hex') })
+        
+        resolve({ 
+          username: parsed.username, 
+          vault_bee_key: parsed.vault_bee_key, 
+          vault_audit_key: parsed.vault_audit_key, 
+          vault_bee_writer: b4a.toString(vault_bee_writer, 'hex'), 
+          vault_audit_writer: b4a.toString(vault_audit_writer, 'hex') 
+        })
       }
 
       current_candidate = blind_pairing.addCandidate({
@@ -1968,13 +2146,13 @@ function pairing_manager(swarm) {
         onadd: handle_add
       })
 
-      current_candidate.request.on('rejected', () => reject(new Error('Pairing denied by user')))
+      current_candidate.request.on('rejected', function () { reject(new Error('Pairing denied by user')) })
       current_candidate.ready().catch(reject)
     })
   }
 
   // Close pairing
-  const close = async () => {
+  async function close() {
     if (current_member) {
       await current_member.close()
       current_member = null
@@ -1987,28 +2165,86 @@ function pairing_manager(swarm) {
     multiple_attempts_detected = false
   }
 
-  const get_pending_verification_digits = () => {
+  function get_pending_verification_digits() {
     return pending_pairing_requests.length > 0 ? pending_pairing_requests[0].verification_digits : null
   }
 
-  const get_pending_requests_count = () => pending_pairing_requests.length
+  function get_pending_requests_count() {
+    return pending_pairing_requests.length
+  }
 
-  const has_multiple_attempts = () => multiple_attempts_detected
-
-  return {
-    setup_member,
-    verify_and_complete_pairing,
-    deny_pairing,
-    join_with_invite,
-    close,
-    get_pending_verification_digits,
-    get_pending_requests_count,
-    has_multiple_attempts,
-    extract_verification_digits
+  function has_multiple_attempts() {
+    return multiple_attempts_detected
   }
 }
 
+// ============================================================================
+// GENERAL HELPER FUNCTIONS
+// ============================================================================
 
+function extract_verification_digits(key_hex) {
+  const key_buffer = b4a.from(key_hex, 'hex')
+  const discovery_key = crypto.discoveryKey(key_buffer)
+  return b4a.toString(discovery_key, 'hex').slice(-6).toUpperCase()
+}
+
+function deny_all_requests(pending_requests, except_index = -1) {
+  pending_requests.forEach(function (req, i) {
+    if (i === except_index) return
+    try { req.request.deny(); req.resolve?.() } catch {}
+  })
+}
+
+function parse_vault_invite(invite_code) {
+  let invite_data
+  try {
+    invite_data = JSON.parse(b4a.toString(b4a.from(invite_code, 'base64')))
+  } catch (err) {
+    throw new Error(`Invalid invite code: ${err.message}`)
+  }
+
+  if (!invite_data.vault_only) {
+    throw new Error('Expected vault-only invite')
+  }
+  return invite_data
+}
+
+async function setup_local_vault_cores(store) {
+  const vault_bee_store = store.namespace('vault-bee')
+  const vault_bee_core = get_local_core({ store: vault_bee_store })
+  await vault_bee_core.ready()
+  const vault_bee_writer = vault_bee_core.key
+
+  const vault_audit_store = store.namespace('vault-audit')
+  const vault_audit_core = get_local_core({ store: vault_audit_store })
+  await vault_audit_core.ready()
+  const vault_audit_writer = vault_audit_core.key
+
+  return { vault_bee_core, vault_audit_core, vault_bee_writer, vault_audit_writer }
+}
+
+function build_pairing_confirmation_data(vault_bee_key, vault_audit_key, invite_secret_key, username) {
+  const pairing_data = { username, vault_bee_key: b4a.toString(vault_bee_key, 'hex'), vault_audit_key: b4a.toString(vault_audit_key, 'hex') }
+  const additional_data = b4a.from(JSON.stringify(pairing_data))
+  
+  return { 
+    data: additional_data, 
+    signature: crypto.sign(additional_data, invite_secret_key) 
+  }
+}
+
+function parse_pairing_result(result) {
+  let username = null, vault_bee_key = null, vault_audit_key = null
+  if (result.data) {
+    try {
+      const data = JSON.parse(b4a.toString(result.data))
+      username = data.username
+      vault_bee_key = data.vault_bee_key
+      vault_audit_key = data.vault_audit_key
+    } catch {}
+  }
+  return { username, vault_bee_key, vault_audit_key }
+}
 },{"@geut/sodium-javascript-plus/extend":20,"autodrive":4,"b4a":113,"blind-pairing":160,"hypercore-crypto":337,"sodium-universal":588}],9:[function(require,module,exports){
 const c = require('compact-encoding')
 const b4a = require('b4a')
