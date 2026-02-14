@@ -129,7 +129,7 @@ container.className = 'system-ui'
             <div style="text-align: center;">
               <p>Verification Code:</p>
               <h1>${verification_code}</h1>
-              <p>Waiting for Device A to verify...</p>
+              <p>Waiting for Inviting device to verify...</p>
             </div>
         `
           document.body.appendChild(overlay)

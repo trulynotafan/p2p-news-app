@@ -3637,8 +3637,10 @@ async function wrapper(opts, protocol) {
     render_folder_content('my-stories')
   }
 
-  async function onbatch(batch) {
+  async function onbatch (batch) {
+    console.log('[Wrapper] onbatch:', batch)
     for (const { type, paths } of batch) {
+      console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
       const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
       const valid_data = data.filter(d => d !== null)
       if (valid_data.length > 0) {
@@ -3654,7 +3656,8 @@ async function wrapper(opts, protocol) {
     }
   }
 
-  function on_entries(data) {
+  function on_entries (data) {
+    console.log('[Wrapper] on_entries called with:', data)
     if (!data || !data[0]) {
       db = require('./graphdb')({})
       notify_db_initialized({})
@@ -3672,18 +3675,18 @@ async function wrapper(opts, protocol) {
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized(entries) {
+  function notify_db_initialized (entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
-  function graph_explorer_protocol(send) {
+  function graph_explorer_protocol (send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message(msg) {
+    function on_graph_explorer_message (msg) {
       const { type, data } = msg
       if (type === 'selection_changed') {
         const { selected } = data
@@ -3834,7 +3837,7 @@ function fallback_module() {
     api: fallback_instance
   }
 
-  function fallback_instance() {
+  function fallback_instance () {
     return {
       _: {
         'graph-explorer': {
@@ -4124,7 +4127,7 @@ date: Daily
     }
   }
 
-  function override_theme() {
+  function override_theme () {
     return {
       _: {
         mapping: {
