@@ -7,3 +7,4 @@
 /src/node_modules/bare-peer/package-lock.json
 .DS_Store
 .vscode
+/package-lock.json
