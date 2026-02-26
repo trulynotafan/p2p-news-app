@@ -3137,78 +3137,88 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
-module.exports = function content_parser(raw) {
-    if (!raw) return null
+module.exports = function content_parser (raw) {
+  if (!raw) return null
 
-    try {
-        const data = JSON.parse(raw)
-        if (data && typeof data === 'object') return data
-    } catch (e) { }
+  try {
+    const data = JSON.parse(raw)
+    if (data && typeof data === 'object') return data
+  } catch (e) { }
 
-    const fm_regex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
-    const match = raw.match(fm_regex)
+  const fm_regex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
+  const match = raw.match(fm_regex)
 
-    if (match) {
-        const metadata_str = match[1]
-        const content = match[2]
-        const metadata = {}
+  if (match) {
+    const metadata_str = match[1]
+    const content = match[2]
+    const metadata = {}
 
-        metadata_str.split('\n').forEach(line => {
-            const colon_index = line.indexOf(':')
-            if (colon_index !== -1) {
-                const key = line.slice(0, colon_index).trim()
-                let value = line.slice(colon_index + 1).trim()
+    metadata_str.split('\n').forEach(parse_metadata_line)
 
-                if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-                    value = value.slice(1, -1)
-                }
+    function parse_metadata_line (line) {
+      const colon_index = line.indexOf(':')
+      if (colon_index !== -1) {
+        const key = line.slice(0, colon_index).trim()
+        let value = line.slice(colon_index + 1).trim()
 
-                if (value.startsWith('[') && value.endsWith(']')) {
-                    value = value.slice(1, -1).split(',').map(s => {
-                        s = s.trim()
-                        if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-                            return s.slice(1, -1)
-                        }
-                        return s
-                    })
-                }
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1)
+        }
 
-                metadata[key] = value
-            }
-        })
+        if (value.startsWith('[') && value.endsWith(']')) {
+          value = value.slice(1, -1).split(',').map(trim_and_unquote)
+        }
 
-        return { ...metadata, content: content.trim() }
+        metadata[key] = value
+      }
     }
 
-    return { content: raw }
+    function trim_and_unquote (s) {
+      s = s.trim()
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        return s.slice(1, -1)
+      }
+      return s
+    }
+
+    return { ...metadata, content: content.trim() }
+  }
+
+  return { content: raw }
 }
 
 },{}],4:[function(require,module,exports){
-module.exports = function article_viewer(data) {
+module.exports = function article_viewer (data) {
   const content_html = data.content
     .split('\n\n')
-    .map(block => {
-      block = block.trim()
-      if (!block) return ''
-
-      if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
-      if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
-      if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
-
-      if (block.startsWith('- ')) {
-        const items = block.split('\n').map(line => `<li>${line.replace(/^- /, '')}</li>`).join('')
-        return `<ul>${items}</ul>`
-      }
-
-      let p = block
-
-      p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
-      p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-
-      return `<p>${p}</p>`
-    })
+    .map(parse_block)
     .join('')
+
+  function parse_block (block) {
+    block = block.trim()
+    if (!block) return ''
+
+    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
+    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
+    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
+
+    if (block.startsWith('- ')) {
+      const items = block.split('\n').map(format_list_item).join('')
+      return `<ul>${items}</ul>`
+    }
+
+    let p = block
+
+    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+
+    return `<p>${p}</p>`
+  }
+
+  function format_list_item (line) {
+    return `<li>${line.replace(/^- /, '')}</li>`
+  }
 
   return `
     <article class="article-container">
@@ -3226,7 +3236,7 @@ module.exports = function article_viewer(data) {
 module.exports.parser = require('./content_parser')
 
 },{"./content_parser":3}],5:[function(require,module,exports){
-module.exports = function news_card(data, is_my_stories) {
+module.exports = function news_card ({ data, is_my_stories }) {
   const avatar_initial = data.title ? data.title.charAt(0) : '?'
   const avatar_bg = data.color || '#e5e7eb'
 
@@ -3240,7 +3250,7 @@ module.exports = function news_card(data, is_my_stories) {
     : ''
 
   const tags_html = (data.tags && Array.isArray(data.tags))
-    ? data.tags.map(tag => `<span class="news-tag-pill">${tag}</span>`).join('')
+    ? data.tags.map(render_tag_pill).join('')
     : ''
 
   const meta_bottom = !is_my_stories
@@ -3266,13 +3276,17 @@ module.exports = function news_card(data, is_my_stories) {
       </div>
     </div>
   `
+
+  function render_tag_pill (tag) {
+    return `<span class="news-tag-pill">${tag}</span>`
+  }
 }
 
 },{}],6:[function(require,module,exports){
 const news_card = require('news-card')
 
-module.exports = function news_list(items, folder_name, is_my_stories) {
-    const header_html = `
+module.exports = function news_list ({ items, folder_name, is_my_stories }) {
+  const header_html = `
     <header class="news-header">
         <div>
             <h2>${folder_name}</h2>
@@ -3281,62 +3295,66 @@ module.exports = function news_list(items, folder_name, is_my_stories) {
     </header>
   `
 
-    const list_html = `
+  const list_html = `
     <div class="news-container">
         ${header_html}
         <div class="list-container">
-            ${items.map(item => news_card(item.data, is_my_stories)).join('')}
+            ${items.map(render_card_item).join('')}
         </div>
         ${is_my_stories ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
     </div>
   `
 
-    return list_html
+  return list_html
+
+  function render_card_item (item) {
+    return news_card({ data: item.data, is_my_stories })
+  }
 }
 
 },{"news-card":5}],7:[function(require,module,exports){
 module.exports = graphdb
 
-function graphdb(entries) {
-    if (!entries || typeof entries !== 'object') {
-        console.warn('[graphdb] Invalid entries provided, using empty object')
-        entries = {}
-    }
+function graphdb (entries) {
+  if (!entries || typeof entries !== 'object') {
+    console.warn('[graphdb] Invalid entries provided, using empty object')
+    entries = {}
+  }
 
-    const api = {
-        get,
-        has,
-        keys,
-        is_empty,
-        root,
-        raw
-    }
+  const api = {
+    get,
+    has,
+    keys,
+    is_empty,
+    root,
+    raw
+  }
 
-    return api
+  return api
 
-    function get(path) {
-        return entries[path] || null
-    }
+  function get (path) {
+    return entries[path] || null
+  }
 
-    function has(path) {
-        return path in entries
-    }
+  function has (path) {
+    return path in entries
+  }
 
-    function keys() {
-        return Object.keys(entries)
-    }
+  function keys () {
+    return Object.keys(entries)
+  }
 
-    function is_empty() {
-        return Object.keys(entries).length === 0
-    }
+  function is_empty () {
+    return Object.keys(entries).length === 0
+  }
 
-    function root() {
-        return entries['/'] || null
-    }
+  function root () {
+    return entries['/'] || null
+  }
 
-    function raw() {
-        return entries
-    }
+  function raw () {
+    return entries
+  }
 }
 
 },{}],8:[function(require,module,exports){
@@ -3348,7 +3366,7 @@ const wrapper = require('./wrapper')
 
 module.exports = news_app
 
-async function news_app(opts = {}) {
+async function news_app (opts = {}) {
   const { sid, vault } = opts
 
   const container = document.createElement('div')
@@ -3362,12 +3380,12 @@ async function news_app(opts = {}) {
   const sidebar_el = container.querySelector('.sidebar')
   const main_el = container.querySelector('.main')
 
-  await init(vault, sidebar_el, main_el, sid, container)
+  await init({ vault, sidebar_el, main_el, sid, container })
 
   return container
 }
 
-async function init(vault, sidebar_el, main_el, sid, container) {
+async function init ({ vault, sidebar_el, main_el, sid, container }) {
   const { id, sdb } = await get(sid)
 
   if (sdb && sdb.drive) {
@@ -3379,8 +3397,10 @@ async function init(vault, sidebar_el, main_el, sid, container) {
     }
   }
 
-  const subs = await sdb.watch(async (batch) => {
-  })
+  const subs = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch (batch) {
+  }
 
   if (!subs || subs.length === 0) {
     console.error('[news/index.js] No active instances found for wrapper')
@@ -3394,23 +3414,27 @@ async function init(vault, sidebar_el, main_el, sid, container) {
     id: 'sidebar',
     sid: wrapper_sid,
     ids: { up: id }
-  }, (send) => {
-    return (msg) => {
-      console.log('Host received:', msg)
-    }
-  })
+  }, setup_protocol)
+
+  function setup_protocol (send) {
+    return handle_message
+  }
+
+  function handle_message (msg) {
+    console.log('Host received:', msg)
+  }
 
   sidebar_el.appendChild(sidebar_component)
 }
 
-function defaults(opts) {
+function defaults (opts) {
   const _ = {
     './wrapper': { $: '' }
   }
 
   return { _, api }
 
-  function api(opts) {
+  function api (opts) {
     const _ = {
       './wrapper': {
         0: '',
@@ -3479,7 +3503,6 @@ function defaults(opts) {
   }
 }
 
-
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
 },{"./wrapper":9,"STATE":1}],9:[function(require,module,exports){
 (function (__filename){(function (){
@@ -3493,6 +3516,7 @@ const content_parser = article_viewer.parser
 const news_card = require('news-card')
 const write_page = require('write-page')
 const news_list = require('news-list')
+const graphdb = require('./graphdb')
 
 module.exports = wrapper
 
@@ -3637,16 +3661,24 @@ async function wrapper(opts, protocol) {
     render_folder_content('my-stories')
   }
 
-  async function onbatch (batch) {
+  async function onbatch(batch) {
     console.log('[Wrapper] onbatch:', batch)
     for (const { type, paths } of batch) {
       console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
-      const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
+      const data = await Promise.all(paths.map(fetch_path_raw_data))
       const valid_data = data.filter(d => d !== null)
       if (valid_data.length > 0) {
         if (type === 'theme') inject(valid_data)
         if (type === 'entries') on_entries(valid_data)
       }
+    }
+
+    function fetch_path_raw_data(path) {
+      return drive.get(path).then(extract_raw_if_exists)
+    }
+
+    function extract_raw_if_exists(file) {
+      return file ? file.raw : null
     }
   }
 
@@ -3656,10 +3688,10 @@ async function wrapper(opts, protocol) {
     }
   }
 
-  function on_entries (data) {
+  function on_entries(data) {
     console.log('[Wrapper] on_entries called with:', data)
     if (!data || !data[0]) {
-      db = require('./graphdb')({})
+      db = graphdb({})
       notify_db_initialized({})
       return
     }
@@ -3671,22 +3703,22 @@ async function wrapper(opts, protocol) {
         parsed_data = data[0]
       }
     } catch (e) { }
-    db = require('./graphdb')(parsed_data)
+    db = graphdb(parsed_data)
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized (entries) {
+  function notify_db_initialized(entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
-  function graph_explorer_protocol (send) {
+  function graph_explorer_protocol(send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message (msg) {
+    function on_graph_explorer_message(msg) {
       const { type, data } = msg
       if (type === 'selection_changed') {
         const { selected } = data
@@ -3702,92 +3734,121 @@ async function wrapper(opts, protocol) {
     const parts = drive_path.split('/')
     if (parts.length > 2) drive_path = `${parts[0]}/${parts[parts.length - 1]}`
 
-    let data
-    try {
-      const file = await drive.get(drive_path)
-      data = content_parser(file.raw)
-    } catch (e) { }
+    const data = await try_get_folder_data(drive_path)
 
     if (data && data.content) {
       render_article(data)
     } else {
-      let folder_name = path.split('/').pop() || path
-      let subs = []
-      let db_path = path
-      if (typeof path === 'string' && path.includes('|')) {
-        db_path = path.split('|').pop()
-      }
-
-      if (db) {
-        const entry = db.get(db_path) || db.get(path)
-        if (entry) {
-          if (entry.name) folder_name = entry.name
-          if (entry.subs) subs = entry.subs
-        }
-      }
+      const { folder_name, subs } = get_folder_details(path)
 
       if (subs.length > 0) {
-        const fetched_items = (await Promise.all(subs.map(async sub_path => {
-          let item_data
-          try {
-            let sub_drive_path = sub_path
-            if (sub_drive_path.startsWith('/')) sub_drive_path = sub_drive_path.slice(1)
-            const sub_parts = sub_drive_path.split('/')
-            if (sub_parts.length > 2) {
-              sub_drive_path = `${sub_parts[0]}/${sub_parts[sub_parts.length - 1]}`
-            }
-            const file = await drive.get(sub_drive_path)
-            item_data = content_parser(file.raw)
-          } catch (e) { }
-          if (!item_data) return null
-          return { path: sub_path, data: item_data }
-        }))).filter(item => item && item.data)
-
-        if (path.includes('my-stories')) {
-          const local_stories = get_local_stories()
-          local_stories.forEach(story => {
-            fetched_items.push({ path: 'local-' + Date.now() + Math.random(), data: story })
-          })
-        }
-
-        list_items_data = fetched_items
-
-        if (fetched_items.length > 0) {
-          const is_my_stories = path.includes('my-stories') || path.includes('My Stories')
-
-          if (!shadow.adoptedStyleSheets.includes(news_card_sheet)) {
-            drive.get('theme/news-card.css').then(css_file => {
-              news_card_sheet.replaceSync(css_file.raw)
-              shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, news_card_sheet]
-            }).catch(() => { })
-          }
-
-          const list_html = news_list(fetched_items, folder_name, is_my_stories)
-
-          render_html(list_html)
-
-          const processed_cards = shadow.querySelectorAll('.news-card')
-          processed_cards.forEach((card_el, index) => {
-            if (fetched_items[index]) {
-              card_map.set(card_el, fetched_items[index].path)
-            }
-          })
-
-          return
-        }
+        const handled = await process_folder_items({ path, subs, folder_name })
+        if (handled) return
       }
 
-      render_html(`
-        <div class="empty-folder-container">
-          <div class="empty-folder-icon">📂</div>
-          <h2 class="empty-folder-title">${folder_name}</h2>
-          <p>Select a file inside to view content.</p>
-          ${(path.includes('my-stories') || folder_name.includes('My Stories')) ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
-        </div>
-      `)
+      render_empty_folder(folder_name, path)
     }
   }
 
+  async function try_get_folder_data(drive_path) {
+    try {
+      const file = await drive.get(drive_path)
+      return content_parser(file.raw)
+    } catch (e) {
+      return null
+    }
+  }
+
+  function get_folder_details(path) {
+    let folder_name = path.split('/').pop() || path
+    let subs = []
+    let db_path = path
+    if (typeof path === 'string' && path.includes('|')) {
+      db_path = path.split('|').pop()
+    }
+
+    if (db) {
+      const entry = db.get(db_path) || db.get(path)
+      if (entry) {
+        if (entry.name) folder_name = entry.name
+        if (entry.subs) subs = entry.subs
+      }
+    }
+    return { folder_name, subs }
+  }
+
+  async function process_folder_items({ path, subs, folder_name }) {
+    const fetched_items = (await Promise.all(subs.map(fetch_sub_item))).filter(item => item && item.data)
+
+    async function fetch_sub_item(sub_path) {
+      let item_data
+      try {
+        let sub_drive_path = sub_path
+        if (sub_drive_path.startsWith('/')) sub_drive_path = sub_drive_path.slice(1)
+        const sub_parts = sub_drive_path.split('/')
+        if (sub_parts.length > 2) {
+          sub_drive_path = `${sub_parts[0]}/${sub_parts[sub_parts.length - 1]}`
+        }
+        const file = await drive.get(sub_drive_path)
+        item_data = content_parser(file.raw)
+      } catch (e) { }
+      if (!item_data) return null
+      return { path: sub_path, data: item_data }
+    }
+
+    if (path.includes('my-stories')) {
+      const local_stories = get_local_stories()
+      local_stories.forEach(push_local_story)
+
+      function push_local_story(story) {
+        fetched_items.push({ path: 'local-' + Date.now() + Math.random(), data: story })
+      }
+    }
+
+    list_items_data = fetched_items
+
+    if (fetched_items.length > 0) {
+      const is_my_stories = path.includes('my-stories') || path.includes('My Stories')
+
+      if (!shadow.adoptedStyleSheets.includes(news_card_sheet)) {
+        drive.get('theme/news-card.css').then(apply_news_card_css).catch(ignore_css_error)
+
+        function apply_news_card_css(css_file) {
+          news_card_sheet.replaceSync(css_file.raw)
+          shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, news_card_sheet]
+        }
+
+        function ignore_css_error() { }
+      }
+
+      const list_html = news_list({ items: fetched_items, folder_name, is_my_stories })
+
+      render_html(list_html)
+
+      const processed_cards = shadow.querySelectorAll('.news-card')
+      processed_cards.forEach(map_card_to_path)
+
+      function map_card_to_path(card_el, index) {
+        if (fetched_items[index]) {
+          card_map.set(card_el, fetched_items[index].path)
+        }
+      }
+
+      return true
+    }
+    return false
+  }
+
+  function render_empty_folder(folder_name, path) {
+    render_html(`
+      <div class="empty-folder-container">
+        <div class="empty-folder-icon">📂</div>
+        <h2 class="empty-folder-title">${folder_name}</h2>
+        <p>Select a file inside to view content.</p>
+        ${(path.includes('my-stories') || folder_name.includes('My Stories')) ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
+      </div>
+    `)
+  }
   function get_local_stories() {
     try {
       const stories = localStorage.getItem('p2p_stories')
@@ -3823,7 +3884,6 @@ async function wrapper(opts, protocol) {
   }
 }
 
-
 function fallback_module() {
   return {
     _: {
@@ -3837,7 +3897,7 @@ function fallback_module() {
     api: fallback_instance
   }
 
-  function fallback_instance () {
+  function fallback_instance() {
     return {
       _: {
         'graph-explorer': {
@@ -3862,86 +3922,10 @@ function fallback_module() {
         'entries/': { 'entries.json': { $ref: 'entries.json' } },
         'theme/': {
           'layout.css': {
-            raw: `
-      :host { 
-        position: fixed;
-        top: 0; left: 0; bottom: 0; right: 0; 
-        display: flex; 
-        width: 100vw;
-        height: 100vh;
-        z-index: 9999;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-      .explorer-panel { 
-        width: 250px; 
-        flex-shrink: 0; 
-        border-right: 1px solid #e5e7eb; 
-        height: 100%;
-        position: relative;
-        z-index: 10;
-        background-color: #f9fafb;
-      }
-      .main-viewer { 
-        flex: 1; 
-        padding: 40px; 
-        overflow-y: auto; 
-        background-color: #ffffff; 
-        color: #1f2937; 
-      }
-      .empty-container { text-align: center; margin-top: 100px; color: #9ca3af; }
-      .empty-title { color: #374151; font-size: 1.5rem; font-weight: 600; }
-      
-
-      .write-page-container { max-width: 48rem; margin: 0 auto; padding-bottom: 4rem; }
-      .section-header { margin-bottom: 2.5rem; }
-      .section-header h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; margin-top: 0; color: #1f2937; }
-      .section-header p { font-size: 1.125rem; color: #6b7280; font-weight: 300; margin: 0; }
-
-      .card { background: white; border: 1px solid rgba(229, 231, 235, 0.5); border-radius: 0.75rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
-      .space-y-8 > * + * { margin-top: 2rem; }
-      .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.75rem; }
-      .input-title { width: 100%; border: none; font-size: 2rem; font-weight: 700; outline: none; }
-      .input-content { width: 100%; border: none; min-height: 24rem; resize: none; font-size: 1rem; outline: none; }
-      
-      .btn-publish { background: #6366f1; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
-      .btn-publish:hover { background: #4f46e5; }
-      
-      .divider { height: 1px; background: rgba(229, 231, 235, 0.3); margin: 2rem 0; }
-      .word-count { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; font-weight: 500; }
-      .actions { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; }
-      .action-text { font-size: 0.75rem; color: #9ca3af; font-weight: 300; }
-      .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 4rem; }
-      .tip { text-align: center; }
-      .tip h3 { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; color: #1f2937; }
-      .tip p { font-size: 0.875rem; color: #6b7280; font-weight: 300; }
-      .blog-select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; color: #1f2937; background-color: white; margin-bottom: 1rem; }
-
-      .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
-            `
+            $ref: 'layout.css'
           },
           'news-card.css': {
-            raw: `
-            .news-author { font-weight: 600; color: #111827; }
-            .news-author-muted { font-weight: 600; color: #6b7280; }
-            .news-separator { margin: 0 4px; }
-            .news-date-text { color: inherit; }
-            .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
-            .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
-            .news-card:hover { background: rgba(0,0,0,0.01); }
-            .news-avatar { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600; background-color: var(--avatar-bg, #e5e7eb); }
-            .news-content { flex: 1; }
-            .news-title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
-            .news-description { color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0; }
-            .news-meta-top { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
-            .news-meta-bottom { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
-            .news-tags { display: flex; align-items: center; gap: 0.5rem; }
-            .news-tag-pill { color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
-            .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s; z-index: 50; font-size: 1.5rem; }
-            .news-fab:hover { transform: scale(1.1); }
-            .news-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
-            .news-header h2 { font-size: 2rem; font-weight: 700; color: #111827; margin: 0; }
-            .news-subheader { color: #6b7280; margin-top: 0.5rem; }
-            `
+            $ref: '../news-card/news-card.css'
           }
         },
         'runtime/': {
@@ -3964,159 +3948,57 @@ function fallback_module() {
         'undo/': { 'stack.json': { raw: '[]' } },
         'my-stories/': {
           'story-1': {
-            raw: `---
-title: My First Post
-author: You
-date: Jan 28
-description: "This is my first post on the P2P network! I'm excited to share my thoughts here."
----
-This is my first post on the P2P network!
-
-I'm excited to share my thoughts here. This platform allows us to connect directly.
-
-## Why P2P?
-It's about **freedom** and **control**. `
+            $ref: 'data/story-1.md'
           },
           'story-2': {
-            raw: `---
-title: Building a P2P Network
-author: You
-date: Jan 27
-description: "Decentralized networks are the future. Here is how we are building one."
----
-Decentralized networks are the future.
-
-Here is how we are building one:
-- Using Hyperswarm for discovery
-- Using Hypercore for storage
-- Using blind-pairing for privacy`
+            $ref: 'data/story-2.md'
           },
           'story-3': {
-            raw: `---
-title: Future of Decentralized
-author: You
-date: Jan 26
-description: "Web3 is evolving rapidly. Smart contracts and IPFS are changing the game."
----
-Web3 is evolving rapidly. **Smart contracts** and **IPFS** are changing the game.`
+            $ref: 'data/story-3.md'
           },
           'story-4': {
-            raw: `---
-title: Why Decentralization Matters
-author: You
-date: Jan 25
-description: "Control over your own data is a fundamental right. Let's discuss why."
----
-Control over your own data is a fundamental right.
-
-Let's discuss why:
-1. Censorship resistance
-2. Data ownership
-3. Resilience`
+            $ref: 'data/story-4.md'
           }
         },
         'feeds/': {},
         'feeds/hackers-digest/': {
           'code-coffee': {
-            raw: `---
-title: Code & Coffee
-author: HackerOne
-date: 2h ago
-description: Best spots for coding in the city
-tags: ["#lifestyle", "#remote"]
----
-Here is a list of the best cafes with strong WiFi and good vibes:
-- The Grind
-- Java Script
-- Bean There`
+            $ref: 'data/code-coffee.md'
           },
           'system-design': {
-            raw: `---
-title: System Design Weekly
-author: Archie
-date: 5h ago
-description: Deep dive into distributed systems
-tags: ["#tech", "#architecture"]
----
-Today we explore **consistent hashing** and its applications in load balancing.`
+            $ref: 'data/system-design.md'
           }
         },
         'feeds/off-the-grid/': {
           'mesh-network': {
-            raw: `---
-title: Building a mesh network
-author: GridFree
-date: 1d ago
-description: Hardware guide
-tags: ["#hardware", "#iot"]
----
-Using **LoRaWAN** for off-grid comms is easier than you think.`
+            $ref: 'data/mesh-network.md'
           },
           fediverse: {
-            raw: `---
-title: Why I left social media
-author: Anon
-date: 2d ago
-description: Personal journey
-tags: ["#privacy"]
----
-The centralized web is broken. It mines our attention for profit.`
+            $ref: 'data/fediverse.md'
           },
           'self-hosting': {
-            raw: `---
-title: Self-hosting 101
-author: HomeLab
-date: 3d ago
-description: Getting started with Docker
-tags: ["#guides"]
----
-Start small with a **Raspberry Pi**.`
+            $ref: 'data/self-hosting.md'
           }
         },
         'feeds/peer-review/': {
           'network-notes': {
-            raw: `---
-title: Network Notes
-author: NetSec
-date: 4h ago
----
-Analyzing traffic patterns in P2P gossip protocols...`
+            $ref: 'data/network-notes.md'
           }
         },
         'feeds/peer-review/security-chronicles/': {
           'privacy-matters': {
-            raw: `---
-title: Why Privacy Matters
-author: SecGuru
-date: 5h ago
----
-Privacy is not secrecy, it is **control**.`
+            $ref: 'data/privacy-matters.md'
           },
           'zero-trust': {
-            raw: `---
-title: Zero Trust Architecture
-author: EntSec
-date: 6h ago
----
-Never trust, always verify.`
+            $ref: 'data/zero-trust.md'
           }
         },
         'lists/': {
           'best-of-tech': {
-            raw: `---
-title: Best of Tech
-author: Curator
-date: Weekly
----
-Top tech links for this week...`
+            $ref: 'data/best-of-tech.md'
           },
           'morning-read': {
-            raw: `---
-title: Morning Read
-author: Daily
-date: Daily
----
-5 things you need to know today...`
+            $ref: 'data/morning-read.md'
           }
         },
         'discover/': {},
@@ -4127,7 +4009,7 @@ date: Daily
     }
   }
 
-  function override_theme () {
+  function override_theme() {
     return {
       _: {
         mapping: {
@@ -4143,155 +4025,7 @@ date: Daily
       drive: {
         'style/': {
           'style.css': {
-            raw: `
-            :host {
-              --primary: #6366f1;
-              --bg-sidebar: #f9fafb;
-              --border-color: #e5e7eb;
-              --text-main: #1f2937;
-              --text-muted: #6b7280;
-
-              display: block;
-              height: 100%;
-              width: 100%;
-              position: fixed;
-              top: 0; left: 0; bottom: 0; right: 0;
-              z-index: 9999;
-              font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              color: var(--text-main);
-              background-color: var(--bg-sidebar);
-            }
-
-            .graph-container {
-
-              width: 250px;
-              height: 100vh;
-              background: var(--bg-sidebar);
-              border-right: 1px solid var(--border-color);
-              padding: 1rem 0;
-              display: flex;
-              flex-direction: column;
-              overflow: auto;
-              box-sizing: border-box;
-            }
-
-            .node {
-
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              padding: 0.4rem 0.75rem; 
-              margin: 0.1rem 0.5rem;   
-              border-radius: 6px;
-              cursor: pointer;
-              font-size: 0.9rem;
-              color: var(--text-main);
-              transition: background 0.15s;
-              height: 32px; 
-              box-sizing: border-box;
-              user-select: none;
-            }
-
-            .wrapper-root {
-               position: absolute;
-               top: 0; left: 0; right: 0; bottom: 0;
-               display: flex;
-
-            }
-            
-
-
-            .node:hover {
-              background: rgba(0, 0, 0, 0.04);
-            }
-
-            .node.type-stories,
-            .node.type-feeds,
-            .node.type-lists,
-            .node.type-discover,
-            .node.type-folder {
-              font-weight: 600;
-              color: #111827; 
-            }
-
-            .node.type-file, .node.type-js-file {
-              font-weight: 400;
-              color: var(--text-main);
-            }
-
-            .node.selected {
-              background: rgba(99, 102, 241, 0.1);
-              color: var(--primary);
-              font-weight: 600;
-            }
-
-            input[type="checkbox"] {
-              display: none !important;
-            }
-  
-            .wand { display: none !important; }
-            .node.type-root { display: none !important; }
-
-            .icon {
-              color: var(--text-muted);
-              width: 16px;
-              height: 16px;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              margin-right: 0; 
-              opacity: 1;      
-            }
-        
-            .prefix {
-              cursor: pointer;
-              min-width: 16px; 
-              height: 100%;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            .indent {
-              height: 100%;
-              display: inline-flex;
-            }
-            
-            .pipe, .blank {
-               display: inline-block;
-               width: 12px;
-               height: 100%;
-            }
-
-
-            .prefix::after {
-              content: '▸';
-              font-size: 10px;
-              color: var(--text-muted);
-              display: inline-block;
-              transition: transform 0.15s;
-            }
-    
-            .prefix.expanded::after {
-               transform: rotate(90deg);
-            }
-
-
-            .node.type-stories > .icon::before { content: '📝'; font-size: 14px; }
-            .node.type-feeds > .icon::before   { content: '📡'; font-size: 14px; }
-            .node.type-lists > .icon::before   { content: '📋'; font-size: 14px; }
-            .node.type-discover > .icon::before { content: '🧭'; font-size: 14px; }
-      
-            .node.type-folder > .icon { display: none; }
-            .node.type-file > .icon, .node.type-js-file > .icon { display: none; }
-            
-            .node.selected .icon { color: var(--primary); }
-
-            .graph-container::-webkit-scrollbar { width: 6px; }
-            .graph-container::-webkit-scrollbar-track { background: transparent; }
-            .graph-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-            .graph-container::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-          `
+            $ref: 'style.css'
           }
         },
         'runtime/': {
@@ -4352,11 +4086,13 @@ date: Daily
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
 },{"./graphdb":7,"STATE":1,"article-viewer":4,"graph-explorer":2,"news-card":5,"news-list":6,"write-page":10}],10:[function(require,module,exports){
-module.exports = function write_page() {
+module.exports = function write_page () {
   const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
-  const options = blogs.map(blog =>
-    `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
-  ).join('')
+  const options = blogs.map(render_blog_option).join('')
+
+  function render_blog_option (blog) {
+    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
+  }
 
   const tip_data = [
     { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
@@ -4364,12 +4100,16 @@ module.exports = function write_page() {
     { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
   ]
 
-  const tips_html = tip_data.map(t => `
+  const tips_html = tip_data.map(render_tip).join('')
+
+  function render_tip (t) {
+    return `
     <div class="tip">
       <h3>${t.title}</h3>
       <p>${t.text}</p>
     </div>
-  `).join('')
+  `
+  }
 
   return `
     <div class="write-page-container">
@@ -4467,32 +4207,44 @@ console.log('p2p news app')
 const news = require('news')
 
 const customVault = {
-  init_blog: async ({ username }) => {
-    console.log('[customVault] init_blog:', username)
-  },
-  get_peer_blogs: async () => {
-    console.log('[customVault] get_peer_blogs')
-    return new Map()
-  },
-  get_my_posts: async () => {
-    console.log('[customVault] get_my_posts')
-    return []
-  },
-  get_profile: async (key) => {
-    console.log('[customVault] get_profile:', key)
-    return null
-  },
-  on_update: (callback) => {
-    console.log('[customVault] on_update registered')
-  }
+  init_blog: init_blog,
+  get_peer_blogs: get_peer_blogs,
+  get_my_posts: get_my_posts,
+  get_profile: get_profile,
+  on_update: on_update
+}
+
+async function init_blog ({ username }) {
+  console.log('[customVault] init_blog:', username)
+}
+
+async function get_peer_blogs () {
+  console.log('[customVault] get_peer_blogs')
+  return new Map()
+}
+
+async function get_my_posts () {
+  console.log('[customVault] get_my_posts')
+  return []
+}
+
+async function get_profile (key) {
+  console.log('[customVault] get_profile:', key)
+  return null
+}
+
+function on_update (callback) {
+  console.log('[customVault] on_update registered')
 }
 
 async function init () {
   console.log('[page.js] init started')
 
-  const start = await sdb.watch(async (batch) => {
+  const start = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch (batch) {
     console.log('[page.js] sdb watch batch:', batch)
-  })
+  }
 
   console.log('[page.js] Watch returned:', start)
 
