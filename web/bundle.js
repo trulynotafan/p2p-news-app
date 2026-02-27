@@ -3137,83 +3137,7 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
-module.exports = function ArticleViewer (data) {
-  const article = document.createElement('article')
-  article.classList.add('article-container')
-
-  const header = document.createElement('header')
-  header.classList.add('article-header')
-
-  const h1 = document.createElement('h1')
-  h1.classList.add('article-title')
-  h1.textContent = data.title
-
-  const meta = document.createElement('div')
-  meta.classList.add('article-meta')
-
-  const bySpan = document.createElement('span')
-  bySpan.textContent = 'By '
-  const authorStrong = document.createElement('strong')
-  authorStrong.textContent = data.author
-  bySpan.appendChild(authorStrong)
-
-  const separator = document.createTextNode(' • ')
-
-  const dateSpan = document.createElement('span')
-  dateSpan.textContent = data.date
-
-  meta.appendChild(bySpan)
-  meta.appendChild(separator)
-  meta.appendChild(dateSpan)
-
-  header.appendChild(h1)
-  header.appendChild(meta)
-
-  const body = document.createElement('div')
-  body.classList.add('article-body')
-
-  // Basic Markdown Rendering
-  const htmlFromMarkdown = data.content
-    .split('\n\n')
-    .map(block => {
-      block = block.trim()
-      if (!block) return ''
-
-      // Headers
-      if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
-      if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
-      if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
-
-      // Lists
-      if (block.startsWith('- ')) {
-        const items = block.split('\n').map(line => `<li>${line.replace(/^- /, '')}</li>`).join('')
-        return `<ul>${items}</ul>`
-      }
-
-      // Paragraph handling with inline styles
-      let p = block
-
-      // Bold
-      p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic
-      p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Links
-      p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-
-      return `<p>${p}</p>`
-    })
-    .join('')
-
-  body.innerHTML = htmlFromMarkdown
-
-  article.appendChild(header)
-  article.appendChild(body)
-
-  return article
-}
-
-},{}],4:[function(require,module,exports){
-module.exports = function parseContent (raw) {
+module.exports = function content_parser (raw) {
   if (!raw) return null
 
   try {
@@ -3221,39 +3145,41 @@ module.exports = function parseContent (raw) {
     if (data && typeof data === 'object') return data
   } catch (e) { }
 
-  const fmRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
-  const match = raw.match(fmRegex)
+  const fm_regex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
+  const match = raw.match(fm_regex)
 
   if (match) {
-    const metadataStr = match[1]
+    const metadata_str = match[1]
     const content = match[2]
     const metadata = {}
 
-    metadataStr.split('\n').forEach(line => {
-      const colonIndex = line.indexOf(':')
-      if (colonIndex !== -1) {
-        const key = line.slice(0, colonIndex).trim()
-        let value = line.slice(colonIndex + 1).trim()
+    metadata_str.split('\n').forEach(parse_metadata_line)
 
-        // Remove quotes if present
+    function parse_metadata_line (line) {
+      const colon_index = line.indexOf(':')
+      if (colon_index !== -1) {
+        const key = line.slice(0, colon_index).trim()
+        let value = line.slice(colon_index + 1).trim()
+
         if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
           value = value.slice(1, -1)
         }
 
-        // Handle arrays (simple comma separated)
         if (value.startsWith('[') && value.endsWith(']')) {
-          value = value.slice(1, -1).split(',').map(s => {
-            s = s.trim()
-            if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-              return s.slice(1, -1)
-            }
-            return s
-          })
+          value = value.slice(1, -1).split(',').map(trim_and_unquote)
         }
 
         metadata[key] = value
       }
-    })
+    }
+
+    function trim_and_unquote (s) {
+      s = s.trim()
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        return s.slice(1, -1)
+      }
+      return s
+    }
 
     return { ...metadata, content: content.trim() }
   }
@@ -3261,170 +3187,282 @@ module.exports = function parseContent (raw) {
   return { content: raw }
 }
 
-},{}],5:[function(require,module,exports){
-module.exports = graphdb
+},{}],4:[function(require,module,exports){
+module.exports = function article_viewer (data) {
+  const content_html = data.content
+    .split('\n\n')
+    .map(parse_block)
+    .join('')
 
-function graphdb(entries) {
-    if (!entries || typeof entries !== 'object') {
-        console.warn('[graphdb] Invalid entries provided, using empty object')
-        entries = {}
+  function parse_block (block) {
+    block = block.trim()
+    if (!block) return ''
+
+    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
+    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
+    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
+
+    if (block.startsWith('- ')) {
+      const items = block.split('\n').map(format_list_item).join('')
+      return `<ul>${items}</ul>`
     }
 
-    const api = {
-        get,
-        has,
-        keys,
-        is_empty,
-        root,
-        raw
-    }
+    let p = block
 
-    return api
+    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
 
-    function get(path) {
-        return entries[path] || null
-    }
+    return `<p>${p}</p>`
+  }
 
-    function has(path) {
-        return path in entries
-    }
+  function format_list_item (line) {
+    return `<li>${line.replace(/^- /, '')}</li>`
+  }
 
-    function keys() {
-        return Object.keys(entries)
-    }
+  return `
+    <article class="article-container">
+      <header class="article-header">
+        <h1 class="article-title">${data.title}</h1>
+        <div class="article-meta">
+          <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
+        </div>
+      </header>
+      <div class="article-body">${content_html}</div>
+    </article>
+  `
+}
 
-    function is_empty() {
-        return Object.keys(entries).length === 0
-    }
+module.exports.parser = require('./content_parser')
 
-    function root() {
-        return entries['/'] || null
-    }
+},{"./content_parser":3}],5:[function(require,module,exports){
+module.exports = function news_card ({ data, is_my_stories }) {
+  const avatar_initial = data.title ? data.title.charAt(0) : '?'
+  const avatar_bg = data.color || '#e5e7eb'
 
-    function raw() {
-        return entries
-    }
+  const meta_top = is_my_stories
+    ? `
+    <div class="news-meta-top">
+      <span class="news-author">${data.author}</span>
+      <span class="news-separator">•</span>
+      <span class="news-date-text">${data.date}</span>
+    </div>`
+    : ''
+
+  const tags_html = (data.tags && Array.isArray(data.tags))
+    ? data.tags.map(render_tag_pill).join('')
+    : ''
+
+  const meta_bottom = !is_my_stories
+    ? `
+    <div class="news-meta-bottom">
+      <span class="news-author-muted">${data.author}</span>
+      <span class="news-separator">•</span>
+      <span class="news-date-text">${data.date}</span>
+      ${tags_html}
+    </div>`
+    : ''
+
+  return `
+    <div class="news-card">
+      <div class="news-avatar" style="--avatar-bg: ${avatar_bg}">
+        ${avatar_initial}
+      </div>
+      <div class="news-content">
+        ${meta_top}
+        <h3 class="news-title">${data.title}</h3>
+        <p class="news-description">${data.description || 'No description available.'}</p>
+        ${meta_bottom}
+      </div>
+    </div>
+  `
+
+  function render_tag_pill (tag) {
+    return `<span class="news-tag-pill">${tag}</span>`
+  }
 }
 
 },{}],6:[function(require,module,exports){
+const news_card = require('news-card')
+
+module.exports = function news_list ({ items, folder_name, is_my_stories }) {
+  const header_html = `
+    <header class="news-header">
+        <div>
+            <h2>${folder_name}</h2>
+            ${is_my_stories ? '<p class="news-subheader">Your published posts</p>' : ''}
+        </div>
+    </header>
+  `
+
+  const list_html = `
+    <div class="news-container">
+        ${header_html}
+        <div class="list-container">
+            ${items.map(render_card_item).join('')}
+        </div>
+        ${is_my_stories ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
+    </div>
+  `
+
+  return list_html
+
+  function render_card_item (item) {
+    return news_card({ data: item.data, is_my_stories })
+  }
+}
+
+},{"news-card":5}],7:[function(require,module,exports){
+module.exports = graphdb
+
+function graphdb (entries) {
+  if (!entries || typeof entries !== 'object') {
+    console.warn('[graphdb] Invalid entries provided, using empty object')
+    entries = {}
+  }
+
+  const api = {
+    get,
+    has,
+    keys,
+    is_empty,
+    root,
+    raw
+  }
+
+  return api
+
+  function get (path) {
+    return entries[path] || null
+  }
+
+  function has (path) {
+    return path in entries
+  }
+
+  function keys () {
+    return Object.keys(entries)
+  }
+
+  function is_empty () {
+    return Object.keys(entries).length === 0
+  }
+
+  function root () {
+    return entries['/'] || null
+  }
+
+  function raw () {
+    return entries
+  }
+}
+
+},{}],8:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
-console.log('[DEBUG] news/index.js running')
 const statedb = STATE(__filename)
-const { get } = statedb(fallback_module)
+const { get } = statedb(defaults)
 const wrapper = require('./wrapper')
-
-// const blog_app = require('p2p-news-app') // Commented out for now
 
 module.exports = news_app
 
 async function news_app (opts = {}) {
-  console.log('[news_app] called with opts:', opts)
   const { sid, vault } = opts
 
-  const sidebar = document.createElement('div')
-  sidebar.classList.add('sidebar')
-
-  const main = document.createElement('div')
-  main.classList.add('main')
-
   const container = document.createElement('div')
-  container.classList.add('container')
+  container.className = 'container'
 
-  // Styles moved to init
-  // container.appendChild(style)
+  container.innerHTML = `
+    <div class="sidebar"></div>
+    <div class="main"></div>
+  `
 
-  container.appendChild(sidebar)
-  container.appendChild(main)
+  const sidebar_el = container.querySelector('.sidebar')
+  const main_el = container.querySelector('.main')
 
-  await init(vault, sidebar, main, sid, container)
+  await init({ vault, sidebar_el, main_el, sid, container })
 
   return container
 }
 
-async function init (vault, sidebarEl, mainEl, sid, container) {
-  try {
-    console.log('[news/index.js] init called with sid:', sid)
-    const { id, sdb } = await get(sid)
+async function init ({ vault, sidebar_el, main_el, sid, container }) {
+  const { id, sdb } = await get(sid)
 
-    console.log('[news/index.js] Got id:', id)
-
-    // Load shell.css from drive
-    if (sdb && sdb.drive) {
-      const cssFile = await sdb.drive.get('theme/shell.css').catch(() => null)
-      if (cssFile && cssFile.raw) {
-        const style = document.createElement('style')
-        style.textContent = cssFile.raw
-        container.appendChild(style)
-      }
+  if (sdb && sdb.drive) {
+    const css_file = await sdb.drive.get('theme/shell.css').catch(() => null)
+    if (css_file && css_file.raw) {
+      const style = document.createElement('style')
+      style.textContent = css_file.raw
+      container.appendChild(style)
     }
-
-    const subs = await sdb.watch(async (batch) => {
-      console.log('[news/index.js] Watch batch:', batch)
-    })
-
-    console.log('[news/index.js] Watch returned:', subs)
-
-    if (!subs || subs.length === 0) {
-      console.error('[news/index.js] No active instances found for wrapper')
-      return
-    }
-
-    const wrapper_instance = subs[0]
-    const { sid: wrapper_sid } = wrapper_instance
-    console.log('[news/index.js] Retrieved sid for wrapper:', wrapper_sid)
-
-    const sidebar_component = await wrapper({
-      id: 'sidebar',
-      sid: wrapper_sid,
-      ids: { up: id }
-    }, (send) => {
-      return (msg) => {
-        console.log('Host received:', msg)
-      }
-    })
-
-    sidebarEl.appendChild(sidebar_component)
-  } catch (err) {
-    console.error('Error initializing news app:', err)
-    const errorMsg = document.createElement('p')
-    errorMsg.style.color = 'red'
-    errorMsg.textContent = `Error: ${err.message}`
-    mainEl.innerHTML = ''
-    mainEl.appendChild(errorMsg)
   }
+
+  const subs = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch (batch) {
+  }
+
+  if (!subs || subs.length === 0) {
+    console.error('[news/index.js] No active instances found for wrapper')
+    return
+  }
+
+  const wrapper_instance = subs[0]
+  const { sid: wrapper_sid } = wrapper_instance
+
+  const sidebar_component = await wrapper({
+    id: 'sidebar',
+    sid: wrapper_sid,
+    ids: { up: id }
+  }, setup_protocol)
+
+  function setup_protocol (send) {
+    return handle_message
+  }
+
+  function handle_message (msg) {
+    console.log('Host received:', msg)
+  }
+
+  sidebar_el.appendChild(sidebar_component)
 }
 
-function fallback_module () {
-  function fallback_instance () {
-    return {
-      _: {
-        './wrapper': {
-          0: '',
-          mapping: {
-            theme: 'theme',
-            entries: 'entries',
-            runtime: 'runtime',
-            mode: 'mode',
-            flags: 'flags',
-            keybinds: 'keybinds',
-            undo: 'undo',
-            'my-stories': 'my-stories',
-            feeds: 'feeds',
-            lists: 'lists',
-            discover: 'discover'
-          }
+function defaults (opts) {
+  const _ = {
+    './wrapper': { $: '' }
+  }
+
+  return { _, api }
+
+  function api (opts) {
+    const _ = {
+      './wrapper': {
+        0: '',
+        mapping: {
+          theme: 'theme',
+          entries: 'entries',
+          runtime: 'runtime',
+          mode: 'mode',
+          flags: 'flags',
+          keybinds: 'keybinds',
+          undo: 'undo',
+          'my-stories': 'my-stories',
+          feeds: 'feeds',
+          lists: 'lists',
+          discover: 'discover'
+        }
+      }
+    }
+
+    const drive = {
+      'entries/': {
+        'entries.json': {
+          $ref: 'entries.json'
         }
       },
-      drive: {
-        'entries/': {
-          'entries.json': {
-            $ref: 'entries.json'
-          }
-        },
-        'theme/': {
-          'shell.css': {
-            raw: `
+      'theme/': {
+        'shell.css': {
+          raw: `
     body { margin: 0; padding: 0; overflow: hidden; }
     .container {
       display: flex;
@@ -3448,131 +3486,41 @@ function fallback_module () {
       background: #ffffff;
     }
                 `
-          }
-        },
-        'runtime/': {},
-        'mode/': {},
-        'flags/': {},
-        'keybinds/': {},
-        'undo/': {},
-        'my-stories/': {},
-        'feeds/': {},
-        'lists/': {},
-        'discover/': {}
-      }
+        }
+      },
+      'runtime/': {},
+      'mode/': {},
+      'flags/': {},
+      'keybinds/': {},
+      'undo/': {},
+      'my-stories/': {},
+      'feeds/': {},
+      'lists/': {},
+      'discover/': {}
     }
-  }
 
-  return {
-    _: {
-      './wrapper': { $: '' }
-    },
-    api: fallback_instance
+    return { _, drive }
   }
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":8,"STATE":1}],7:[function(require,module,exports){
-module.exports = function NewsCard (data, isMyStories) {
-  const card = document.createElement('div')
-  card.className = 'news-card'
-
-  const avatar = document.createElement('div')
-  avatar.className = 'news-avatar'
-  avatar.textContent = data.title ? data.title.charAt(0) : '?'
-  if (data.color) avatar.style.setProperty('--avatar-bg', data.color)
-  else avatar.style.setProperty('--avatar-bg', '#e5e7eb')
-
-  const content = document.createElement('div')
-  content.className = 'news-content'
-
-  if (isMyStories) {
-    const metaTop = document.createElement('div')
-    metaTop.className = 'news-meta-top'
-    const authorSpan = document.createElement('span')
-    authorSpan.className = 'news-author'
-    authorSpan.textContent = data.author
-
-    const sep = document.createElement('span')
-    sep.className = 'news-separator'
-    sep.textContent = '•'
-
-    const dateSpan = document.createElement('span')
-    dateSpan.className = 'news-date-text'
-    dateSpan.textContent = data.date
-
-    metaTop.appendChild(authorSpan)
-    metaTop.appendChild(sep)
-    metaTop.appendChild(dateSpan)
-    content.appendChild(metaTop)
-  }
-
-  const title = document.createElement('h3')
-  title.className = 'news-title'
-  title.textContent = data.title
-  content.appendChild(title)
-
-  const description = document.createElement('p')
-  description.className = 'news-description'
-  description.textContent = data.description || 'No description available.'
-  content.appendChild(description)
-
-  if (!isMyStories) {
-    const metaBottom = document.createElement('div')
-    metaBottom.className = 'news-meta-bottom'
-
-    const authorSpan = document.createElement('span')
-    authorSpan.className = 'news-author-muted'
-    authorSpan.textContent = data.author
-
-    const sep = document.createElement('span')
-    sep.className = 'news-separator'
-    sep.textContent = '•'
-
-    const dateSpan = document.createElement('span')
-    dateSpan.className = 'news-date-text'
-    dateSpan.textContent = data.date
-
-    metaBottom.appendChild(authorSpan)
-    metaBottom.appendChild(sep)
-    metaBottom.appendChild(dateSpan)
-
-    if (data.tags && Array.isArray(data.tags)) {
-      // To be safe and avoid innerHTML here too, let's do it properly
-      data.tags.forEach(tag => {
-        const tagSpan = document.createElement('span')
-        tagSpan.className = 'news-tag-pill'
-        tagSpan.textContent = tag
-        metaBottom.appendChild(tagSpan)
-      })
-    }
-
-    content.appendChild(metaBottom)
-  }
-
-  card.appendChild(avatar)
-  card.appendChild(content)
-
-  return card
-}
-
-},{}],8:[function(require,module,exports){
+},{"./wrapper":9,"STATE":1}],9:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
-console.log('[DEBUG] wrapper.js running, filename:', __filename)
 const statedb = STATE(__filename)
 
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
+const article_viewer = require('article-viewer')
+const content_parser = article_viewer.parser
+const news_card = require('news-card')
+const write_page = require('write-page')
+const news_list = require('news-list')
 const graphdb = require('./graphdb')
-const ArticleViewer = require('./article-viewer')
-const parseContent = require('./content-parser')
-const NewsCard = require('./news-card')
-const WritePage = require('./write-page')
 
-module.exports = my_component_with_graph
+module.exports = wrapper
 
-async function my_component_with_graph (opts, protocol) {
+async function wrapper(opts, protocol) {
   const { id, sdb } = await get(opts.sid)
   const { drive } = sdb
 
@@ -3581,52 +3529,44 @@ async function my_component_with_graph (opts, protocol) {
   let mid = 0
   let send_to_graph_explorer = null
   let explorer_el = null
-  const cardMap = new WeakMap()
 
-  const on = {
-    theme: inject,
-    entries: on_entries
-  }
+  const card_map = new WeakMap()
+  let list_items_data = []
 
   const el = document.createElement('div')
   const shadow = el.attachShadow({ mode: 'closed' })
 
-  const layoutSheet = new CSSStyleSheet()
+  const layout_sheet = new CSSStyleSheet()
   drive.get('theme/layout.css').then(file => {
-    if (file && file.raw) {
-      layoutSheet.replaceSync(file.raw)
-    }
+    layout_sheet.replaceSync(file.raw)
   }).catch(e => console.error('Failed to load layout.css', e))
 
   const sheet = new CSSStyleSheet()
-  const newsCardSheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [layoutSheet, sheet]
+  const news_card_sheet = new CSSStyleSheet()
+  shadow.adoptedStyleSheets = [layout_sheet, sheet]
 
   const subs = await sdb.watch(onbatch)
 
   if (subs && subs.length > 0) {
-    console.log('[Wrapper] Rendering Graph Explorer with sub:', subs[0])
-    explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
-    explorer_el.classList.add('explorer-panel')
-    shadow.append(explorer_el)
-  } else {
-    console.warn('[Wrapper] No graph-explorer instance found in subs')
+    if (typeof graph_explorer === 'function') {
+      explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
+      explorer_el.classList.add('explorer-panel')
+      shadow.appendChild(explorer_el)
+    }
   }
 
-  const main_content = document.createElement('div')
-  main_content.className = 'main-viewer'
-  main_content.innerHTML = `
-    <div class="empty-container">
-      <h2 class="empty-title">Select an item to read</h2>
-      <p class="empty-hint">← Choose a story or feed from the sidebar</p>
-    </div>
-  `
-  shadow.append(main_content)
+  render_main_view()
 
-  shadow.addEventListener('click', (e) => {
-    const nodeEl = e.target.closest('.node')
-    if (nodeEl && !e.target.closest('.name') && !e.target.closest('.prefix')) {
-      const instance_path = nodeEl.dataset.instance_path
+  shadow.onclick = handle_shadow_click
+  shadow.onsubmit = handle_shadow_submit
+  shadow.oninput = handle_shadow_input
+
+  return el
+
+  function handle_shadow_click(e) {
+    const node_el = e.target.closest('.node')
+    if (node_el && !e.target.closest('.name') && !e.target.closest('.prefix')) {
+      const instance_path = node_el.dataset.instance_path
       if (instance_path && send_to_graph_explorer) {
         const head = [id, 'graph_explorer', mid++]
         send_to_graph_explorer({
@@ -3636,35 +3576,127 @@ async function my_component_with_graph (opts, protocol) {
         })
       }
     }
-  })
 
-  return el
-
-  async function onbatch (batch) {
-    console.log('[Wrapper] onbatch:', batch)
-    for (const { type, paths } of batch) {
-      console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
-      const data = await Promise.all(paths.map(path => drive.get(path).then(file => file ? file.raw : null)))
-      const valid_data = data.filter(d => d !== null)
-      if (valid_data.length > 0) {
-        console.log('[Wrapper] valid_data found for type:', type, valid_data)
-        on[type] && on[type](valid_data)
-      } else {
-        console.warn('[Wrapper] No valid data found for paths:', paths)
+    const card_target = e.target.closest('.news-card')
+    if (card_target) {
+      const path = card_map.get(card_target)
+      if (path && list_items_data) {
+        if (typeof path === 'object' || path.startsWith('local-')) {
+          const item = list_items_data.find(i => i.path === path)
+          if (item) {
+            render_article(item.data)
+            return
+          }
+        }
+        const head = [id, 'graph_explorer', mid++]
+        send_to_graph_explorer({ head, type: 'select_node', data: { instance_path: path } })
       }
+    }
+
+    if (e.target.closest('.news-fab')) {
+      const folder_name = e.target.closest('.news-fab').dataset.folder
+      render_write_page_view(folder_name)
     }
   }
 
-  function inject (data) {
+  function handle_shadow_submit(e) {
+    if (e.target.id === 'write-story-form') {
+      e.preventDefault()
+      const create_story_data = {
+        title: e.target.title.value,
+        content: e.target.content.value,
+        blog: e.target.blog.value
+      }
+      handle_publish(create_story_data)
+    }
+  }
+
+  function handle_shadow_input(e) {
+    if (e.target.classList.contains('input-content')) {
+      const val = e.target.value
+      const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length
+      const wc = shadow.getElementById('word-count-span')
+      const rt = shadow.getElementById('read-time-span')
+      if (wc) wc.textContent = `${words} words`
+      if (rt) rt.textContent = `~${Math.ceil(words / 200)} min read`
+    }
+  }
+
+  return el
+
+  function render_html(html_string) {
+    let main_viewer = shadow.querySelector('.main-viewer')
+    if (!main_viewer) {
+      const div = document.createElement('div')
+      div.className = 'main-viewer'
+      shadow.appendChild(div)
+      main_viewer = div
+    }
+    main_viewer.innerHTML = html_string
+  }
+
+  function render_main_view() {
+    render_html(`
+        <div class="empty-container">
+          <h2 class="empty-title">Select an item to read</h2>
+          <p class="empty-hint">← Choose a story or feed from the sidebar</p>
+        </div>
+      `)
+  }
+
+  function render_article(data) {
+    render_html(article_viewer(data))
+  }
+
+  function render_write_page_view(folder_name) {
+    render_html(write_page())
+  }
+
+  function handle_publish(data) {
+    const new_story = {
+      title: data.title,
+      content: data.content,
+      author: 'You',
+      date: new Date().toLocaleDateString(),
+      description: data.content.slice(0, 100) + '...',
+      tags: ['#local', '#' + data.blog.replace(/\s+/g, '')],
+      color: '#6366f1'
+    }
+    save_local_story(new_story)
+    alert('Story published locally!')
+    render_folder_content('my-stories')
+  }
+
+  async function onbatch(batch) {
+    console.log('[Wrapper] onbatch:', batch)
+    for (const { type, paths } of batch) {
+      console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
+      const data = await Promise.all(paths.map(fetch_path_raw_data))
+      const valid_data = data.filter(d => d !== null)
+      if (valid_data.length > 0) {
+        if (type === 'theme') inject(valid_data)
+        if (type === 'entries') on_entries(valid_data)
+      }
+    }
+
+    function fetch_path_raw_data(path) {
+      return drive.get(path).then(extract_raw_if_exists)
+    }
+
+    function extract_raw_if_exists(file) {
+      return file ? file.raw : null
+    }
+  }
+
+  function inject(data) {
     if (Array.isArray(data)) {
       sheet.replaceSync(data.join('\n'))
     }
   }
 
-  function on_entries (data) {
+  function on_entries(data) {
     console.log('[Wrapper] on_entries called with:', data)
     if (!data || !data[0]) {
-      console.warn('[Wrapper] No entries data, initializing empty db')
       db = graphdb({})
       notify_db_initialized({})
       return
@@ -3672,263 +3704,206 @@ async function my_component_with_graph (opts, protocol) {
     let parsed_data = {}
     try {
       if (typeof data[0] === 'string') {
-        const res = parseContent(data[0])
-        parsed_data = res || {}
+        parsed_data = content_parser(data[0]) || {}
       } else {
         parsed_data = data[0]
       }
-      console.log('[Wrapper] Parsed entries data:', parsed_data)
-    } catch (e) {
-      console.error('[Wrapper] Error parsing entries data:', e)
-    }
+    } catch (e) { }
     db = graphdb(parsed_data)
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized (entries) {
+  function notify_db_initialized(entries) {
     if (send_to_graph_explorer) {
       const head = [by, 'graph_explorer', mid++]
       send_to_graph_explorer({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
-  function graph_explorer_protocol (send) {
+  function graph_explorer_protocol(send) {
     send_to_graph_explorer = send
     return on_graph_explorer_message
 
-    function on_graph_explorer_message (msg) {
+    function on_graph_explorer_message(msg) {
       const { type, data } = msg
       if (type === 'selection_changed') {
         const { selected } = data
-        if (selected && selected.length > 0) render_content(selected[0])
+        if (selected && selected.length > 0) render_folder_content(selected[0])
       }
       if (type.startsWith('db_')) handle_db_request(msg, send)
     }
+  }
 
-    async function render_content (path) {
-      let drivePath = path
-      if (drivePath.startsWith('/')) drivePath = drivePath.slice(1)
-      const parts = drivePath.split('/')
-      if (parts.length > 2) drivePath = `${parts[0]}/${parts[parts.length - 1]}`
+  async function render_folder_content(path) {
+    let drive_path = path
+    if (drive_path.startsWith('/')) drive_path = drive_path.slice(1)
+    const parts = drive_path.split('/')
+    if (parts.length > 2) drive_path = `${parts[0]}/${parts[parts.length - 1]}`
 
-      let data
+    const data = await try_get_folder_data(drive_path)
+
+    if (data && data.content) {
+      render_article(data)
+    } else {
+      const { folder_name, subs } = get_folder_details(path)
+
+      if (subs.length > 0) {
+        const handled = await process_folder_items({ path, subs, folder_name })
+        if (handled) return
+      }
+
+      render_empty_folder(folder_name, path)
+    }
+  }
+
+  async function try_get_folder_data(drive_path) {
+    try {
+      const file = await drive.get(drive_path)
+      return content_parser(file.raw)
+    } catch (e) {
+      return null
+    }
+  }
+
+  function get_folder_details(path) {
+    let folder_name = path.split('/').pop() || path
+    let subs = []
+    let db_path = path
+    if (typeof path === 'string' && path.includes('|')) {
+      db_path = path.split('|').pop()
+    }
+
+    if (db) {
+      const entry = db.get(db_path) || db.get(path)
+      if (entry) {
+        if (entry.name) folder_name = entry.name
+        if (entry.subs) subs = entry.subs
+      }
+    }
+    return { folder_name, subs }
+  }
+
+  async function process_folder_items({ path, subs, folder_name }) {
+    const fetched_items = (await Promise.all(subs.map(fetch_sub_item))).filter(item => item && item.data)
+
+    async function fetch_sub_item(sub_path) {
+      let item_data
       try {
-        const file = await drive.get(drivePath)
-        if (file && file.raw) data = parseContent(file.raw)
+        let sub_drive_path = sub_path
+        if (sub_drive_path.startsWith('/')) sub_drive_path = sub_drive_path.slice(1)
+        const sub_parts = sub_drive_path.split('/')
+        if (sub_parts.length > 2) {
+          sub_drive_path = `${sub_parts[0]}/${sub_parts[sub_parts.length - 1]}`
+        }
+        const file = await drive.get(sub_drive_path)
+        item_data = content_parser(file.raw)
       } catch (e) { }
+      if (!item_data) return null
+      return { path: sub_path, data: item_data }
+    }
 
-      if (data && data.content) {
-        main_content.innerHTML = ''
-        main_content.appendChild(ArticleViewer(data))
-      } else {
-        let folderName = path.split('/').pop() || path
-        let subs = []
-        let dbPath = path
-        if (typeof path === 'string' && path.includes('|')) {
-          dbPath = path.split('|').pop()
-        }
+    if (path.includes('my-stories')) {
+      const local_stories = get_local_stories()
+      local_stories.forEach(push_local_story)
 
-        if (db) {
-          const entry = db.get(dbPath)
-          if (entry) {
-            if (entry.name) folderName = entry.name
-            if (entry.subs) subs = entry.subs
-          } else {
-            const rawEntry = db.get(path)
-            if (rawEntry) {
-              if (rawEntry.name) folderName = rawEntry.name
-              if (rawEntry.subs) subs = rawEntry.subs
-            }
-          }
-        }
-
-        if (subs.length > 0) {
-          const listItems = (await Promise.all(subs.map(async subPath => {
-            let itemData
-            try {
-              let subDrivePath = subPath
-              if (subDrivePath.startsWith('/')) subDrivePath = subDrivePath.slice(1)
-              const subParts = subDrivePath.split('/')
-              if (subParts.length > 2) {
-                subDrivePath = `${subParts[0]}/${subParts[subParts.length - 1]}`
-              }
-              const file = await drive.get(subDrivePath)
-              if (file && file.raw) itemData = parseContent(file.raw)
-            } catch (e) { }
-            if (!itemData) return null
-            return { path: subPath, data: itemData }
-          }))).filter(item => item && item.data)
-
-          if (path.includes('my-stories')) {
-            const localStories = get_local_stories()
-            localStories.forEach(story => {
-              listItems.push({ path: 'local-' + Date.now(), data: story })
-            })
-          }
-
-          if (listItems.length > 0) {
-            const isMyStories = path.includes('my-stories') || path.includes('My Stories')
-            main_content.innerHTML = ''
-            const container = document.createElement('div')
-            container.className = 'news-container'
-            const header = document.createElement('header')
-            header.className = 'news-header'
-
-            if (!shadow.adoptedStyleSheets.includes(newsCardSheet)) {
-              const cssFile = await drive.get('theme/news-card.css').catch(() => null)
-              if (cssFile && cssFile.raw) {
-                newsCardSheet.replaceSync(cssFile.raw)
-                shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, newsCardSheet]
-              }
-            }
-
-            container.addEventListener('click', (e) => {
-              let target = e.target
-              while (target && target !== container) {
-                const path = cardMap.get(target)
-                if (path) {
-                  if (typeof path === 'object' || path.startsWith('local-')) {
-                    const data = listItems.find(item => item.path === path)?.data
-                    if (data) {
-                      main_content.innerHTML = `
-                          <article class="article-container">
-                            <header class="article-header">
-                              <h1 class="article-title">${data.title}</h1>
-                              <div class="article-meta">
-                                <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
-                              </div>
-                            </header>
-                            <div class="article-body">${data.content}</div>
-                          </article>`
-                      return
-                    }
-                  }
-                  const head = [id, 'graph_explorer', mid++]
-                  send_to_graph_explorer({ head, type: 'select_node', data: { instance_path: path } })
-                  break
-                }
-                target = target.parentNode
-              }
-            })
-
-            header.innerHTML = `<div><h2>${folderName}</h2>${isMyStories ? '<p class="news-subheader">Your published posts</p>' : ''}</div>`
-            container.appendChild(header)
-
-            const listContainer = document.createElement('div')
-            listItems.forEach(({ path, data }) => {
-              const card = NewsCard(data, isMyStories)
-              cardMap.set(card, path)
-              listContainer.appendChild(card)
-            })
-
-            container.appendChild(listContainer)
-            main_content.appendChild(container)
-
-            if (isMyStories) {
-              const fab = document.createElement('div')
-              fab.className = 'news-fab'
-              fab.textContent = '+'
-              fab.onclick = () => render_write_page(folderName)
-              main_content.appendChild(fab)
-            }
-            return
-          }
-        }
-
-        main_content.innerHTML = `
-          <div class="empty-folder-container">
-            <div class="empty-folder-icon">📂</div>
-            <h2 class="empty-folder-title">${folderName}</h2>
-            <p>Select a file inside to view content.</p>
-          </div>`
-
-        if (folderName.includes('My Stories') || path.includes('my-stories')) {
-          const fab = document.createElement('div')
-          fab.className = 'news-fab'
-          fab.textContent = '+'
-          fab.onclick = () => render_write_page(folderName)
-          main_content.appendChild(fab)
-        }
+      function push_local_story(story) {
+        fetched_items.push({ path: 'local-' + Date.now() + Math.random(), data: story })
       }
     }
 
-    function get_local_stories () {
-      try {
-        const stories = localStorage.getItem('p2p_stories')
-        return stories ? JSON.parse(stories) : []
-      } catch (e) {
-        console.error('Failed to load local stories:', e)
-        return []
-      }
-    }
+    list_items_data = fetched_items
 
-    function save_local_story (story) {
-      const stories = get_local_stories()
-      stories.unshift(story)
-      localStorage.setItem('p2p_stories', JSON.stringify(stories))
-    }
+    if (fetched_items.length > 0) {
+      const is_my_stories = path.includes('my-stories') || path.includes('My Stories')
 
-    function render_write_page (folderName) {
-      main_content.innerHTML = ''
+      if (!shadow.adoptedStyleSheets.includes(news_card_sheet)) {
+        drive.get('theme/news-card.css').then(apply_news_card_css).catch(ignore_css_error)
 
-      const writePageComponent = WritePage({
-        onPublish: (data) => {
-          const newStory = {
-            title: data.title,
-            content: data.content,
-            author: 'You',
-            date: new Date().toLocaleDateString(),
-            description: data.content.slice(0, 100) + '...',
-            tags: ['#local', '#' + data.blog.replace(/\s+/g, '')],
-            color: '#6366f1'
-          }
-          save_local_story(newStory)
-          alert('Story published locally!')
-          const myStoriesPath = 'my-stories'
-          render_content(myStoriesPath)
+        function apply_news_card_css(css_file) {
+          news_card_sheet.replaceSync(css_file.raw)
+          shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, news_card_sheet]
         }
-      })
 
-      main_content.appendChild(writePageComponent)
-    }
-
-    async function handle_db_request (request_msg, send) {
-      const { head: request_head, type: operation, data: params } = request_msg
-      let result
-      if (!db) { send_response(request_head, null); return }
-
-      if (operation === 'db_get') result = db.get(params.path)
-      else if (operation === 'db_has') result = db.has(params.path)
-      else if (operation === 'db_is_empty') result = db.is_empty()
-      else if (operation === 'db_root') result = db.root()
-      else if (operation === 'db_keys') result = db.keys()
-      else if (operation === 'db_raw') result = db.raw()
-      else result = null
-
-      send_response(request_head, result)
-
-      function send_response (request_head, result) {
-        const response_head = [by, 'graph_explorer', mid++]
-        send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
+        function ignore_css_error() { }
       }
+
+      const list_html = news_list({ items: fetched_items, folder_name, is_my_stories })
+
+      render_html(list_html)
+
+      const processed_cards = shadow.querySelectorAll('.news-card')
+      processed_cards.forEach(map_card_to_path)
+
+      function map_card_to_path(card_el, index) {
+        if (fetched_items[index]) {
+          card_map.set(card_el, fetched_items[index].path)
+        }
+      }
+
+      return true
+    }
+    return false
+  }
+
+  function render_empty_folder(folder_name, path) {
+    render_html(`
+      <div class="empty-folder-container">
+        <div class="empty-folder-icon">📂</div>
+        <h2 class="empty-folder-title">${folder_name}</h2>
+        <p>Select a file inside to view content.</p>
+        ${(path.includes('my-stories') || folder_name.includes('My Stories')) ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
+      </div>
+    `)
+  }
+  function get_local_stories() {
+    try {
+      const stories = localStorage.getItem('p2p_stories')
+      return stories ? JSON.parse(stories) : []
+    } catch (e) { return [] }
+  }
+
+  function save_local_story(story) {
+    const stories = get_local_stories()
+    stories.unshift(story)
+    localStorage.setItem('p2p_stories', JSON.stringify(stories))
+  }
+
+  async function handle_db_request(request_msg, send) {
+    const { head: request_head, type: operation, data: params } = request_msg
+    let result
+    if (!db) { send_response(request_head, null); return }
+
+    if (operation === 'db_get') result = db.get(params.path)
+    else if (operation === 'db_has') result = db.has(params.path)
+    else if (operation === 'db_is_empty') result = db.is_empty()
+    else if (operation === 'db_root') result = db.root()
+    else if (operation === 'db_keys') result = db.keys()
+    else if (operation === 'db_raw') result = db.raw()
+    else result = null
+
+    send_response(request_head, result)
+
+    function send_response(request_head, result) {
+      const response_head = [by, 'graph_explorer', mid++]
+      send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
     }
   }
 }
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       'graph-explorer': { $: '' },
       './graphdb': { $: '' },
-      './article-viewer': { $: '' },
-      './content-parser': { $: '' },
-      './news-card': { $: '' },
-      './write-page': { $: '' }
+      'article-viewer': { $: '' },
+      'news-card': { $: '' },
+      'write-page': { $: '' },
+      'news-list': { $: '' }
     },
     api: fallback_instance
   }
 
-  function fallback_instance () {
+  function fallback_instance() {
     return {
       _: {
         'graph-explorer': {
@@ -3944,95 +3919,19 @@ function fallback_module () {
           }
         },
         './graphdb': { 0: '' },
-        './article-viewer': { 0: '' },
-        './content-parser': { 0: '' },
-        './news-card': { 0: '' },
-        './write-page': { 0: '' }
+        'article-viewer': { 0: '' },
+        'news-card': { 0: '' },
+        'write-page': { 0: '' },
+        'news-list': { 0: '' }
       },
       drive: {
         'entries/': { 'entries.json': { $ref: 'entries.json' } },
         'theme/': {
           'layout.css': {
-            raw: `
-      :host { 
-        position: fixed; /* Force full screen overlay */
-        top: 0; left: 0; bottom: 0; right: 0; 
-        display: flex; 
-        width: 100vw;
-        height: 100vh;
-        z-index: 9999;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-      .explorer-panel { 
-        width: 250px; 
-        flex-shrink: 0; 
-        border-right: 1px solid #e5e7eb; 
-        height: 100%;
-        position: relative;
-        z-index: 10;
-        background-color: #f9fafb;
-      }
-      .main-viewer { 
-        flex: 1; 
-        padding: 40px; 
-        overflow-y: auto; 
-        background-color: #ffffff; 
-        color: #1f2937; 
-      }
-      .empty-container { text-align: center; margin-top: 100px; color: #9ca3af; }
-      .empty-title { color: #374151; font-size: 1.5rem; font-weight: 600; }
-      
-      /* Write Page Styles */
-      .write-page-container { max-width: 48rem; margin: 0 auto; padding-bottom: 4rem; }
-      .section-header { margin-bottom: 2.5rem; }
-      .section-header h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; margin-top: 0; color: #1f2937; }
-      .section-header p { font-size: 1.125rem; color: #6b7280; font-weight: 300; margin: 0; }
-
-      .card { background: white; border: 1px solid rgba(229, 231, 235, 0.5); border-radius: 0.75rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
-      .space-y-8 > * + * { margin-top: 2rem; }
-      .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.75rem; }
-      .input-title { width: 100%; border: none; font-size: 2rem; font-weight: 700; outline: none; }
-      .input-content { width: 100%; border: none; min-height: 24rem; resize: none; font-size: 1rem; outline: none; }
-      
-      .btn-publish { background: #6366f1; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
-      .btn-publish:hover { background: #4f46e5; }
-      
-      .divider { height: 1px; background: rgba(229, 231, 235, 0.3); margin: 2rem 0; }
-      .word-count { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; font-weight: 500; }
-      .actions { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; }
-      .action-text { font-size: 0.75rem; color: #9ca3af; font-weight: 300; }
-      .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 4rem; }
-      .tip { text-align: center; }
-      .tip h3 { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; color: #1f2937; }
-      .tip p { font-size: 0.875rem; color: #6b7280; font-weight: 300; }
-      .blog-select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; color: #1f2937; background-color: white; margin-bottom: 1rem; }
-
-      .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
-            `
+            $ref: 'layout.css'
           },
           'news-card.css': {
-            raw: `
-            .news-author { font-weight: 600; color: #111827; }
-            .news-author-muted { font-weight: 600; color: #6b7280; }
-            .news-separator { margin: 0 4px; }
-            .news-date-text { color: inherit; }
-            .news-container { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
-            .news-card { display: flex; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s; }
-            .news-card:hover { background: rgba(0,0,0,0.01); }
-            .news-avatar { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; font-weight: 600; background-color: var(--avatar-bg, #e5e7eb); }
-            .news-content { flex: 1; }
-            .news-title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
-            .news-description { color: #4b5563; font-size: 1rem; line-height: 1.5; margin: 0 0 0.5rem 0; }
-            .news-meta-top { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
-            .news-meta-bottom { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
-            .news-tags { display: flex; align-items: center; gap: 0.5rem; }
-            .news-tag-pill { color: #6366f1; background: #e0e7ff; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
-            .news-fab { position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s; z-index: 50; font-size: 1.5rem; }
-            .news-fab:hover { transform: scale(1.1); }
-            .news-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
-            .news-header h2 { font-size: 2rem; font-weight: 700; color: #111827; margin: 0; }
-            .news-subheader { color: #6b7280; margin-top: 0.5rem; }
-            `
+            $ref: '../news-card/news-card.css'
           }
         },
         'runtime/': {
@@ -4055,159 +3954,57 @@ function fallback_module () {
         'undo/': { 'stack.json': { raw: '[]' } },
         'my-stories/': {
           'story-1': {
-            raw: `---
-title: My First Post
-author: You
-date: Jan 28
-description: "This is my first post on the P2P network! I'm excited to share my thoughts here."
----
-This is my first post on the P2P network!
-
-I'm excited to share my thoughts here. This platform allows us to connect directly.
-
-## Why P2P?
-It's about **freedom** and **control**. `
+            $ref: 'data/story-1.md'
           },
           'story-2': {
-            raw: `---
-title: Building a P2P Network
-author: You
-date: Jan 27
-description: "Decentralized networks are the future. Here is how we are building one."
----
-Decentralized networks are the future.
-
-Here is how we are building one:
-- Using Hyperswarm for discovery
-- Using Hypercore for storage
-- Using blind-pairing for privacy`
+            $ref: 'data/story-2.md'
           },
           'story-3': {
-            raw: `---
-title: Future of Decentralized
-author: You
-date: Jan 26
-description: "Web3 is evolving rapidly. Smart contracts and IPFS are changing the game."
----
-Web3 is evolving rapidly. **Smart contracts** and **IPFS** are changing the game.`
+            $ref: 'data/story-3.md'
           },
           'story-4': {
-            raw: `---
-title: Why Decentralization Matters
-author: You
-date: Jan 25
-description: "Control over your own data is a fundamental right. Let's discuss why."
----
-Control over your own data is a fundamental right.
-
-Let's discuss why:
-1. Censorship resistance
-2. Data ownership
-3. Resilience`
+            $ref: 'data/story-4.md'
           }
         },
         'feeds/': {},
         'feeds/hackers-digest/': {
           'code-coffee': {
-            raw: `---
-title: Code & Coffee
-author: HackerOne
-date: 2h ago
-description: Best spots for coding in the city
-tags: ["#lifestyle", "#remote"]
----
-Here is a list of the best cafes with strong WiFi and good vibes:
-- The Grind
-- Java Script
-- Bean There`
+            $ref: 'data/code-coffee.md'
           },
           'system-design': {
-            raw: `---
-title: System Design Weekly
-author: Archie
-date: 5h ago
-description: Deep dive into distributed systems
-tags: ["#tech", "#architecture"]
----
-Today we explore **consistent hashing** and its applications in load balancing.`
+            $ref: 'data/system-design.md'
           }
         },
         'feeds/off-the-grid/': {
           'mesh-network': {
-            raw: `---
-title: Building a mesh network
-author: GridFree
-date: 1d ago
-description: Hardware guide
-tags: ["#hardware", "#iot"]
----
-Using **LoRaWAN** for off-grid comms is easier than you think.`
+            $ref: 'data/mesh-network.md'
           },
           fediverse: {
-            raw: `---
-title: Why I left social media
-author: Anon
-date: 2d ago
-description: Personal journey
-tags: ["#privacy"]
----
-The centralized web is broken. It mines our attention for profit.`
+            $ref: 'data/fediverse.md'
           },
           'self-hosting': {
-            raw: `---
-title: Self-hosting 101
-author: HomeLab
-date: 3d ago
-description: Getting started with Docker
-tags: ["#guides"]
----
-Start small with a **Raspberry Pi**.`
+            $ref: 'data/self-hosting.md'
           }
         },
         'feeds/peer-review/': {
           'network-notes': {
-            raw: `---
-title: Network Notes
-author: NetSec
-date: 4h ago
----
-Analyzing traffic patterns in P2P gossip protocols...`
+            $ref: 'data/network-notes.md'
           }
         },
         'feeds/peer-review/security-chronicles/': {
           'privacy-matters': {
-            raw: `---
-title: Why Privacy Matters
-author: SecGuru
-date: 5h ago
----
-Privacy is not secrecy, it is **control**.`
+            $ref: 'data/privacy-matters.md'
           },
           'zero-trust': {
-            raw: `---
-title: Zero Trust Architecture
-author: EntSec
-date: 6h ago
----
-Never trust, always verify.`
+            $ref: 'data/zero-trust.md'
           }
         },
         'lists/': {
           'best-of-tech': {
-            raw: `---
-title: Best of Tech
-author: Curator
-date: Weekly
----
-Top tech links for this week...`
+            $ref: 'data/best-of-tech.md'
           },
           'morning-read': {
-            raw: `---
-title: Morning Read
-author: Daily
-date: Daily
----
-5 things you need to know today...`
+            $ref: 'data/morning-read.md'
           }
         },
         'discover/': {},
@@ -4218,7 +4015,7 @@ date: Daily
     }
   }
 
-  function override_theme () {
+  function override_theme() {
     return {
       _: {
         mapping: {
@@ -4234,156 +4031,7 @@ date: Daily
       drive: {
         'style/': {
           'style.css': {
-            raw: `
-            :host {
-              --primary: #6366f1;
-              --bg-sidebar: #f9fafb;
-              --border-color: #e5e7eb;
-              --text-main: #1f2937;
-              --text-muted: #6b7280;
-
-              display: block;
-              height: 100%;
-              width: 100%;
-              position: fixed; /* Keep fixed to ensure full screen */
-              top: 0; left: 0; bottom: 0; right: 0;
-              z-index: 9999;
-              font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              color: var(--text-main);
-              background-color: var(--bg-sidebar);
-            }
-
-            .graph-container {
-              /* aside */
-              width: 250px;
-              height: 100vh;
-              background: var(--bg-sidebar);
-              border-right: 1px solid var(--border-color);
-              padding: 1rem 0;
-              display: flex;
-              flex-direction: column;
-              overflow: auto;
-              box-sizing: border-box;
-            }
-
-            .node {
-              /* .tree-item */
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              padding: 0.4rem 0.75rem; 
-              margin: 0.1rem 0.5rem;   
-              border-radius: 6px;
-              cursor: pointer;
-              font-size: 0.9rem;
-              color: var(--text-main);
-              transition: background 0.15s;
-              height: 32px; 
-              box-sizing: border-box;
-              user-select: none;
-            }
-
-            .wrapper-root {
-               position: absolute;
-               top: 0; left: 0; right: 0; bottom: 0;
-               display: flex;
-               /* This logic seems to be inside shadow dom of graph-explorer or how styles are applied? */
-               /* It expects graph explorer to use these classes? */
-            }
-            
-            /* Assuming graph explorer uses .graph-container, and we rely on :host for the layout. */
-
-            .node:hover {
-              background: rgba(0, 0, 0, 0.04);
-            }
-
-            .node.type-stories,
-            .node.type-feeds,
-            .node.type-lists,
-            .node.type-discover,
-            .node.type-folder {
-              font-weight: 600;
-              color: #111827; 
-            }
-
-            .node.type-file, .node.type-js-file {
-              font-weight: 400;
-              color: var(--text-main);
-            }
-
-            .node.selected {
-              background: rgba(99, 102, 241, 0.1);
-              color: var(--primary);
-              font-weight: 600;
-            }
-
-            input[type="checkbox"] {
-              display: none !important;
-            }
-  
-            .wand { display: none !important; }
-            .node.type-root { display: none !important; }
-
-            .icon {
-              color: var(--text-muted);
-              width: 16px;
-              height: 16px;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              margin-right: 0; 
-              opacity: 1;      
-            }
-        
-            .prefix {
-              cursor: pointer;
-              min-width: 16px; 
-              height: 100%;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            .indent {
-              height: 100%;
-              display: inline-flex;
-            }
-            
-            .pipe, .blank {
-               display: inline-block;
-               width: 12px; /* Indent step size */
-               height: 100%;
-            }
-
-
-            .prefix::after {
-              content: '▸';
-              font-size: 10px;
-              color: var(--text-muted);
-              display: inline-block;
-              transition: transform 0.15s;
-            }
-    
-            .prefix.expanded::after {
-               transform: rotate(90deg);
-            }
-
-            /* Icons for types */
-            .node.type-stories > .icon::before { content: '📝'; font-size: 14px; }
-            .node.type-feeds > .icon::before   { content: '📡'; font-size: 14px; }
-            .node.type-lists > .icon::before   { content: '📋'; font-size: 14px; }
-            .node.type-discover > .icon::before { content: '🧭'; font-size: 14px; }
-      
-            .node.type-folder > .icon { display: none; }
-            .node.type-file > .icon, .node.type-js-file > .icon { display: none; }
-            
-            .node.selected .icon { color: var(--primary); }
-
-            .graph-container::-webkit-scrollbar { width: 6px; }
-            .graph-container::-webkit-scrollbar-track { background: transparent; }
-            .graph-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-            .graph-container::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-          `
+            $ref: 'style.css'
           }
         },
         'runtime/': {
@@ -4443,174 +4091,79 @@ date: Daily
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./article-viewer":3,"./content-parser":4,"./graphdb":5,"./news-card":7,"./write-page":9,"STATE":1,"graph-explorer":2}],9:[function(require,module,exports){
-module.exports = function WritePage ({ onPublish }) {
-  const container = document.createElement('div')
-  container.className = 'write-page-container'
-
-  const header = document.createElement('div')
-  header.className = 'section-header'
-
-  const h1 = document.createElement('h1')
-  h1.textContent = 'Write a Story'
-
-  const p = document.createElement('p')
-  p.textContent = 'Share your thoughts with the network'
-
-  header.appendChild(h1)
-  header.appendChild(p)
-  container.appendChild(header)
-
-  const card = document.createElement('div')
-  card.className = 'card'
-
-  const spaceY = document.createElement('div')
-  spaceY.className = 'space-y-8'
-
-  const group1 = document.createElement('div')
-  group1.className = 'input-group'
-
-  const label1 = document.createElement('label')
-  label1.textContent = 'Publishing To'
-
-  const blogSelect = document.createElement('select')
-  blogSelect.className = 'blog-select'
+},{"./graphdb":7,"STATE":1,"article-viewer":4,"graph-explorer":2,"news-card":5,"news-list":6,"write-page":10}],10:[function(require,module,exports){
+module.exports = function write_page () {
   const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
-  blogs.forEach(blog => {
-    const opt = document.createElement('option')
-    opt.value = blog
-    opt.textContent = blog
-    if (blog === 'Main Blog') opt.selected = true
-    blogSelect.appendChild(opt)
-  })
+  const options = blogs.map(render_blog_option).join('')
 
-  group1.appendChild(label1)
-  group1.appendChild(blogSelect)
-  spaceY.appendChild(group1)
+  function render_blog_option (blog) {
+    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
+  }
 
-  const group2 = document.createElement('div')
-  group2.className = 'input-group'
-
-  const label2 = document.createElement('label')
-  label2.textContent = 'Story Title'
-
-  const titleInput = document.createElement('input')
-  titleInput.type = 'text'
-  titleInput.className = 'input-title'
-  titleInput.placeholder = 'Give your story a captivating title...'
-
-  group2.appendChild(label2)
-  group2.appendChild(titleInput)
-  spaceY.appendChild(group2)
-
-  const divider = document.createElement('div')
-  divider.className = 'divider'
-  spaceY.appendChild(divider)
-
-  const group3 = document.createElement('div')
-  group3.className = 'input-group'
-
-  const label3 = document.createElement('label')
-  label3.textContent = 'Your Story'
-
-  const contentArea = document.createElement('textarea')
-  contentArea.className = 'input-content'
-  contentArea.placeholder = 'Write your story here. Share your thoughts, experiences, and insights...'
-
-  const wordCountDiv = document.createElement('div')
-  wordCountDiv.className = 'word-count'
-
-  const wordCountSpan = document.createElement('span')
-  wordCountSpan.textContent = '0 words'
-
-  const readTimeSpan = document.createElement('span')
-  readTimeSpan.textContent = '~0 min read'
-
-  wordCountDiv.appendChild(wordCountSpan)
-  wordCountDiv.appendChild(readTimeSpan)
-
-  group3.appendChild(label3)
-  group3.appendChild(contentArea)
-  group3.appendChild(wordCountDiv)
-  spaceY.appendChild(group3)
-
-  const actions = document.createElement('div')
-  actions.className = 'actions'
-
-  const publishBtn = document.createElement('button')
-  publishBtn.className = 'btn-publish'
-  publishBtn.textContent = 'Publish Story'
-
-  const actionText = document.createElement('p')
-  actionText.className = 'action-text'
-  actionText.textContent = 'Your story will be stored locally and synced with your network'
-
-  actions.appendChild(publishBtn)
-  actions.appendChild(actionText)
-  spaceY.appendChild(actions)
-
-  card.appendChild(spaceY)
-  container.appendChild(card)
-
-  const tips = document.createElement('div')
-  tips.className = 'tips'
-
-  const tipData = [
+  const tip_data = [
     { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
     { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
     { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
   ]
 
-  tipData.forEach(t => {
-    const tipDiv = document.createElement('div')
-    tipDiv.className = 'tip'
-    const h3 = document.createElement('h3')
-    h3.textContent = t.title
-    const p = document.createElement('p')
-    p.textContent = t.text
-    tipDiv.appendChild(h3)
-    tipDiv.appendChild(p)
-    tips.appendChild(tipDiv)
-  })
+  const tips_html = tip_data.map(render_tip).join('')
 
-  container.appendChild(tips)
-
-  const state = {
-    blog: 'Main Blog',
-    title: '',
-    content: ''
+  function render_tip (t) {
+    return `
+    <div class="tip">
+      <h3>${t.title}</h3>
+      <p>${t.text}</p>
+    </div>
+  `
   }
 
-  blogSelect.addEventListener('change', (e) => { state.blog = e.target.value })
+  return `
+    <div class="write-page-container">
+      <div class="section-header">
+        <h1>Write a Story</h1>
+        <p>Share your thoughts with the network</p>
+      </div>
 
-  titleInput.addEventListener('input', (e) => { state.title = e.target.value })
+      <div class="card">
+        <form class="space-y-8" id="write-story-form">
+          <div class="input-group">
+            <label>Publishing To</label>
+            <select class="blog-select" name="blog">
+              ${options}
+            </select>
+          </div>
 
-  contentArea.addEventListener('input', (e) => {
-    state.content = e.target.value
-    const words = e.target.value.trim() === '' ? 0 : e.target.value.trim().split(/\s+/).length
-    wordCountSpan.textContent = `${words} words`
-    readTimeSpan.textContent = `~${Math.ceil(words / 200)} min read`
-  })
+          <div class="input-group">
+            <label>Story Title</label>
+            <input type="text" class="input-title" name="title" placeholder="Give your story a captivating title..." required>
+          </div>
 
-  publishBtn.addEventListener('click', () => {
-    if (!state.title || !state.content) {
-      alert('Please fill in both title and content.')
-      return
-    }
+          <div class="divider"></div>
 
-    if (onPublish) {
-      onPublish({
-        title: state.title,
-        content: state.content,
-        blog: state.blog
-      })
-    }
-  })
+          <div class="input-group">
+            <label>Your Story</label>
+            <textarea class="input-content" name="content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." required></textarea>
+            <div class="word-count">
+              <span id="word-count-span">0 words</span>
+              <span id="read-time-span">~0 min read</span>
+            </div>
+          </div>
 
-  return container
+          <div class="actions">
+            <button type="submit" class="btn-publish">Publish Story</button>
+            <p class="action-text">Your story will be stored locally and synced with your network</p>
+          </div>
+        </form>
+      </div>
+
+      <div class="tips">
+        ${tips_html}
+      </div>
+    </div>
+  `
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
@@ -4660,32 +4213,44 @@ console.log('p2p news app')
 const news = require('news')
 
 const customVault = {
-  init_blog: async ({ username }) => {
-    console.log('[customVault] init_blog:', username)
-  },
-  get_peer_blogs: async () => {
-    console.log('[customVault] get_peer_blogs')
-    return new Map()
-  },
-  get_my_posts: async () => {
-    console.log('[customVault] get_my_posts')
-    return []
-  },
-  get_profile: async (key) => {
-    console.log('[customVault] get_profile:', key)
-    return null
-  },
-  on_update: (callback) => {
-    console.log('[customVault] on_update registered')
-  }
+  init_blog: init_blog,
+  get_peer_blogs: get_peer_blogs,
+  get_my_posts: get_my_posts,
+  get_profile: get_profile,
+  on_update: on_update
+}
+
+async function init_blog ({ username }) {
+  console.log('[customVault] init_blog:', username)
+}
+
+async function get_peer_blogs () {
+  console.log('[customVault] get_peer_blogs')
+  return new Map()
+}
+
+async function get_my_posts () {
+  console.log('[customVault] get_my_posts')
+  return []
+}
+
+async function get_profile (key) {
+  console.log('[customVault] get_profile:', key)
+  return null
+}
+
+function on_update (callback) {
+  console.log('[customVault] on_update registered')
 }
 
 async function init () {
   console.log('[page.js] init started')
 
-  const start = await sdb.watch(async (batch) => {
+  const start = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch (batch) {
     console.log('[page.js] sdb watch batch:', batch)
-  })
+  }
 
   console.log('[page.js] Watch returned:', start)
 
@@ -4705,4 +4270,4 @@ async function init () {
 init().catch(console.error)
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":6}]},{},[10]);
+},{"STATE":1,"news":8}]},{},[11]);

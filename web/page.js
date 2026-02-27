@@ -46,32 +46,44 @@ console.log('p2p news app')
 const news = require('news')
 
 const customVault = {
-  init_blog: async ({ username }) => {
-    console.log('[customVault] init_blog:', username)
-  },
-  get_peer_blogs: async () => {
-    console.log('[customVault] get_peer_blogs')
-    return new Map()
-  },
-  get_my_posts: async () => {
-    console.log('[customVault] get_my_posts')
-    return []
-  },
-  get_profile: async (key) => {
-    console.log('[customVault] get_profile:', key)
-    return null
-  },
-  on_update: (callback) => {
-    console.log('[customVault] on_update registered')
-  }
+  init_blog: init_blog,
+  get_peer_blogs: get_peer_blogs,
+  get_my_posts: get_my_posts,
+  get_profile: get_profile,
+  on_update: on_update
+}
+
+async function init_blog ({ username }) {
+  console.log('[customVault] init_blog:', username)
+}
+
+async function get_peer_blogs () {
+  console.log('[customVault] get_peer_blogs')
+  return new Map()
+}
+
+async function get_my_posts () {
+  console.log('[customVault] get_my_posts')
+  return []
+}
+
+async function get_profile (key) {
+  console.log('[customVault] get_profile:', key)
+  return null
+}
+
+function on_update (callback) {
+  console.log('[customVault] on_update registered')
 }
 
 async function init () {
   console.log('[page.js] init started')
 
-  const start = await sdb.watch(async (batch) => {
+  const start = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch (batch) {
     console.log('[page.js] sdb watch batch:', batch)
-  })
+  }
 
   console.log('[page.js] Watch returned:', start)
 
