@@ -3188,13 +3188,32 @@ module.exports = function content_parser (raw) {
 }
 
 },{}],4:[function(require,module,exports){
-module.exports = function article_viewer (data) {
+module.exports = article_viewer
+module.exports.parser = require('./content_parser')
+
+async function article_viewer(opts, protocol) {
+  const { data } = opts
+  let send
+  if (protocol) send = protocol(handle_message)
+
   const content_html = data.content
     .split('\n\n')
     .map(parse_block)
     .join('')
 
-  function parse_block (block) {
+  return `
+    <article class="article-container">
+      <header class="article-header">
+        <h1 class="article-title">${data.title}</h1>
+        <div class="article-meta">
+          <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
+        </div>
+      </header>
+      <div class="article-body">${content_html}</div>
+    </article>
+  `
+
+  function parse_block(block) {
     block = block.trim()
     if (!block) return ''
 
@@ -3216,27 +3235,70 @@ module.exports = function article_viewer (data) {
     return `<p>${p}</p>`
   }
 
-  function format_list_item (line) {
+  function format_list_item(line) {
     return `<li>${line.replace(/^- /, '')}</li>`
   }
 
-  return `
-    <article class="article-container">
-      <header class="article-header">
-        <h1 class="article-title">${data.title}</h1>
-        <div class="article-meta">
-          <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
-        </div>
-      </header>
-      <div class="article-body">${content_html}</div>
-    </article>
-  `
+  function handle_message(msg) {
+  }
 }
 
-module.exports.parser = require('./content_parser')
+function fallback() {
+}
 
 },{"./content_parser":3}],5:[function(require,module,exports){
-module.exports = function news_card ({ data, is_my_stories }) {
+const news_card = require('app_content/newsfeed_view/news_card_list/news_cards')
+
+module.exports = news_list
+
+async function news_list(opts, protocol) {
+  const { items, folder_name, is_my_stories } = opts
+  let send
+  if (protocol) send = protocol(handle_message)
+
+  const header_html = `
+    <header class="news-header">
+        <div>
+            <h2>${folder_name}</h2>
+            ${is_my_stories ? '<p class="news-subheader">Your published posts</p>' : ''}
+        </div>
+    </header>
+  `
+
+  const rendered_cards = await Promise.all(items.map(render_card_item))
+  const cards_html = rendered_cards.join('')
+
+  const list_html = `
+    <div class="news-container">
+        ${header_html}
+        <div class="list-container">
+            ${cards_html}
+        </div>
+        ${is_my_stories ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
+    </div>
+  `
+
+  return list_html
+
+  async function render_card_item(item) {
+    return await news_card({ data: item.data, is_my_stories })
+  }
+
+  function handle_message(msg) {
+  }
+}
+
+function fallback() {
+}
+
+},{"app_content/newsfeed_view/news_card_list/news_cards":6}],6:[function(require,module,exports){
+module.exports = news_card
+
+async function news_card(opts, protocol) {
+  const { data, is_my_stories } = opts
+  let send
+  if (protocol) send = protocol(handle_message)
+
   const avatar_initial = data.title ? data.title.charAt(0) : '?'
   const avatar_bg = data.color || '#e5e7eb'
 
@@ -3277,42 +3339,101 @@ module.exports = function news_card ({ data, is_my_stories }) {
     </div>
   `
 
-  function render_tag_pill (tag) {
+  function render_tag_pill(tag) {
     return `<span class="news-tag-pill">${tag}</span>`
+  }
+
+  function handle_message(msg) {
   }
 }
 
-},{}],6:[function(require,module,exports){
-const news_card = require('news-card')
+function fallback() {
+}
 
-module.exports = function news_list ({ items, folder_name, is_my_stories }) {
-  const header_html = `
-    <header class="news-header">
-        <div>
-            <h2>${folder_name}</h2>
-            ${is_my_stories ? '<p class="news-subheader">Your published posts</p>' : ''}
-        </div>
-    </header>
-  `
+},{}],7:[function(require,module,exports){
+module.exports = write_page
 
-  const list_html = `
-    <div class="news-container">
-        ${header_html}
-        <div class="list-container">
-            ${items.map(render_card_item).join('')}
-        </div>
-        ${is_my_stories ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
+async function write_page(opts, protocol) {
+  let send
+  if (protocol) send = protocol(handle_message)
+
+  const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
+  const options = blogs.map(render_blog_option).join('')
+
+  const tip_data = [
+    { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
+    { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
+    { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
+  ]
+
+  const tips_html = tip_data.map(render_tip).join('')
+
+  return `
+    <div class="write-page-container">
+      <div class="section-header">
+        <h1>Write a Story</h1>
+        <p>Share your thoughts with the network</p>
+      </div>
+
+      <div class="card">
+        <form class="space-y-8" id="write-story-form">
+          <div class="input-group">
+            <label>Publishing To</label>
+            <select class="blog-select" name="blog">
+              ${options}
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Story Title</label>
+            <input type="text" class="input-title" name="title" placeholder="Give your story a captivating title..." required>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="input-group">
+            <label>Your Story</label>
+            <textarea class="input-content" name="content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." required></textarea>
+            <div class="word-count">
+              <span id="word-count-span">0 words</span>
+              <span id="read-time-span">~0 min read</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn-publish">Publish Story</button>
+            <p class="action-text">Your story will be stored locally and synced with your network</p>
+          </div>
+        </form>
+      </div>
+
+      <div class="tips">
+        ${tips_html}
+      </div>
     </div>
   `
 
-  return list_html
+  function render_blog_option(blog) {
+    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
+  }
 
-  function render_card_item (item) {
-    return news_card({ data: item.data, is_my_stories })
+  function render_tip(t) {
+    return `
+    <div class="tip">
+      <h3>${t.title}</h3>
+      <p>${t.text}</p>
+    </div>
+  `
+  }
+
+  function handle_message(msg) {
   }
 }
 
-},{"news-card":5}],7:[function(require,module,exports){
+function fallback() {
+}
+
+},{}],8:[function(require,module,exports){
 module.exports = graphdb
 
 function graphdb (entries) {
@@ -3357,7 +3478,7 @@ function graphdb (entries) {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 const statedb = STATE(__filename)
@@ -3504,18 +3625,18 @@ function defaults (opts) {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":9,"STATE":1}],9:[function(require,module,exports){
+},{"./wrapper":10,"STATE":1}],10:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 
 const { get } = statedb(fallback_module)
 const graph_explorer = require('graph-explorer')
-const article_viewer = require('article-viewer')
+const article_viewer = require('app_content/newsfeed_view')
 const content_parser = article_viewer.parser
-const news_card = require('news-card')
-const write_page = require('write-page')
-const news_list = require('news-list')
+const news_card = require('app_content/newsfeed_view/news_card_list/news_cards')
+const write_page = require('app_content/write_page')
+const news_list = require('app_content/newsfeed_view/news_card_list')
 const graphdb = require('./graphdb')
 
 module.exports = wrapper
@@ -3557,9 +3678,9 @@ async function wrapper(opts, protocol) {
 
   render_main_view()
 
-  shadow.onclick = handle_shadow_click
-  shadow.onsubmit = handle_shadow_submit
-  shadow.oninput = handle_shadow_input
+  shadow.addEventListener('click', handle_shadow_click)
+  shadow.addEventListener('submit', handle_shadow_submit)
+  shadow.addEventListener('input', handle_shadow_input)
 
   return el
 
@@ -3622,8 +3743,6 @@ async function wrapper(opts, protocol) {
     }
   }
 
-  return el
-
   function render_html(html_string) {
     let main_viewer = shadow.querySelector('.main-viewer')
     if (!main_viewer) {
@@ -3644,12 +3763,14 @@ async function wrapper(opts, protocol) {
       `)
   }
 
-  function render_article(data) {
-    render_html(article_viewer(data))
+  async function render_article(data) {
+    const html = await article_viewer({ data })
+    render_html(html)
   }
 
-  function render_write_page_view(folder_name) {
-    render_html(write_page())
+  async function render_write_page_view(folder_name) {
+    const html = await write_page({})
+    render_html(html)
   }
 
   function handle_publish(data) {
@@ -3827,8 +3948,7 @@ async function wrapper(opts, protocol) {
         function ignore_css_error() { }
       }
 
-      const list_html = news_list({ items: fetched_items, folder_name, is_my_stories })
-
+      const list_html = await news_list({ items: fetched_items, folder_name, is_my_stories })
       render_html(list_html)
 
       const processed_cards = shadow.querySelectorAll('.news-card')
@@ -3855,6 +3975,7 @@ async function wrapper(opts, protocol) {
       </div>
     `)
   }
+
   function get_local_stories() {
     try {
       const stories = localStorage.getItem('p2p_stories')
@@ -3895,10 +4016,10 @@ function fallback_module() {
     _: {
       'graph-explorer': { $: '' },
       './graphdb': { $: '' },
-      'article-viewer': { $: '' },
-      'news-card': { $: '' },
-      'write-page': { $: '' },
-      'news-list': { $: '' }
+      'app_content/newsfeed_view': { $: '' },
+      'app_content/newsfeed_view/news_card_list/news_cards': { $: '' },
+      'app_content/write_page': { $: '' },
+      'app_content/newsfeed_view/news_card_list': { $: '' }
     },
     api: fallback_instance
   }
@@ -3919,10 +4040,10 @@ function fallback_module() {
           }
         },
         './graphdb': { 0: '' },
-        'article-viewer': { 0: '' },
-        'news-card': { 0: '' },
-        'write-page': { 0: '' },
-        'news-list': { 0: '' }
+        'app_content/newsfeed_view': { 0: '' },
+        'app_content/newsfeed_view/news_card_list/news_cards': { 0: '' },
+        'app_content/write_page': { 0: '' },
+        'app_content/newsfeed_view/news_card_list': { 0: '' }
       },
       drive: {
         'entries/': { 'entries.json': { $ref: 'entries.json' } },
@@ -3931,7 +4052,7 @@ function fallback_module() {
             $ref: 'layout.css'
           },
           'news-card.css': {
-            $ref: '../news-card/news-card.css'
+            $ref: '../app_content/newsfeed_view/news_card_list/news_cards/news-card.css'
           }
         },
         'runtime/': {
@@ -4090,90 +4211,83 @@ function fallback_module() {
   }
 }
 
-}).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./graphdb":7,"STATE":1,"article-viewer":4,"graph-explorer":2,"news-card":5,"news-list":6,"write-page":10}],10:[function(require,module,exports){
-module.exports = function write_page () {
-  const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
-  const options = blogs.map(render_blog_option).join('')
-
-  function render_blog_option (blog) {
-    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
-  }
-
-  const tip_data = [
-    { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
-    { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
-    { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
-  ]
-
-  const tips_html = tip_data.map(render_tip).join('')
-
-  function render_tip (t) {
-    return `
-    <div class="tip">
-      <h3>${t.title}</h3>
-      <p>${t.text}</p>
-    </div>
-  `
-  }
-
-  return `
-    <div class="write-page-container">
-      <div class="section-header">
-        <h1>Write a Story</h1>
-        <p>Share your thoughts with the network</p>
-      </div>
-
-      <div class="card">
-        <form class="space-y-8" id="write-story-form">
-          <div class="input-group">
-            <label>Publishing To</label>
-            <select class="blog-select" name="blog">
-              ${options}
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Story Title</label>
-            <input type="text" class="input-title" name="title" placeholder="Give your story a captivating title..." required>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="input-group">
-            <label>Your Story</label>
-            <textarea class="input-content" name="content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." required></textarea>
-            <div class="word-count">
-              <span id="word-count-span">0 words</span>
-              <span id="read-time-span">~0 min read</span>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="submit" class="btn-publish">Publish Story</button>
-            <p class="action-text">Your story will be stored locally and synced with your network</p>
-          </div>
-        </form>
-      </div>
-
-      <div class="tips">
-        ${tips_html}
-      </div>
-    </div>
-  `
+function fallback() {
 }
 
-},{}],11:[function(require,module,exports){
+}).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
+},{"./graphdb":8,"STATE":1,"app_content/newsfeed_view":4,"app_content/newsfeed_view/news_card_list":5,"app_content/newsfeed_view/news_card_list/news_cards":6,"app_content/write_page":7,"graph-explorer":2}],11:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
-function fallback_module () {
+const { sdb } = statedb(fallback_module)
+
+console.log('p2p news app')
+const news = require('news')
+
+const customVault = {
+  init_blog: init_blog,
+  get_peer_blogs: get_peer_blogs,
+  get_my_posts: get_my_posts,
+  get_profile: get_profile,
+  on_update: on_update
+}
+
+async function init_blog({ username }) {
+  console.log('[customVault] init_blog:', username)
+}
+
+async function get_peer_blogs() {
+  console.log('[customVault] get_peer_blogs')
+  return new Map()
+}
+
+async function get_my_posts() {
+  console.log('[customVault] get_my_posts')
+  return []
+}
+
+async function get_profile(key) {
+  console.log('[customVault] get_profile:', key)
+  return null
+}
+
+function on_update(callback) {
+  console.log('[customVault] on_update registered')
+}
+
+async function init() {
+  console.log('[page.js] init started')
+
+  const start = await sdb.watch(handle_watch_batch)
+
+  async function handle_watch_batch(batch) {
+    console.log('[page.js] sdb watch batch:', batch)
+  }
+
+  console.log('[page.js] Watch returned:', start)
+
+  if (!start || start.length === 0) {
+    console.error('[page.js] No active instances found for news_app')
+    return
+  }
+
+  const news_app_instance = start[0]
+  const { sid } = news_app_instance
+  console.log('[page.js] Retrieved sid for news_app:', sid)
+
+  const app = await news_app({ sid, vault: customVault })
+  document.body.append(app)
+}
+
+init().catch(console.error)
+
+function fallback_module() {
   return {
     _: {
-      news: {
+      news_app: {
         $: '',
         0: '',
         mapping: {
@@ -4206,68 +4320,5 @@ function fallback_module () {
     }
   }
 }
-
-const { sdb } = statedb(fallback_module)
-
-console.log('p2p news app')
-const news = require('news')
-
-const customVault = {
-  init_blog: init_blog,
-  get_peer_blogs: get_peer_blogs,
-  get_my_posts: get_my_posts,
-  get_profile: get_profile,
-  on_update: on_update
-}
-
-async function init_blog ({ username }) {
-  console.log('[customVault] init_blog:', username)
-}
-
-async function get_peer_blogs () {
-  console.log('[customVault] get_peer_blogs')
-  return new Map()
-}
-
-async function get_my_posts () {
-  console.log('[customVault] get_my_posts')
-  return []
-}
-
-async function get_profile (key) {
-  console.log('[customVault] get_profile:', key)
-  return null
-}
-
-function on_update (callback) {
-  console.log('[customVault] on_update registered')
-}
-
-async function init () {
-  console.log('[page.js] init started')
-
-  const start = await sdb.watch(handle_watch_batch)
-
-  async function handle_watch_batch (batch) {
-    console.log('[page.js] sdb watch batch:', batch)
-  }
-
-  console.log('[page.js] Watch returned:', start)
-
-  if (!start || start.length === 0) {
-    console.error('[page.js] No active instances found for news')
-    return
-  }
-
-  const news_instance = start[0]
-  const { sid } = news_instance
-  console.log('[page.js] Retrieved sid for news:', sid)
-
-  const app = await news({ sid, vault: customVault })
-  document.body.append(app)
-}
-
-init().catch(console.error)
-
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":8}]},{},[11]);
+},{"STATE":1,"news":9}]},{},[11]);
