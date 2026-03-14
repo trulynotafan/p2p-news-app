@@ -7,7 +7,7 @@ const b4a = require('b4a')
 module.exports = blog_content
 
 function blog_content (get_state, helpers) {
-  const { audit_log, setup_peer_autobase, identity, APP_ID } = helpers
+  const { audit_log, setup_peer_autobase, identity } = helpers
 
   const api = {
     // Posts
@@ -241,7 +241,7 @@ function blog_content (get_state, helpers) {
   ***************************************/
 
   async function get_subscribed_peers () {
-    const peers = await identity.vault_get(`app_data/${APP_ID}/subscribed_peers`)
+    const peers = await identity.vault_get('subscribed_peers')
     return peers || []
   }
 
@@ -249,13 +249,13 @@ function blog_content (get_state, helpers) {
     const peers = await get_subscribed_peers()
     if (!peers.includes(key)) {
       peers.push(key)
-      await identity.vault_put(`app_data/${APP_ID}/subscribed_peers`, peers)
+      await identity.vault_put('subscribed_peers', peers)
     }
   }
 
   async function remove_subscribed_peer (key) {
     const peers = await get_subscribed_peers()
-    await identity.vault_put(`app_data/${APP_ID}/subscribed_peers`, peers.filter(k => k !== key))
+    await identity.vault_put('subscribed_peers', peers.filter(k => k !== key))
   }
 }
 
@@ -279,17 +279,89 @@ function validate_blog_post (entry) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"b4a":4,"buffer":6}],2:[function(require,module,exports){
+},{"b4a":5,"buffer":9}],2:[function(require,module,exports){
+// P2P News App Networking
+// App-specific protomux protocol for peer discovery and data exchange
+// Swarm + replication is provided by identity.network()
+const c = require('compact-encoding')
+const b4a = require('b4a')
+const Protomux = require('protomux')
+const HyperWebRTC = require('hyper-webrtc')
+
+module.exports = { setup_protocol }
+
+const is_cli = typeof globalThis.open === 'undefined'
+
+/***************************************
+PROTOCOL SETUP
+***************************************/
+function setup_protocol (socket, opts) {
+  const { replicate, get_username, get_primary_key } = opts
+  const mux = new Protomux(socket)
+  const name = get_username ? get_username() : 'unknown'
+  const mode = is_cli ? 'native' : 'browser'
+  const channel = mux.createChannel({ protocol: 'identity-exchange', onopen })
+  let message
+  let has_received_key = false
+  let peer_name = null
+
+  channel.open()
+
+  // CLI replicates on the raw socket, browser replicates per-protocol
+  if (is_cli) start_replication(socket)
+
+  function onopen () {
+    message = channel.addMessage({ encoding: c.json, onmessage })
+    message.send({ type: 'protocol', data: { name, mode } })
+    send_feedkey()
+  }
+
+  function onmessage (msg) {
+    if (msg.type === 'protocol' && msg.data?.name) {
+      peer_name = msg.data.name
+      console.log('Discovered peer: ' + peer_name)
+      if (!is_cli && msg.data.mode === 'native') start_replication(socket)
+      if (!is_cli && msg.data.mode === 'browser') {
+        const rtc = HyperWebRTC.from(socket, { initiator: socket.isInitiator })
+        rtc.on('open', function () {
+          console.log('HyperWebRTC connection established')
+          start_replication(rtc)
+        })
+      }
+    }
+    if (msg.type === 'feedkey' && !has_received_key) {
+      has_received_key = true
+      const key_buffer = b4a.from(msg.data, 'hex')
+      if (key_buffer && key_buffer.length === 32) {
+        socket.emit('peer-autobase-key', { key: b4a.toString(key_buffer, 'hex'), key_buffer, peer_name })
+      }
+    }
+  }
+
+  /***************************************
+   Helpers
+  ***************************************/
+
+  function send_feedkey () {
+    const key = get_primary_key ? get_primary_key() : null
+    if (key) message.send({ type: 'feedkey', data: key })
+  }
+
+  function start_replication (connection) {
+    send_feedkey()
+    replicate(connection)
+  }
+}
+
+},{"b4a":5,"compact-encoding":11,"hyper-webrtc":18,"protomux":21}],3:[function(require,module,exports){
 // P2P News App.. Blog application that receives identity (vault) as parameter
 // Exports a single constructor function named blog_app
 const b4a = require('b4a')
 const blog_content = require('p2p-news-app-content')
+const { setup_protocol } = require('p2p-news-app-networking')
 
 // Blog-specific topic for swarm discovery
 const BLOG_TOPIC = b4a.from('ffb09601562034ee8394ab609322173b641ded168059d256f6a3d959b2dc6021', 'hex')
-
-// App ID for vault registration
-const APP_ID = 'p2p-news-app'
 
 module.exports = blog_app
 
@@ -309,7 +381,7 @@ DATA STRUCTURES, The only place we need to define structures..
   // The datastructure-manager handles this automatically:
   // registration, initialization, pairing, replication,  writer management
   const STRUCTURES = [
-    { name: 'metadata', namespace: 'blog-metadata', type: 'autobase', encoding: 'json', view_name: 'blog-view' },
+    { name: 'metadata', namespace: 'blog-feed', type: 'autobase', encoding: 'json', view_name: 'blog-view' },
     { name: 'drive', namespace: 'blog-files', type: 'autodrive' },
     { name: 'profile', namespace: 'blog-profile', type: 'autodrive' },
     { name: 'events', namespace: 'blog-events', type: 'autodrive' }
@@ -331,7 +403,7 @@ DATA STRUCTURES, The only place we need to define structures..
   }
 
   // Create content operations (posts, profiles, subscriptions)
-  const content = blog_content(() => state, { audit_log, setup_peer_autobase, identity, APP_ID })
+  const content = blog_content(() => state, { audit_log, setup_peer_autobase, identity })
 
   // Return the blog app API
   const api = {
@@ -383,7 +455,7 @@ INTERNAL FUNCTIONS
 
   // Audit logging helper - uses vault-managed app auditcore
   async function audit_log (op, data = {}) {
-    const app_audit = identity.get_app_audit(APP_ID)
+    const app_audit = identity.get_app_audit()
     if (app_audit) await app_audit.append({ type: op, data })
   }
 
@@ -458,7 +530,7 @@ INTERNAL FUNCTIONS
       }
     }
     // Register app with vault (vault auto-creates auditcore and links it)
-    await identity.register_app(APP_ID, {
+    await identity.register_app({
       name: 'P2P News App',
       structures: STRUCTURES.map(s => ({
         name: s.name,
@@ -469,175 +541,87 @@ INTERNAL FUNCTIONS
     })
   }
 
-  // WRITER KEY WATCHER - Watch vault for writer key requests from paired devices
-  async function start_writer_watcher () {
-    const vault_bee = identity.get_vault_bee()
-    if (!vault_bee) return
-    const watcher = vault_bee.watch({ gte: `writer_requests/${APP_ID}`, lt: `writer_requests/${APP_ID}0` })
-    // Start watching for writer requests
-    // Next commit i'll move it to vault code.
-    watch_writer_requests(watcher)
-    async function watch_writer_requests (watcher) {
-      for await (const _ of watcher) {
-        await process_writer_requests()
-      }
-    }
-    async function process_writer_requests () {
-      const requests = await identity.vault_get(`writer_requests/${APP_ID}`)
-      if (!requests) return
-      let processed_any = false
-      for (const req of requests) {
-        if (req.processed) continue
-        processed_any = true
-        await add_writers_from_request(req)
-        await mark_request_processed(req)
-        await log_device_pairing(req)
-      }
-      if (processed_any) {
-        await identity.vault_put(`writer_requests/${APP_ID}`, requests)
-        state.emitter.emit('update')
-      }
-    }
-    async function add_writers_from_request (req) {
-      for (const [name, key] of Object.entries(req.writer_keys)) {
-        try {
-          if (name === 'app_audit') {
-            // App audit is managed by vault, not ds_manager
-            // This is so that pairing device gets writer access for app audit as well
-            // @TODO Move watchers to core identity.
-            const app_audit = identity.get_app_audit(APP_ID)
-            if (app_audit) await app_audit.add_writer(key)
-          } else {
-            await state.ds_manager.add_writer(name, key)
-          }
-          console.log(`[p2p-news-app] Added writer to ${name}:`, key)
-        } catch (err) {
-          console.error(`[p2p-news-app] Failed to add writer to ${name}:`, err.message)
-        }
-      }
-    }
-    function mark_request_processed (req) {
-      req.processed = true
-      req.processed_at = Date.now()
-    }
-    async function log_device_pairing (req) {
-      // Log Aux Device as a paired device with all its writer keys
-      const device_keys = {}
-      for (const [name, key] of Object.entries(req.writer_keys)) {
-        device_keys[`${name}_writer`] = key
-      }
-      await log_event('add', device_keys)
-    }
-  }
-
   /***************************************
    INIT BLOG
   ***************************************/
 
-  async function init_blog (options) {
-    const { username, relay, offline_mode } = options
-    // Check if vault already exists (pair mode)
-    const vault_bee = identity.get_vault_bee()
-    const network_store = identity.get_network_store()
-    const swarm_instance = identity.get_swarm()
-    if (vault_bee && network_store && swarm_instance) {
-      state.store = network_store
-      state.ds_manager = identity.create_ds_manager()
-      identity.set_ds_manager(state.ds_manager)
-      const app = await identity.get_app(APP_ID)
-      if (!app?.structures) throw new Error('Could not sync with vault. Make sure Device A is online.')
-      const keys_map = Object.fromEntries(app.structures.filter(s => s.key).map(s => [s.name, s.key]))
-      await state.ds_manager.init_all(STRUCTURES.map(c => ({ ...c, store: state.store })), keys_map)
-      // Load the vault-managed app auditcore if it exists (menaing this is for pairing device)
-      if (app.audit_key) await identity.load_app_audit(APP_ID, app.audit_key)
-      await request_app_writer_access()
-      await wait_for_writer_access()
-      identity.set_events_drive(state.ds_manager.get('events'), state.ds_manager.get_store('events'))
-      await setup_peer_handlers()
-      return { store: state.store, swarm: swarm_instance }
-    }
-    // SEED MODE: Start networking, create vault, then app structures
-    const networking_options = {
-      name: username,
-      store_name: `storage-${username}`,
-      topic: BLOG_TOPIC,
-      get_primary_key: () => state.ds_manager ? state.ds_manager.get_key('metadata') : null,
-      get_primary_structure: () => state.ds_manager ? state.ds_manager.get('metadata') : null,
-      relay,
-      offline_mode
-    }
-    const { store: _store, swarm: _swarm } = await identity.start_networking(networking_options)
-    state.store = _store
-    identity.set_swarm(_swarm)
-    // Create vault structures in this store
-    await identity.init_vault_structures({ store: state.store, vault_bee_key: null, vault_audit_key: null })
-    // Now create app structures
+  async function init_blog ({ username }) {
+    state.store = identity.store
     state.ds_manager = identity.create_ds_manager()
     identity.set_ds_manager(state.ds_manager)
-    await state.ds_manager.init_all(STRUCTURES.map(c => ({ ...c, store: state.store })))
-    const metadata = state.ds_manager.get('metadata')
-    await metadata.append({
-      type: 'blog-init',
-      data: { username, title: `${username}'s Blog`, drive_key: state.ds_manager.get_key('drive') }
+
+    const existing_app = await identity.get_app()
+    if (existing_app?.structures) {
+      // Returning user — load existing structures
+      const keys_map = Object.fromEntries(existing_app.structures.filter(s => s.key).map(s => [s.name, s.key]))
+      await state.ds_manager.init_all(STRUCTURES.map(c => ({ ...c, store: state.store })), keys_map)
+      if (existing_app.audit_key) await identity.load_app_audit(existing_app.audit_key)
+      const metadata = state.ds_manager.get('metadata')
+      // edge cases happen in which writer access isnt propogated, in that case get writer access again.
+      if (metadata.writable) {
+        identity.start_writer_watcher()
+      } else {
+        await identity.request_writer_access()
+        await identity.wait_for_writer_access()
+      }
+    } else {
+      // First-time seed user — create structures
+      await state.ds_manager.init_all(STRUCTURES.map(c => ({ ...c, store: state.store })))
+      await state.ds_manager.get('metadata').append({
+        type: 'blog-init',
+        data: { username, title: `${username}'s Blog`, drive_key: state.ds_manager.get_key('drive') }
+      })
+      await content.create_default_profile(username)
+      await register_app_with_vault()
+      identity.start_writer_watcher()
+    }
+
+    identity.set_events_drive(state.ds_manager.get('events'), state.ds_manager.get_store('events'))
+    await identity.log_bootstrap_device()
+    const { swarm, replicate } = await identity.network()
+    swarm.join(BLOG_TOPIC, { server: true, client: true })
+    console.log('p2p-news-app: Swarm Joined')
+    swarm.on('connection', function (socket) {
+      if (!socket.userData) socket.userData = null
+      setup_protocol(socket, {
+        replicate,
+        get_username: () => identity.username || 'unknown',
+        get_primary_key: () => state.ds_manager.get_key('metadata')
+      })
     })
-    await content.create_default_profile(username)
-    await log_bootstrap_device()
-    // Register app in vault
-    await register_app_with_vault()
-    const events_drive = state.ds_manager.get('events')
-    identity.set_events_drive(events_drive, state.ds_manager.get_store('events'))
-    start_writer_watcher()
-    await setup_peer_handlers()
-    return { store: state.store, swarm: _swarm }
+    await setup_peer_handlers(swarm)
+    return { store: state.store, swarm }
   }
 
   // Setup peer discovery handlers
-  async function setup_peer_handlers () {
+  async function setup_peer_handlers (swarm) {
     const metadata = state.ds_manager.get('metadata')
-    state.store.on('peer-autobase-key', async ({ key, key_buffer, relay_url }) => {
-      if (key === state.ds_manager.get_key('metadata')) return
-      if (relay_url) set_peer_relay(key, relay_url)
-      if (state.autobase_cache.has(key)) return
-      await setup_peer_autobase(key, key_buffer)
+    swarm.on('connection', function (socket) {
+      socket.on('peer-autobase-key', function ({ key, key_buffer, peer_name }) {
+        if (key === state.ds_manager.get_key('metadata')) return
+        if (state.discovered_blogs.has(key)) return
+        state.discovered_blogs.set(key, { username: peer_name || 'Unknown' })
+        state.emitter.emit('update')
+      })
     })
     metadata.on('update', () => state.emitter.emit('update'))
     await restore_subscribed_peers()
   }
 
-  // Log bootstrap device with ALL structure writer keys (also dynamic)
-  async function log_bootstrap_device () {
-    const device_keys = {}
-    for (const name of state.ds_manager.get_names()) {
-      const structure = state.ds_manager.get(name)
-      const config = state.ds_manager.get_config(name)
-      let writer_key = null
-      if (config.type === 'autobase') {
-        writer_key = structure.local?.key
-      } else if (config.type === 'autodrive' || config.type === 'auditcore') {
-        writer_key = structure.base?.local?.key
-      }
-      if (writer_key) {
-        device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
-      }
-    }
-    const existing_devices = await get_paired_devices()
-    const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
-    if (!device_exists) {
-      await log_event('add', device_keys)
-    }
-  }
-
   // Create invite
   async function create_invite () {
-    const { invite_code, invite } = await identity.create_vault_invite(BLOG_TOPIC)
+    const { invite_code, invite } = await identity.create_vault_invite()
     const profile = await content.get_profile()
     state.pairing_manager = await identity.setup_vault_pairing({
       invite,
       username: profile?.name || 'Unknown',
-      on_verification_needed: (digits) => state.emitter.emit('verification_needed', digits),
+      on_verification_needed: (digits) => {
+        state.emitter.emit('verification_needed', digits)
+        state.emitter.emit('update')
+      },
       on_paired: async ({ vault_bee_writer, vault_audit_writer }) => {
-      // Vault pairing complete - vault keys are handled by identity module
-      // Device entries are created when app structures get writer access, not here
+        // Vault pairing complete - vault keys are handled by identity module
+        // Device entries are created when app structures get writer access, not here
         console.log('[p2p-news-app] Vault paired with new device')
         state.emitter.emit('update')
       }
@@ -650,37 +634,6 @@ INTERNAL FUNCTIONS
   function deny_pairing () {
     identity.deny_vault_pairing()
     state.emitter.emit('update')
-  }
-
-  // Request writer access (Paring Deivce Side)
-  async function request_app_writer_access () {
-    if (!identity.get_vault_bee()) return
-    const writer_keys = {}
-    for (const name of state.ds_manager.get_names()) {
-      const key = get_local_writer_key(state.ds_manager.get(name), state.ds_manager.get_config(name).type)
-      if (key) writer_keys[name] = b4a.toString(key, 'hex')
-    }
-    // Include app_audit writer key
-    const app_audit = identity.get_app_audit(APP_ID)
-    if (app_audit) {
-      writer_keys.app_audit = b4a.toString(app_audit.base.local.key, 'hex')
-    }
-    const requests = await identity.vault_get(`writer_requests/${APP_ID}`) || []
-    requests.push({ writer_keys, requested_at: Date.now(), processed: false })
-    await identity.vault_put(`writer_requests/${APP_ID}`, requests)
-    return writer_keys
-  }
-
-  // Wait for Device A to process our writer access request
-  async function wait_for_writer_access () {
-    const vault_bee = identity.get_vault_bee()
-    const our_key = state.ds_manager.get('metadata')?.local?.key
-    if (!vault_bee || !our_key) return false
-    const our_hex = b4a.toString(our_key, 'hex')
-    for await (const _ of vault_bee.watch({ gte: `writer_requests/${APP_ID}`, lt: `writer_requests/${APP_ID}0` })) {
-      const reqs = await identity.vault_get(`writer_requests/${APP_ID}`)
-      if (reqs?.find(r => r.writer_keys?.metadata === our_hex && r.processed)) return true
-    }
   }
 
   /***************************************
@@ -725,7 +678,7 @@ GETTERS
     return metadata ? b4a.toString(metadata.local.key, 'hex') : null
   }
   async function get_app_audit_log_entries () {
-    const app_audit = identity.get_app_audit(APP_ID)
+    const app_audit = identity.get_app_audit()
     if (!app_audit) return []
     return app_audit.read()
   }
@@ -757,16 +710,7 @@ function validate_blog_init (entry) {
          typeof data.drive_key === 'string'
 }
 
-/***************************************
-GET LOCAL WRITER KEY
-***************************************/
-function get_local_writer_key (structure, type) {
-  if (type === 'autobase') return structure.local?.key
-  if (type === 'autodrive' || type === 'auditcore') return structure.base?.local?.key
-  return null
-}
-
-},{"b4a":4,"p2p-news-app-content":1}],3:[function(require,module,exports){
+},{"b4a":5,"p2p-news-app-content":1,"p2p-news-app-networking":2}],4:[function(require,module,exports){
 // webapp-ui receives `uservault` from datashell (after auth)
 // this only runs when user is already authenticated
 
@@ -946,8 +890,8 @@ async function init_blog_app () {
         show_view('news')
       } catch (e) { }
       const status_el = document.querySelector('.connection-status')
-      /* the relay setup should be a part of vault, not webapp. 
-      still need to properly separate it, 
+      /* the relay setup should be a part of vault, not webapp.
+      still need to properly separate it,
       so this is still not fully done. */
       status_el.textContent = `🔴 Relay Error: ${error_msg} (check relay settings in Config)`
     } else {
@@ -1043,8 +987,9 @@ async function render_view (view, ...args) {
         if (key === my_key || subscribed_keys.includes(key)) continue
         const profile = await state.api.get_profile(key)
         const display_name = profile ? profile.name : peer.username
+        const title_info = peer.title ? ` (${escape_html(peer.title)})` : ''
         const relay_info = peer.relay_url && !peer.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(peer.relay_url)}</small></p>` : ''
-        html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(peer.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
+        html += `<div><h5>${escape_html(display_name)}'s Blog${title_info}</h5><p><code>${key}</code></p>${relay_info}<button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
       }
     }
     if (subscribed_blogs.size > 0) {
@@ -1415,7 +1360,8 @@ START APP
 if (state.username) {
   init_blog_app()
 }
-},{"p2p-news-app":2}],4:[function(require,module,exports){
+
+},{"p2p-news-app":3}],5:[function(require,module,exports){
 (function (Buffer){(function (){
 function isBuffer(value) {
   return Buffer.isBuffer(value) || value instanceof Uint8Array
@@ -1607,7 +1553,404 @@ module.exports = {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":6}],5:[function(require,module,exports){
+},{"buffer":9}],6:[function(require,module,exports){
+const errors = require('./lib/errors')
+
+class EventListener {
+  constructor() {
+    this.list = []
+    this.count = 0
+  }
+
+  append(ctx, name, fn, once) {
+    this.count++
+    ctx.emit('newListener', name, fn) // Emit BEFORE adding
+    this.list.push([fn, once])
+  }
+
+  prepend(ctx, name, fn, once) {
+    this.count++
+    ctx.emit('newListener', name, fn) // Emit BEFORE adding
+    this.list.unshift([fn, once])
+  }
+
+  remove(ctx, name, fn) {
+    for (let i = 0, n = this.list.length; i < n; i++) {
+      const l = this.list[i]
+
+      if (l[0] === fn) {
+        this.list.splice(i, 1)
+
+        if (this.count === 1) delete ctx._events[name]
+
+        ctx.emit('removeListener', name, fn) // Emit AFTER removing
+
+        this.count--
+        return
+      }
+    }
+  }
+
+  removeAll(ctx, name) {
+    const list = [...this.list]
+    this.list = []
+
+    if (this.count === list.length) delete ctx._events[name]
+
+    for (let i = list.length - 1; i >= 0; i--) {
+      ctx.emit('removeListener', name, list[i][0]) // Emit AFTER removing
+    }
+
+    this.count -= list.length
+  }
+
+  emit(ctx, name, ...args) {
+    const list = [...this.list]
+
+    for (let i = 0, n = list.length; i < n; i++) {
+      const l = list[i]
+
+      if (l[1] === true) this.remove(ctx, name, l[0])
+
+      Reflect.apply(l[0], ctx, args)
+    }
+
+    return list.length > 0
+  }
+}
+
+function appendListener(ctx, name, fn, once) {
+  if (ctx._events === undefined) ctx._events = Object.create(null)
+  const e = ctx._events[name] || (ctx._events[name] = new EventListener())
+  e.append(ctx, name, fn, once)
+  return ctx
+}
+
+function prependListener(ctx, name, fn, once) {
+  if (ctx._events === undefined) ctx._events = Object.create(null)
+  const e = ctx._events[name] || (ctx._events[name] = new EventListener())
+  e.prepend(ctx, name, fn, once)
+  return ctx
+}
+
+function removeListener(ctx, name, fn) {
+  if (ctx._events === undefined) return ctx
+  const e = ctx._events[name]
+  if (e !== undefined) e.remove(ctx, name, fn)
+  return ctx
+}
+
+function throwUnhandledError(...args) {
+  let err
+
+  if (args.length > 0) err = args[0]
+
+  if (err instanceof Error === false) err = errors.UNHANDLED_ERROR(err)
+
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(err, exports.prototype.emit)
+  }
+
+  queueMicrotask(() => {
+    throw err
+  })
+}
+
+module.exports = exports = class EventEmitter {
+  constructor() {
+    this._events = Object.create(null)
+  }
+
+  addListener(name, fn) {
+    return appendListener(this, name, fn, false)
+  }
+
+  addOnceListener(name, fn) {
+    return appendListener(this, name, fn, true)
+  }
+
+  prependListener(name, fn) {
+    return prependListener(this, name, fn, false)
+  }
+
+  prependOnceListener(name, fn) {
+    return prependListener(this, name, fn, true)
+  }
+
+  removeListener(name, fn) {
+    return removeListener(this, name, fn)
+  }
+
+  on(name, fn) {
+    return appendListener(this, name, fn, false)
+  }
+
+  once(name, fn) {
+    return appendListener(this, name, fn, true)
+  }
+
+  off(name, fn) {
+    return removeListener(this, name, fn)
+  }
+
+  emit(name, ...args) {
+    if (name === 'error' && this._events !== undefined && this._events.error === undefined) {
+      throwUnhandledError(...args)
+    }
+
+    if (this._events === undefined) return false
+    const e = this._events[name]
+    return e === undefined ? false : e.emit(this, name, ...args)
+  }
+
+  listeners(name) {
+    if (this._events === undefined) return []
+    const e = this._events[name]
+    return e === undefined ? [] : [...e.list]
+  }
+
+  listenerCount(name) {
+    if (this._events === undefined) return 0
+    const e = this._events[name]
+    return e === undefined ? 0 : e.list.length
+  }
+
+  getMaxListeners() {
+    return EventEmitter.defaultMaxListeners
+  }
+
+  setMaxListeners(n) {}
+
+  removeAllListeners(name) {
+    if (arguments.length === 0) {
+      for (const key of Reflect.ownKeys(this._events)) {
+        if (key === 'removeListener') continue
+        this.removeAllListeners(key)
+      }
+      this.removeAllListeners('removeListener')
+    } else {
+      const e = this._events[name]
+      if (e !== undefined) e.removeAll(this, name)
+    }
+    return this
+  }
+}
+
+exports.EventEmitter = exports
+
+exports.errors = errors
+
+exports.defaultMaxListeners = 10
+
+exports.on = function on(emitter, name, opts = {}) {
+  const { signal } = opts
+
+  if (signal && signal.aborted) {
+    throw errors.OPERATION_ABORTED(signal.reason)
+  }
+
+  let error = null
+  let done = false
+
+  const events = []
+  const promises = []
+
+  if (name !== 'error') emitter.on('error', onerror)
+
+  if (signal) signal.addEventListener('abort', onabort)
+
+  emitter.on(name, onevent)
+
+  return {
+    next() {
+      if (events.length) {
+        return Promise.resolve({ value: events.shift(), done: false })
+      }
+
+      if (error) {
+        const err = error
+
+        error = null
+
+        return Promise.reject(err)
+      }
+
+      if (done) return onclose()
+
+      return new Promise((resolve, reject) => promises.push({ resolve, reject }))
+    },
+
+    return() {
+      return onclose()
+    },
+
+    throw(err) {
+      return onerror(err)
+    },
+
+    [Symbol.asyncIterator]() {
+      return this
+    }
+  }
+
+  function onevent(...args) {
+    if (promises.length) {
+      promises.shift().resolve({ value: args, done: false })
+    } else {
+      events.push(args)
+    }
+  }
+
+  function onerror(err) {
+    emitter.off(name, onevent).off('error', onerror)
+
+    if (promises.length) {
+      promises.shift().reject(err)
+    } else {
+      error = err
+    }
+
+    return Promise.resolve({ done: true })
+  }
+
+  function onabort() {
+    signal.removeEventListener('abort', onabort)
+
+    onerror(errors.OPERATION_ABORTED(signal.reason))
+  }
+
+  function onclose() {
+    emitter.off(name, onevent)
+
+    if (name !== 'error') emitter.off('error', onerror)
+
+    if (signal) signal.removeEventListener('abort', onabort)
+
+    done = true
+
+    if (promises.length) promises.shift().resolve({ done: true })
+
+    return Promise.resolve({ done: true })
+  }
+}
+
+exports.once = function once(emitter, name, opts = {}) {
+  const { signal } = opts
+
+  if (signal && signal.aborted) {
+    return Promise.reject(errors.OPERATION_ABORTED(signal.reason))
+  }
+
+  return new Promise((resolve, reject) => {
+    if (name !== 'error') emitter.on('error', onerror)
+
+    if (signal) signal.addEventListener('abort', onabort)
+
+    emitter.once(name, onevent)
+
+    function onevent(...args) {
+      if (name !== 'error') emitter.off('error', onerror)
+
+      if (signal) signal.removeEventListener('abort', onabort)
+
+      resolve(args)
+    }
+
+    function onerror(err) {
+      emitter.off(name, onevent)
+
+      if (name !== 'error') emitter.off('error', onerror)
+
+      reject(err)
+    }
+
+    function onabort() {
+      signal.removeEventListener('abort', onabort)
+
+      onerror(errors.OPERATION_ABORTED(signal.reason))
+    }
+  })
+}
+
+exports.forward = function forward(from, to, names, opts = {}) {
+  if (typeof names === 'string') names = [names]
+
+  const { emit = to.emit.bind(to) } = opts
+
+  const listeners = names.map(
+    (name) =>
+      function onevent(...args) {
+        emit(name, ...args)
+      }
+  )
+
+  to.on('newListener', (name) => {
+    const i = names.indexOf(name)
+
+    if (i !== -1 && to.listenerCount(name) === 0) {
+      from.on(name, listeners[i])
+    }
+  }).on('removeListener', (name) => {
+    const i = names.indexOf(name)
+
+    if (i !== -1 && to.listenerCount(name) === 0) {
+      from.off(name, listeners[i])
+    }
+  })
+}
+
+exports.listenerCount = function listenerCount(emitter, name) {
+  return emitter.listenerCount(name)
+}
+
+exports.getMaxListeners = function getMaxListeners(emitter) {
+  if (typeof emitter.getMaxListeners === 'function') {
+    return emitter.getMaxListeners()
+  }
+
+  return exports.defaultMaxListeners
+}
+
+exports.setMaxListeners = function setMaxListeners(n, ...emitters) {
+  if (emitters.length === 0) exports.defaultMaxListeners = n
+  else {
+    for (const emitter of emitters) {
+      if (typeof emitter.setMaxListeners === 'function') {
+        emitter.setMaxListeners(n)
+      }
+    }
+  }
+}
+
+},{"./lib/errors":7}],7:[function(require,module,exports){
+module.exports = class EventEmitterError extends Error {
+  constructor(msg, code, fn = EventEmitterError, opts) {
+    super(`${code}: ${msg}`, opts)
+    this.code = code
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, fn)
+    }
+  }
+
+  get name() {
+    return 'EventEmitterError'
+  }
+
+  static OPERATION_ABORTED(cause, msg = 'Operation aborted') {
+    return new EventEmitterError(msg, 'OPERATION_ABORTED', EventEmitterError.OPERATION_ABORTED, {
+      cause
+    })
+  }
+
+  static UNHANDLED_ERROR(cause, msg = 'Unhandled error') {
+    return new EventEmitterError(msg, 'UNHANDLED_ERROR', EventEmitterError.UNHANDLED_ERROR, {
+      cause
+    })
+  }
+}
+
+},{}],8:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1759,7 +2102,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3540,7 +3883,1621 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":5,"buffer":6,"ieee754":7}],7:[function(require,module,exports){
+},{"base64-js":8,"buffer":9,"ieee754":20}],10:[function(require,module,exports){
+const LE = (exports.LE =
+  new Uint8Array(new Uint16Array([0xff]).buffer)[0] === 0xff)
+
+exports.BE = !LE
+
+},{}],11:[function(require,module,exports){
+const b4a = require('b4a')
+
+const { BE } = require('./endian')
+
+exports.state = function (start = 0, end = 0, buffer = null) {
+  return { start, end, buffer }
+}
+
+const raw = (exports.raw = require('./raw'))
+
+const uint = (exports.uint = {
+  preencode(state, n) {
+    state.end += n <= 0xfc ? 1 : n <= 0xffff ? 3 : n <= 0xffffffff ? 5 : 9
+  },
+  encode(state, n) {
+    if (n <= 0xfc) uint8.encode(state, n)
+    else if (n <= 0xffff) {
+      state.buffer[state.start++] = 0xfd
+      uint16.encode(state, n)
+    } else if (n <= 0xffffffff) {
+      state.buffer[state.start++] = 0xfe
+      uint32.encode(state, n)
+    } else {
+      state.buffer[state.start++] = 0xff
+      uint64.encode(state, n)
+    }
+  },
+  decode(state) {
+    const a = uint8.decode(state)
+    if (a <= 0xfc) return a
+    if (a === 0xfd) return uint16.decode(state)
+    if (a === 0xfe) return uint32.decode(state)
+    return uint64.decode(state)
+  }
+})
+
+const uint8 = (exports.uint8 = {
+  preencode(state, n) {
+    state.end += 1
+  },
+  encode(state, n) {
+    validateUint(n)
+    state.buffer[state.start++] = n
+  },
+  decode(state) {
+    if (state.start >= state.end) throw new Error('Out of bounds')
+    return state.buffer[state.start++]
+  }
+})
+
+const uint16 = (exports.uint16 = {
+  preencode(state, n) {
+    state.end += 2
+  },
+  encode(state, n) {
+    validateUint(n)
+    state.buffer[state.start++] = n
+    state.buffer[state.start++] = n >>> 8
+  },
+  decode(state) {
+    if (state.end - state.start < 2) throw new Error('Out of bounds')
+    return state.buffer[state.start++] + state.buffer[state.start++] * 0x100
+  }
+})
+
+const uint24 = (exports.uint24 = {
+  preencode(state, n) {
+    state.end += 3
+  },
+  encode(state, n) {
+    validateUint(n)
+    state.buffer[state.start++] = n
+    state.buffer[state.start++] = n >>> 8
+    state.buffer[state.start++] = n >>> 16
+  },
+  decode(state) {
+    if (state.end - state.start < 3) throw new Error('Out of bounds')
+    return (
+      state.buffer[state.start++] +
+      state.buffer[state.start++] * 0x100 +
+      state.buffer[state.start++] * 0x10000
+    )
+  }
+})
+
+const uint32 = (exports.uint32 = {
+  preencode(state, n) {
+    state.end += 4
+  },
+  encode(state, n) {
+    validateUint(n)
+    state.buffer[state.start++] = n
+    state.buffer[state.start++] = n >>> 8
+    state.buffer[state.start++] = n >>> 16
+    state.buffer[state.start++] = n >>> 24
+  },
+  decode(state) {
+    if (state.end - state.start < 4) throw new Error('Out of bounds')
+    return (
+      state.buffer[state.start++] +
+      state.buffer[state.start++] * 0x100 +
+      state.buffer[state.start++] * 0x10000 +
+      state.buffer[state.start++] * 0x1000000
+    )
+  }
+})
+
+const uint40 = (exports.uint40 = {
+  preencode(state, n) {
+    state.end += 5
+  },
+  encode(state, n) {
+    validateUint(n)
+    const r = Math.floor(n / 0x100)
+    uint8.encode(state, n)
+    uint32.encode(state, r)
+  },
+  decode(state) {
+    if (state.end - state.start < 5) throw new Error('Out of bounds')
+    return uint8.decode(state) + 0x100 * uint32.decode(state)
+  }
+})
+
+const uint48 = (exports.uint48 = {
+  preencode(state, n) {
+    state.end += 6
+  },
+  encode(state, n) {
+    validateUint(n)
+    const r = Math.floor(n / 0x10000)
+    uint16.encode(state, n)
+    uint32.encode(state, r)
+  },
+  decode(state) {
+    if (state.end - state.start < 6) throw new Error('Out of bounds')
+    return uint16.decode(state) + 0x10000 * uint32.decode(state)
+  }
+})
+
+const uint56 = (exports.uint56 = {
+  preencode(state, n) {
+    state.end += 7
+  },
+  encode(state, n) {
+    validateUint(n)
+    const r = Math.floor(n / 0x1000000)
+    uint24.encode(state, n)
+    uint32.encode(state, r)
+  },
+  decode(state) {
+    if (state.end - state.start < 7) throw new Error('Out of bounds')
+    return uint24.decode(state) + 0x1000000 * uint32.decode(state)
+  }
+})
+
+const uint64 = (exports.uint64 = {
+  preencode(state, n) {
+    state.end += 8
+  },
+  encode(state, n) {
+    validateUint(n)
+    const r = Math.floor(n / 0x100000000)
+    uint32.encode(state, n)
+    uint32.encode(state, r)
+  },
+  decode(state) {
+    if (state.end - state.start < 8) throw new Error('Out of bounds')
+    return uint32.decode(state) + 0x100000000 * uint32.decode(state)
+  }
+})
+
+const int = (exports.int = zigZagInt(uint))
+exports.int8 = zigZagInt(uint8)
+exports.int16 = zigZagInt(uint16)
+exports.int24 = zigZagInt(uint24)
+exports.int32 = zigZagInt(uint32)
+exports.int40 = zigZagInt(uint40)
+exports.int48 = zigZagInt(uint48)
+exports.int56 = zigZagInt(uint56)
+exports.int64 = zigZagInt(uint64)
+
+const biguint64 = (exports.biguint64 = {
+  preencode(state, n) {
+    state.end += 8
+  },
+  encode(state, n) {
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8
+    )
+    view.setBigUint64(0, n, true) // little endian
+    state.start += 8
+  },
+  decode(state) {
+    if (state.end - state.start < 8) throw new Error('Out of bounds')
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8
+    )
+    const n = view.getBigUint64(0, true) // little endian
+    state.start += 8
+    return n
+  }
+})
+
+exports.bigint64 = zigZagBigInt(biguint64)
+
+const biguint = (exports.biguint = {
+  preencode(state, n) {
+    let len = 0
+    for (let m = n; m; m = m >> 64n) len++
+    uint.preencode(state, len)
+    state.end += 8 * len
+  },
+  encode(state, n) {
+    let len = 0
+    for (let m = n; m; m = m >> 64n) len++
+    uint.encode(state, len)
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8 * len
+    )
+    for (let m = n, i = 0; m; m = m >> 64n, i += 8) {
+      view.setBigUint64(i, BigInt.asUintN(64, m), true) // little endian
+    }
+    state.start += 8 * len
+  },
+  decode(state) {
+    const len = uint.decode(state)
+    if (state.end - state.start < 8 * len) throw new Error('Out of bounds')
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8 * len
+    )
+    let n = 0n
+    for (let i = len - 1; i >= 0; i--)
+      n = (n << 64n) + view.getBigUint64(i * 8, true) // little endian
+    state.start += 8 * len
+    return n
+  }
+})
+
+exports.bigint = zigZagBigInt(biguint)
+
+exports.lexint = require('./lexint')
+
+exports.float32 = {
+  preencode(state, n) {
+    state.end += 4
+  },
+  encode(state, n) {
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      4
+    )
+    view.setFloat32(0, n, true) // little endian
+    state.start += 4
+  },
+  decode(state) {
+    if (state.end - state.start < 4) throw new Error('Out of bounds')
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      4
+    )
+    const float = view.getFloat32(0, true) // little endian
+    state.start += 4
+    return float
+  }
+}
+
+exports.float64 = {
+  preencode(state, n) {
+    state.end += 8
+  },
+  encode(state, n) {
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8
+    )
+    view.setFloat64(0, n, true) // little endian
+    state.start += 8
+  },
+  decode(state) {
+    if (state.end - state.start < 8) throw new Error('Out of bounds')
+    const view = new DataView(
+      state.buffer.buffer,
+      state.start + state.buffer.byteOffset,
+      8
+    )
+    const float = view.getFloat64(0, true) // little endian
+    state.start += 8
+    return float
+  }
+}
+
+const buffer = (exports.buffer = {
+  preencode(state, b) {
+    if (b) uint8array.preencode(state, b)
+    else state.end++
+  },
+  encode(state, b) {
+    if (b) uint8array.encode(state, b)
+    else state.buffer[state.start++] = 0
+  },
+  decode(state) {
+    const len = uint.decode(state)
+    if (len === 0) return null
+    if (state.end - state.start < len) throw new Error('Out of bounds')
+    return state.buffer.subarray(state.start, (state.start += len))
+  }
+})
+
+exports.binary = {
+  ...buffer,
+  preencode(state, b) {
+    if (typeof b === 'string') utf8.preencode(state, b)
+    else buffer.preencode(state, b)
+  },
+  encode(state, b) {
+    if (typeof b === 'string') utf8.encode(state, b)
+    else buffer.encode(state, b)
+  }
+}
+
+exports.arraybuffer = {
+  preencode(state, b) {
+    uint.preencode(state, b.byteLength)
+    state.end += b.byteLength
+  },
+  encode(state, b) {
+    uint.encode(state, b.byteLength)
+
+    const view = new Uint8Array(b)
+
+    state.buffer.set(view, state.start)
+    state.start += b.byteLength
+  },
+  decode(state) {
+    const len = uint.decode(state)
+
+    const b = new ArrayBuffer(len)
+    const view = new Uint8Array(b)
+
+    view.set(state.buffer.subarray(state.start, (state.start += len)))
+
+    return b
+  }
+}
+
+function typedarray(TypedArray, swap) {
+  const n = TypedArray.BYTES_PER_ELEMENT
+
+  return {
+    preencode(state, b) {
+      uint.preencode(state, b.length)
+      state.end += b.byteLength
+    },
+    encode(state, b) {
+      uint.encode(state, b.length)
+
+      const view = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
+
+      if (BE && swap) swap(view)
+
+      state.buffer.set(view, state.start)
+      state.start += b.byteLength
+    },
+    decode(state) {
+      const len = uint.decode(state)
+
+      let b = state.buffer.subarray(state.start, (state.start += len * n))
+      if (b.byteLength !== len * n) throw new Error('Out of bounds')
+      if (b.byteOffset % n !== 0) b = new Uint8Array(b)
+
+      if (BE && swap) swap(b)
+
+      return new TypedArray(b.buffer, b.byteOffset, b.byteLength / n)
+    }
+  }
+}
+
+const uint8array = (exports.uint8array = typedarray(Uint8Array))
+exports.uint16array = typedarray(Uint16Array, b4a.swap16)
+exports.uint32array = typedarray(Uint32Array, b4a.swap32)
+
+exports.int8array = typedarray(Int8Array)
+exports.int16array = typedarray(Int16Array, b4a.swap16)
+exports.int32array = typedarray(Int32Array, b4a.swap32)
+
+exports.biguint64array = typedarray(BigUint64Array, b4a.swap64)
+exports.bigint64array = typedarray(BigInt64Array, b4a.swap64)
+
+exports.float32array = typedarray(Float32Array, b4a.swap32)
+exports.float64array = typedarray(Float64Array, b4a.swap64)
+
+function string(encoding) {
+  return {
+    preencode(state, s) {
+      const len = b4a.byteLength(s, encoding)
+      uint.preencode(state, len)
+      state.end += len
+    },
+    encode(state, s) {
+      const len = b4a.byteLength(s, encoding)
+      uint.encode(state, len)
+      b4a.write(state.buffer, s, state.start, encoding)
+      state.start += len
+    },
+    decode(state) {
+      const len = uint.decode(state)
+      if (state.end - state.start < len) throw new Error('Out of bounds')
+      return b4a.toString(
+        state.buffer,
+        encoding,
+        state.start,
+        (state.start += len)
+      )
+    },
+    fixed(n) {
+      return {
+        preencode(state) {
+          state.end += n
+        },
+        encode(state, s) {
+          b4a.write(state.buffer, s, state.start, n, encoding)
+          state.start += n
+        },
+        decode(state) {
+          if (state.end - state.start < n) throw new Error('Out of bounds')
+          return b4a.toString(
+            state.buffer,
+            encoding,
+            state.start,
+            (state.start += n)
+          )
+        }
+      }
+    }
+  }
+}
+
+const utf8 = (exports.string = exports.utf8 = string('utf-8'))
+exports.ascii = string('ascii')
+exports.hex = string('hex')
+exports.base64 = string('base64')
+exports.ucs2 = exports.utf16le = string('utf16le')
+
+exports.bool = {
+  preencode(state, b) {
+    state.end++
+  },
+  encode(state, b) {
+    state.buffer[state.start++] = b ? 1 : 0
+  },
+  decode(state) {
+    if (state.start >= state.end) throw Error('Out of bounds')
+    return state.buffer[state.start++] === 1
+  }
+}
+
+const fixed = (exports.fixed = function fixed(n) {
+  return {
+    preencode(state, s) {
+      if (s.byteLength !== n) throw new Error('Incorrect buffer size')
+      state.end += n
+    },
+    encode(state, s) {
+      state.buffer.set(s, state.start)
+      state.start += n
+    },
+    decode(state) {
+      if (state.end - state.start < n) throw new Error('Out of bounds')
+      return state.buffer.subarray(state.start, (state.start += n))
+    }
+  }
+})
+
+exports.fixed32 = fixed(32)
+exports.fixed64 = fixed(64)
+
+exports.array = function array(enc) {
+  return {
+    preencode(state, list) {
+      uint.preencode(state, list.length)
+      for (let i = 0; i < list.length; i++) enc.preencode(state, list[i])
+    },
+    encode(state, list) {
+      uint.encode(state, list.length)
+      for (let i = 0; i < list.length; i++) enc.encode(state, list[i])
+    },
+    decode(state) {
+      const len = uint.decode(state)
+      if (len > 0x100000) throw new Error('Array is too big')
+      const arr = new Array(len)
+      for (let i = 0; i < len; i++) arr[i] = enc.decode(state)
+      return arr
+    }
+  }
+}
+
+exports.frame = function frame(enc) {
+  const dummy = exports.state()
+
+  return {
+    preencode(state, m) {
+      const end = state.end
+      enc.preencode(state, m)
+      uint.preencode(state, state.end - end)
+    },
+    encode(state, m) {
+      dummy.end = 0
+      enc.preencode(dummy, m)
+      uint.encode(state, dummy.end)
+      enc.encode(state, m)
+    },
+    decode(state) {
+      const end = state.end
+      const len = uint.decode(state)
+      state.end = state.start + len
+      const m = enc.decode(state)
+      state.start = state.end
+      state.end = end
+      return m
+    }
+  }
+}
+
+exports.date = {
+  preencode(state, d) {
+    int.preencode(state, d.getTime())
+  },
+  encode(state, d) {
+    int.encode(state, d.getTime())
+  },
+  decode(state, d) {
+    return new Date(int.decode(state))
+  }
+}
+
+exports.json = {
+  preencode(state, v) {
+    utf8.preencode(state, JSON.stringify(v))
+  },
+  encode(state, v) {
+    utf8.encode(state, JSON.stringify(v))
+  },
+  decode(state) {
+    return JSON.parse(utf8.decode(state))
+  }
+}
+
+exports.ndjson = {
+  preencode(state, v) {
+    utf8.preencode(state, JSON.stringify(v) + '\n')
+  },
+  encode(state, v) {
+    utf8.encode(state, JSON.stringify(v) + '\n')
+  },
+  decode(state) {
+    return JSON.parse(utf8.decode(state))
+  }
+}
+
+// simple helper for when you want to just express nothing
+exports.none = {
+  preencode(state, n) {
+    // do nothing
+  },
+  encode(state, n) {
+    // do nothing
+  },
+  decode(state) {
+    return null
+  }
+}
+
+// "any" encoders here for helping just structure any object without schematising it
+
+const anyArray = {
+  preencode(state, arr) {
+    uint.preencode(state, arr.length)
+    for (let i = 0; i < arr.length; i++) {
+      any.preencode(state, arr[i])
+    }
+  },
+  encode(state, arr) {
+    uint.encode(state, arr.length)
+    for (let i = 0; i < arr.length; i++) {
+      any.encode(state, arr[i])
+    }
+  },
+  decode(state) {
+    const arr = []
+    let len = uint.decode(state)
+    while (len-- > 0) {
+      arr.push(any.decode(state))
+    }
+    return arr
+  }
+}
+
+const anyObject = {
+  preencode(state, o) {
+    const keys = Object.keys(o)
+    uint.preencode(state, keys.length)
+    for (const key of keys) {
+      utf8.preencode(state, key)
+      any.preencode(state, o[key])
+    }
+  },
+  encode(state, o) {
+    const keys = Object.keys(o)
+    uint.encode(state, keys.length)
+    for (const key of keys) {
+      utf8.encode(state, key)
+      any.encode(state, o[key])
+    }
+  },
+  decode(state) {
+    let len = uint.decode(state)
+    const o = {}
+    while (len-- > 0) {
+      const key = utf8.decode(state)
+      o[key] = any.decode(state)
+    }
+    return o
+  }
+}
+
+const anyTypes = [
+  exports.none,
+  exports.bool,
+  exports.string,
+  exports.buffer,
+  exports.uint,
+  exports.int,
+  exports.float64,
+  anyArray,
+  anyObject,
+  exports.date
+]
+
+const any = (exports.any = {
+  preencode(state, o) {
+    const t = getType(o)
+    uint.preencode(state, t)
+    anyTypes[t].preencode(state, o)
+  },
+  encode(state, o) {
+    const t = getType(o)
+    uint.encode(state, t)
+    anyTypes[t].encode(state, o)
+  },
+  decode(state) {
+    const t = uint.decode(state)
+    if (t >= anyTypes.length) throw new Error('Unknown type: ' + t)
+    return anyTypes[t].decode(state)
+  }
+})
+
+const port = (exports.port = uint16)
+
+const address = (host, family) => {
+  return {
+    preencode(state, m) {
+      host.preencode(state, m.host)
+      port.preencode(state, m.port)
+    },
+    encode(state, m) {
+      host.encode(state, m.host)
+      port.encode(state, m.port)
+    },
+    decode(state) {
+      return {
+        host: host.decode(state),
+        family,
+        port: port.decode(state)
+      }
+    }
+  }
+}
+
+const ipv4 = (exports.ipv4 = {
+  preencode(state) {
+    state.end += 4
+  },
+  encode(state, string) {
+    const start = state.start
+    const end = start + 4
+
+    let i = 0
+
+    while (i < string.length) {
+      let n = 0
+      let c
+
+      while (
+        i < string.length &&
+        (c = string.charCodeAt(i++)) !== /* . */ 0x2e
+      ) {
+        n = n * 10 + (c - /* 0 */ 0x30)
+      }
+
+      state.buffer[state.start++] = n
+    }
+
+    state.start = end
+  },
+  decode(state) {
+    if (state.end - state.start < 4) throw new Error('Out of bounds')
+    return (
+      state.buffer[state.start++] +
+      '.' +
+      state.buffer[state.start++] +
+      '.' +
+      state.buffer[state.start++] +
+      '.' +
+      state.buffer[state.start++]
+    )
+  }
+})
+
+exports.ipv4Address = address(ipv4, 4)
+
+const ipv6 = (exports.ipv6 = {
+  preencode(state) {
+    state.end += 16
+  },
+  encode(state, string) {
+    const start = state.start
+    const end = start + 16
+
+    let i = 0
+    let split = null
+
+    while (i < string.length) {
+      let n = 0
+      let c
+
+      while (
+        i < string.length &&
+        (c = string.charCodeAt(i++)) !== /* : */ 0x3a
+      ) {
+        if (c >= 0x30 && c <= 0x39) n = n * 0x10 + (c - /* 0 */ 0x30)
+        else if (c >= 0x41 && c <= 0x46) n = n * 0x10 + (c - /* A */ 0x41 + 10)
+        else if (c >= 0x61 && c <= 0x66) n = n * 0x10 + (c - /* a */ 0x61 + 10)
+      }
+
+      state.buffer[state.start++] = n >>> 8
+      state.buffer[state.start++] = n
+
+      if (i < string.length && string.charCodeAt(i) === /* : */ 0x3a) {
+        i++
+        split = state.start
+      }
+    }
+
+    if (split !== null) {
+      const offset = end - state.start
+      state.buffer
+        .copyWithin(split + offset, split)
+        .fill(0, split, split + offset)
+    }
+
+    state.start = end
+  },
+  decode(state) {
+    if (state.end - state.start < 16) throw new Error('Out of bounds')
+    return (
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16) +
+      ':' +
+      (
+        state.buffer[state.start++] * 256 +
+        state.buffer[state.start++]
+      ).toString(16)
+    )
+  }
+})
+
+exports.ipv6Address = address(ipv6, 6)
+
+const ip = (exports.ip = {
+  preencode(state, string) {
+    const family = string.includes(':') ? 6 : 4
+    uint8.preencode(state, family)
+    if (family === 4) ipv4.preencode(state)
+    else ipv6.preencode(state)
+  },
+  encode(state, string) {
+    const family = string.includes(':') ? 6 : 4
+    uint8.encode(state, family)
+    if (family === 4) ipv4.encode(state, string)
+    else ipv6.encode(state, string)
+  },
+  decode(state) {
+    const family = uint8.decode(state)
+    if (family === 4) return ipv4.decode(state)
+    else return ipv6.decode(state)
+  }
+})
+
+exports.ipAddress = {
+  preencode(state, m) {
+    ip.preencode(state, m.host)
+    port.preencode(state, m.port)
+  },
+  encode(state, m) {
+    ip.encode(state, m.host)
+    port.encode(state, m.port)
+  },
+  decode(state) {
+    const family = uint8.decode(state)
+    return {
+      host: family === 4 ? ipv4.decode(state) : ipv6.decode(state),
+      family,
+      port: port.decode(state)
+    }
+  }
+}
+
+function getType(o) {
+  if (o === null || o === undefined) return 0
+  if (typeof o === 'boolean') return 1
+  if (typeof o === 'string') return 2
+  if (b4a.isBuffer(o)) return 3
+  if (typeof o === 'number') {
+    if (Number.isInteger(o)) return o >= 0 ? 4 : 5
+    return 6
+  }
+  if (Array.isArray(o)) return 7
+  if (o instanceof Date) return 9
+  if (typeof o === 'object') return 8
+
+  throw new Error('Unsupported type for ' + o)
+}
+
+exports.from = function from(enc) {
+  if (typeof enc === 'string') return fromNamed(enc)
+  if (enc.preencode) return enc
+  if (enc.encodingLength) return fromAbstractEncoder(enc)
+  return fromCodec(enc)
+}
+
+function fromNamed(enc) {
+  switch (enc) {
+    case 'ascii':
+      return raw.ascii
+    case 'utf-8':
+    case 'utf8':
+      return raw.utf8
+    case 'hex':
+      return raw.hex
+    case 'base64':
+      return raw.base64
+    case 'utf16-le':
+    case 'utf16le':
+    case 'ucs-2':
+    case 'ucs2':
+      return raw.ucs2
+    case 'ndjson':
+      return raw.ndjson
+    case 'json':
+      return raw.json
+    case 'binary':
+    default:
+      return raw.binary
+  }
+}
+
+function fromCodec(enc) {
+  let tmpM = null
+  let tmpBuf = null
+
+  return {
+    preencode(state, m) {
+      tmpM = m
+      tmpBuf = enc.encode(m)
+      state.end += tmpBuf.byteLength
+    },
+    encode(state, m) {
+      raw.encode(state, m === tmpM ? tmpBuf : enc.encode(m))
+      tmpM = tmpBuf = null
+    },
+    decode(state) {
+      return enc.decode(raw.decode(state))
+    }
+  }
+}
+
+function fromAbstractEncoder(enc) {
+  return {
+    preencode(state, m) {
+      state.end += enc.encodingLength(m)
+    },
+    encode(state, m) {
+      enc.encode(m, state.buffer, state.start)
+      state.start += enc.encode.bytes
+    },
+    decode(state) {
+      const m = enc.decode(state.buffer, state.start, state.end)
+      state.start += enc.decode.bytes
+      return m
+    }
+  }
+}
+
+exports.encode = function encode(enc, m) {
+  const state = exports.state()
+  enc.preencode(state, m)
+  state.buffer = b4a.allocUnsafe(state.end)
+  enc.encode(state, m)
+  return state.buffer
+}
+
+exports.decode = function decode(enc, buffer) {
+  return enc.decode(exports.state(0, buffer.byteLength, buffer))
+}
+
+function zigZagInt(enc) {
+  return {
+    preencode(state, n) {
+      enc.preencode(state, zigZagEncodeInt(n))
+    },
+    encode(state, n) {
+      enc.encode(state, zigZagEncodeInt(n))
+    },
+    decode(state) {
+      return zigZagDecodeInt(enc.decode(state))
+    }
+  }
+}
+
+function zigZagDecodeInt(n) {
+  return n === 0 ? n : (n & 1) === 0 ? n / 2 : -(n + 1) / 2
+}
+
+function zigZagEncodeInt(n) {
+  // 0, -1, 1, -2, 2, ...
+  return n < 0 ? 2 * -n - 1 : n === 0 ? 0 : 2 * n
+}
+
+function zigZagBigInt(enc) {
+  return {
+    preencode(state, n) {
+      enc.preencode(state, zigZagEncodeBigInt(n))
+    },
+    encode(state, n) {
+      enc.encode(state, zigZagEncodeBigInt(n))
+    },
+    decode(state) {
+      return zigZagDecodeBigInt(enc.decode(state))
+    }
+  }
+}
+
+function zigZagDecodeBigInt(n) {
+  return n === 0n ? n : (n & 1n) === 0n ? n / 2n : -(n + 1n) / 2n
+}
+
+function zigZagEncodeBigInt(n) {
+  // 0, -1, 1, -2, 2, ...
+  return n < 0n ? 2n * -n - 1n : n === 0n ? 0n : 2n * n
+}
+
+function validateUint(n) {
+  if (n >= 0 === false /* Handles NaN as well */)
+    throw new Error('uint must be positive')
+}
+
+},{"./endian":10,"./lexint":12,"./raw":13,"b4a":5}],12:[function(require,module,exports){
+module.exports = {
+  preencode,
+  encode,
+  decode
+}
+
+function preencode(state, num) {
+  if (num < 251) {
+    state.end++
+  } else if (num < 256) {
+    state.end += 2
+  } else if (num < 0x10000) {
+    state.end += 3
+  } else if (num < 0x1000000) {
+    state.end += 4
+  } else if (num < 0x100000000) {
+    state.end += 5
+  } else {
+    state.end++
+    const exp = Math.floor(Math.log(num) / Math.log(2)) - 32
+    preencode(state, exp)
+    state.end += 6
+  }
+}
+
+function encode(state, num) {
+  const max = 251
+  const x = num - max
+
+  if (num < max) {
+    state.buffer[state.start++] = num
+  } else if (num < 256) {
+    state.buffer[state.start++] = max
+    state.buffer[state.start++] = x
+  } else if (num < 0x10000) {
+    state.buffer[state.start++] = max + 1
+    state.buffer[state.start++] = (x >> 8) & 0xff
+    state.buffer[state.start++] = x & 0xff
+  } else if (num < 0x1000000) {
+    state.buffer[state.start++] = max + 2
+    state.buffer[state.start++] = x >> 16
+    state.buffer[state.start++] = (x >> 8) & 0xff
+    state.buffer[state.start++] = x & 0xff
+  } else if (num < 0x100000000) {
+    state.buffer[state.start++] = max + 3
+    state.buffer[state.start++] = x >> 24
+    state.buffer[state.start++] = (x >> 16) & 0xff
+    state.buffer[state.start++] = (x >> 8) & 0xff
+    state.buffer[state.start++] = x & 0xff
+  } else {
+    // need to use Math here as bitwise ops are 32 bit
+    const exp = Math.floor(Math.log(x) / Math.log(2)) - 32
+    state.buffer[state.start++] = 0xff
+
+    encode(state, exp)
+    const rem = x / Math.pow(2, exp - 11)
+
+    for (let i = 5; i >= 0; i--) {
+      state.buffer[state.start++] = (rem / Math.pow(2, 8 * i)) & 0xff
+    }
+  }
+}
+
+function decode(state) {
+  const max = 251
+
+  if (state.end - state.start < 1) throw new Error('Out of bounds')
+
+  const flag = state.buffer[state.start++]
+
+  if (flag < max) return flag
+
+  if (state.end - state.start < flag - max + 1) {
+    throw new Error('Out of bounds.')
+  }
+
+  if (flag < 252) {
+    return state.buffer[state.start++] + max
+  }
+
+  if (flag < 253) {
+    return (
+      (state.buffer[state.start++] << 8) + state.buffer[state.start++] + max
+    )
+  }
+
+  if (flag < 254) {
+    return (
+      (state.buffer[state.start++] << 16) +
+      (state.buffer[state.start++] << 8) +
+      state.buffer[state.start++] +
+      max
+    )
+  }
+
+  // << 24 result may be interpreted as negative
+  if (flag < 255) {
+    return (
+      state.buffer[state.start++] * 0x1000000 +
+      (state.buffer[state.start++] << 16) +
+      (state.buffer[state.start++] << 8) +
+      state.buffer[state.start++] +
+      max
+    )
+  }
+
+  const exp = decode(state)
+
+  if (state.end - state.start < 6) throw new Error('Out of bounds')
+
+  let rem = 0
+  for (let i = 5; i >= 0; i--) {
+    rem += state.buffer[state.start++] * Math.pow(2, 8 * i)
+  }
+
+  return rem * Math.pow(2, exp - 11) + max
+}
+
+},{}],13:[function(require,module,exports){
+const b4a = require('b4a')
+
+const { BE } = require('./endian')
+
+exports = module.exports = {
+  preencode(state, b) {
+    state.end += b.byteLength
+  },
+  encode(state, b) {
+    state.buffer.set(b, state.start)
+    state.start += b.byteLength
+  },
+  decode(state) {
+    const b = state.buffer.subarray(state.start, state.end)
+    state.start = state.end
+    return b
+  }
+}
+
+const buffer = (exports.buffer = {
+  preencode(state, b) {
+    if (b) uint8array.preencode(state, b)
+    else state.end++
+  },
+  encode(state, b) {
+    if (b) uint8array.encode(state, b)
+    else state.buffer[state.start++] = 0
+  },
+  decode(state) {
+    const b = state.buffer.subarray(state.start)
+    if (b.byteLength === 0) return null
+    state.start = state.end
+    return b
+  }
+})
+
+exports.binary = {
+  ...buffer,
+  preencode(state, b) {
+    if (typeof b === 'string') utf8.preencode(state, b)
+    else buffer.preencode(state, b)
+  },
+  encode(state, b) {
+    if (typeof b === 'string') utf8.encode(state, b)
+    else buffer.encode(state, b)
+  }
+}
+
+exports.arraybuffer = {
+  preencode(state, b) {
+    state.end += b.byteLength
+  },
+  encode(state, b) {
+    const view = new Uint8Array(b)
+
+    state.buffer.set(view, state.start)
+    state.start += b.byteLength
+  },
+  decode(state) {
+    const b = new ArrayBuffer(state.end - state.start)
+    const view = new Uint8Array(b)
+
+    view.set(state.buffer.subarray(state.start))
+
+    state.start = state.end
+
+    return b
+  }
+}
+
+function typedarray(TypedArray, swap) {
+  const n = TypedArray.BYTES_PER_ELEMENT
+
+  return {
+    preencode(state, b) {
+      state.end += b.byteLength
+    },
+    encode(state, b) {
+      const view = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
+
+      if (BE && swap) swap(view)
+
+      state.buffer.set(view, state.start)
+      state.start += b.byteLength
+    },
+    decode(state) {
+      let b = state.buffer.subarray(state.start)
+      if (b.byteOffset % n !== 0) b = new Uint8Array(b)
+
+      if (BE && swap) swap(b)
+
+      state.start = state.end
+
+      return new TypedArray(b.buffer, b.byteOffset, b.byteLength / n)
+    }
+  }
+}
+
+const uint8array = (exports.uint8array = typedarray(Uint8Array))
+exports.uint16array = typedarray(Uint16Array, b4a.swap16)
+exports.uint32array = typedarray(Uint32Array, b4a.swap32)
+
+exports.int8array = typedarray(Int8Array)
+exports.int16array = typedarray(Int16Array, b4a.swap16)
+exports.int32array = typedarray(Int32Array, b4a.swap32)
+
+exports.biguint64array = typedarray(BigUint64Array, b4a.swap64)
+exports.bigint64array = typedarray(BigInt64Array, b4a.swap64)
+
+exports.float32array = typedarray(Float32Array, b4a.swap32)
+exports.float64array = typedarray(Float64Array, b4a.swap64)
+
+function string(encoding) {
+  return {
+    preencode(state, s) {
+      state.end += b4a.byteLength(s, encoding)
+    },
+    encode(state, s) {
+      state.start += b4a.write(state.buffer, s, state.start, encoding)
+    },
+    decode(state) {
+      const s = b4a.toString(state.buffer, encoding, state.start)
+      state.start = state.end
+      return s
+    }
+  }
+}
+
+const utf8 = (exports.string = exports.utf8 = string('utf-8'))
+exports.ascii = string('ascii')
+exports.hex = string('hex')
+exports.base64 = string('base64')
+exports.ucs2 = exports.utf16le = string('utf16le')
+
+exports.array = function array(enc) {
+  return {
+    preencode(state, list) {
+      for (const value of list) enc.preencode(state, value)
+    },
+    encode(state, list) {
+      for (const value of list) enc.encode(state, value)
+    },
+    decode(state) {
+      const arr = []
+      while (state.start < state.end) arr.push(enc.decode(state))
+      return arr
+    }
+  }
+}
+
+exports.json = {
+  preencode(state, v) {
+    utf8.preencode(state, JSON.stringify(v))
+  },
+  encode(state, v) {
+    utf8.encode(state, JSON.stringify(v))
+  },
+  decode(state) {
+    return JSON.parse(utf8.decode(state))
+  }
+}
+
+exports.ndjson = {
+  preencode(state, v) {
+    utf8.preencode(state, JSON.stringify(v) + '\n')
+  },
+  encode(state, v) {
+    utf8.encode(state, JSON.stringify(v) + '\n')
+  },
+  decode(state) {
+    return JSON.parse(utf8.decode(state))
+  }
+}
+
+},{"./endian":10,"b4a":5}],14:[function(require,module,exports){
+module.exports = require('bare-events')
+
+},{"bare-events":6}],15:[function(require,module,exports){
+module.exports = class FixedFIFO {
+  constructor (hwm) {
+    if (!(hwm > 0) || ((hwm - 1) & hwm) !== 0) throw new Error('Max size for a FixedFIFO should be a power of two')
+    this.buffer = new Array(hwm)
+    this.mask = hwm - 1
+    this.top = 0
+    this.btm = 0
+    this.next = null
+  }
+
+  clear () {
+    this.top = this.btm = 0
+    this.next = null
+    this.buffer.fill(undefined)
+  }
+
+  push (data) {
+    if (this.buffer[this.top] !== undefined) return false
+    this.buffer[this.top] = data
+    this.top = (this.top + 1) & this.mask
+    return true
+  }
+
+  shift () {
+    const last = this.buffer[this.btm]
+    if (last === undefined) return undefined
+    this.buffer[this.btm] = undefined
+    this.btm = (this.btm + 1) & this.mask
+    return last
+  }
+
+  peek () {
+    return this.buffer[this.btm]
+  }
+
+  isEmpty () {
+    return this.buffer[this.btm] === undefined
+  }
+}
+
+},{}],16:[function(require,module,exports){
+const FixedFIFO = require('./fixed-size')
+
+module.exports = class FastFIFO {
+  constructor (hwm) {
+    this.hwm = hwm || 16
+    this.head = new FixedFIFO(this.hwm)
+    this.tail = this.head
+    this.length = 0
+  }
+
+  clear () {
+    this.head = this.tail
+    this.head.clear()
+    this.length = 0
+  }
+
+  push (val) {
+    this.length++
+    if (!this.head.push(val)) {
+      const prev = this.head
+      this.head = prev.next = new FixedFIFO(2 * this.head.buffer.length)
+      this.head.push(val)
+    }
+  }
+
+  shift () {
+    if (this.length !== 0) this.length--
+    const val = this.tail.shift()
+    if (val === undefined && this.tail.next) {
+      const next = this.tail.next
+      this.tail.next = null
+      this.tail = next
+      return this.tail.shift()
+    }
+
+    return val
+  }
+
+  peek () {
+    const val = this.tail.peek()
+    if (val === undefined && this.tail.next) return this.tail.next.peek()
+    return val
+  }
+
+  isEmpty () {
+    return this.length === 0
+  }
+}
+
+},{"./fixed-size":15}],17:[function(require,module,exports){
+module.exports = {
+  RTCPeerConnection: window.RTCPeerConnection,
+  RTCIceCandidate: window.RTCIceCandidate
+}
+
+},{}],18:[function(require,module,exports){
+const { RTCPeerConnection, RTCIceCandidate } = require('get-webrtc')
+const Protomux = require('protomux')
+const c = require('compact-encoding')
+const safetyCatch = require('safety-catch')
+const WebStream = require('./lib/web-stream.js')
+
+// TODO: Investigate how to deploy STUN servers
+const ICES = [
+  { urls: 'stun:stun.l.google.com:19302' }
+]
+
+module.exports = class WebPeer {
+  constructor (relay, opts = {}) {
+    this._rtc = new RTCPeerConnection({ iceServers: opts.iceServers || ICES })
+    this._relay = relay
+    this._mux = Protomux.from(relay)
+
+    this._channel = this._mux.createChannel({ protocol: 'hyper-webrtc/signal' })
+
+    if (this._channel === null) throw new Error('Channel duplicated')
+
+    this._ice = this._channel.addMessage({ encoding: c.json, onmessage: this._onice.bind(this) })
+    this._offer = this._channel.addMessage({ encoding: c.json, onmessage: this._onoffer.bind(this) })
+    this._answer = this._channel.addMessage({ encoding: c.json, onmessage: this._onanswer.bind(this) })
+
+    this._channel.open()
+
+    this._rtc.onicecandidate = onicecandidate.bind(this)
+  }
+
+  static from (relay) {
+    const peer = new this(relay)
+
+    const rawStream = peer._rtc.createDataChannel('wire', { negotiated: true, id: 0 })
+
+    const stream = new WebStream(relay.isInitiator, rawStream, {
+      publicKey: relay.publicKey,
+      remotePublicKey: relay.remotePublicKey,
+      handshakeHash: relay.handshakeHash
+    })
+
+    relay.on('close', () => {
+      peer._rtc.close()
+      rawStream.close()
+    })
+
+    stream.on('close', () => {
+      peer._rtc.close()
+      relay.destroy()
+    })
+
+    peer.negotiate().catch(safetyCatch)
+
+    return stream
+  }
+
+  async negotiate () {
+    if (!this._relay.isInitiator) return
+
+    const offer = await this._rtc.createOffer()
+    await this._rtc.setLocalDescription(offer)
+
+    this._offer.send({ offer: this._rtc.localDescription })
+  }
+
+  async _onice ({ ice }) {
+    await this._rtc.addIceCandidate(new RTCIceCandidate(ice))
+  }
+
+  async _onoffer ({ offer }) {
+    await this._rtc.setRemoteDescription(offer)
+
+    const answer = await this._rtc.createAnswer()
+    await this._rtc.setLocalDescription(answer)
+
+    this._answer.send({ answer: this._rtc.localDescription })
+  }
+
+  async _onanswer ({ answer }) {
+    await this._rtc.setRemoteDescription(answer)
+  }
+}
+
+function onicecandidate (e) {
+  if (e.candidate) this._ice.send({ ice: e.candidate })
+}
+
+},{"./lib/web-stream.js":19,"compact-encoding":11,"get-webrtc":17,"protomux":21,"safety-catch":23}],19:[function(require,module,exports){
+const { Duplex } = require('streamx')
+const b4a = require('b4a')
+
+module.exports = class WebStream extends Duplex {
+  constructor (isInitiator, dc, opts = {}) {
+    super({ mapWritable: toBuffer })
+
+    this._dc = dc
+
+    this.noiseStream = this
+    this.isInitiator = isInitiator
+    this.rawStream = this
+
+    this.publicKey = opts.publicKey || null
+    this.remotePublicKey = opts.remotePublicKey || null
+    this.handshakeHash = opts.handshakeHash || null
+
+    this._opening = null
+    this._openedDone = null
+
+    this.opened = new Promise(resolve => { this._openedDone = resolve })
+    this.userData = null
+
+    this._onopen = onopen.bind(this)
+    this._onmessage = onmessage.bind(this)
+    this._onerror = onerror.bind(this)
+    this._onclose = onclose.bind(this)
+
+    this._dc.addEventListener('open', this._onopen)
+    this._dc.addEventListener('message', this._onmessage)
+    this._dc.addEventListener('error', this._onerror)
+    this._dc.addEventListener('close', this._onclose)
+
+    this.resume().pause() // Open immediately
+  }
+
+  _open (cb) {
+    if (this._dc.readyState === 'closed' || this._dc.readyState === 'closing') {
+      cb(new Error('Stream is closed'))
+      return
+    }
+
+    if (this._dc.readyState === 'connecting') {
+      this._opening = cb
+      return
+    }
+
+    this._resolveOpened(true)
+    cb(null)
+  }
+
+  _continueOpen (err) {
+    if (err) this.destroy(err)
+
+    if (this._opening === null) return
+
+    const cb = this._opening
+    this._opening = null
+    this._open(cb)
+  }
+
+  _resolveOpened (opened) {
+    const cb = this._openedDone
+
+    if (cb) {
+      this._openedDone = null
+      cb(opened)
+
+      if (opened) this.emit('connect')
+    }
+  }
+
+  _write (data, cb) {
+    this._dc.send(data)
+    cb(null)
+  }
+
+  _predestroy () {
+    this._continueOpen(new Error('Stream was destroyed'))
+  }
+
+  _destroy (cb) {
+    this._dc.close()
+    this._resolveOpened(false)
+    cb(null)
+  }
+
+  setKeepAlive () {} // TODO
+}
+
+function onopen () {
+  this._continueOpen()
+}
+
+function onmessage (event) {
+  this.push(b4a.from(event.data))
+}
+
+function onerror (err) {
+  this.destroy(err)
+}
+
+function onclose () {
+  this._dc.removeEventListener('open', this._onopen)
+  this._dc.removeEventListener('message', this._onmessage)
+  this._dc.removeEventListener('error', this._onerror)
+  this._dc.removeEventListener('close', this._onclose)
+
+  this.destroy()
+}
+
+function toBuffer (data) {
+  return typeof data === 'string' ? b4a.from(data) : data
+}
+
+},{"b4a":5,"streamx":24}],20:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -3627,4 +5584,2118 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}]},{},[3]);
+},{}],21:[function(require,module,exports){
+const b4a = require('b4a')
+const c = require('compact-encoding')
+const queueTick = require('queue-tick')
+const safetyCatch = require('safety-catch')
+const unslab = require('unslab')
+
+const MAX_BUFFERED = 32768
+const MAX_BACKLOG = Infinity // TODO: impl "open" backpressure
+const MAX_BATCH = 8 * 1024 * 1024
+
+class Channel {
+  constructor (mux, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain) {
+    this.userData = userData
+    this.protocol = protocol
+    this.aliases = aliases
+    this.id = id
+    this.handshake = null
+    this.messages = []
+
+    this.opened = false
+    this.closed = false
+    this.destroyed = false
+
+    this.onopen = onopen
+    this.onclose = onclose
+    this.ondestroy = ondestroy
+    this.ondrain = ondrain
+
+    this._handshake = handshake
+    this._mux = mux
+    this._info = info
+    this._localId = 0
+    this._remoteId = 0
+    this._active = 0
+    this._extensions = null
+
+    this._decBound = this._dec.bind(this)
+    this._decAndDestroyBound = this._decAndDestroy.bind(this)
+
+    this._openedPromise = null
+    this._openedResolve = null
+
+    this._destroyedPromise = null
+    this._destroyedResolve = null
+
+    for (const m of messages) this.addMessage(m)
+  }
+
+  get drained () {
+    return this._mux.drained
+  }
+
+  fullyOpened () {
+    if (this.opened) return Promise.resolve(true)
+    if (this.closed) return Promise.resolve(false)
+    if (this._openedPromise) return this._openedPromise
+
+    this._openedPromise = new Promise((resolve) => { this._openedResolve = resolve })
+    return this._openedPromise
+  }
+
+  fullyClosed () {
+    if (this.destroyed) return Promise.resolve()
+    if (this._destroyedPromise) return this._destroyedPromise
+
+    this._destroyedPromise = new Promise((resolve) => { this._destroyedResolve = resolve })
+    return this._destroyedPromise
+  }
+
+  open (handshake) {
+    const id = this._mux._free.length > 0
+      ? this._mux._free.pop()
+      : this._mux._local.push(null) - 1
+
+    this._info.opened++
+    this._info.lastChannel = this
+    this._localId = id + 1
+    this._mux._local[id] = this
+
+    if (this._remoteId === 0) {
+      this._info.outgoing.push(this._localId)
+    }
+
+    const state = { buffer: null, start: 2, end: 2 }
+
+    c.uint.preencode(state, this._localId)
+    c.string.preencode(state, this.protocol)
+    c.buffer.preencode(state, this.id)
+    if (this._handshake) this._handshake.preencode(state, handshake)
+
+    state.buffer = this._mux._alloc(state.end)
+
+    state.buffer[0] = 0
+    state.buffer[1] = 1
+    c.uint.encode(state, this._localId)
+    c.string.encode(state, this.protocol)
+    c.buffer.encode(state, this.id)
+    if (this._handshake) this._handshake.encode(state, handshake)
+
+    this._mux._write0(state.buffer)
+  }
+
+  _dec () {
+    if (--this._active === 0 && this.closed === true) this._destroy()
+  }
+
+  _decAndDestroy (err) {
+    this._dec()
+    this._mux._safeDestroy(err)
+  }
+
+  _fullyOpenSoon () {
+    this._mux._remote[this._remoteId - 1].session = this
+    queueTick(this._fullyOpen.bind(this))
+  }
+
+  _fullyOpen () {
+    if (this.opened === true || this.closed === true) return
+
+    const remote = this._mux._remote[this._remoteId - 1]
+
+    this.opened = true
+    this.handshake = this._handshake ? this._handshake.decode(remote.state) : null
+    this._track(this.onopen(this.handshake, this))
+
+    remote.session = this
+    remote.state = null
+    if (remote.pending !== null) this._drain(remote)
+
+    this._resolveOpen(true)
+  }
+
+  _resolveOpen (opened) {
+    if (this._openedResolve !== null) {
+      this._openedResolve(opened)
+      this._openedResolve = this._openedPromise = null
+    }
+  }
+
+  _resolveDestroyed () {
+    if (this._destroyedResolve !== null) {
+      this._destroyedResolve()
+      this._destroyedResolve = this._destroyedPromise = null
+    }
+  }
+
+  _drain (remote) {
+    for (let i = 0; i < remote.pending.length; i++) {
+      const p = remote.pending[i]
+      this._mux._buffered -= byteSize(p.state)
+      this._recv(p.type, p.state)
+    }
+
+    remote.pending = null
+    this._mux._resumeMaybe()
+  }
+
+  _track (p) {
+    if (isPromise(p) === true) {
+      this._active++
+      return p.then(this._decBound, this._decAndDestroyBound)
+    }
+
+    return null
+  }
+
+  _close (isRemote) {
+    if (this.closed === true) return
+    this.closed = true
+
+    this._info.opened--
+    if (this._info.lastChannel === this) this._info.lastChannel = null
+
+    if (this._remoteId > 0) {
+      this._mux._remote[this._remoteId - 1] = null
+      this._remoteId = 0
+      // If remote has acked, we can reuse the local id now
+      // otherwise, we need to wait for the "ack" to arrive
+      this._mux._free.push(this._localId - 1)
+    }
+
+    this._mux._local[this._localId - 1] = null
+    this._localId = 0
+
+    this._mux._gc(this._info)
+    this._track(this.onclose(isRemote, this))
+
+    if (this._active === 0) this._destroy()
+
+    this._resolveOpen(false)
+  }
+
+  _destroy () {
+    if (this.destroyed === true) return
+    this.destroyed = true
+    this._track(this.ondestroy(this))
+    this._resolveDestroyed()
+  }
+
+  _recv (type, state) {
+    if (type < this.messages.length) {
+      const m = this.messages[type]
+      const p = m.recv(state, this)
+      if (m.autoBatch === true) return p
+    }
+    return null
+  }
+
+  cork () {
+    this._mux.cork()
+  }
+
+  uncork () {
+    this._mux.uncork()
+  }
+
+  close () {
+    if (this.closed === true) return
+
+    const state = { buffer: null, start: 2, end: 2 }
+
+    c.uint.preencode(state, this._localId)
+
+    state.buffer = this._mux._alloc(state.end)
+
+    state.buffer[0] = 0
+    state.buffer[1] = 3
+    c.uint.encode(state, this._localId)
+
+    this._close(false)
+    this._mux._write0(state.buffer)
+  }
+
+  addMessage (opts) {
+    if (!opts) return this._skipMessage()
+
+    const type = this.messages.length
+    const autoBatch = opts.autoBatch !== false
+    const encoding = opts.encoding || c.raw
+    const onmessage = opts.onmessage || noop
+
+    const s = this
+    const typeLen = encodingLength(c.uint, type)
+
+    const m = {
+      type,
+      autoBatch,
+      encoding,
+      onmessage,
+      recv (state, session) {
+        return session._track(m.onmessage(encoding.decode(state), session))
+      },
+      send (m, session = s) {
+        if (session.closed === true) return false
+
+        const mux = session._mux
+        const state = { buffer: null, start: 0, end: typeLen }
+
+        if (mux._batch !== null) {
+          encoding.preencode(state, m)
+          state.buffer = mux._alloc(state.end)
+
+          c.uint.encode(state, type)
+          encoding.encode(state, m)
+
+          mux._pushBatch(session._localId, state.buffer)
+          return true
+        }
+
+        c.uint.preencode(state, session._localId)
+        encoding.preencode(state, m)
+
+        state.buffer = mux._alloc(state.end)
+
+        c.uint.encode(state, session._localId)
+        c.uint.encode(state, type)
+        encoding.encode(state, m)
+
+        mux.drained = mux.stream.write(state.buffer)
+
+        return mux.drained
+      }
+    }
+
+    this.messages.push(m)
+
+    return m
+  }
+
+  _skipMessage () {
+    const type = this.messages.length
+    const m = {
+      type,
+      encoding: c.raw,
+      onmessage: noop,
+      recv (state, session) {},
+      send (m, session) {}
+    }
+
+    this.messages.push(m)
+    return m
+  }
+}
+
+module.exports = class Protomux {
+  constructor (stream, { alloc } = {}) {
+    if (stream.userData === null) stream.userData = this
+
+    this.isProtomux = true
+    this.stream = stream
+    this.corked = 0
+    this.drained = true
+
+    this._alloc = alloc || (typeof stream.alloc === 'function' ? stream.alloc.bind(stream) : b4a.allocUnsafe)
+    this._safeDestroyBound = this._safeDestroy.bind(this)
+    this._uncorkBound = this.uncork.bind(this)
+
+    this._remoteBacklog = 0
+    this._buffered = 0
+    this._paused = false
+    this._remote = []
+    this._local = []
+    this._free = []
+    this._batch = null
+    this._batchState = null
+
+    this._infos = new Map()
+    this._notify = new Map()
+
+    this.stream.on('data', this._ondata.bind(this))
+    this.stream.on('drain', this._ondrain.bind(this))
+    this.stream.on('end', this._onend.bind(this))
+    this.stream.on('error', noop) // we handle this in "close"
+    this.stream.on('close', this._shutdown.bind(this))
+  }
+
+  static from (stream, opts) {
+    if (stream.userData && stream.userData.isProtomux) return stream.userData
+    if (stream.isProtomux) return stream
+    return new this(stream, opts)
+  }
+
+  static isProtomux (mux) {
+    return typeof mux === 'object' && mux.isProtomux === true
+  }
+
+  * [Symbol.iterator] () {
+    for (const session of this._local) {
+      if (session !== null) yield session
+    }
+  }
+
+  isIdle () {
+    return this._local.length === this._free.length
+  }
+
+  cork () {
+    if (++this.corked === 1) {
+      this._batch = []
+      this._batchState = { buffer: null, start: 0, end: 1 }
+    }
+  }
+
+  uncork () {
+    if (--this.corked === 0) {
+      this._sendBatch(this._batch, this._batchState)
+      this._batch = null
+      this._batchState = null
+    }
+  }
+
+  getLastChannel ({ protocol, id = null }) {
+    const key = toKey(protocol, id)
+    const info = this._infos.get(key)
+    if (info) return info.lastChannel
+    return null
+  }
+
+  pair ({ protocol, id = null }, notify) {
+    this._notify.set(toKey(protocol, id), notify)
+  }
+
+  unpair ({ protocol, id = null }) {
+    this._notify.delete(toKey(protocol, id))
+  }
+
+  opened ({ protocol, id = null }) {
+    const key = toKey(protocol, id)
+    const info = this._infos.get(key)
+    return info ? info.opened > 0 : false
+  }
+
+  createChannel ({ userData = null, protocol, aliases = [], id = null, unique = true, handshake = null, messages = [], onopen = noop, onclose = noop, ondestroy = noop, ondrain = noop }) {
+    if (this.stream.destroyed) return null
+
+    const info = this._get(protocol, id, aliases)
+    if (unique && info.opened > 0) return null
+
+    if (info.incoming.length === 0) {
+      return new Channel(this, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain)
+    }
+
+    this._remoteBacklog--
+
+    const remoteId = info.incoming.shift()
+    const r = this._remote[remoteId - 1]
+    if (r === null) return null
+
+    const session = new Channel(this, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain)
+
+    session._remoteId = remoteId
+    session._fullyOpenSoon()
+
+    return session
+  }
+
+  _pushBatch (localId, buffer) {
+    if (this._batchState.end >= MAX_BATCH) {
+      this._sendBatch(this._batch, this._batchState)
+      this._batch = []
+      this._batchState = { buffer: null, start: 0, end: 1 }
+    }
+
+    if (this._batch.length === 0 || this._batch[this._batch.length - 1].localId !== localId) {
+      this._batchState.end++
+      c.uint.preencode(this._batchState, localId)
+    }
+    c.buffer.preencode(this._batchState, buffer)
+    this._batch.push({ localId, buffer })
+  }
+
+  _sendBatch (batch, state) {
+    if (batch.length === 0) return
+
+    let prev = batch[0].localId
+
+    state.buffer = this._alloc(state.end)
+    state.buffer[state.start++] = 0
+    state.buffer[state.start++] = 0
+
+    c.uint.encode(state, prev)
+
+    for (let i = 0; i < batch.length; i++) {
+      const b = batch[i]
+      if (prev !== b.localId) {
+        state.buffer[state.start++] = 0
+        c.uint.encode(state, (prev = b.localId))
+      }
+      c.buffer.encode(state, b.buffer)
+    }
+
+    this.drained = this.stream.write(state.buffer)
+  }
+
+  _get (protocol, id, aliases = []) {
+    const key = toKey(protocol, id)
+
+    let info = this._infos.get(key)
+    if (info) return info
+
+    info = { key, protocol, aliases: [], id, pairing: 0, opened: 0, incoming: [], outgoing: [], lastChannel: null }
+    this._infos.set(key, info)
+
+    for (const alias of aliases) {
+      const key = toKey(alias, id)
+      info.aliases.push(key)
+
+      this._infos.set(key, info)
+    }
+
+    return info
+  }
+
+  _gc (info) {
+    if (info.opened === 0 && info.outgoing.length === 0 && info.incoming.length === 0) {
+      this._infos.delete(info.key)
+
+      for (const alias of info.aliases) this._infos.delete(alias)
+    }
+  }
+
+  _ondata (buffer) {
+    if (buffer.byteLength === 0) return // ignore empty frames...
+    try {
+      const state = { buffer, start: 0, end: buffer.byteLength }
+      this._decode(c.uint.decode(state), state)
+    } catch (err) {
+      this._safeDestroy(err)
+    }
+  }
+
+  _ondrain () {
+    this.drained = true
+
+    for (const s of this._local) {
+      if (s !== null) s._track(s.ondrain(s))
+    }
+  }
+
+  _onend () { // TODO: support half open mode for the users who wants that here
+    this.stream.end()
+  }
+
+  _decode (remoteId, state) {
+    const type = c.uint.decode(state)
+
+    if (remoteId === 0) {
+      return this._oncontrolsession(type, state)
+    }
+
+    const r = remoteId <= this._remote.length ? this._remote[remoteId - 1] : null
+
+    // if the channel is closed ignore - could just be a pipeline message...
+    if (r === null) return null
+
+    if (r.pending !== null) {
+      this._bufferMessage(r, type, state)
+      return null
+    }
+
+    return r.session._recv(type, state)
+  }
+
+  _oncontrolsession (type, state) {
+    switch (type) {
+      case 0:
+        this._onbatch(state)
+        break
+
+      case 1:
+        // return the promise back up as this has sideeffects so we can batch reply
+        return this._onopensession(state)
+
+      case 2:
+        this._onrejectsession(state)
+        break
+
+      case 3:
+        this._onclosesession(state)
+        break
+    }
+
+    return null
+  }
+
+  _bufferMessage (r, type, { buffer, start, end }) {
+    const state = { buffer, start, end } // copy
+    r.pending.push({ type, state })
+    this._buffered += byteSize(state)
+    this._pauseMaybe()
+  }
+
+  _pauseMaybe () {
+    if (this._paused === true || this._buffered <= MAX_BUFFERED) return
+    this._paused = true
+    this.stream.pause()
+  }
+
+  _resumeMaybe () {
+    if (this._paused === false || this._buffered > MAX_BUFFERED) return
+    this._paused = false
+    this.stream.resume()
+  }
+
+  _onbatch (state) {
+    const end = state.end
+    let remoteId = c.uint.decode(state)
+
+    let waiting = null
+
+    while (state.end > state.start) {
+      const len = c.uint.decode(state)
+      if (len === 0) {
+        remoteId = c.uint.decode(state)
+        continue
+      }
+      state.end = state.start + len
+      // if batch contains more than one message, cork it so we reply back with a batch
+      if (end !== state.end && waiting === null) {
+        waiting = []
+        this.cork()
+      }
+      const p = this._decode(remoteId, state)
+      if (waiting !== null && p !== null) waiting.push(p)
+      state.start = state.end
+      state.end = end
+    }
+
+    if (waiting !== null) {
+      // the waiting promises are not allowed to throw but we destroy the stream in case we are wrong
+      Promise.all(waiting).then(this._uncorkBound, this._safeDestroyBound)
+    }
+  }
+
+  _onopensession (state) {
+    const remoteId = c.uint.decode(state)
+    const protocol = c.string.decode(state)
+    const id = unslab(c.buffer.decode(state))
+
+    // remote tried to open the control session - auto reject for now
+    // as we can use as an explicit control protocol declaration if we need to
+    if (remoteId === 0) {
+      this._rejectSession(0)
+      return null
+    }
+
+    const rid = remoteId - 1
+    const info = this._get(protocol, id)
+
+    // allow the remote to grow the ids by one
+    if (this._remote.length === rid) {
+      this._remote.push(null)
+    }
+
+    if (rid >= this._remote.length || this._remote[rid] !== null) {
+      throw new Error('Invalid open message')
+    }
+
+    if (info.outgoing.length > 0) {
+      const localId = info.outgoing.shift()
+      const session = this._local[localId - 1]
+
+      if (session === null) { // we already closed the channel - ignore
+        this._free.push(localId - 1)
+        return null
+      }
+
+      this._remote[rid] = { state, pending: null, session: null }
+
+      session._remoteId = remoteId
+      session._fullyOpen()
+      return null
+    }
+
+    const copyState = { buffer: state.buffer, start: state.start, end: state.end }
+    this._remote[rid] = { state: copyState, pending: [], session: null }
+
+    if (++this._remoteBacklog > MAX_BACKLOG) {
+      throw new Error('Remote exceeded backlog')
+    }
+
+    info.pairing++
+    info.incoming.push(remoteId)
+
+    return this._requestSession(protocol, id, info).catch(this._safeDestroyBound)
+  }
+
+  _onrejectsession (state) {
+    const localId = c.uint.decode(state)
+
+    // TODO: can be done smarter...
+    for (const info of this._infos.values()) {
+      const i = info.outgoing.indexOf(localId)
+      if (i === -1) continue
+
+      info.outgoing.splice(i, 1)
+
+      const session = this._local[localId - 1]
+
+      this._free.push(localId - 1)
+      if (session !== null) session._close(true)
+
+      this._gc(info)
+      return
+    }
+
+    throw new Error('Invalid reject message')
+  }
+
+  _onclosesession (state) {
+    const remoteId = c.uint.decode(state)
+
+    if (remoteId === 0) return // ignore
+
+    const rid = remoteId - 1
+    const r = rid < this._remote.length ? this._remote[rid] : null
+
+    if (r === null) return
+
+    if (r.session !== null) r.session._close(true)
+  }
+
+  async _requestSession (protocol, id, info) {
+    const notify = this._notify.get(toKey(protocol, id)) || this._notify.get(toKey(protocol, null))
+
+    if (notify) await notify(id)
+
+    if (--info.pairing > 0) return
+
+    while (info.incoming.length > 0) {
+      this._rejectSession(info, info.incoming.shift())
+    }
+
+    this._gc(info)
+  }
+
+  _rejectSession (info, remoteId) {
+    if (remoteId > 0) {
+      const r = this._remote[remoteId - 1]
+
+      if (r.pending !== null) {
+        for (let i = 0; i < r.pending.length; i++) {
+          this._buffered -= byteSize(r.pending[i].state)
+        }
+      }
+
+      this._remote[remoteId - 1] = null
+      this._resumeMaybe()
+    }
+
+    const state = { buffer: null, start: 2, end: 2 }
+
+    c.uint.preencode(state, remoteId)
+
+    state.buffer = this._alloc(state.end)
+
+    state.buffer[0] = 0
+    state.buffer[1] = 2
+    c.uint.encode(state, remoteId)
+
+    this._write0(state.buffer)
+  }
+
+  _write0 (buffer) {
+    if (this._batch !== null) {
+      this._pushBatch(0, buffer.subarray(1))
+      return
+    }
+
+    this.drained = this.stream.write(buffer)
+  }
+
+  destroy (err) {
+    this.stream.destroy(err)
+  }
+
+  _safeDestroy (err) {
+    safetyCatch(err)
+    this.stream.destroy(err)
+  }
+
+  _shutdown () {
+    for (const s of this._local) {
+      if (s !== null) s._close(true)
+    }
+  }
+}
+
+function noop () {}
+
+function toKey (protocol, id) {
+  return protocol + '##' + (id ? b4a.toString(id, 'hex') : '')
+}
+
+function byteSize (state) {
+  return 512 + (state.end - state.start)
+}
+
+function isPromise (p) {
+  return !!(p && typeof p.then === 'function')
+}
+
+function encodingLength (enc, val) {
+  const state = { buffer: null, start: 0, end: 0 }
+  enc.preencode(state, val)
+  return state.end
+}
+
+},{"b4a":5,"compact-encoding":11,"queue-tick":22,"safety-catch":23,"unslab":27}],22:[function(require,module,exports){
+module.exports = typeof queueMicrotask === 'function' ? queueMicrotask : (fn) => Promise.resolve().then(fn)
+
+},{}],23:[function(require,module,exports){
+module.exports = safetyCatch
+
+function isActuallyUncaught (err) {
+  if (!err) return false
+  return err instanceof TypeError ||
+    err instanceof SyntaxError ||
+    err instanceof ReferenceError ||
+    err instanceof EvalError ||
+    err instanceof RangeError ||
+    err instanceof URIError ||
+    err.code === 'ERR_ASSERTION'
+}
+
+function throwErrorNT (err) {
+  queueMicrotask(() => { throw err })
+}
+
+function safetyCatch (err) {
+  if (isActuallyUncaught(err)) {
+    throwErrorNT(err)
+    throw err
+  }
+}
+
+},{}],24:[function(require,module,exports){
+(function (global){(function (){
+const { EventEmitter } = require('events-universal')
+const STREAM_DESTROYED = new Error('Stream was destroyed')
+const PREMATURE_CLOSE = new Error('Premature close')
+
+const FIFO = require('fast-fifo')
+const TextDecoder = require('text-decoder')
+
+// if we do a future major, expect queue microtask to be there always, for now a bit defensive
+const qmt = typeof queueMicrotask === 'undefined' ? fn => global.process.nextTick(fn) : queueMicrotask
+
+/* eslint-disable no-multi-spaces */
+
+// 29 bits used total (4 from shared, 14 from read, and 11 from write)
+const MAX = ((1 << 29) - 1)
+
+// Shared state
+const OPENING       = 0b0001
+const PREDESTROYING = 0b0010
+const DESTROYING    = 0b0100
+const DESTROYED     = 0b1000
+
+const NOT_OPENING = MAX ^ OPENING
+const NOT_PREDESTROYING = MAX ^ PREDESTROYING
+
+// Read state (4 bit offset from shared state)
+const READ_ACTIVE           = 0b00000000000001 << 4
+const READ_UPDATING         = 0b00000000000010 << 4
+const READ_PRIMARY          = 0b00000000000100 << 4
+const READ_QUEUED           = 0b00000000001000 << 4
+const READ_RESUMED          = 0b00000000010000 << 4
+const READ_PIPE_DRAINED     = 0b00000000100000 << 4
+const READ_ENDING           = 0b00000001000000 << 4
+const READ_EMIT_DATA        = 0b00000010000000 << 4
+const READ_EMIT_READABLE    = 0b00000100000000 << 4
+const READ_EMITTED_READABLE = 0b00001000000000 << 4
+const READ_DONE             = 0b00010000000000 << 4
+const READ_NEXT_TICK        = 0b00100000000000 << 4
+const READ_NEEDS_PUSH       = 0b01000000000000 << 4
+const READ_READ_AHEAD       = 0b10000000000000 << 4
+
+// Combined read state
+const READ_FLOWING = READ_RESUMED | READ_PIPE_DRAINED
+const READ_ACTIVE_AND_NEEDS_PUSH = READ_ACTIVE | READ_NEEDS_PUSH
+const READ_PRIMARY_AND_ACTIVE = READ_PRIMARY | READ_ACTIVE
+const READ_EMIT_READABLE_AND_QUEUED = READ_EMIT_READABLE | READ_QUEUED
+const READ_RESUMED_READ_AHEAD = READ_RESUMED | READ_READ_AHEAD
+
+const READ_NOT_ACTIVE             = MAX ^ READ_ACTIVE
+const READ_NON_PRIMARY            = MAX ^ READ_PRIMARY
+const READ_NON_PRIMARY_AND_PUSHED = MAX ^ (READ_PRIMARY | READ_NEEDS_PUSH)
+const READ_PUSHED                 = MAX ^ READ_NEEDS_PUSH
+const READ_PAUSED                 = MAX ^ READ_RESUMED
+const READ_NOT_QUEUED             = MAX ^ (READ_QUEUED | READ_EMITTED_READABLE)
+const READ_NOT_ENDING             = MAX ^ READ_ENDING
+const READ_PIPE_NOT_DRAINED       = MAX ^ READ_FLOWING
+const READ_NOT_NEXT_TICK          = MAX ^ READ_NEXT_TICK
+const READ_NOT_UPDATING           = MAX ^ READ_UPDATING
+const READ_NO_READ_AHEAD          = MAX ^ READ_READ_AHEAD
+const READ_PAUSED_NO_READ_AHEAD   = MAX ^ READ_RESUMED_READ_AHEAD
+
+// Write state (18 bit offset, 4 bit offset from shared state and 14 from read state)
+const WRITE_ACTIVE     = 0b00000000001 << 18
+const WRITE_UPDATING   = 0b00000000010 << 18
+const WRITE_PRIMARY    = 0b00000000100 << 18
+const WRITE_QUEUED     = 0b00000001000 << 18
+const WRITE_UNDRAINED  = 0b00000010000 << 18
+const WRITE_DONE       = 0b00000100000 << 18
+const WRITE_EMIT_DRAIN = 0b00001000000 << 18
+const WRITE_NEXT_TICK  = 0b00010000000 << 18
+const WRITE_WRITING    = 0b00100000000 << 18
+const WRITE_FINISHING  = 0b01000000000 << 18
+const WRITE_CORKED     = 0b10000000000 << 18
+
+const WRITE_NOT_ACTIVE    = MAX ^ (WRITE_ACTIVE | WRITE_WRITING)
+const WRITE_NON_PRIMARY   = MAX ^ WRITE_PRIMARY
+const WRITE_NOT_FINISHING = MAX ^ (WRITE_ACTIVE | WRITE_FINISHING)
+const WRITE_DRAINED       = MAX ^ WRITE_UNDRAINED
+const WRITE_NOT_QUEUED    = MAX ^ WRITE_QUEUED
+const WRITE_NOT_NEXT_TICK = MAX ^ WRITE_NEXT_TICK
+const WRITE_NOT_UPDATING  = MAX ^ WRITE_UPDATING
+const WRITE_NOT_CORKED    = MAX ^ WRITE_CORKED
+
+// Combined shared state
+const ACTIVE = READ_ACTIVE | WRITE_ACTIVE
+const NOT_ACTIVE = MAX ^ ACTIVE
+const DONE = READ_DONE | WRITE_DONE
+const DESTROY_STATUS = DESTROYING | DESTROYED | PREDESTROYING
+const OPEN_STATUS = DESTROY_STATUS | OPENING
+const AUTO_DESTROY = DESTROY_STATUS | DONE
+const NON_PRIMARY = WRITE_NON_PRIMARY & READ_NON_PRIMARY
+const ACTIVE_OR_TICKING = WRITE_NEXT_TICK | READ_NEXT_TICK
+const TICKING = ACTIVE_OR_TICKING & NOT_ACTIVE
+const IS_OPENING = OPEN_STATUS | TICKING
+
+// Combined shared state and read state
+const READ_PRIMARY_STATUS = OPEN_STATUS | READ_ENDING | READ_DONE
+const READ_STATUS = OPEN_STATUS | READ_DONE | READ_QUEUED
+const READ_ENDING_STATUS = OPEN_STATUS | READ_ENDING | READ_QUEUED
+const READ_READABLE_STATUS = OPEN_STATUS | READ_EMIT_READABLE | READ_QUEUED | READ_EMITTED_READABLE
+const SHOULD_NOT_READ = OPEN_STATUS | READ_ACTIVE | READ_ENDING | READ_DONE | READ_NEEDS_PUSH | READ_READ_AHEAD
+const READ_BACKPRESSURE_STATUS = DESTROY_STATUS | READ_ENDING | READ_DONE
+const READ_UPDATE_SYNC_STATUS = READ_UPDATING | OPEN_STATUS | READ_NEXT_TICK | READ_PRIMARY
+const READ_NEXT_TICK_OR_OPENING = READ_NEXT_TICK | OPENING
+
+// Combined write state
+const WRITE_PRIMARY_STATUS = OPEN_STATUS | WRITE_FINISHING | WRITE_DONE
+const WRITE_QUEUED_AND_UNDRAINED = WRITE_QUEUED | WRITE_UNDRAINED
+const WRITE_QUEUED_AND_ACTIVE = WRITE_QUEUED | WRITE_ACTIVE
+const WRITE_DRAIN_STATUS = WRITE_QUEUED | WRITE_UNDRAINED | OPEN_STATUS | WRITE_ACTIVE
+const WRITE_STATUS = OPEN_STATUS | WRITE_ACTIVE | WRITE_QUEUED | WRITE_CORKED
+const WRITE_PRIMARY_AND_ACTIVE = WRITE_PRIMARY | WRITE_ACTIVE
+const WRITE_ACTIVE_AND_WRITING = WRITE_ACTIVE | WRITE_WRITING
+const WRITE_FINISHING_STATUS = OPEN_STATUS | WRITE_FINISHING | WRITE_QUEUED_AND_ACTIVE | WRITE_DONE
+const WRITE_BACKPRESSURE_STATUS = WRITE_UNDRAINED | DESTROY_STATUS | WRITE_FINISHING | WRITE_DONE
+const WRITE_UPDATE_SYNC_STATUS = WRITE_UPDATING | OPEN_STATUS | WRITE_NEXT_TICK | WRITE_PRIMARY
+const WRITE_DROP_DATA = WRITE_FINISHING | WRITE_DONE | DESTROY_STATUS
+
+const asyncIterator = Symbol.asyncIterator || Symbol('asyncIterator')
+
+class WritableState {
+  constructor (stream, { highWaterMark = 16384, map = null, mapWritable, byteLength, byteLengthWritable } = {}) {
+    this.stream = stream
+    this.queue = new FIFO()
+    this.highWaterMark = highWaterMark
+    this.buffered = 0
+    this.error = null
+    this.pipeline = null
+    this.drains = null // if we add more seldomly used helpers we might them into a subobject so its a single ptr
+    this.byteLength = byteLengthWritable || byteLength || defaultByteLength
+    this.map = mapWritable || map
+    this.afterWrite = afterWrite.bind(this)
+    this.afterUpdateNextTick = updateWriteNT.bind(this)
+  }
+
+  get ended () {
+    return (this.stream._duplexState & WRITE_DONE) !== 0
+  }
+
+  push (data) {
+    if ((this.stream._duplexState & WRITE_DROP_DATA) !== 0) return false
+    if (this.map !== null) data = this.map(data)
+
+    this.buffered += this.byteLength(data)
+    this.queue.push(data)
+
+    if (this.buffered < this.highWaterMark) {
+      this.stream._duplexState |= WRITE_QUEUED
+      return true
+    }
+
+    this.stream._duplexState |= WRITE_QUEUED_AND_UNDRAINED
+    return false
+  }
+
+  shift () {
+    const data = this.queue.shift()
+
+    this.buffered -= this.byteLength(data)
+    if (this.buffered === 0) this.stream._duplexState &= WRITE_NOT_QUEUED
+
+    return data
+  }
+
+  end (data) {
+    if (typeof data === 'function') this.stream.once('finish', data)
+    else if (data !== undefined && data !== null) this.push(data)
+    this.stream._duplexState = (this.stream._duplexState | WRITE_FINISHING) & WRITE_NON_PRIMARY
+  }
+
+  autoBatch (data, cb) {
+    const buffer = []
+    const stream = this.stream
+
+    buffer.push(data)
+    while ((stream._duplexState & WRITE_STATUS) === WRITE_QUEUED_AND_ACTIVE) {
+      buffer.push(stream._writableState.shift())
+    }
+
+    if ((stream._duplexState & OPEN_STATUS) !== 0) return cb(null)
+    stream._writev(buffer, cb)
+  }
+
+  update () {
+    const stream = this.stream
+
+    stream._duplexState |= WRITE_UPDATING
+
+    do {
+      while ((stream._duplexState & WRITE_STATUS) === WRITE_QUEUED) {
+        const data = this.shift()
+        stream._duplexState |= WRITE_ACTIVE_AND_WRITING
+        stream._write(data, this.afterWrite)
+      }
+
+      if ((stream._duplexState & WRITE_PRIMARY_AND_ACTIVE) === 0) this.updateNonPrimary()
+    } while (this.continueUpdate() === true)
+
+    stream._duplexState &= WRITE_NOT_UPDATING
+  }
+
+  updateNonPrimary () {
+    const stream = this.stream
+
+    if ((stream._duplexState & WRITE_FINISHING_STATUS) === WRITE_FINISHING) {
+      stream._duplexState = stream._duplexState | WRITE_ACTIVE
+      stream._final(afterFinal.bind(this))
+      return
+    }
+
+    if ((stream._duplexState & DESTROY_STATUS) === DESTROYING) {
+      if ((stream._duplexState & ACTIVE_OR_TICKING) === 0) {
+        stream._duplexState |= ACTIVE
+        stream._destroy(afterDestroy.bind(this))
+      }
+      return
+    }
+
+    if ((stream._duplexState & IS_OPENING) === OPENING) {
+      stream._duplexState = (stream._duplexState | ACTIVE) & NOT_OPENING
+      stream._open(afterOpen.bind(this))
+    }
+  }
+
+  continueUpdate () {
+    if ((this.stream._duplexState & WRITE_NEXT_TICK) === 0) return false
+    this.stream._duplexState &= WRITE_NOT_NEXT_TICK
+    return true
+  }
+
+  updateCallback () {
+    if ((this.stream._duplexState & WRITE_UPDATE_SYNC_STATUS) === WRITE_PRIMARY) this.update()
+    else this.updateNextTick()
+  }
+
+  updateNextTick () {
+    if ((this.stream._duplexState & WRITE_NEXT_TICK) !== 0) return
+    this.stream._duplexState |= WRITE_NEXT_TICK
+    if ((this.stream._duplexState & WRITE_UPDATING) === 0) qmt(this.afterUpdateNextTick)
+  }
+}
+
+class ReadableState {
+  constructor (stream, { highWaterMark = 16384, map = null, mapReadable, byteLength, byteLengthReadable } = {}) {
+    this.stream = stream
+    this.queue = new FIFO()
+    this.highWaterMark = highWaterMark === 0 ? 1 : highWaterMark
+    this.buffered = 0
+    this.readAhead = highWaterMark > 0
+    this.error = null
+    this.pipeline = null
+    this.byteLength = byteLengthReadable || byteLength || defaultByteLength
+    this.map = mapReadable || map
+    this.pipeTo = null
+    this.afterRead = afterRead.bind(this)
+    this.afterUpdateNextTick = updateReadNT.bind(this)
+  }
+
+  get ended () {
+    return (this.stream._duplexState & READ_DONE) !== 0
+  }
+
+  pipe (pipeTo, cb) {
+    if (this.pipeTo !== null) throw new Error('Can only pipe to one destination')
+    if (typeof cb !== 'function') cb = null
+
+    this.stream._duplexState |= READ_PIPE_DRAINED
+    this.pipeTo = pipeTo
+    this.pipeline = new Pipeline(this.stream, pipeTo, cb)
+
+    if (cb) this.stream.on('error', noop) // We already error handle this so supress crashes
+
+    if (isStreamx(pipeTo)) {
+      pipeTo._writableState.pipeline = this.pipeline
+      if (cb) pipeTo.on('error', noop) // We already error handle this so supress crashes
+      pipeTo.on('finish', this.pipeline.finished.bind(this.pipeline)) // TODO: just call finished from pipeTo itself
+    } else {
+      const onerror = this.pipeline.done.bind(this.pipeline, pipeTo)
+      const onclose = this.pipeline.done.bind(this.pipeline, pipeTo, null) // onclose has a weird bool arg
+      pipeTo.on('error', onerror)
+      pipeTo.on('close', onclose)
+      pipeTo.on('finish', this.pipeline.finished.bind(this.pipeline))
+    }
+
+    pipeTo.on('drain', afterDrain.bind(this))
+    this.stream.emit('piping', pipeTo)
+    pipeTo.emit('pipe', this.stream)
+  }
+
+  push (data) {
+    const stream = this.stream
+
+    if (data === null) {
+      this.highWaterMark = 0
+      stream._duplexState = (stream._duplexState | READ_ENDING) & READ_NON_PRIMARY_AND_PUSHED
+      return false
+    }
+
+    if (this.map !== null) {
+      data = this.map(data)
+      if (data === null) {
+        stream._duplexState &= READ_PUSHED
+        return this.buffered < this.highWaterMark
+      }
+    }
+
+    this.buffered += this.byteLength(data)
+    this.queue.push(data)
+
+    stream._duplexState = (stream._duplexState | READ_QUEUED) & READ_PUSHED
+
+    return this.buffered < this.highWaterMark
+  }
+
+  shift () {
+    const data = this.queue.shift()
+
+    this.buffered -= this.byteLength(data)
+    if (this.buffered === 0) this.stream._duplexState &= READ_NOT_QUEUED
+    return data
+  }
+
+  unshift (data) {
+    const pending = [this.map !== null ? this.map(data) : data]
+    while (this.buffered > 0) pending.push(this.shift())
+
+    for (let i = 0; i < pending.length - 1; i++) {
+      const data = pending[i]
+      this.buffered += this.byteLength(data)
+      this.queue.push(data)
+    }
+
+    this.push(pending[pending.length - 1])
+  }
+
+  read () {
+    const stream = this.stream
+
+    if ((stream._duplexState & READ_STATUS) === READ_QUEUED) {
+      const data = this.shift()
+      if (this.pipeTo !== null && this.pipeTo.write(data) === false) stream._duplexState &= READ_PIPE_NOT_DRAINED
+      if ((stream._duplexState & READ_EMIT_DATA) !== 0) stream.emit('data', data)
+      return data
+    }
+
+    if (this.readAhead === false) {
+      stream._duplexState |= READ_READ_AHEAD
+      this.updateNextTick()
+    }
+
+    return null
+  }
+
+  drain () {
+    const stream = this.stream
+
+    while ((stream._duplexState & READ_STATUS) === READ_QUEUED && (stream._duplexState & READ_FLOWING) !== 0) {
+      const data = this.shift()
+      if (this.pipeTo !== null && this.pipeTo.write(data) === false) stream._duplexState &= READ_PIPE_NOT_DRAINED
+      if ((stream._duplexState & READ_EMIT_DATA) !== 0) stream.emit('data', data)
+    }
+  }
+
+  update () {
+    const stream = this.stream
+
+    stream._duplexState |= READ_UPDATING
+
+    do {
+      this.drain()
+
+      while (this.buffered < this.highWaterMark && (stream._duplexState & SHOULD_NOT_READ) === READ_READ_AHEAD) {
+        stream._duplexState |= READ_ACTIVE_AND_NEEDS_PUSH
+        stream._read(this.afterRead)
+        this.drain()
+      }
+
+      if ((stream._duplexState & READ_READABLE_STATUS) === READ_EMIT_READABLE_AND_QUEUED) {
+        stream._duplexState |= READ_EMITTED_READABLE
+        stream.emit('readable')
+      }
+
+      if ((stream._duplexState & READ_PRIMARY_AND_ACTIVE) === 0) this.updateNonPrimary()
+    } while (this.continueUpdate() === true)
+
+    stream._duplexState &= READ_NOT_UPDATING
+  }
+
+  updateNonPrimary () {
+    const stream = this.stream
+
+    if ((stream._duplexState & READ_ENDING_STATUS) === READ_ENDING) {
+      stream._duplexState = (stream._duplexState | READ_DONE) & READ_NOT_ENDING
+      stream.emit('end')
+      if ((stream._duplexState & AUTO_DESTROY) === DONE) stream._duplexState |= DESTROYING
+      if (this.pipeTo !== null) this.pipeTo.end()
+    }
+
+    if ((stream._duplexState & DESTROY_STATUS) === DESTROYING) {
+      if ((stream._duplexState & ACTIVE_OR_TICKING) === 0) {
+        stream._duplexState |= ACTIVE
+        stream._destroy(afterDestroy.bind(this))
+      }
+      return
+    }
+
+    if ((stream._duplexState & IS_OPENING) === OPENING) {
+      stream._duplexState = (stream._duplexState | ACTIVE) & NOT_OPENING
+      stream._open(afterOpen.bind(this))
+    }
+  }
+
+  continueUpdate () {
+    if ((this.stream._duplexState & READ_NEXT_TICK) === 0) return false
+    this.stream._duplexState &= READ_NOT_NEXT_TICK
+    return true
+  }
+
+  updateCallback () {
+    if ((this.stream._duplexState & READ_UPDATE_SYNC_STATUS) === READ_PRIMARY) this.update()
+    else this.updateNextTick()
+  }
+
+  updateNextTickIfOpen () {
+    if ((this.stream._duplexState & READ_NEXT_TICK_OR_OPENING) !== 0) return
+    this.stream._duplexState |= READ_NEXT_TICK
+    if ((this.stream._duplexState & READ_UPDATING) === 0) qmt(this.afterUpdateNextTick)
+  }
+
+  updateNextTick () {
+    if ((this.stream._duplexState & READ_NEXT_TICK) !== 0) return
+    this.stream._duplexState |= READ_NEXT_TICK
+    if ((this.stream._duplexState & READ_UPDATING) === 0) qmt(this.afterUpdateNextTick)
+  }
+}
+
+class TransformState {
+  constructor (stream) {
+    this.data = null
+    this.afterTransform = afterTransform.bind(stream)
+    this.afterFinal = null
+  }
+}
+
+class Pipeline {
+  constructor (src, dst, cb) {
+    this.from = src
+    this.to = dst
+    this.afterPipe = cb
+    this.error = null
+    this.pipeToFinished = false
+  }
+
+  finished () {
+    this.pipeToFinished = true
+  }
+
+  done (stream, err) {
+    if (err) this.error = err
+
+    if (stream === this.to) {
+      this.to = null
+
+      if (this.from !== null) {
+        if ((this.from._duplexState & READ_DONE) === 0 || !this.pipeToFinished) {
+          this.from.destroy(this.error || new Error('Writable stream closed prematurely'))
+        }
+        return
+      }
+    }
+
+    if (stream === this.from) {
+      this.from = null
+
+      if (this.to !== null) {
+        if ((stream._duplexState & READ_DONE) === 0) {
+          this.to.destroy(this.error || new Error('Readable stream closed before ending'))
+        }
+        return
+      }
+    }
+
+    if (this.afterPipe !== null) this.afterPipe(this.error)
+    this.to = this.from = this.afterPipe = null
+  }
+}
+
+function afterDrain () {
+  this.stream._duplexState |= READ_PIPE_DRAINED
+  this.updateCallback()
+}
+
+function afterFinal (err) {
+  const stream = this.stream
+  if (err) stream.destroy(err)
+  if ((stream._duplexState & DESTROY_STATUS) === 0) {
+    stream._duplexState |= WRITE_DONE
+    stream.emit('finish')
+  }
+  if ((stream._duplexState & AUTO_DESTROY) === DONE) {
+    stream._duplexState |= DESTROYING
+  }
+
+  stream._duplexState &= WRITE_NOT_FINISHING
+
+  // no need to wait the extra tick here, so we short circuit that
+  if ((stream._duplexState & WRITE_UPDATING) === 0) this.update()
+  else this.updateNextTick()
+}
+
+function afterDestroy (err) {
+  const stream = this.stream
+
+  if (!err && this.error !== STREAM_DESTROYED) err = this.error
+  if (err) stream.emit('error', err)
+  stream._duplexState |= DESTROYED
+  stream.emit('close')
+
+  const rs = stream._readableState
+  const ws = stream._writableState
+
+  if (rs !== null && rs.pipeline !== null) rs.pipeline.done(stream, err)
+
+  if (ws !== null) {
+    while (ws.drains !== null && ws.drains.length > 0) ws.drains.shift().resolve(false)
+    if (ws.pipeline !== null) ws.pipeline.done(stream, err)
+  }
+}
+
+function afterWrite (err) {
+  const stream = this.stream
+
+  if (err) stream.destroy(err)
+  stream._duplexState &= WRITE_NOT_ACTIVE
+
+  if (this.drains !== null) tickDrains(this.drains)
+
+  if ((stream._duplexState & WRITE_DRAIN_STATUS) === WRITE_UNDRAINED) {
+    stream._duplexState &= WRITE_DRAINED
+    if ((stream._duplexState & WRITE_EMIT_DRAIN) === WRITE_EMIT_DRAIN) {
+      stream.emit('drain')
+    }
+  }
+
+  this.updateCallback()
+}
+
+function afterRead (err) {
+  if (err) this.stream.destroy(err)
+  this.stream._duplexState &= READ_NOT_ACTIVE
+  if (this.readAhead === false && (this.stream._duplexState & READ_RESUMED) === 0) this.stream._duplexState &= READ_NO_READ_AHEAD
+  this.updateCallback()
+}
+
+function updateReadNT () {
+  if ((this.stream._duplexState & READ_UPDATING) === 0) {
+    this.stream._duplexState &= READ_NOT_NEXT_TICK
+    this.update()
+  }
+}
+
+function updateWriteNT () {
+  if ((this.stream._duplexState & WRITE_UPDATING) === 0) {
+    this.stream._duplexState &= WRITE_NOT_NEXT_TICK
+    this.update()
+  }
+}
+
+function tickDrains (drains) {
+  for (let i = 0; i < drains.length; i++) {
+    // drains.writes are monotonic, so if one is 0 its always the first one
+    if (--drains[i].writes === 0) {
+      drains.shift().resolve(true)
+      i--
+    }
+  }
+}
+
+function afterOpen (err) {
+  const stream = this.stream
+
+  if (err) stream.destroy(err)
+
+  if ((stream._duplexState & DESTROYING) === 0) {
+    if ((stream._duplexState & READ_PRIMARY_STATUS) === 0) stream._duplexState |= READ_PRIMARY
+    if ((stream._duplexState & WRITE_PRIMARY_STATUS) === 0) stream._duplexState |= WRITE_PRIMARY
+    stream.emit('open')
+  }
+
+  stream._duplexState &= NOT_ACTIVE
+
+  if (stream._writableState !== null) {
+    stream._writableState.updateCallback()
+  }
+
+  if (stream._readableState !== null) {
+    stream._readableState.updateCallback()
+  }
+}
+
+function afterTransform (err, data) {
+  if (data !== undefined && data !== null) this.push(data)
+  this._writableState.afterWrite(err)
+}
+
+function newListener (name) {
+  if (this._readableState !== null) {
+    if (name === 'data') {
+      this._duplexState |= (READ_EMIT_DATA | READ_RESUMED_READ_AHEAD)
+      this._readableState.updateNextTick()
+    }
+    if (name === 'readable') {
+      this._duplexState |= READ_EMIT_READABLE
+      this._readableState.updateNextTick()
+    }
+  }
+
+  if (this._writableState !== null) {
+    if (name === 'drain') {
+      this._duplexState |= WRITE_EMIT_DRAIN
+      this._writableState.updateNextTick()
+    }
+  }
+}
+
+class Stream extends EventEmitter {
+  constructor (opts) {
+    super()
+
+    this._duplexState = 0
+    this._readableState = null
+    this._writableState = null
+
+    if (opts) {
+      if (opts.open) this._open = opts.open
+      if (opts.destroy) this._destroy = opts.destroy
+      if (opts.predestroy) this._predestroy = opts.predestroy
+      if (opts.signal) {
+        opts.signal.addEventListener('abort', abort.bind(this))
+      }
+    }
+
+    this.on('newListener', newListener)
+  }
+
+  _open (cb) {
+    cb(null)
+  }
+
+  _destroy (cb) {
+    cb(null)
+  }
+
+  _predestroy () {
+    // does nothing
+  }
+
+  get readable () {
+    return this._readableState !== null ? true : undefined
+  }
+
+  get writable () {
+    return this._writableState !== null ? true : undefined
+  }
+
+  get destroyed () {
+    return (this._duplexState & DESTROYED) !== 0
+  }
+
+  get destroying () {
+    return (this._duplexState & DESTROY_STATUS) !== 0
+  }
+
+  destroy (err) {
+    if ((this._duplexState & DESTROY_STATUS) === 0) {
+      if (!err) err = STREAM_DESTROYED
+      this._duplexState = (this._duplexState | DESTROYING) & NON_PRIMARY
+
+      if (this._readableState !== null) {
+        this._readableState.highWaterMark = 0
+        this._readableState.error = err
+      }
+      if (this._writableState !== null) {
+        this._writableState.highWaterMark = 0
+        this._writableState.error = err
+      }
+
+      this._duplexState |= PREDESTROYING
+      this._predestroy()
+      this._duplexState &= NOT_PREDESTROYING
+
+      if (this._readableState !== null) this._readableState.updateNextTick()
+      if (this._writableState !== null) this._writableState.updateNextTick()
+    }
+  }
+}
+
+class Readable extends Stream {
+  constructor (opts) {
+    super(opts)
+
+    this._duplexState |= OPENING | WRITE_DONE | READ_READ_AHEAD
+    this._readableState = new ReadableState(this, opts)
+
+    if (opts) {
+      if (this._readableState.readAhead === false) this._duplexState &= READ_NO_READ_AHEAD
+      if (opts.read) this._read = opts.read
+      if (opts.eagerOpen) this._readableState.updateNextTick()
+      if (opts.encoding) this.setEncoding(opts.encoding)
+    }
+  }
+
+  setEncoding (encoding) {
+    const dec = new TextDecoder(encoding)
+    const map = this._readableState.map || echo
+    this._readableState.map = mapOrSkip
+    return this
+
+    function mapOrSkip (data) {
+      const next = dec.push(data)
+      return next === '' && (data.byteLength !== 0 || dec.remaining > 0) ? null : map(next)
+    }
+  }
+
+  _read (cb) {
+    cb(null)
+  }
+
+  pipe (dest, cb) {
+    this._readableState.updateNextTick()
+    this._readableState.pipe(dest, cb)
+    return dest
+  }
+
+  read () {
+    this._readableState.updateNextTick()
+    return this._readableState.read()
+  }
+
+  push (data) {
+    this._readableState.updateNextTickIfOpen()
+    return this._readableState.push(data)
+  }
+
+  unshift (data) {
+    this._readableState.updateNextTickIfOpen()
+    return this._readableState.unshift(data)
+  }
+
+  resume () {
+    this._duplexState |= READ_RESUMED_READ_AHEAD
+    this._readableState.updateNextTick()
+    return this
+  }
+
+  pause () {
+    this._duplexState &= (this._readableState.readAhead === false ? READ_PAUSED_NO_READ_AHEAD : READ_PAUSED)
+    return this
+  }
+
+  static _fromAsyncIterator (ite, opts) {
+    let destroy
+
+    const rs = new Readable({
+      ...opts,
+      read (cb) {
+        ite.next().then(push).then(cb.bind(null, null)).catch(cb)
+      },
+      predestroy () {
+        destroy = ite.return()
+      },
+      destroy (cb) {
+        if (!destroy) return cb(null)
+        destroy.then(cb.bind(null, null)).catch(cb)
+      }
+    })
+
+    return rs
+
+    function push (data) {
+      if (data.done) rs.push(null)
+      else rs.push(data.value)
+    }
+  }
+
+  static from (data, opts) {
+    if (isReadStreamx(data)) return data
+    if (data[asyncIterator]) return this._fromAsyncIterator(data[asyncIterator](), opts)
+    if (!Array.isArray(data)) data = data === undefined ? [] : [data]
+
+    let i = 0
+    return new Readable({
+      ...opts,
+      read (cb) {
+        this.push(i === data.length ? null : data[i++])
+        cb(null)
+      }
+    })
+  }
+
+  static isBackpressured (rs) {
+    return (rs._duplexState & READ_BACKPRESSURE_STATUS) !== 0 || rs._readableState.buffered >= rs._readableState.highWaterMark
+  }
+
+  static isPaused (rs) {
+    return (rs._duplexState & READ_RESUMED) === 0
+  }
+
+  [asyncIterator] () {
+    const stream = this
+
+    let error = null
+    let promiseResolve = null
+    let promiseReject = null
+
+    this.on('error', (err) => { error = err })
+    this.on('readable', onreadable)
+    this.on('close', onclose)
+
+    return {
+      [asyncIterator] () {
+        return this
+      },
+      next () {
+        return new Promise(function (resolve, reject) {
+          promiseResolve = resolve
+          promiseReject = reject
+          const data = stream.read()
+          if (data !== null) ondata(data)
+          else if ((stream._duplexState & DESTROYED) !== 0) ondata(null)
+        })
+      },
+      return () {
+        return destroy(null)
+      },
+      throw (err) {
+        return destroy(err)
+      }
+    }
+
+    function onreadable () {
+      if (promiseResolve !== null) ondata(stream.read())
+    }
+
+    function onclose () {
+      if (promiseResolve !== null) ondata(null)
+    }
+
+    function ondata (data) {
+      if (promiseReject === null) return
+      if (error) promiseReject(error)
+      else if (data === null && (stream._duplexState & READ_DONE) === 0) promiseReject(STREAM_DESTROYED)
+      else promiseResolve({ value: data, done: data === null })
+      promiseReject = promiseResolve = null
+    }
+
+    function destroy (err) {
+      stream.destroy(err)
+      return new Promise((resolve, reject) => {
+        if (stream._duplexState & DESTROYED) return resolve({ value: undefined, done: true })
+        stream.once('close', function () {
+          if (err) reject(err)
+          else resolve({ value: undefined, done: true })
+        })
+      })
+    }
+  }
+}
+
+class Writable extends Stream {
+  constructor (opts) {
+    super(opts)
+
+    this._duplexState |= OPENING | READ_DONE
+    this._writableState = new WritableState(this, opts)
+
+    if (opts) {
+      if (opts.writev) this._writev = opts.writev
+      if (opts.write) this._write = opts.write
+      if (opts.final) this._final = opts.final
+      if (opts.eagerOpen) this._writableState.updateNextTick()
+    }
+  }
+
+  cork () {
+    this._duplexState |= WRITE_CORKED
+  }
+
+  uncork () {
+    this._duplexState &= WRITE_NOT_CORKED
+    this._writableState.updateNextTick()
+  }
+
+  _writev (batch, cb) {
+    cb(null)
+  }
+
+  _write (data, cb) {
+    this._writableState.autoBatch(data, cb)
+  }
+
+  _final (cb) {
+    cb(null)
+  }
+
+  static isBackpressured (ws) {
+    return (ws._duplexState & WRITE_BACKPRESSURE_STATUS) !== 0
+  }
+
+  static drained (ws) {
+    if (ws.destroyed) return Promise.resolve(false)
+    const state = ws._writableState
+    const pending = (isWritev(ws) ? Math.min(1, state.queue.length) : state.queue.length)
+    const writes = pending + ((ws._duplexState & WRITE_WRITING) ? 1 : 0)
+    if (writes === 0) return Promise.resolve(true)
+    if (state.drains === null) state.drains = []
+    return new Promise((resolve) => {
+      state.drains.push({ writes, resolve })
+    })
+  }
+
+  write (data) {
+    this._writableState.updateNextTick()
+    return this._writableState.push(data)
+  }
+
+  end (data) {
+    this._writableState.updateNextTick()
+    this._writableState.end(data)
+    return this
+  }
+}
+
+class Duplex extends Readable { // and Writable
+  constructor (opts) {
+    super(opts)
+
+    this._duplexState = OPENING | (this._duplexState & READ_READ_AHEAD)
+    this._writableState = new WritableState(this, opts)
+
+    if (opts) {
+      if (opts.writev) this._writev = opts.writev
+      if (opts.write) this._write = opts.write
+      if (opts.final) this._final = opts.final
+    }
+  }
+
+  cork () {
+    this._duplexState |= WRITE_CORKED
+  }
+
+  uncork () {
+    this._duplexState &= WRITE_NOT_CORKED
+    this._writableState.updateNextTick()
+  }
+
+  _writev (batch, cb) {
+    cb(null)
+  }
+
+  _write (data, cb) {
+    this._writableState.autoBatch(data, cb)
+  }
+
+  _final (cb) {
+    cb(null)
+  }
+
+  write (data) {
+    this._writableState.updateNextTick()
+    return this._writableState.push(data)
+  }
+
+  end (data) {
+    this._writableState.updateNextTick()
+    this._writableState.end(data)
+    return this
+  }
+}
+
+class Transform extends Duplex {
+  constructor (opts) {
+    super(opts)
+    this._transformState = new TransformState(this)
+
+    if (opts) {
+      if (opts.transform) this._transform = opts.transform
+      if (opts.flush) this._flush = opts.flush
+    }
+  }
+
+  _write (data, cb) {
+    if (this._readableState.buffered >= this._readableState.highWaterMark) {
+      this._transformState.data = data
+    } else {
+      this._transform(data, this._transformState.afterTransform)
+    }
+  }
+
+  _read (cb) {
+    if (this._transformState.data !== null) {
+      const data = this._transformState.data
+      this._transformState.data = null
+      cb(null)
+      this._transform(data, this._transformState.afterTransform)
+    } else {
+      cb(null)
+    }
+  }
+
+  destroy (err) {
+    super.destroy(err)
+    if (this._transformState.data !== null) {
+      this._transformState.data = null
+      this._transformState.afterTransform()
+    }
+  }
+
+  _transform (data, cb) {
+    cb(null, data)
+  }
+
+  _flush (cb) {
+    cb(null)
+  }
+
+  _final (cb) {
+    this._transformState.afterFinal = cb
+    this._flush(transformAfterFlush.bind(this))
+  }
+}
+
+class PassThrough extends Transform {}
+
+function transformAfterFlush (err, data) {
+  const cb = this._transformState.afterFinal
+  if (err) return cb(err)
+  if (data !== null && data !== undefined) this.push(data)
+  this.push(null)
+  cb(null)
+}
+
+function pipelinePromise (...streams) {
+  return new Promise((resolve, reject) => {
+    return pipeline(...streams, (err) => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+
+function pipeline (stream, ...streams) {
+  const all = Array.isArray(stream) ? [...stream, ...streams] : [stream, ...streams]
+  const done = (all.length && typeof all[all.length - 1] === 'function') ? all.pop() : null
+
+  if (all.length < 2) throw new Error('Pipeline requires at least 2 streams')
+
+  let src = all[0]
+  let dest = null
+  let error = null
+
+  for (let i = 1; i < all.length; i++) {
+    dest = all[i]
+
+    if (isStreamx(src)) {
+      src.pipe(dest, onerror)
+    } else {
+      errorHandle(src, true, i > 1, onerror)
+      src.pipe(dest)
+    }
+
+    src = dest
+  }
+
+  if (done) {
+    let fin = false
+
+    const autoDestroy = isStreamx(dest) || !!(dest._writableState && dest._writableState.autoDestroy)
+
+    dest.on('error', (err) => {
+      if (error === null) error = err
+    })
+
+    dest.on('finish', () => {
+      fin = true
+      if (!autoDestroy) done(error)
+    })
+
+    if (autoDestroy) {
+      dest.on('close', () => done(error || (fin ? null : PREMATURE_CLOSE)))
+    }
+  }
+
+  return dest
+
+  function errorHandle (s, rd, wr, onerror) {
+    s.on('error', onerror)
+    s.on('close', onclose)
+
+    function onclose () {
+      if (rd && s._readableState && !s._readableState.ended) return onerror(PREMATURE_CLOSE)
+      if (wr && s._writableState && !s._writableState.ended) return onerror(PREMATURE_CLOSE)
+    }
+  }
+
+  function onerror (err) {
+    if (!err || error) return
+    error = err
+
+    for (const s of all) {
+      s.destroy(err)
+    }
+  }
+}
+
+function echo (s) {
+  return s
+}
+
+function isStream (stream) {
+  return !!stream._readableState || !!stream._writableState
+}
+
+function isStreamx (stream) {
+  return typeof stream._duplexState === 'number' && isStream(stream)
+}
+
+function isEnded (stream) {
+  return !!stream._readableState && stream._readableState.ended
+}
+
+function isFinished (stream) {
+  return !!stream._writableState && stream._writableState.ended
+}
+
+function getStreamError (stream, opts = {}) {
+  const err = (stream._readableState && stream._readableState.error) || (stream._writableState && stream._writableState.error)
+
+  // avoid implicit errors by default
+  return (!opts.all && err === STREAM_DESTROYED) ? null : err
+}
+
+function isReadStreamx (stream) {
+  return isStreamx(stream) && stream.readable
+}
+
+function isDisturbed (stream) {
+  return (stream._duplexState & OPENING) !== OPENING || (stream._duplexState & ACTIVE_OR_TICKING) !== 0
+}
+
+function isTypedArray (data) {
+  return typeof data === 'object' && data !== null && typeof data.byteLength === 'number'
+}
+
+function defaultByteLength (data) {
+  return isTypedArray(data) ? data.byteLength : 1024
+}
+
+function noop () {}
+
+function abort () {
+  this.destroy(new Error('Stream aborted.'))
+}
+
+function isWritev (s) {
+  return s._writev !== Writable.prototype._writev && s._writev !== Duplex.prototype._writev
+}
+
+module.exports = {
+  pipeline,
+  pipelinePromise,
+  isStream,
+  isStreamx,
+  isEnded,
+  isFinished,
+  isDisturbed,
+  getStreamError,
+  Stream,
+  Writable,
+  Readable,
+  Duplex,
+  Transform,
+  // Export PassThrough for compatibility with Node.js core's stream module
+  PassThrough
+}
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"events-universal":14,"fast-fifo":16,"text-decoder":25}],25:[function(require,module,exports){
+const PassThroughDecoder = require('./lib/pass-through-decoder')
+const UTF8Decoder = require('./lib/utf8-decoder')
+
+module.exports = class TextDecoder {
+  constructor (encoding = 'utf8') {
+    this.encoding = normalizeEncoding(encoding)
+
+    switch (this.encoding) {
+      case 'utf8':
+        this.decoder = new UTF8Decoder()
+        break
+      case 'utf16le':
+      case 'base64':
+        throw new Error('Unsupported encoding: ' + this.encoding)
+      default:
+        this.decoder = new PassThroughDecoder(this.encoding)
+    }
+  }
+
+  get remaining () {
+    return this.decoder.remaining
+  }
+
+  push (data) {
+    if (typeof data === 'string') return data
+    return this.decoder.decode(data)
+  }
+
+  // For Node.js compatibility
+  write (data) {
+    return this.push(data)
+  }
+
+  end (data) {
+    let result = ''
+    if (data) result = this.push(data)
+    result += this.decoder.flush()
+    return result
+  }
+}
+
+function normalizeEncoding (encoding) {
+  encoding = encoding.toLowerCase()
+
+  switch (encoding) {
+    case 'utf8':
+    case 'utf-8':
+      return 'utf8'
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return 'utf16le'
+    case 'latin1':
+    case 'binary':
+      return 'latin1'
+    case 'base64':
+    case 'ascii':
+    case 'hex':
+      return encoding
+    default:
+      throw new Error('Unknown encoding: ' + encoding)
+  }
+};
+
+},{"./lib/pass-through-decoder":26,"./lib/utf8-decoder":26}],26:[function(require,module,exports){
+module.exports = class BrowserDecoder {
+  constructor (encoding) {
+    this.decoder = new TextDecoder(encoding === 'utf16le' ? 'utf16-le' : encoding)
+  }
+
+  get remaining () {
+    return -1
+  }
+
+  decode (data) {
+    return this.decoder.decode(data, { stream: true })
+  }
+
+  flush () {
+    return this.decoder.decode(new Uint8Array(0))
+  }
+}
+
+},{}],27:[function(require,module,exports){
+const b4a = require('b4a')
+
+unslab.all = all
+unslab.is = is
+
+module.exports = unslab
+
+function unslab (buf) {
+  if (buf === null || buf.buffer.byteLength === buf.byteLength) return buf
+  const copy = b4a.allocUnsafeSlow(buf.byteLength)
+  copy.set(buf, 0)
+  return copy
+}
+
+function is (buf) {
+  return buf.buffer.byteLength !== buf.byteLength
+}
+
+function all (list) {
+  let size = 0
+  for (let i = 0; i < list.length; i++) {
+    const buf = list[i]
+    size += buf === null || buf.buffer.byteLength === buf.byteLength ? 0 : buf.byteLength
+  }
+
+  const copy = b4a.allocUnsafeSlow(size)
+  const result = new Array(list.length)
+
+  let offset = 0
+  for (let i = 0; i < list.length; i++) {
+    let buf = list[i]
+
+    if (buf !== null && buf.buffer.byteLength !== buf.byteLength) {
+      copy.set(buf, offset)
+      buf = copy.subarray(offset, offset += buf.byteLength)
+    }
+
+    result[i] = buf
+  }
+
+  return result
+}
+
+},{"b4a":5}]},{},[4]);
