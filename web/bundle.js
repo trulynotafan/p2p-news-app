@@ -3149,20 +3149,12 @@ module.exports = menu_sidebar
 async function menu_sidebar (opts, protocol) {
   const { sid } = opts
   const { sdb } = await get(sid)
-  const { drive } = sdb
 
   let send_to_parent = null
   let send_to_explorer = null
 
   const el = document.createElement('div')
-  const shadow = el.attachShadow({ mode: 'open' })
-
-  const sheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [sheet]
-
-  if (drive) {
-    drive.get('style/style.css').then(apply_style).catch(ignore_error)
-  }
+  el.className = 'sidebar-container'
 
   if (protocol) {
     send_to_parent = protocol(on_parent_message)
@@ -3172,16 +3164,8 @@ async function menu_sidebar (opts, protocol) {
 
   if (subs && subs.length > 0) {
     const explorer_el = await graph_explorer({ sid: subs[0].sid }, explorer_protocol)
-    shadow.appendChild(explorer_el)
+    el.appendChild(explorer_el)
   }
-
-  return el
-
-  function apply_style (file) {
-    if (file && file.raw) sheet.replaceSync(file.raw)
-  }
-
-  function ignore_error (e) { }
 
   return el
 
@@ -3625,10 +3609,6 @@ async function news_app (opts, protocol) {
     let drive_path = path
     if (drive_path.startsWith('/')) drive_path = drive_path.slice(1)
 
-    // Remove the stripping logic that was causing 404s
-    // const parts = drive_path.split('/')
-    // if (parts.length > 2) drive_path = `${parts[0]}/${parts[parts.length - 1]}`
-
     const data = await try_get_folder_data(drive_path)
 
     if (data && data.content) {
@@ -3906,7 +3886,7 @@ async function news_cards (opts, protocol) {
   const tags = data.tags || []
 
   return `
-    <div class="news-card" data-color="${color}">
+    <div class="news-card">
       <div class="card-header">
         <span class="card-date">${date}</span>
         <h3 class="card-title">${title}</h3>
@@ -4313,19 +4293,19 @@ const news = require('news')
 
 console.log('p2p news app')
 
-const custom_vault = {
-  init_blog: async ({ username }) => console.log('[custom_vault] init_blog:', username),
+const customVault = {
+  init_blog: async ({ username }) => console.log('[customVault] init_blog:', username),
   get_peer_blogs: async () => new Map(),
   get_my_posts: async () => [],
   get_profile: async (key) => null,
-  on_update: (callback) => console.log('[custom_vault] on_update registered')
+  on_update: (callback) => console.log('[customVault] on_update registered')
 }
 
-async function init () {
+async function init() {
   console.log('[page.js] init started')
   const start = await sdb.watch(handle_watch_batch)
 
-  function handle_watch_batch (batch) {
+  function handle_watch_batch(batch) {
     console.log('[page.js] sdb watch batch:', batch)
   }
 
@@ -4337,14 +4317,14 @@ async function init () {
   const { sid } = start[0]
   console.log('[page.js] Retrieved sid for news:', sid)
 
-  const app = await news({ sid, vault: custom_vault })
+  const app = await news({ sid, vault: customVault })
   document.body.innerHTML = ''
   document.body.append(app)
 }
 
 init().catch(console.error)
 
-function fallback_module () {
+function fallback_module() {
   return {
     _: {
       news: {
