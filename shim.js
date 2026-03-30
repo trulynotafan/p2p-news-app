@@ -34,7 +34,7 @@ async function loadcli (href) {
   const fs = eval('require')('bare-fs')
   const src = fs.readFileSync(href)
   const async_function = (async () => {}).constructor
-  return new async_function('vault', src)
+  return new async_function('vault, document', src)
 }
 
 async function loadweb (href) {
@@ -42,22 +42,25 @@ async function loadweb (href) {
   const response = await fetch(url, { cache: 'no-cache' })
   const src = await response.text()
   const async_function = (async () => {}).constructor
-  return new async_function('vault', src)
+  return new async_function('vault, document', src)
 }
 
 async function boot (load, input) {
   const identity = require('identity')
   const vault = identity(input)
   const [sysurl, appurl] = input.arg
+  const is_web = !!globalThis.open
+  const sys_doc = is_web ? make_document(create_shadow()) : undefined
+  const app_doc = is_web ? make_document(create_shadow()) : undefined
   const system = await load(sysurl)
-  await system(vault)
+  await system(vault, sys_doc)
   const uservault = await vault.user
   if (!appurl) return
   const app = await load(appurl)
   // Wrap vault for the app — auto-namespace so app never sees its APP_ID
   const app_instance_id = 'p2p-news-app' // @TODO: dynamic from websys-ui app launcher
   const app_vault = await create_app_vault(uservault, app_instance_id)
-  app(app_vault)
+  app(app_vault, app_doc)
 }
 
 /***************************************
@@ -95,7 +98,29 @@ async function create_app_vault (vault, app_instance_id) {
   }
 }
 
+/***************************************
+SHADOW DOM HELPERS
+***************************************/
+function create_shadow () {
+  const el = document.createElement('div')
+  const shadow = el.attachShadow({ mode: 'closed' })
+  document.body.appendChild(el)
+  return shadow
+}
+
+function make_document (shadow) {
+  return {
+    body: shadow,
+    createElement: document.createElement.bind(document),
+    createTextNode: document.createTextNode.bind(document),
+    querySelector: shadow.querySelector.bind(shadow),
+    querySelectorAll: shadow.querySelectorAll.bind(shadow),
+    addEventListener: shadow.addEventListener.bind(shadow)
+  }
+}
+
 },{"bare-process":128,"identity":9}],2:[function(require,module,exports){
+(function (Buffer){(function (){
 const Autobase = require('autobase')
 const b4a = require('b4a')
 const { Readable } = require('streamx')
@@ -121,6 +146,14 @@ function create_auditcore (options) {
   function handle_base_update () {
     if (state.base.view && state.base.view.entries) {
       state.entries = state.base.view.entries
+      // Persist entries to the core's userData
+      const entries_json = JSON.stringify(state.entries)
+      const core = state.base.view && state.base.view.core
+      if (core) {
+        core.setUserData('cached-entries', Buffer.from(entries_json)).catch(function () {
+          // Silently ignore persistence errors
+        })
+      }
     }
     emitter.emit('update')
   }
@@ -161,6 +194,21 @@ INTERNAL FUNCTIONS
 
   async function ready () {
     await state.base.ready()
+
+    // Try to load cached entries from core's userData
+    if (state.base.view && state.base.view.core) {
+      try {
+        const cached_json = await state.base.view.core.getUserData('cached-entries')
+        if (cached_json) {
+          const cached = JSON.parse(cached_json.toString())
+          state.base.view.entries = cached
+          state.entries = cached
+        }
+      } catch (err) {
+        // Silently ignore if no cached entries
+      }
+    }
+
     await state.base.update()
     if (state.base.view && state.base.view.entries) {
       state.entries = state.base.view.entries
@@ -236,7 +284,11 @@ INTERNAL FUNCTIONS
   }
 
   async function update () {
-    return state.base.update()
+    const result = await state.base.update()
+    if (state.base.view && state.base.view.entries) {
+      state.entries = state.base.view.entries
+    }
+    return result
   }
 
   function replicate (stream_or_initiator, opts = {}) {
@@ -254,7 +306,11 @@ HANDLE AUTOBASE OPEN
 function handle_autobase_open (store) {
   const audit_store = store.base.store.namespace('auditcore')
   const core = audit_store.get({ name: 'log' })
-  return { core, entries: [] }
+
+  // Try to load cached entries from core userData
+  const cached_entries = []
+  const view = { core, entries: cached_entries }
+  return view
 }
 
 /***************************************
@@ -289,7 +345,8 @@ function make_emitter (state = {}) {
   }
 }
 
-},{"autobase":96,"b4a":114,"streamx":611}],3:[function(require,module,exports){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"autobase":96,"b4a":114,"buffer":197,"streamx":611}],3:[function(require,module,exports){
 const Autobase = require('autobase')
 const Hyperbee = require('hyperbee')
 const b4a = require('b4a')
@@ -1146,16 +1203,16 @@ IDENTITY NETWORK — own devices only
 
 // store for replication
 // mnemonic data to join the swarm with a determinstic keypair
-async function network(store, mnemonic_data) {
+// relay if we want to use a custom hosted relay, provided as input
+async function network (store, mnemonic_data, relay_url) {
   await store.ready()
-  const swarm = await create_swarm(mnemonic_data)
+  const swarm = await create_swarm(mnemonic_data, relay_url)
   console.log('[identity] swarm joined')
   // for now its replicating the entire store, but this connection is only between our own devices
   swarm.on('connection', function (socket) {
     console.log('[identity] new connection')
-    upgrade_connection(socket, function (connection) {
-      store.replicate(connection)
-    })
+    if (!socket.userData) socket.userData = null
+    upgrade_connection(socket, function (connection) { store.replicate(connection) })
   })
   return { swarm }
 }
@@ -1164,9 +1221,9 @@ async function network(store, mnemonic_data) {
 APP NETWORK — vault-filtered swarm for apps
 ***************************************/
 
-async function create_app_network(store) {
+async function create_app_network (store, relay_url) {
   const is_vault_core = store._is_vault_core
-  const swarm = await create_swarm()
+  const swarm = await create_swarm(null, relay_url)
   const peer_streams = []
 
   store.on('core-open', function (core) {
@@ -1182,7 +1239,7 @@ async function create_app_network(store) {
     })
   })
 
-  function replicate(connection) {
+  function replicate (connection) {
     const stream = Hypercore.createProtocolStream(connection, { ondiscoverykey })
     peer_streams.push(stream)
     stream.once('close', function () {
@@ -1191,7 +1248,7 @@ async function create_app_network(store) {
     })
     return stream
 
-    function ondiscoverykey(discovery_key) {
+    function ondiscoverykey (discovery_key) {
       const id = b4a.toString(discovery_key, 'hex')
       const core = store.cores.get(id)
       if (!core) return
@@ -1210,21 +1267,21 @@ both peers exchange mode (browser/native).
 browser-to-browser: upgrade to WebRTC
 browser-native or native-native raw socket
 ***************************************/
-function upgrade_connection(socket, on_ready) {
+function upgrade_connection (socket, on_ready) {
   const mux = Protomux.from(socket)
   const mode = is_cli ? 'native' : 'browser'
   const channel = mux.createChannel({ protocol: 'hyper-webrtc/upgrade', onopen })
   channel.open()
 
-  function onopen() {
+  function onopen () {
     const message = channel.addMessage({ encoding: c.json, onmessage })
     message.send({ type: 'identity', data: { mode } })
 
-    function onmessage(msg) {
+    function onmessage (msg) {
       const peer_mode = msg.data?.mode
       if (is_cli || peer_mode === 'native') return on_ready(socket)
       const rtc = HyperWebRTC.from(socket, { initiator: socket.isInitiator })
-      console.log(`[p2p-networking] WebRTC connection established.`)
+      console.log('[p2p-networking] WebRTC connection established.')
       rtc.on('open', function () { on_ready(rtc) })
     }
   }
@@ -1233,13 +1290,14 @@ function upgrade_connection(socket, on_ready) {
 /***************************************
 SWARM CREATION
 ***************************************/
-
-async function create_swarm(mnemonic_data) {
+async function create_swarm (mnemonic_data, relay_url) {
   if (is_cli) {
     return new Hyperswarm(mnemonic_data ? { keyPair: mnemonic_data.keypair } : {})
   }
-  const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
-  const relay_url = is_dev ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app'
+  if (!relay_url) {
+    const is_dev = location.hostname === 'localhost' || location.hostname.startsWith('192.') || location.hostname.startsWith('10.')
+    relay_url = is_dev ? 'ws://localhost:8080' : 'wss://relay-production-9c0e.up.railway.app'
+  }
   return new Promise(function (resolve, reject) {
     const ws = new WebSocket(relay_url)
     ws.addEventListener('error', reject)
@@ -1438,42 +1496,37 @@ function create_vault_ops (get_state) {
   /***************************************
   DEVICE MANAGEMENT
   ***************************************/
-
-  async function get_paired_devices (events_drive_param) {
-    const events = await get_events(events_drive_param)
-    return build_paired_devices_list(events)
-  }
-
-  async function get_device_name (events_drive_param, metadata_writer_key) {
-    const devices = await get_paired_devices(events_drive_param)
-    const device = devices.find(d => d.metadata_writer === metadata_writer_key)
-    return device ? device.name : null
-  }
-
-  async function remove_device (events_drive_param, device) {
+  // So previously, I was using an app specifc structure for device managment, but now we use vaults autobee
+  async function get_paired_devices () {
     const state = get_state()
-    if (!state.ds_manager) {
-      console.error('Datastructure manager not initialized')
-      return false
+    if (!state.vault_bee) return []
+    const devices = []
+    for await (const entry of state.vault_bee.create_read_stream({ gte: 'paired_devices/', lt: 'paired_devices0' })) {
+      devices.push(entry.value)
     }
+    return devices
+  }
+
+  async function get_device_name (metadata_writer_key) {
+    const state = get_state()
+    if (!state.vault_bee) return null
+    const entry = await state.vault_bee.get(`paired_devices/${metadata_writer_key}`)
+    return entry?.value?.name || null
+  }
+
+  async function remove_device (device) {
+    const state = get_state()
+    if (!state.ds_manager) return false
     try {
-      const structure_names = state.ds_manager.get_names()
-      const removal_data = {}
-      for (const name of structure_names) {
-        const writer_key_name = `${name}_writer`
-        const writer_key = device[writer_key_name]
+      for (const name of state.ds_manager.get_names()) {
+        const writer_key = device[`${name}_writer`]
         if (writer_key) {
-          removal_data[writer_key_name] = writer_key
-          try {
-            await state.ds_manager.remove_writer(name, writer_key)
-            console.log(`Removed writer from ${name}`)
-          } catch (err) {
-            console.warn(`Failed to remove writer from ${name}:`, err.message)
-          }
+          try { await state.ds_manager.remove_writer(name, writer_key) } catch (err) { console.warn(`Failed to remove writer from ${name}:`, err.message) }
         }
       }
-      await log_event(events_drive_param, 'remove', removal_data)
-      console.log('Device removed successfully')
+      // Delete by vault_bee_writer (primary key) or metadata_writer (seed device key)
+      const del_key = device.vault_bee_writer || device.metadata_writer
+      if (del_key) await vault_del(`paired_devices/${del_key}`)
       state.emitter.emit('update')
       return true
     } catch (err) {
@@ -1521,8 +1574,10 @@ function create_vault_ops (get_state) {
       for (const [name, key] of Object.entries(req.writer_keys)) {
         device_keys[`${name}_writer`] = key
       }
-      const events_drive = state.events_drive
-      await log_event(events_drive, 'add', device_keys)
+      const vbw = req.vault_bee_writer
+      if (!vbw) return
+      const existing = await vault_get(`paired_devices/${vbw}`)
+      await vault_put(`paired_devices/${vbw}`, { ...existing, ...device_keys })
     }
   }
 
@@ -1559,8 +1614,11 @@ function create_vault_ops (get_state) {
     if (app_audit) {
       writer_keys.app_audit = b4a.toString(app_audit.base.local.key, 'hex')
     }
+    // Include vault_bee_writer so inviting device can link app keys to existing device entry
+    const vault_bee_writer = state.vault_bee.base?.local?.key
+    const vbw_hex = vault_bee_writer ? b4a.toString(vault_bee_writer, 'hex') : null
     const requests = await vault_get(`writer_requests/${app_id}`) || []
-    requests.push({ writer_keys, requested_at: Date.now(), processed: false })
+    requests.push({ writer_keys, vault_bee_writer: vbw_hex, requested_at: Date.now(), processed: false })
     await vault_put(`writer_requests/${app_id}`, requests)
     return writer_keys
   }
@@ -1580,22 +1638,25 @@ function create_vault_ops (get_state) {
   // Log bootstrap device (seed device) with all structure writer keys
   async function log_bootstrap_device (app_id) {
     const state = get_state()
-    if (!state.ds_manager) return
+    if (!state.ds_manager || !state.vault_bee) return
     const device_keys = {}
     for (const name of state.ds_manager.get_names()) {
       const structure = state.ds_manager.get(name)
       const config = state.ds_manager.get_config(name)
       const writer_key = get_local_writer_key(structure, config.type)
-      if (writer_key) {
-        device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
-      }
+      if (writer_key) device_keys[`${name}_writer`] = b4a.toString(writer_key, 'hex')
     }
-    const events_drive = state.events_drive
-    const existing_devices = await get_paired_devices(events_drive)
-    const device_exists = existing_devices.some(d => d.metadata_writer === device_keys.metadata_writer)
-    if (!device_exists) {
-      await log_event(events_drive, 'add', device_keys)
-    }
+    if (state.vault_bee.base?.local) device_keys.vault_bee_writer = b4a.toString(state.vault_bee.base.local.key, 'hex')
+    if (state.vault_audit?.base?.local) device_keys.vault_audit_writer = b4a.toString(state.vault_audit.base.local.key, 'hex')
+    const vbw = device_keys.vault_bee_writer
+    if (!vbw) return
+    const existing = await state.vault_bee.get(`paired_devices/${vbw}`)
+    await vault_put(`paired_devices/${vbw}`, {
+      name: existing?.value?.name || 'Device 1',
+      added_date: existing?.value?.added_date || new Date().toLocaleString(),
+      ...(existing?.value || {}),
+      ...device_keys
+    })
   }
 
   /***************************************
@@ -1663,30 +1724,6 @@ async function read_and_sort_events (events_drive, files) {
     }
   }
   return events.sort((a, b) => a.meta.time - b.meta.time)
-}
-
-/***************************************
-BUILD PAIRED DEVICES LIST
-***************************************/
-function build_paired_devices_list (events) {
-  const devices_map = new Map()
-  let device_counter = 0
-  events.forEach(event => {
-    const device_id = event.data.metadata_writer
-    if (event.type === 'add') {
-      devices_map.set(device_id, {
-        name: `Device ${++device_counter}`,
-        timestamp: event.meta.time,
-        added_date: new Date(event.meta.time).toLocaleString(),
-        ...Object.fromEntries(
-          Object.entries(event.data).filter(([key]) => key.endsWith('_writer'))
-        )
-      })
-    } else if (event.type === 'remove') {
-      devices_map.delete(device_id)
-    }
-  })
-  return Array.from(devices_map.values())
 }
 
 /***************************************
@@ -1865,7 +1902,7 @@ function identity (config = {}) {
     get_vault_audit,
     get_app_audit,
     // App networking — creates vault-filtered swarm for apps
-    network: () => create_app_network(store),
+    network: create_app_network_with_relay,
     // Events
     on_update: handle_update_callback,
     on_vault_ready,
@@ -1890,7 +1927,8 @@ INTERNAL FUNCTIONS
         const invite_data = parse_vault_invite(invite_code)
         const mnemonic_data = await user_promise
         state.keypair = mnemonic_data
-        const { swarm: swarm_instance } = await network(store, mnemonic_data)
+        const relay_url = await get_default_relay()
+        const { swarm: swarm_instance } = await network(store, mnemonic_data, relay_url)
         state.store = store
         state.swarm = swarm_instance
         state.pairing_manager = pairing_manager_constructor(state.swarm)
@@ -1915,13 +1953,19 @@ INTERNAL FUNCTIONS
       state.keypair = mnemonic_data
       await init_vault_structures({ store, vault_bee_key: null, vault_audit_key: null })
       await store_device_noise_key(mnemonic_data.keypair.publicKey.toString('hex'))
-      const { swarm } = await network(store, mnemonic_data)
+      const relay_url = await get_default_relay()
+      const { swarm } = await network(store, mnemonic_data, relay_url)
       // Reconnect to known devices + store new device keys
       const known = await get_other_device_keys(mnemonic_data.keypair.publicKey)
       for (const key of known) swarm.joinPeer(key)
       swarm.on('connection', (socket) => store_device_noise_key(b4a.toString(socket.remotePublicKey, 'hex')))
       state.store = store
       state.swarm = swarm
+      if (auth_data.defer_resolve) {
+        state.pending_auth = { username, mode }
+        state.emitter.emit('vault_ready', state.pending_auth)
+        return
+      }
       if (user_resolve) user_resolve({ ...vault_api, username, mode, authenticated: true })
     } catch (err) {
       console.error('[identity] Authentication error:', err)
@@ -1964,6 +2008,21 @@ VAULT STRUCTURE INITIALIZATION
       vault_core_keys.add(dk_hex)
     }
     store._is_vault_core = is_vault_core
+  }
+
+  /***************************************
+  RELAY CONFIG
+  ***************************************/
+
+  async function get_default_relay () {
+    if (!state.vault_bee) return null
+    const entry = await state.vault_bee.get('config/default_relay')
+    return entry?.value || null
+  }
+
+  async function create_app_network_with_relay () {
+    const relay_url = await get_default_relay()
+    return create_app_network(store, relay_url)
   }
 
   /***************************************

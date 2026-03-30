@@ -367,10 +367,7 @@ DATA STRUCTURES, The only place we need to define structures..
   const state = {
     store: null,
     ds_manager: null,
-    pairing_manager: null,
-    pairing_result: null,
     discovered_blogs: new Map(),
-    peer_relays: new Map(),
     autobase_cache: new Map(),
     drive_cache: new Map(),
     emitter: make_emitter()
@@ -382,9 +379,6 @@ DATA STRUCTURES, The only place we need to define structures..
   // Return the blog app API
   const api = {
     init_blog,
-    create_invite,
-    verify_pairing,
-    deny_pairing,
     // Content operations (delegated to blog-content module)
     create_post: content.create_post,
     subscribe: content.subscribe,
@@ -398,14 +392,8 @@ DATA STRUCTURES, The only place we need to define structures..
     get_avatar_content: content.get_avatar_content,
     upload_avatar: content.upload_avatar,
     create_default_profile: content.create_default_profile,
-    // Device/pairing management
-    log_event,
-    get_paired_devices,
-    remove_device,
     get_raw_data,
-    // Relay management
-    set_peer_relay,
-    // Other getters
+    // Getters
     get_local_key,
     get_drive,
     get_profile_drive,
@@ -433,11 +421,6 @@ INTERNAL FUNCTIONS
     if (app_audit) await app_audit.append({ type: op, data })
   }
 
-  // Store relay URL for a peer (called from protocol exchange)
-  function set_peer_relay (key, relay_url) {
-    if (relay_url) state.peer_relays.set(key, relay_url)
-  }
-
   // Setup peer autobase
   async function setup_peer_autobase (key, key_buffer) {
     // Check if already exists
@@ -457,8 +440,7 @@ INTERNAL FUNCTIONS
             state.discovered_blogs.set(key, {
               username: init_entry.data.username,
               title: init_entry.data.title,
-              drive_key: init_entry.data.drive_key,
-              relay_url: state.peer_relays.get(key) || null
+              drive_key: init_entry.data.drive_key
             })
             // Setup peer drive
             if (!state.drive_cache.has(key) && init_entry.data.drive_key) {
@@ -580,58 +562,6 @@ INTERNAL FUNCTIONS
     await restore_subscribed_peers()
   }
 
-  // Create invite
-  async function create_invite () {
-    const { invite_code, invite } = await identity.create_vault_invite()
-    const profile = await content.get_profile()
-    state.pairing_manager = await identity.setup_vault_pairing({
-      invite,
-      username: profile?.name || 'Unknown',
-      on_verification_needed: (digits) => {
-        state.emitter.emit('verification_needed', digits)
-        state.emitter.emit('update')
-      },
-      on_paired: async ({ vault_bee_writer, vault_audit_writer }) => {
-        // Vault pairing complete - vault keys are handled by identity module
-        // Device entries are created when app structures get writer access, not here
-        console.log('[p2p-news-app] Vault paired with new device')
-        state.emitter.emit('update')
-      }
-    })
-    return { invite_code, pairing_manager: state.pairing_manager }
-  }
-
-  function verify_pairing (code) { return identity.verify_vault_pairing(code) }
-
-  function deny_pairing () {
-    identity.deny_vault_pairing()
-    state.emitter.emit('update')
-  }
-
-  /***************************************
-DEVICE MANAGEMENT (delegates to identity)
-***************************************/
-
-  async function log_event (type, data) {
-    const events_drive = state.ds_manager.get('events')
-    return identity.log_event(events_drive, type, data)
-  }
-
-  async function get_paired_devices () {
-    const events_drive = state.ds_manager.get('events')
-    return identity.get_paired_devices(events_drive)
-  }
-
-  async function remove_device (device) {
-    const events_drive = state.ds_manager.get('events')
-    await audit_log('remove_device', { device })
-    return identity.remove_device(events_drive, device)
-  }
-
-  async function get_raw_data (structure_name) {
-    return identity.get_raw_data(structure_name)
-  }
-
   /***************************************
 GETTERS
 ***************************************/
@@ -653,6 +583,9 @@ GETTERS
     const app_audit = identity.get_app_audit()
     if (!app_audit) return []
     return app_audit.read()
+  }
+  async function get_raw_data (structure_name) {
+    return identity.get_raw_data(structure_name)
   }
 }
 
@@ -700,42 +633,7 @@ const state = {
   is_ready: false,
   is_joining: false,
   swarm: null,
-  api: null,
-  pairing_manager: null,
-  default_relay: null
-}
-
-/***************************************
-RELAY HELPERS
-***************************************/
-
-async function get_relays () {
-  const relays = await uservault.vault_get('app_config/relays')
-  return relays || []
-}
-
-async function get_default_relay () {
-  return await uservault.vault_get('app_config/default_relay') || null
-}
-
-async function add_relay (url) {
-  const relays = await get_relays()
-  if (!relays.includes(url)) {
-    relays.push(url)
-    await uservault.vault_put('app_config/relays', relays)
-  }
-}
-
-async function remove_relay (url) {
-  const relays = await get_relays()
-  await uservault.vault_put('app_config/relays', relays.filter(r => r !== url))
-  const default_relay = await get_default_relay()
-  if (default_relay === url) await uservault.vault_del('app_config/default_relay')
-}
-
-async function set_default_relay (url) {
-  await uservault.vault_put('app_config/default_relay', url)
-  state.default_relay = url
+  api: null
 }
 
 /***************************************
@@ -795,16 +693,16 @@ function setup_connection_status (swarm) {
   if (swarm) {
     state.is_joining = false
     if (swarm.connections.size > 0) {
-      status_el.textContent = `🟢 Connected as ${state.username} (${swarm.connections.size} peers)`
+      status_el.textContent = `🟢 Connected (${swarm.connections.size} peers)`
     } else {
-      status_el.textContent = `🟢 Joined swarm as ${state.username} (waiting for peers...)`
+      status_el.textContent = '🟢 Joined swarm (waiting for peers...)'
     }
     function handle_swarm_connection () {
-      status_el.textContent = `🟢 Connected as ${state.username} (${swarm.connections.size} peers)`
+      status_el.textContent = `🟢 Connected (${swarm.connections.size} peers)`
       if (state.current_view) render_view(state.current_view)
     }
     function handle_swarm_disconnection () {
-      status_el.textContent = `🟢 Connected as ${state.username} (${swarm.connections.size} peers)`
+      status_el.textContent = `🟢 Connected (${swarm.connections.size} peers)`
     }
     swarm.on('connection', handle_swarm_connection)
     swarm.on('disconnection', handle_swarm_disconnection)
@@ -823,25 +721,19 @@ INIT BLOG APP
 ***************************************/
 async function init_blog_app () {
   try {
-    document.querySelector('.connection-status').textContent = 'Connecting to relay...'
+    document.querySelector('.connection-status').textContent = 'Connecting...'
     state.is_joining = true
-    // Load default relay if set
-    state.default_relay = await get_default_relay()
-    // Create blog app with vault
     state.api = blog_app(uservault)
     function handle_blog_update () {
       if (state.current_view) render_view(state.current_view)
     }
     state.api.on_update(handle_blog_update)
-    // Init blog with user data (identity already handled pairing if in pair mode)
     const init_options = { username: state.username }
-    if (state.default_relay) init_options.relay = state.default_relay
     console.log('[webapp-ui] Calling api.init_blog with options:', init_options)
     const result = await state.api.init_blog(init_options)
     console.log('[webapp-ui] init_blog succeeded, result:', result)
     state.store = result.store
     state.swarm = result.swarm
-    // Update username if in pair mode (identity set it during authentication)
     if (uservault.mode === 'pair' && uservault.username) {
       state.username = uservault.username
     }
@@ -851,24 +743,8 @@ async function init_blog_app () {
     show_view('news')
   } catch (err) {
     state.is_joining = false
-    const error_msg = err.message
     console.error('[webapp-ui] init_blog_app error:', err)
-    if (error_msg.includes('Relay connection failed') || error_msg.includes('Relay connection closed')) {
-      try {
-        const result = await state.api.init_blog({ username: state.username, offline_mode: true })
-        state.store = result.store
-        state.is_ready = true
-        setup_connection_status(null)
-        show_view('news')
-      } catch (e) { }
-      const status_el = document.querySelector('.connection-status')
-      /* the relay setup should be a part of vault, not webapp.
-      still need to properly separate it,
-      so this is still not fully done. */
-      status_el.textContent = `🔴 Relay Error: ${error_msg} (check relay settings in Config)`
-    } else {
-      document.querySelector('.connection-status').textContent = `🔴 Error: ${error_msg}`
-    }
+    document.querySelector('.connection-status').textContent = `🔴 Error: ${err.message}`
   }
 }
 
@@ -960,8 +836,7 @@ async function render_view (view, ...args) {
         const profile = await state.api.get_profile(key)
         const display_name = profile ? profile.name : peer.username
         const title_info = peer.title ? ` (${escape_html(peer.title)})` : ''
-        const relay_info = peer.relay_url && !peer.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(peer.relay_url)}</small></p>` : ''
-        html += `<div><h5>${escape_html(display_name)}'s Blog${title_info}</h5><p><code>${key}</code></p>${relay_info}<button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
+        html += `<div><h5>${escape_html(display_name)}'s Blog${title_info}</h5><p><code>${key}</code></p><button class="subscribe-btn" data-key="${key}">Subscribe</button></div><hr>`
       }
     }
     if (subscribed_blogs.size > 0) {
@@ -970,8 +845,7 @@ async function render_view (view, ...args) {
         if (key === my_key) continue
         const profile = await state.api.get_profile(key)
         const display_name = profile ? profile.name : blog.username
-        const relay_info = blog.relay_url && !blog.relay_url.includes('localhost') ? `<p><small>Relay: ${escape_html(blog.relay_url)}</small></p>` : ''
-        html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5><p><code>${key}</code></p>${relay_info}<button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button></div><hr>`
+        html += `<div><h5>${escape_html(display_name)}'s Blog (${escape_html(blog.title)})</h5><p><code>${key}</code></p><button class="unsubscribe-btn" data-key="${key}">Unsubscribe</button></div><hr>`
       }
     }
     if (discovered.size === 0 && subscribed_blogs.size === 0) {
@@ -1010,44 +884,7 @@ async function render_view (view, ...args) {
     const profile = await state.api.get_profile()
     const avatar_content = await state.api.get_avatar_content()
     const raw_data_buttons = await generate_raw_data_buttons()
-    // Check if there's a pending pairing request
-    const pending_verification = state.pairing_manager ? state.pairing_manager.get_pending_verification_digits() : null
-    const pairing_section = pending_verification
-      ? '<div><h4>Active Pairing Request</h4><p>Enter 6-digit code from new device:</p><input class="verification-input" placeholder="6-digit code" style="width: 150px; padding: 5px; margin-right: 5px;" maxlength="6"><button class="verify-btn" style="padding: 5px 10px; margin-right: 5px;">Verify</button><button class="deny-pairing-btn" style="padding: 5px 10px;">Deny</button><hr></div>'
-      : ''
-    // Build invite section
-    const invite_section = '<div><h4>Create Invite</h4><p>Create an invite to share write access to your blog.</p><button class="create-invite-btn">Create Invite</button><div class="invite-result" style="margin-top: 10px;"></div></div>'
-    // Build relay list
-    const relays = await get_relays()
-    const current_default = await get_default_relay()
-    const relay_list_html = relays.map(r => `<div style="margin: 5px 0;"><span>${escape_html(r)}</span> <button class="relay-default-btn" data-relay="${escape_html(r)}" style="margin-left: 10px;">${r === current_default ? '✓ Default' : 'Set Default'}</button> <button class="relay-remove-btn" data-relay="${escape_html(r)}" style="margin-left: 5px; background: #dc3545; color: white; border: none; padding: 2px 8px; cursor: pointer;">Remove</button></div>`).join('')
-    view_el.innerHTML = `<h3>Configuration</h3>${pairing_section}<div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Relays</h4><p>Add custom relays to connect through:</p><input class="relay-input" placeholder="ws://localhost:8080 or wss://relay.example.com" style="width: 400px;"><button class="relay-add-btn">Add Relay</button><div style="margin-top: 10px;">${relay_list_html || '<p style="color: #666;">No custom relays added</p>'}</div></div><hr>${invite_section}<hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Paired Devices</h4><p>Devices that have write access to this blog:</p><div class="paired-devices-list" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">Loading devices...</div></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
-    // Load paired devices after HTML is set
-    const devices = await state.api.get_paired_devices()
-    const devices_list = document.querySelector('.paired-devices-list')
-    if (devices_list) {
-      const my_key = state.api.get_local_key()
-      if (devices.length === 0) {
-        devices_list.innerHTML = '<p style="color: #666;">No paired devices yet. Create an invite to add devices.</p>'
-      } else {
-        let devices_html = ''
-        for (const device of devices) {
-          const is_my_device = device.metadata_writer === my_key
-          const remove_btn = is_my_device ? '' : '<button class="remove-device-btn" style="margin-top: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Remove Device</button>'
-          const my_device_label = is_my_device ? ' <span style="color: #28a745;">(This Device)</span>' : ''
-          let keys_html = ''
-          for (const [key, value] of Object.entries(device)) {
-            if (key.endsWith('_writer')) {
-              const structure_name = key.replace('_writer', '')
-              const display_name = structure_name.charAt(0).toUpperCase() + structure_name.slice(1)
-              keys_html += `<p><strong>${escape_html(display_name)}:</strong> ${escape_html(value)}</p>`
-            }
-          }
-          devices_html += `<div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 3px;"><p style="margin: 5px 0;"><strong>${escape_html(device.name)}</strong>${my_device_label}</p><p style="margin: 5px 0; font-size: 0.9em; color: #666;">Added: ${escape_html(device.added_date)}</p><details style="margin-top: 5px;"><summary style="cursor: pointer; color: #007bff;">Show Keys</summary><div style="margin-top: 10px; font-family: monospace; font-size: 11px; word-break: break-all;">${keys_html}</div></details>${remove_btn}</div>`
-        }
-        devices_list.innerHTML = devices_html
-      }
-    }
+    view_el.innerHTML = `<h3>Configuration</h3><div><h4>My Profile</h4><p>Your current profile information:</p><div><p><strong>Name:</strong> ${profile ? escape_html(profile.name) : 'Loading...'}</p><div><strong>Avatar:</strong></div><div>${avatar_content ? (avatar_content.startsWith('data:') ? `<img src="${avatar_content}" style="max-width: 100px; max-height: 100px;">` : avatar_content) : 'Loading...'}</div></div><div><input type="file" class="avatar-upload" accept="image/*"><button class="upload-avatar-btn">Upload Profile Picture</button></div></div><hr><div><h4>My Blog Address</h4><p>Share this address with others so they can subscribe to your blog.</p><input class="blog-address-input" readonly value="${my_key}" size="70"><button class="copy-address-btn">Copy</button></div><hr><div><h4>Manual Subscribe</h4><p>Subscribe to a blog by its address.</p><input class="manual-key-input" placeholder="Blog Address" size="70"><button class="manual-subscribe-btn">Subscribe</button></div><hr><div><h4>Show Raw Data</h4><button class="show-raw-data-btn">Show Raw Data</button><div class="raw-data-options" style="display: none; margin-top: 10px;">${raw_data_buttons}</div><pre class="raw-data-display" style="display: none; background: #f0f0f0; padding: 10px; margin-top: 10px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></pre></div><hr><div><h4>Reset</h4><button class="reset-data-btn">Delete All My Data</button></div>`
   }
 }
 
@@ -1087,34 +924,6 @@ async function handle_unsubscribe (key) {
 }
 
 /***************************************
-HANDLE CREATE INVITE
-***************************************/
-async function handle_create_invite () {
-  try {
-    const result = await state.api.create_invite()
-    const { invite_code, pairing_manager: pm } = result
-    state.pairing_manager = pm
-    const invite_result = document.querySelector('.invite-result')
-    invite_result.innerHTML = `
-        <p>Invite Code:</p>
-        <input class="invite-code-display" readonly value="${invite_code}" style="width: 400px;">
-        <button class="copy-invite-btn">Copy</button>
-        <p><small>Keep this page open. When a device tries to pair, go to the Config tab to verify the 6-digit code.</small></p>
-      `
-    const copy_btn = invite_result.querySelector('.copy-invite-btn')
-    copy_btn.addEventListener('click', () => {
-      if (navigator.clipboard) navigator.clipboard.writeText(invite_code)
-      else { const el = document.createElement('textarea'); el.value = invite_code; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
-      const orig = copy_btn.textContent
-      copy_btn.textContent = 'Copied!'
-      setTimeout(() => { copy_btn.textContent = orig }, 2000)
-    })
-  } catch (err) {
-    alert('Error creating invite: ' + err.message)
-  }
-}
-
-/***************************************
 HANDLE MANUAL SUBSCRIBE
 ***************************************/
 async function handle_manual_subscribe () {
@@ -1132,46 +941,12 @@ async function handle_manual_subscribe () {
 }
 
 /***************************************
-HANDLE REMOVE DEVICE
-***************************************/
-async function handle_remove_device (button) {
-  const device = {}
-  for (const [key, value] of Object.entries(button.dataset)) {
-    const snake_key = key.replace(/([A-Z])/g, '_$1').toLowerCase()
-    device[snake_key] = value
-  }
-  if (!confirm('Remove this device? This will revoke write access from all drives.')) return
-  try {
-    button.disabled = true
-    button.textContent = 'Removing...'
-    const success = await state.api.remove_device(device)
-    if (success) {
-      show_view('config')
-    } else {
-      alert('Failed to remove device')
-      button.disabled = false
-      button.textContent = 'Remove Device'
-    }
-  } catch (err) {
-    alert('Error: ' + err.message)
-    button.disabled = false
-    button.textContent = 'Remove Device'
-  }
-}
-
-/***************************************
 HANDLE RESET ALL DATA
 ***************************************/
 async function handle_reset_all_data () {
-  // Now here we can a reset function to rest app data
-  // such as relays, subsriptions, etc.
-
   if (!confirm('Delete all app data?')) return
   try {
-    // Clear app-specific vault data (relay config)
-    await uservault.vault_del('app_config/relays')
-    await uservault.vault_del('app_config/default_relay')
-    /* now here we will just clear the app data, perhaps no need to reload, just re-render view. */
+    await uservault.vault_del('app_config/subscriptions')
     alert('App data cleared.')
     show_view('config')
   } catch (err) {
@@ -1261,25 +1036,6 @@ document.addEventListener('click', handle_global_click)
 
 function handle_global_click (event) {
   const target = event.target
-  if (target.classList.contains('verify-btn')) {
-    const entered_code = document.querySelector('.verification-input').value.trim()
-    if (!entered_code || entered_code.length !== 6) {
-      return alert('Please enter exactly 6 digits')
-    }
-    state.api.verify_pairing(entered_code).then((result) => {
-      // Check if multiple pairing attempts were detected
-      if (result && result.multiple_attempts) {
-        alert(`NOTICE\n\nPairing successful, but ${result.total_attempts} device(s) attempted to pair simultaneously.\n\nThis could indicate:\n- Someone tried to steal your invite code\n- You accidentally pasted the invite on multiple devices\nIf you didn't initiate multiple pairing attempts, your invite code may have been compromised. Consider this a security warning.`)
-      }
-      show_view('config')
-    }).catch(err => {
-      alert('Verification failed: ' + err.message)
-    })
-  }
-  if (target.classList.contains('deny-pairing-btn')) {
-    state.api.deny_pairing()
-    show_view('config')
-  }
   if (target.classList.contains('subscribe-btn')) handle_subscribe(target.dataset.key)
   if (target.classList.contains('unsubscribe-btn')) handle_unsubscribe(target.dataset.key)
   if (target.classList.contains('copy-address-btn')) {
@@ -1287,42 +1043,12 @@ function handle_global_click (event) {
     if (navigator.clipboard) navigator.clipboard.writeText(text)
     else { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
   }
-  if (target.classList.contains('copy-invite-btn')) {
-    const invite_input = document.querySelector('.invite-code-display')
-    const code_to_copy = invite_input ? invite_input.value : ''
-    if (navigator.clipboard) navigator.clipboard.writeText(code_to_copy)
-    else { const el = document.createElement('textarea'); el.value = code_to_copy; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el) }
-    const orig = target.textContent
-    target.textContent = 'Copied!'
-    setTimeout(() => { target.textContent = orig }, 2000)
-  }
-  if (target.classList.contains('relay-add-btn')) {
-    const relay_input = document.querySelector('.relay-input')
-    const relay_url = relay_input.value.trim()
-    if (!relay_url) return alert('Please enter a relay URL')
-    add_relay(relay_url).then(() => {
-      relay_input.value = ''
-      render_view('config')
-    })
-  }
-  if (target.classList.contains('relay-default-btn')) {
-    set_default_relay(target.dataset.relay).then(() => render_view('config'))
-  }
-  if (target.classList.contains('relay-remove-btn')) {
-    remove_relay(target.dataset.relay).then(() => render_view('config'))
-  }
-  if (target.classList.contains('create-invite-btn')) handle_create_invite()
   if (target.classList.contains('manual-subscribe-btn')) handle_manual_subscribe()
-  if (target.classList.contains('remove-device-btn')) handle_remove_device(target)
-  if (event.target.classList.contains('reset-data-btn')) handle_reset_all_data()
-  if (event.target.classList.contains('upload-avatar-btn')) handle_upload_avatar()
+  if (target.classList.contains('reset-data-btn')) handle_reset_all_data()
+  if (target.classList.contains('upload-avatar-btn')) handle_upload_avatar()
   if (target.classList.contains('show-raw-data-btn')) handle_raw_data('toggle')
-  const classList = Array.from(target.classList)
-  const rawBtnClass = classList.find(c => c.startsWith('raw-') && c.endsWith('-btn'))
-  if (rawBtnClass) {
-    const structure_name = rawBtnClass.replace('raw-', '').replace('-btn', '')
-    handle_raw_data('show', structure_name)
-  }
+  const rawBtnClass = Array.from(target.classList).find(c => c.startsWith('raw-') && c.endsWith('-btn'))
+  if (rawBtnClass) handle_raw_data('show', rawBtnClass.replace('raw-', '').replace('-btn', ''))
 }
 
 /***************************************
