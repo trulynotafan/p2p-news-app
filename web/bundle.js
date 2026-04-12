@@ -3196,7 +3196,6 @@ function fallback_module () {
     const _ = {
       'graph-explorer': {
         0: override_theme,
-        '*': override_theme,
         mapping: {
           style: 'style',
           entries: 'entries',
@@ -3283,12 +3282,10 @@ function fallback_module () {
           'instance_states.json': {
             raw: JSON.stringify({
               '|/': { expanded_subs: true },
-              '|/my-stories': { expanded_subs: true },
-              '|/feeds': { expanded_subs: true },
-              '|/feeds/hackers-digest': { expanded_subs: true },
-              '|/feeds/peer-review': { expanded_subs: true },
-              '|/feeds/peer-review/security-chronicles': { expanded_subs: true },
-              '|/lists': { expanded_subs: true },
+              '|/my-blogs-1': { expanded_subs: true },
+              '|/my-blogs-1/tech-thoughts': { expanded_subs: true },
+              '|/my-blogs-1/p2p-experiments': { expanded_subs: true },
+              '|/my-blogs-2': { expanded_subs: true },
               '|/discover': { expanded_subs: true }
             })
           },
@@ -3346,10 +3343,16 @@ function graphdb (entries) {
     keys,
     is_empty,
     root,
-    raw
+    raw,
+    type
   }
 
   return api
+
+  function type (path) {
+    const entry = entries[path]
+    return entry ? entry.type : null
+  }
 
   function get (path) {
     return entries[path] || null
@@ -3398,12 +3401,14 @@ async function news_app (opts, protocol) {
   const by = id
   let db = null
   let mid = 0
+  let msg_id = 0
   let send_to_sidebar = null
 
-  let active_folder = ''
+  let active_path = ''
+  let active_tab = 'news'
 
   const el = document.createElement('div')
-  const shadow = el.attachShadow({ mode: 'open' })
+  const shadow = el.attachShadow({ mode: 'closed' })
 
   shadow.innerHTML = `
     <div class="container">
@@ -3421,16 +3426,20 @@ async function news_app (opts, protocol) {
 
   shadow.adoptedStyleSheets = [shell_sheet, layout_sheet, sheet]
 
-  if (drive) {
-    drive.get('theme/shell.css').then(apply_shell_css).catch(ignore_css_error)
-    drive.get('theme/layout.css').then(apply_layout_css).catch(ignore_css_error)
-  }
+  const css_files = await Promise.all([
+    drive.get('theme/shell.css'),
+    drive.get('theme/layout.css')
+  ])
+  const [shell_file, layout_file] = css_files
+
+  if (shell_file && shell_file.raw) shell_sheet.replaceSync(shell_file.raw)
+  if (layout_file && layout_file.raw) layout_sheet.replaceSync(layout_file.raw)
 
   const subs = await sdb.watch(onbatch)
 
   if (subs && subs.length > 0) {
-    const sidebar_instance = subs[0]
-    const menu_el = await menu_sidebar({ sid: sidebar_instance.sid }, sidebar_protocol)
+    const sidebar_sub = subs.find(s => s.module === 'menu_sidebar') || subs[0]
+    const menu_el = await menu_sidebar({ sid: sidebar_sub.sid }, sidebar_protocol)
     sidebar_el.appendChild(menu_el)
   }
 
@@ -3480,26 +3489,35 @@ async function news_app (opts, protocol) {
     const { type, data } = msg
     if (type === 'selection_changed') {
       const { selected } = data
-      if (selected && selected.length > 0) render_folder_content(selected[0])
+      if (selected && selected.length > 0) {
+        const path = normalize_path(selected[0])
+        if (path !== active_path) {
+          active_path = path
+          const node_type = db ? db.type(path) : null
+          if (node_type === 'subscribed-blog') active_tab = 'blog'
+          else active_tab = 'news'
+          
+          render_content(path)
+        }
+      }
     }
     if (type.startsWith('db_')) {
       handle_db_request(msg, send_to_sidebar)
     }
   }
 
-  function apply_shell_css (file) {
-    if (file && file.raw) shell_sheet.replaceSync(file.raw)
-  }
 
-  function apply_layout_css (file) {
-    if (file && file.raw) layout_sheet.replaceSync(file.raw)
-  }
-
-  function ignore_css_error (e) { }
 
   function handle_shadow_click (e) {
     if (e.target.closest('.news-fab')) {
-      render_write_page_view(active_folder)
+      render_write_page_view(active_path)
+    }
+    if (e.target.classList.contains('tab')) {
+      const tab = e.target.dataset.tab
+      if (tab && tab !== active_tab) {
+        active_tab = tab
+        render_content(active_path)
+      }
     }
   }
 
@@ -3527,19 +3545,18 @@ async function news_app (opts, protocol) {
   }
 
   function render_main_view () {
-    const html = `
+    main_viewer.innerHTML = `
       <div class="empty-container">
-        <h2 class="empty-title">Select an item to read</h2>
-        <p class="empty-hint">← Choose a story or feed from the sidebar</p>
+        <h2 class="empty-title">Select a blog to start</h2>
+        <p class="empty-hint">← Explore your blogs and subscriptions in the sidebar</p>
       </div>
     `
-    main_viewer.innerHTML = html
   }
 
   async function render_article (data) {
     await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data }))
-    const viewer_sid = [...id, 'newsfeed_view', mid++]
-    const element = await newsfeed_view({ sid: viewer_sid }, newsfeed_protocol)
+    const view_sub = subs.find(match_newsfeed)
+    const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
     main_viewer.innerHTML = ''
     main_viewer.appendChild(element)
   }
@@ -3551,18 +3568,28 @@ async function news_app (opts, protocol) {
   function on_newsfeed_message (msg) {
     const { type, data } = msg
     if (type === 'select_node') {
-      render_folder_content(data.instance_path)
+      const path = normalize_path(data.instance_path)
+      active_path = path
+
+      const node_type = db ? db.type(path) : null
+      if (node_type === 'subscribed-blog') active_tab = 'blog'
+      else active_tab = 'news'
+      render_content(path)
     }
   }
 
-  async function render_write_page_view (folder_name) {
-    const html = await write_page({})
+  async function render_write_page_view (path) {
+    const node = db ? db.get(path) : null
+    const blog_name = node ? node.name : 'Main Blog'
+    await sdb.drive.put('runtime/write_data.json', JSON.stringify({ selected_blog: blog_name }))
+    const write_sub = subs.find(match_write)
+    const element = await write_page({ sid: write_sub.sid }, null)
     main_viewer.innerHTML = ''
-    if (typeof html === 'string') {
-      main_viewer.innerHTML = html
-    } else {
-      main_viewer.appendChild(html)
-    }
+    main_viewer.appendChild(element)
+  }
+
+  function match_write (s) {
+    return s.module.includes('write_page')
   }
 
   function handle_publish (data) {
@@ -3577,7 +3604,7 @@ async function news_app (opts, protocol) {
     }
     save_local_story(new_story)
     alert('Story published locally!')
-    render_folder_content('my-stories')
+    render_content(active_path)
   }
 
   async function on_entries (data) {
@@ -3589,140 +3616,149 @@ async function news_app (opts, protocol) {
     let parsed_data = {}
     try {
       if (typeof data[0] === 'string') {
-        parsed_data = await content_parser({ raw: data[0] }) || {}
+        parsed_data = JSON.parse(data[0])
+      } else if (data[0].raw && typeof data[0].raw === 'string') {
+        parsed_data = JSON.parse(data[0].raw)
       } else {
         parsed_data = data[0]
       }
-    } catch (e) { }
+    } catch (e) { 
+      console.error('[news] Failed to parse entries.json:', e)
+    }
     db = graphdb(parsed_data)
     notify_db_initialized(parsed_data)
   }
 
   function notify_db_initialized (entries) {
     if (send_to_sidebar) {
-      const head = [by, 'menu_sidebar', mid++]
+      const head = [by, 'menu_sidebar', msg_id++]
       send_to_sidebar({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
-  async function render_folder_content (path) {
-    let drive_path = path
-    if (drive_path.startsWith('/')) drive_path = drive_path.slice(1)
+  async function render_content (path) {
+    const node_type = db ? db.type(path) : null
+    const node = db ? db.get(path) : null
+    
+    if (!node) return render_main_view()
 
-    const data = await try_get_folder_data(drive_path)
+    let tabs_html = ''
+    if (node_type !== 'discover') {
+      tabs_html = `
+        <div class="view-tabs">
+          <button class="tab ${active_tab === 'news' ? 'active' : ''}" data-tab="news">News</button>
+          <button class="tab ${active_tab === 'blog' ? 'active' : ''}" data-tab="blog">Blog</button>
+        </div>
+      `
+    }
 
-    if (data && data.content) {
-      render_article(data)
+    main_viewer.innerHTML = `
+      <div class="content-container">
+        ${tabs_html}
+        <div class="tab-content"></div>
+      </div>
+    `
+    const content_el = main_viewer.querySelector('.tab-content')
+
+    if (active_tab === 'news') {
+      await render_news_tab(path, content_el)
     } else {
-      const { folder_name, subs } = get_folder_details(path)
-
-      if (subs.length > 0) {
-        const handled = await process_folder_items({ path, subs, folder_name })
-        if (handled) return
-      }
-
-      render_empty_folder(folder_name, path)
+      await render_blog_tab(path, content_el)
     }
   }
 
-  async function try_get_folder_data (drive_path) {
-    try {
-      const file = await drive.get(drive_path)
-      return await content_parser({ raw: file.raw })
-    } catch (e) {
-      return null
-    }
-  }
+  async function render_news_tab (path, target) {
+    const node = db.get(path)
+    const node_subs = node.subs || []
+    const paths_to_fetch = [...node_subs]
+    const fetched_items = []
 
-  function get_folder_details (path) {
-    let folder_name = path.split('/').pop() || path
-    let subs = []
-    let db_path = path
-    if (typeof path === 'string' && path.includes('|')) {
-      db_path = path.split('|').pop()
-    }
-
-    if (db) {
-      const entry = db.get(db_path) || db.get(path)
-      if (entry) {
-        if (entry.name) folder_name = entry.name
-        if (entry.subs) subs = entry.subs
-      }
-    }
-    return { folder_name, subs }
-  }
-
-  async function process_folder_items (opts) {
-    const { path, subs, folder_name } = opts
-    console.log('[news] process_folder_items:', { path, subs, folder_name })
-    active_folder = folder_name
-    const fetched_items = (await Promise.all(subs.map(fetch_sub_item))).filter(filter_valid_fetched_items)
-    console.log('[news] fetched_items count:', fetched_items.length)
-
-    async function fetch_sub_item (sub_path) {
-      console.log('[news] fetch_sub_item:', sub_path)
-      let item_data
-      try {
-        let sub_drive_path = sub_path
-        if (sub_drive_path.startsWith('/')) sub_drive_path = sub_drive_path.slice(1)
-
-        const file = await drive.get(sub_drive_path)
-        console.log('[news] drive.get result for:', sub_drive_path, file ? 'Found' : 'Missing')
-        if (file) {
-          item_data = await content_parser({ raw: file.raw })
-          console.log('[news] content_parser result for:', sub_drive_path, item_data ? 'Success' : 'Failed')
+    for (const sub_path of paths_to_fetch) {
+      const sub_node = db.get(sub_path)
+      if (sub_node && sub_node.posts) {
+        for (const post_path of sub_node.posts) {
+          const post_data = await fetch_post_data(post_path)
+          if (post_data) fetched_items.push({ path: post_path, data: post_data })
         }
-      } catch (e) {
-        console.error('[news] Error fetching sub item:', sub_path, e)
-      }
-      if (!item_data) return null
-      return { path: sub_path, data: item_data }
-    }
-
-    function filter_valid_fetched_items (item) {
-      return item && item.data
-    }
-
-    if (path.includes('my-stories')) {
-      const local_stories = get_local_stories()
-      local_stories.forEach(push_local_story)
-
-      function push_local_story (story) {
-        fetched_items.push({ path: 'local-' + Date.now() + Math.random(), data: story })
       }
     }
 
     if (fetched_items.length > 0) {
-      const is_my_stories = path.includes('my-stories') || path.includes('My Stories')
-
       const view_data = {
         items: fetched_items,
-        folder_name,
-        is_my_stories
+        folder_name: node.name,
+        is_news_feed: true
       }
       await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
-
-      const viewer_sid = [...id, 'newsfeed_view', mid++]
-      const element = await newsfeed_view({ sid: viewer_sid }, newsfeed_protocol)
-
-      main_viewer.innerHTML = ''
-      main_viewer.appendChild(element)
-      return true
+      const view_sub = subs.find(match_newsfeed)
+      const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
+      target.appendChild(element)
+    } else {
+      target.innerHTML = `<div class="empty-container"><p>No news to show from subscriptions.</p></div>`
     }
-    return false
   }
 
-  function render_empty_folder (folder_name, path) {
-    active_folder = folder_name
-    const html = `
-      <div class="empty-folder-container">
-        <div class="empty-folder-icon">📂</div>
-        <h2 class="empty-folder-title">${folder_name}</h2>
-        <p>Select a file inside to view content.</p>
-        ${(path.includes('my-stories') || folder_name.includes('My Stories')) ? '<div class="news-fab">+</div>' : ''}
-      </div>
-    `
-    main_viewer.innerHTML = html
+  function match_newsfeed (s) {
+    return s.module.includes('newsfeed_view')
+  }
+
+  async function render_blog_tab (path, target) {
+    const node = db.get(path)
+    const node_type = db.type(path)
+    let fetched_items = []
+
+    if (node_type === 'my-blog') {
+      const local_stories = get_local_stories()
+      fetched_items = local_stories.map(map_local_story)
+    } else if (node.posts) {
+      for (const post_path of node.posts) {
+        const post_data = await fetch_post_data(post_path)
+        if (post_data) fetched_items.push({ path: post_path, data: post_data })
+      }
+    }
+
+    if (fetched_items.length > 0 || node_type === 'my-blog') {
+      const view_data = {
+        items: fetched_items,
+        folder_name: node.name,
+        is_my_blog: node_type === 'my-blog'
+      }
+      await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
+      const view_sub = subs.find(match_newsfeed)
+      const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
+      target.appendChild(element)
+      
+      if (node_type === 'my-blog') {
+        target.insertAdjacentHTML('beforeend', '<div class="news-fab">+</div>')
+      }
+    } else {
+      target.innerHTML = `<div class="empty-container"><p>This blog hasn't posted anything yet.</p></div>`
+    }
+  }
+
+  function map_local_story (s) {
+    return { path: `local-${Math.random()}`, data: s }
+  }
+
+  async function fetch_post_data (post_path) {
+    try {
+      const file = await drive.get(post_path)
+      console.log('fetch_post_data file:', post_path, file)
+      if (file) {
+        const parsed = await content_parser({ raw: file.raw })
+        console.log('parsed data:', parsed)
+        return parsed
+      }
+    } catch (e) {
+      console.error('[news] Error fetching post:', post_path, e)
+    }
+    return null
+  }
+
+  function normalize_path (path) {
+    if (!path) return '/'
+    if (typeof path !== 'string') return '/'
+    return path.split('|').pop() || '/'
   }
 
   function get_local_stories () {
@@ -3754,7 +3790,7 @@ async function news_app (opts, protocol) {
     send_response(request_head, result)
 
     function send_response (request_head, result) {
-      const response_head = [by, 'menu_sidebar', mid++]
+      const response_head = [by, 'menu_sidebar', msg_id++]
       send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
     }
   }
@@ -3788,11 +3824,13 @@ function fallback_module () {
       './graphdb': { 0: '' },
       newsfeed_view: {
         0: '',
-        '*': '',
         mapping: { runtime: 'runtime', theme: 'theme' }
       },
       'newsfeed_view/content_parser': { 0: '' },
-      write_page: { 0: '' }
+      write_page: {
+        0: '',
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      }
     }
 
     const drive = {
@@ -3838,21 +3876,21 @@ function fallback_module () {
       'mode/': {},
       'flags/': {},
       'keybinds/': {},
-      'undo/': {},
-      'feeds/hackers-digest/code-coffee': { $ref: 'data/code-coffee.md' },
-      'feeds/hackers-digest/system-design': { $ref: 'data/system-design.md' },
-      'feeds/off-the-grid/mesh-network': { $ref: 'data/mesh-network.md' },
-      'feeds/off-the-grid/fediverse': { $ref: 'data/fediverse.md' },
-      'feeds/off-the-grid/self-hosting': { $ref: 'data/self-hosting.md' },
-      'feeds/peer-review/network-notes': { $ref: 'data/network-notes.md' },
-      'feeds/peer-review/security-chronicles/privacy-matters': { $ref: 'data/privacy-matters.md' },
-      'feeds/peer-review/security-chronicles/zero-trust': { $ref: 'data/zero-trust.md' },
-      'lists/best-of-tech': { $ref: 'data/best-of-tech.md' },
-      'lists/morning-read': { $ref: 'data/morning-read.md' },
-      'my-stories/story-1': { $ref: 'data/story-1.md' },
-      'my-stories/story-2': { $ref: 'data/story-2.md' },
-      'my-stories/story-3': { $ref: 'data/story-3.md' },
-      'my-stories/story-4': { $ref: 'data/story-4.md' }
+      'undo/': {}
+    }
+
+    const blogs = [
+        'tech-thoughts', 'p2p-experiments', 'security-notes', 'off-the-grid', 
+        'cryptography-weekly', 'mesh-networks', 'iot-weekly', 'distributed-systems', 
+        'zero-trust-blog', 'hackers-digest', 'code-coffee', 'peer-review', 
+        'security-chronicles', 'random-blog-a', 'random-blog-b', 'random-blog-c'
+    ]
+
+    blogs.forEach(handle_blog_mount)
+
+    function handle_blog_mount (blog) {
+        drive[`blogs/${blog}/post-1`] = { $ref: `data/${blog}-1.md` }
+        drive[`blogs/${blog}/post-2`] = { $ref: `data/${blog}-2.md` }
     }
 
     return { _, drive }
@@ -3870,7 +3908,8 @@ const { get } = statedb(fallback_module)
 module.exports = news_cards
 
 async function news_cards (opts, protocol) {
-  const { sid, index } = opts
+  const { sid } = opts
+  const index = sid[sid.length - 1]
   const { sdb } = await get(sid)
   const { drive } = sdb
 
@@ -3907,19 +3946,16 @@ async function news_cards (opts, protocol) {
 }
 
 function fallback_module () {
-  return {
-    drive: {},
-    api: fallback_instance
-  }
+  return { api: fallback_instance }
 
   function fallback_instance () {
-    return {
-      drive: {
-        'runtime/': {
-          'card-0.json': { raw: '{}' }
-        }
+    const drive = {
+      'runtime/': {
+        'card-0.json': { raw: '{}' }
       }
     }
+
+    return { drive }
   }
 }
 
@@ -3941,59 +3977,63 @@ async function newsfeed_card_list (opts, protocol) {
 
   const viewer_file = await drive.get('runtime/viewer_data.json')
   const viewer_data = JSON.parse(viewer_file ? viewer_file.raw : '{}')
-  const items = viewer_data.data?.items || []
+  const data = viewer_data.data || {}
+  const items = data.items || []
 
-  const cards_html = await Promise.all(items.map(render_card))
+  const max_items = items.slice(0, 30)
+
+  const subs = await sdb.watch(onbatch)
+  const card_subs = (subs || []).sort(sort_by_index)
+
+  const items_html = await Promise.all(max_items.map(render_card))
 
   return `
-    <div class="newsfeed-card-list">
-      ${cards_html.join('')}
+    <div class="newsfeed-list">
+      ${items_html.join('')}
     </div>
   `
 
   async function render_card (item, index) {
-    const card_sid = [...id, 'news_cards', index]
+    if (index >= card_subs.length) return ''
+    const card_sub = card_subs[index]
 
     await sdb.drive.put(`runtime/card-${index}.json`, JSON.stringify({ data: item.data }))
 
-    return news_cards({
-      sid: card_sid,
-      index
-    })
+    return news_cards({ sid: card_sub.sid })
   }
+
+  function sort_by_index (a, b) {
+    return a.sid[a.sid.length - 1] - b.sid[b.sid.length - 1]
+  }
+
+  function onbatch () {}
 }
 
 function fallback_module () {
-  return {
-    drive: {
+  const _ = {
+    news_cards: { $: '' }
+  }
+
+  return { _, api: fallback_instance }
+
+  function fallback_instance () {
+    const _ = {
+      news_cards: {
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      }
+    }
+
+    for (let i = 0; i < 30; i++) {
+        _['news_cards'][i] = ''
+    }
+
+    const drive = {
       'runtime/': {
         'viewer_data.json': { raw: '{}' }
       }
-    },
-    _: {
-      news_cards: {
-        $: '',
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      }
-    },
-    api: fallback_instance
-  }
-
-  function fallback_instance () {
-    return {
-      drive: {
-        'runtime/': {
-          'viewer_data.json': { raw: '{}' }
-        }
-      },
-      _: {
-        news_cards: {
-          0: '',
-          '*': '',
-          mapping: { runtime: 'runtime', theme: 'theme' }
-        }
-      }
     }
+
+    return { _, drive }
   }
 }
 
@@ -4047,7 +4087,7 @@ const statedb = STATE(__filename)
 
 const { get } = statedb(fallback_module)
 const news_list = require('newsfeed_card_list')
-const shopts = { mode: 'open' }
+const shopts = { mode: 'closed' }
 
 module.exports = newsfeed_view
 
@@ -4066,21 +4106,26 @@ async function newsfeed_view (opts, protocol) {
   const card_sheet = new CSSStyleSheet()
   shadow.adoptedStyleSheets = [layout_sheet, card_sheet]
 
-  if (drive) {
-    drive.get('theme/layout.css').then(apply_layout_css).catch(ignore_css_error)
-    drive.get('theme/news-card.css').then(apply_card_css).catch(ignore_css_error)
-  }
+  const paths = ['runtime/viewer_data.json', 'theme/layout.css', 'theme/news-card.css']
+  const files = await Promise.all(paths.map(path => drive ? drive.get(path).catch(() => null) : null))
+  const [viewer_file, layout_css, newscard_css] = files
 
-  const viewer_file = await drive.get('runtime/viewer_data.json')
-  const viewer_data = JSON.parse(viewer_file ? viewer_file.raw : '{}')
+  if (layout_css && layout_css.raw) layout_sheet.replaceSync(layout_css.raw)
+  if (newscard_css && newscard_css.raw) card_sheet.replaceSync(newscard_css.raw)
+
+  const viewer_data = JSON.parse(viewer_file && viewer_file.raw ? viewer_file.raw : '{}')
   const data = viewer_data.data || {}
 
+  const subs = await sdb.watch(handle_watch)
+
   if (data.items) {
-    const list_sid = [...id, 'newsfeed_card_list', 0]
-    const list_html = await news_list({
-      sid: list_sid
-    })
-    shadow.innerHTML = list_html
+    const list_sub = subs && subs.length > 0 ? subs[0] : null
+    if (list_sub) {
+      const list_html = await news_list({
+        sid: list_sub.sid
+      })
+      shadow.innerHTML = list_html
+    }
   } else if (data.content) {
     const content_html = data.content
       .split('\n\n')
@@ -4102,19 +4147,7 @@ async function newsfeed_view (opts, protocol) {
 
   shadow.addEventListener('click', handle_shadow_click)
 
-  await sdb.watch(handle_watch)
-
   return element
-
-  function apply_layout_css (file) {
-    if (file && file.raw) layout_sheet.replaceSync(file.raw)
-  }
-
-  function apply_card_css (file) {
-    if (file && file.raw) card_sheet.replaceSync(file.raw)
-  }
-
-  function ignore_css_error (e) { }
 
   function handle_shadow_click (e) {
     const card_target = e.target.closest('.news-card')
@@ -4167,43 +4200,53 @@ async function newsfeed_view (opts, protocol) {
 }
 
 function fallback_module () {
-  return {
-    drive: {},
-    _: {
-      newsfeed_card_list: {
-        $: '',
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      }
-    },
-    api: fallback_instance
+  const _ = {
+    newsfeed_card_list: { $: '' }
   }
 
+  return { _, api: fallback_instance }
+
   function fallback_instance () {
-    return {
-      drive: {
-        'runtime/': {
-          'viewer_data.json': { raw: '{}' }
-        }
-      },
-      _: {
-        newsfeed_card_list: {
-          0: '',
-          '*': '',
-          mapping: { runtime: 'runtime', theme: 'theme' }
-        }
+    const _ = {
+      newsfeed_card_list: {
+        0: '',
+        mapping: { runtime: 'runtime', theme: 'theme' }
       }
     }
+
+    const drive = {
+      'runtime/': {
+        'viewer_data.json': { raw: '{}' }
+      }
+    }
+
+    return { _, drive }
   }
 }
 
 }).call(this)}).call(this,"/web/node_modules/newsfeed_view/index.js")
 },{"STATE":1,"newsfeed_card_list":7}],10:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+const { get } = statedb(fallback_module)
+
 module.exports = write_page
 
 async function write_page (opts, protocol) {
+  const { sid } = opts
+  const { sdb } = await get(sid)
+  const { drive } = sdb
+
   let send
   if (protocol) send = protocol(handle_message)
 
+  const cfg_file = await drive.get('runtime/write_data.json')
+  const config = JSON.parse(cfg_file && cfg_file.raw ? cfg_file.raw : '{}')
+  const selected_blog = config.selected_blog || 'Main Blog'
+
+  const el = document.createElement('div')
+  
   const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
   const options = blogs.map(render_blog_option).join('')
 
@@ -4215,7 +4258,7 @@ async function write_page (opts, protocol) {
 
   const tips_html = tip_data.map(render_tip).join('')
 
-  return `
+  el.innerHTML = `
   <div class="write-page-container">
     <div class="section-header">
       <h1>Write a Story</h1>
@@ -4260,8 +4303,10 @@ async function write_page (opts, protocol) {
   </div>
   `
 
+  return el
+
   function render_blog_option (blog) {
-    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
+    return `<option value="${blog}"${blog === selected_blog ? ' selected' : ''}>${blog}</option>`
   }
 
   function render_tip (t) {
@@ -4273,14 +4318,25 @@ async function write_page (opts, protocol) {
   `
   }
 
-  function handle_message (msg) {
+  function handle_message (msg) {}
+}
+
+function fallback_module () {
+  return { api: fallback_instance }
+
+  function fallback_instance () {
+    const drive = {
+      'runtime/': {
+        'write_data.json': { raw: '{}' }
+      }
+    }
+    return { drive }
   }
 }
 
-function fallback () {
-}
 
-},{}],11:[function(require,module,exports){
+}).call(this)}).call(this,"/web/node_modules/write_page/index.js")
+},{"STATE":1}],11:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
@@ -4301,11 +4357,11 @@ const customVault = {
   on_update: (callback) => console.log('[customVault] on_update registered')
 }
 
-async function init() {
+async function init () {
   console.log('[page.js] init started')
   const start = await sdb.watch(handle_watch_batch)
 
-  function handle_watch_batch(batch) {
+  function handle_watch_batch (batch) {
     console.log('[page.js] sdb watch batch:', batch)
   }
 
@@ -4324,12 +4380,18 @@ async function init() {
 
 init().catch(console.error)
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       news: {
         $: '',
-        0: '',
+        0: {
+          _: {
+            newsfeed_view: { $: '' },
+            write_page: { $: '' },
+            './graphdb': { $: '' }
+          }
+        },
         mapping: {
           style: 'style',
           entries: 'entries',
@@ -4339,10 +4401,11 @@ function fallback_module() {
           flags: 'flags',
           keybinds: 'keybinds',
           undo: 'undo',
-          'my-stories': 'my-stories',
-          feeds: 'feeds',
-          lists: 'lists',
-          discover: 'discover'
+          'my-blogs-1': 'my-blogs-1',
+          'my-blogs-2': 'my-blogs-2',
+          discover: 'discover',
+          blogs: 'blogs',
+          data: 'data'
         }
       }
     },
@@ -4357,10 +4420,11 @@ function fallback_module() {
       'flags/': {},
       'keybinds/': {},
       'undo/': {},
-      'my-stories/': {},
-      'feeds/': {},
-      'lists/': {},
-      'discover/': {}
+      'my-blogs-1/': {},
+      'my-blogs-2/': {},
+      'discover/': {},
+      'blogs/': {},
+      'data/': {}
     }
   }
 }

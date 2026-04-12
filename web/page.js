@@ -17,11 +17,11 @@ const customVault = {
   on_update: (callback) => console.log('[customVault] on_update registered')
 }
 
-async function init() {
+async function init () {
   console.log('[page.js] init started')
   const start = await sdb.watch(handle_watch_batch)
 
-  function handle_watch_batch(batch) {
+  function handle_watch_batch (batch) {
     console.log('[page.js] sdb watch batch:', batch)
   }
 
@@ -40,12 +40,18 @@ async function init() {
 
 init().catch(console.error)
 
-function fallback_module() {
+function fallback_module () {
   return {
     _: {
       news: {
         $: '',
-        0: '',
+        0: {
+          _: {
+            newsfeed_view: { $: '' },
+            write_page: { $: '' },
+            './graphdb': { $: '' }
+          }
+        },
         mapping: {
           style: 'style',
           entries: 'entries',
@@ -55,10 +61,11 @@ function fallback_module() {
           flags: 'flags',
           keybinds: 'keybinds',
           undo: 'undo',
-          'my-stories': 'my-stories',
-          feeds: 'feeds',
-          lists: 'lists',
-          discover: 'discover'
+          'my-blogs-1': 'my-blogs-1',
+          'my-blogs-2': 'my-blogs-2',
+          discover: 'discover',
+          blogs: 'blogs',
+          data: 'data'
         }
       }
     },
@@ -73,10 +80,11 @@ function fallback_module() {
       'flags/': {},
       'keybinds/': {},
       'undo/': {},
-      'my-stories/': {},
-      'feeds/': {},
-      'lists/': {},
-      'discover/': {}
+      'my-blogs-1/': {},
+      'my-blogs-2/': {},
+      'discover/': {},
+      'blogs/': {},
+      'data/': {}
     }
   }
 }
