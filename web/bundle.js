@@ -3408,7 +3408,7 @@ async function news_app (opts, protocol) {
   let active_tab = 'news'
 
   const el = document.createElement('div')
-  const shadow = el.attachShadow({ mode: 'open' })
+  const shadow = el.attachShadow({ mode: 'closed' })
 
   shadow.innerHTML = `
     <div class="container">
@@ -3426,10 +3426,14 @@ async function news_app (opts, protocol) {
 
   shadow.adoptedStyleSheets = [shell_sheet, layout_sheet, sheet]
 
-  if (drive) {
-    drive.get('theme/shell.css').then(apply_shell_css).catch(ignore_css_error)
-    drive.get('theme/layout.css').then(apply_layout_css).catch(ignore_css_error)
-  }
+  const css_files = await Promise.all([
+    drive.get('theme/shell.css'),
+    drive.get('theme/layout.css')
+  ])
+  const [shell_file, layout_file] = css_files
+
+  if (shell_file && shell_file.raw) shell_sheet.replaceSync(shell_file.raw)
+  if (layout_file && layout_file.raw) layout_sheet.replaceSync(layout_file.raw)
 
   const subs = await sdb.watch(onbatch)
 
@@ -3502,15 +3506,7 @@ async function news_app (opts, protocol) {
     }
   }
 
-  function apply_shell_css (file) {
-    if (file && file.raw) shell_sheet.replaceSync(file.raw)
-  }
 
-  function apply_layout_css (file) {
-    if (file && file.raw) layout_sheet.replaceSync(file.raw)
-  }
-
-  function ignore_css_error (e) { }
 
   function handle_shadow_click (e) {
     if (e.target.closest('.news-fab')) {
@@ -4091,7 +4087,7 @@ const statedb = STATE(__filename)
 
 const { get } = statedb(fallback_module)
 const news_list = require('newsfeed_card_list')
-const shopts = { mode: 'open' }
+const shopts = { mode: 'closed' }
 
 module.exports = newsfeed_view
 
