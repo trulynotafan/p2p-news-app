@@ -3282,10 +3282,8 @@ function fallback_module () {
           'instance_states.json': {
             raw: JSON.stringify({
               '|/': { expanded_subs: true },
-              '|/my-blogs-1': { expanded_subs: true },
-              '|/my-blogs-1/tech-thoughts': { expanded_subs: true },
-              '|/my-blogs-1/p2p-experiments': { expanded_subs: true },
-              '|/my-blogs-2': { expanded_subs: true },
+              '|/my-blogs1': { expanded_subs: true },
+              '|/my-blogs2': { expanded_subs: true },
               '|/discover': { expanded_subs: true }
             })
           },
@@ -3386,21 +3384,18 @@ const statedb = STATE(__filename)
 
 const { get } = statedb(fallback_module)
 const menu_sidebar = require('menu_sidebar')
-const newsfeed_view = require('newsfeed_view')
 const content_parser = require('newsfeed_view/content_parser')
-const write_page = require('write_page')
 const graphdb = require('./graphdb')
 
 module.exports = news_app
 
-async function news_app(opts, protocol) {
+async function news_app (opts, protocol) {
   const { sid } = opts
   const { id, sdb } = await get(sid)
   const { drive } = sdb
 
   const by = id
   let db = null
-  let mid = 0
   let msg_id = 0
   let send_to_sidebar = null
 
@@ -3422,24 +3417,26 @@ async function news_app(opts, protocol) {
 
   const shell_sheet = new CSSStyleSheet()
   const layout_sheet = new CSSStyleSheet()
+  const card_sheet = new CSSStyleSheet()
   const sheet = new CSSStyleSheet()
 
-  shadow.adoptedStyleSheets = [shell_sheet, layout_sheet, sheet]
+  shadow.adoptedStyleSheets = [shell_sheet, layout_sheet, card_sheet, sheet]
 
   const css_files = await Promise.all([
     drive.get('theme/shell.css'),
-    drive.get('theme/layout.css')
+    drive.get('theme/layout.css'),
+    drive.get('theme/news-card.css')
   ])
-  const [shell_file, layout_file] = css_files
+  const [shell_file, layout_file, card_file] = css_files
 
   if (shell_file && shell_file.raw) shell_sheet.replaceSync(shell_file.raw)
   if (layout_file && layout_file.raw) layout_sheet.replaceSync(layout_file.raw)
+  if (card_file && card_file.raw) card_sheet.replaceSync(card_file.raw)
 
   const subs = await sdb.watch(onbatch)
 
   if (subs && subs.length > 0) {
-    const sidebar_sub = subs.find(s => s.module === 'menu_sidebar') || subs[0]
-    const menu_el = await menu_sidebar({ sid: sidebar_sub.sid }, sidebar_protocol)
+    const menu_el = await menu_sidebar({ sid: subs[0].sid }, sidebar_protocol)
     sidebar_el.appendChild(menu_el)
   }
 
@@ -3451,7 +3448,7 @@ async function news_app(opts, protocol) {
 
   return el
 
-  async function onbatch(batch) {
+  async function onbatch (batch) {
     for (const { type, paths } of batch) {
       const data = await Promise.all(paths.map(fetch_path_raw_data))
       const valid_data = data.filter(filter_valid_data)
@@ -3461,31 +3458,31 @@ async function news_app(opts, protocol) {
       }
     }
 
-    function fetch_path_raw_data(path) {
+    function fetch_path_raw_data (path) {
       return drive.get(path).then(extract_raw_if_exists)
     }
 
-    function extract_raw_if_exists(file) {
+    function extract_raw_if_exists (file) {
       return file ? file.raw : null
     }
 
-    function filter_valid_data(d) {
+    function filter_valid_data (d) {
       return d !== null
     }
   }
 
-  function inject(data) {
+  function inject (data) {
     if (Array.isArray(data)) {
       sheet.replaceSync(data.join('\n'))
     }
   }
 
-  function sidebar_protocol(send) {
+  function sidebar_protocol (send) {
     send_to_sidebar = send
     return on_sidebar_message
   }
 
-  function on_sidebar_message(msg) {
+  function on_sidebar_message (msg) {
     const { type, data } = msg
     if (type === 'selection_changed') {
       const { selected } = data
@@ -3496,7 +3493,6 @@ async function news_app(opts, protocol) {
           const node_type = db ? db.type(path) : null
           if (node_type === 'subscribed-blog') active_tab = 'blog'
           else active_tab = 'news'
-
           render_content(path)
         }
       }
@@ -3506,21 +3502,40 @@ async function news_app(opts, protocol) {
     }
   }
 
-
-  function handle_shadow_click(e) {
+  function handle_shadow_click (e) {
     if (e.target.closest('.news-fab')) {
       render_write_page_view(active_path)
     }
     if (e.target.classList.contains('tab')) {
-      const tab = e.target.dataset.tab
-      if (tab && tab !== active_tab) {
-        active_tab = tab
-        render_content(active_path)
-      }
+      handle_tab_click(e.target.dataset.tab)
+    }
+    const card_target = e.target.closest('.news-card')
+    if (card_target) {
+      handle_card_click(card_target.dataset.path)
+    }
+    if (e.target.closest('.back-btn')) {
+      handle_back_click()
     }
   }
 
-  function handle_shadow_submit(e) {
+  function handle_tab_click (tab) {
+    if (tab && tab !== active_tab) {
+      active_tab = tab
+      render_content(active_path)
+    }
+  }
+
+  function handle_card_click (path) {
+    if (path) {
+      render_article_view(path)
+    }
+  }
+
+  function handle_back_click () {
+    render_content(active_path)
+  }
+
+  function handle_shadow_submit (e) {
     if (e.target.id === 'write-story-form') {
       e.preventDefault()
       const create_story_data = {
@@ -3532,18 +3547,21 @@ async function news_app(opts, protocol) {
     }
   }
 
-  function handle_shadow_input(e) {
+  function handle_shadow_input (e) {
     if (e.target.classList.contains('input-content')) {
-      const val = e.target.value
-      const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length
-      const wc = shadow.getElementById('word-count-span')
-      const rt = shadow.getElementById('read-time-span')
-      if (wc) wc.textContent = `${words} words`
-      if (rt) rt.textContent = `~${Math.ceil(words / 200)} min read`
+      handle_content_input(e.target.value)
     }
   }
 
-  function render_main_view() {
+  function handle_content_input (val) {
+    const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length
+    const wc = shadow.getElementById('word-count-span')
+    const rt = shadow.getElementById('read-time-span')
+    if (wc) wc.textContent = `${words} words`
+    if (rt) rt.textContent = `~${Math.ceil(words / 200)} min read`
+  }
+
+  function render_main_view () {
     main_viewer.innerHTML = `
       <div class="empty-container">
         <h2 class="empty-title">Select a blog to start</h2>
@@ -3552,46 +3570,7 @@ async function news_app(opts, protocol) {
     `
   }
 
-  async function render_article(data) {
-    await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data }))
-    const view_sub = subs.find(match_newsfeed)
-    const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
-    main_viewer.innerHTML = ''
-    main_viewer.appendChild(element)
-  }
-
-  function newsfeed_protocol(send) {
-    return on_newsfeed_message
-  }
-
-  function on_newsfeed_message(msg) {
-    const { type, data } = msg
-    if (type === 'select_node') {
-      const path = normalize_path(data.instance_path)
-      active_path = path
-
-      const node_type = db ? db.type(path) : null
-      if (node_type === 'subscribed-blog') active_tab = 'blog'
-      else active_tab = 'news'
-      render_content(path)
-    }
-  }
-
-  async function render_write_page_view(path) {
-    const node = db ? db.get(path) : null
-    const blog_name = node ? node.name : 'Main Blog'
-    await sdb.drive.put('runtime/write_data.json', JSON.stringify({ selected_blog: blog_name }))
-    const write_sub = subs.find(match_write)
-    const element = await write_page({ sid: write_sub.sid }, null)
-    main_viewer.innerHTML = ''
-    main_viewer.appendChild(element)
-  }
-
-  function match_write(s) {
-    return s.module.includes('write_page')
-  }
-
-  function handle_publish(data) {
+  function handle_publish (data) {
     const new_story = {
       title: data.title,
       content: data.content,
@@ -3606,7 +3585,7 @@ async function news_app(opts, protocol) {
     render_content(active_path)
   }
 
-  async function on_entries(data) {
+  async function on_entries (data) {
     if (!data || !data[0]) {
       db = graphdb({})
       notify_db_initialized({})
@@ -3621,21 +3600,19 @@ async function news_app(opts, protocol) {
       } else {
         parsed_data = data[0]
       }
-    } catch (e) {
-      console.error('[news] Failed to parse entries.json:', e)
-    }
+    } catch (e) { }
     db = graphdb(parsed_data)
     notify_db_initialized(parsed_data)
   }
 
-  function notify_db_initialized(entries) {
+  function notify_db_initialized (entries) {
     if (send_to_sidebar) {
       const head = [by, 'menu_sidebar', msg_id++]
       send_to_sidebar({ head, type: 'db_initialized', data: { entries } })
     }
   }
 
-  async function render_content(path) {
+  async function render_content (path) {
     const node_type = db ? db.type(path) : null
     const node = db ? db.get(path) : null
 
@@ -3666,13 +3643,12 @@ async function news_app(opts, protocol) {
     }
   }
 
-  async function render_news_tab(path, target) {
+  async function render_news_tab (path, target) {
     const node = db.get(path)
     const node_subs = node.subs || []
-    const paths_to_fetch = [...node_subs]
     const fetched_items = []
 
-    for (const sub_path of paths_to_fetch) {
+    for (const sub_path of node_subs) {
       const sub_node = db.get(sub_path)
       if (sub_node && sub_node.posts) {
         for (const post_path of sub_node.posts) {
@@ -3682,26 +3658,21 @@ async function news_app(opts, protocol) {
       }
     }
 
-    if (fetched_items.length > 0) {
-      const view_data = {
-        items: fetched_items,
-        folder_name: node.name,
-        is_news_feed: true
+    if (node.posts) {
+      for (const post_path of node.posts) {
+        const post_data = await fetch_post_data(post_path)
+        if (post_data) fetched_items.push({ path: post_path, data: post_data })
       }
-      await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
-      const view_sub = subs.find(match_newsfeed)
-      const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
-      target.appendChild(element)
+    }
+
+    if (fetched_items.length > 0) {
+      target.innerHTML = render_card_list(fetched_items)
     } else {
       target.innerHTML = `<div class="empty-container"><p>No news to show from subscriptions.</p></div>`
     }
   }
 
-  function match_newsfeed(s) {
-    return s.module.includes('newsfeed_view')
-  }
-
-  async function render_blog_tab(path, target) {
+  async function render_blog_tab (path, target) {
     const node = db.get(path)
     const node_type = db.type(path)
     let fetched_items = []
@@ -3717,16 +3688,7 @@ async function news_app(opts, protocol) {
     }
 
     if (fetched_items.length > 0 || node_type === 'my-blog') {
-      const view_data = {
-        items: fetched_items,
-        folder_name: node.name,
-        is_my_blog: node_type === 'my-blog'
-      }
-      await sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
-      const view_sub = subs.find(match_newsfeed)
-      const element = await newsfeed_view({ sid: view_sub.sid }, newsfeed_protocol)
-      target.appendChild(element)
-
+      target.innerHTML = render_card_list(fetched_items)
       if (node_type === 'my-blog') {
         target.insertAdjacentHTML('beforeend', '<div class="news-fab">+</div>')
       }
@@ -3735,45 +3697,155 @@ async function news_app(opts, protocol) {
     }
   }
 
-  function map_local_story(s) {
+  function render_card_list (items) {
+    if (items.length === 0) {
+      return '<div class="empty-container"><p>No posts yet.</p></div>'
+    }
+    const cards = items.map(render_card_html).join('')
+    return `<div class="newsfeed-list">${cards}</div>`
+  }
+
+  function render_card_html (item) {
+    const data = item.data || {}
+    const date = data.date || ''
+    const title = data.title || 'Untitled Story'
+    const author = data.author || 'Anonymous'
+    const description = data.description || ''
+    const tags = Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? data.tags.split(/\s+/).filter(Boolean) : [])
+    const tags_html = tags.map(render_tag_html).join('')
+    
+    return `
+      <div class="news-card" data-path="${item.path}">
+        <div class="news-avatar">${author[0] || 'A'}</div>
+        <div class="news-content">
+          <div class="news-meta-top">
+            <span class="news-author">${author}</span>
+            <span class="news-separator">•</span>
+            <span class="news-date-text">${date}</span>
+          </div>
+          <h3 class="news-title">${title}</h3>
+          <p class="news-description">${description}</p>
+          <div class="news-meta-bottom">
+            <div class="news-tags">${tags_html}</div>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  function render_tag_html (tag) {
+    return `<span class="news-tag-pill">${tag}</span>`
+  }
+
+  async function render_article_view (post_path) {
+    const post_data = await fetch_post_data(post_path)
+    if (!post_data) {
+      main_viewer.innerHTML = '<div class="empty-container"><p>Content not available.</p></div>'
+      return
+    }
+    const content_html = (post_data.content || '')
+      .split('\n\n')
+      .map(parse_block)
+      .join('')
+
+    main_viewer.innerHTML = `
+      <div class="content-container article-view">
+        <article class="news-container">
+          <button class="back-btn">← Back to feed</button>
+          <header class="news-header">
+            <div>
+              <h2 class="news-title article-title-main">${post_data.title || 'Untitled'}</h2>
+              <div class="news-subheader">
+                <span>By <strong>${post_data.author || 'Anonymous'}</strong></span> • <span>${post_data.date || 'Unknown Date'}</span>
+              </div>
+            </div>
+          </header>
+          <div class="article-body">${content_html}</div>
+        </article>
+      </div>
+    `
+  }
+
+  function render_write_page_view (path) {
+    const node = db ? db.get(path) : null
+    const blog_name = node ? node.name : 'Main Blog'
+    
+    main_viewer.innerHTML = `
+      <div class="write-page-container">
+        <div class="section-header">
+          <h1>Write a Story</h1>
+          <p>Create something amazing for <strong>${blog_name}</strong></p>
+        </div>
+        
+        <div class="card space-y-8">
+          <form id="write-story-form">
+            <div class="input-group">
+              <label>Target Blog</label>
+              <input type="text" name="blog" value="${blog_name}" readonly class="blog-select readonly-blog-select">
+            </div>
+            
+            <div class="input-group">
+              <label>Story Title</label>
+              <input type="text" name="title" placeholder="Enter your story title..." class="input-title" required autofocus>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="input-group">
+              <label>Content</label>
+              <textarea name="content" placeholder="Start writing your story here..." class="input-content" required></textarea>
+            </div>
+            
+            <div class="word-count">
+              <span id="word-count-span">0 words</span>
+              <span id="read-time-span">~0 min read</span>
+            </div>
+            
+            <div class="actions">
+              <button type="submit" class="btn-publish">Publish Story</button>
+              <span class="action-text">Saved to local draft</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+  }
+
+  function map_local_story (s) {
     return { path: `local-${Math.random()}`, data: s }
   }
 
-  async function fetch_post_data(post_path) {
+  async function fetch_post_data (post_path) {
     try {
       const file = await drive.get(post_path)
-      console.log('fetch_post_data file:', post_path, file)
-      if (file) {
-        const parsed = await content_parser({ raw: file.raw })
-        console.log('parsed data:', parsed)
+      if (file && file.raw) {
+        const parsed = content_parser({ raw: file.raw })
         return parsed
       }
-    } catch (e) {
-      console.error('[news] Error fetching post:', post_path, e)
-    }
+    } catch (e) { }
     return null
   }
 
-  function normalize_path(path) {
+  function normalize_path (path) {
     if (!path) return '/'
     if (typeof path !== 'string') return '/'
     return path.split('|').pop() || '/'
   }
 
-  function get_local_stories() {
+  function get_local_stories () {
     try {
       const stories = localStorage.getItem('p2p_stories')
       return stories ? JSON.parse(stories) : []
     } catch (e) { return [] }
   }
 
-  function save_local_story(story) {
+  function save_local_story (story) {
     const stories = get_local_stories()
     stories.unshift(story)
     localStorage.setItem('p2p_stories', JSON.stringify(stories))
   }
 
-  async function handle_db_request(request_msg, send) {
+  async function handle_db_request (request_msg, send) {
     const { head: request_head, type: operation, data: params } = request_msg
     let result
     if (!db) { send_response(request_head, null); return }
@@ -3788,25 +3860,44 @@ async function news_app(opts, protocol) {
 
     send_response(request_head, result)
 
-    function send_response(request_head, result) {
+    function send_response (request_head, result) {
       const response_head = [by, 'menu_sidebar', msg_id++]
       send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
     }
   }
+
+  function parse_block (block) {
+    block = block.trim()
+    if (!block) return ''
+    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
+    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
+    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
+    if (block.startsWith('- ')) {
+      const items = block.split('\n').map(format_list_item).join('')
+      return `<ul>${items}</ul>`
+    }
+    let p = block
+    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+    return `<p>${p}</p>`
+  }
+
+  function format_list_item (line) {
+    return `<li>${line.replace(/^- /, '')}</li>`
+  }
 }
 
-function fallback_module() {
+function fallback_module () {
   const _ = {
     menu_sidebar: { $: '' },
     './graphdb': { $: '' },
-    newsfeed_view: { $: '' },
-    'newsfeed_view/content_parser': { $: '' },
-    write_page: { $: '' }
+    'newsfeed_view/content_parser': { $: '' }
   }
 
   return { _, api: fallback_instance }
 
-  function fallback_instance(opts) {
+  function fallback_instance (opts) {
     const _ = {
       menu_sidebar: {
         0: '',
@@ -3817,23 +3908,20 @@ function fallback_module() {
           mode: 'mode',
           flags: 'flags',
           keybinds: 'keybinds',
-          undo: 'undo'
+          undo: 'undo',
+          data: 'data'
         }
       },
       './graphdb': { 0: '' },
-      newsfeed_view: {
-        0: '',
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      },
-      'newsfeed_view/content_parser': { 0: '' },
-      write_page: {
-        0: '',
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      }
+      'newsfeed_view/content_parser': { 0: '' }
     }
 
     const drive = {
       'entries/': { 'entries.json': { $ref: 'entries.json' } },
+      'data/': {},
+      'news_cards/': {
+        'news-card.css': { $ref: '../news_cards/news-card.css' }
+      },
       'theme/': {
         'shell.css': {
           raw: `
@@ -3856,7 +3944,7 @@ function fallback_module() {
     .main {
       flex: 1;
       overflow: auto;
-      padding: 2rem;
+      padding: 0;
       background: #ffffff;
     }
           `
@@ -3875,21 +3963,23 @@ function fallback_module() {
       'mode/': {},
       'flags/': {},
       'keybinds/': {},
-      'undo/': {}
-    }
-
-    const blogs = [
-      'tech-thoughts', 'p2p-experiments', 'security-notes', 'off-the-grid',
-      'cryptography-weekly', 'mesh-networks', 'iot-weekly', 'distributed-systems',
-      'zero-trust-blog', 'hackers-digest', 'code-coffee', 'peer-review',
-      'security-chronicles', 'random-blog-a', 'random-blog-b', 'random-blog-c'
-    ]
-
-    blogs.forEach(handle_blog_mount)
-
-    function handle_blog_mount(blog) {
-      drive[`blogs/${blog}/post-1`] = { $ref: `data/${blog}-1.md` }
-      drive[`blogs/${blog}/post-2`] = { $ref: `data/${blog}-2.md` }
+      'undo/': {},
+      'posts/': {
+        'tech-thoughts-1': { $ref: 'data/tech-thoughts-1.md' },
+        'tech-thoughts-2': { $ref: 'data/tech-thoughts-2.md' },
+        'p2p-experiments-1': { $ref: 'data/p2p-experiments-1.md' },
+        'p2p-experiments-2': { $ref: 'data/p2p-experiments-2.md' },
+        'security-notes-1': { $ref: 'data/security-notes-1.md' },
+        'hackers-digest-1': { $ref: 'data/hackers-digest-1.md' },
+        'hackers-digest-2': { $ref: 'data/hackers-digest-2.md' },
+        'off-the-grid-1': { $ref: 'data/off-the-grid-1.md' },
+        'off-the-grid-2': { $ref: 'data/off-the-grid-2.md' },
+        'peer-review-1': { $ref: 'data/peer-review-1.md' },
+        'cryptography-weekly-1': { $ref: 'data/cryptography-weekly-1.md' },
+        'random-blog-a-1': { $ref: 'data/random-blog-a-1.md' },
+        'random-blog-b-1': { $ref: 'data/random-blog-b-1.md' },
+        'random-blog-c-1': { $ref: 'data/random-blog-c-1.md' }
+      }
     }
 
     return { _, drive }
@@ -3897,147 +3987,7 @@ function fallback_module() {
 }
 
 }).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./graphdb":4,"STATE":1,"menu_sidebar":3,"newsfeed_view":9,"newsfeed_view/content_parser":8,"write_page":10}],6:[function(require,module,exports){
-(function (__filename){(function (){
-const STATE = require('STATE')
-const statedb = STATE(__filename)
-
-const { get } = statedb(fallback_module)
-
-module.exports = news_cards
-
-async function news_cards (opts, protocol) {
-  const { sid } = opts
-  const index = sid[sid.length - 1]
-  const { sdb } = await get(sid)
-  const { drive } = sdb
-
-  const card_file = await drive.get(`runtime/card-${index}.json`)
-  const card_data = JSON.parse(card_file ? card_file.raw : '{}')
-  const data = card_data.data || {}
-
-  const date = data.date || ''
-  const title = data.title || 'Untitled Story'
-  const author = data.author || 'Anonymous'
-  const description = data.description || ''
-  const color = data.color || '#6366f1'
-  const tags = data.tags || []
-
-  return `
-    <div class="news-card">
-      <div class="card-header">
-        <span class="card-date">${date}</span>
-        <h3 class="card-title">${title}</h3>
-      </div>
-      <p class="card-description">${description}</p>
-      <div class="card-footer">
-        <span class="card-author">By ${author}</span>
-        <div class="card-tags">
-          ${tags.map(render_tag).join('')}
-        </div>
-      </div>
-    </div>
-  `
-
-  function render_tag (tag) {
-    return `<span class="card-tag">${tag}</span>`
-  }
-}
-
-function fallback_module () {
-  return { api: fallback_instance }
-
-  function fallback_instance () {
-    const drive = {
-      'runtime/': {
-        'card-0.json': { raw: '{}' }
-      }
-    }
-
-    return { drive }
-  }
-}
-
-}).call(this)}).call(this,"/web/node_modules/news_cards/index.js")
-},{"STATE":1}],7:[function(require,module,exports){
-(function (__filename){(function (){
-const STATE = require('STATE')
-const statedb = STATE(__filename)
-
-const { get } = statedb(fallback_module)
-const news_cards = require('news_cards')
-
-module.exports = newsfeed_card_list
-
-async function newsfeed_card_list (opts, protocol) {
-  const { sid } = opts
-  const { id, sdb } = await get(sid)
-  const { drive } = sdb
-
-  const viewer_file = await drive.get('runtime/viewer_data.json')
-  const viewer_data = JSON.parse(viewer_file ? viewer_file.raw : '{}')
-  const data = viewer_data.data || {}
-  const items = data.items || []
-
-  const max_items = items.slice(0, 30)
-
-  const subs = await sdb.watch(onbatch)
-  const card_subs = (subs || []).sort(sort_by_index)
-
-  const items_html = await Promise.all(max_items.map(render_card))
-
-  return `
-    <div class="newsfeed-list">
-      ${items_html.join('')}
-    </div>
-  `
-
-  async function render_card (item, index) {
-    if (index >= card_subs.length) return ''
-    const card_sub = card_subs[index]
-
-    await sdb.drive.put(`runtime/card-${index}.json`, JSON.stringify({ data: item.data }))
-
-    return news_cards({ sid: card_sub.sid })
-  }
-
-  function sort_by_index (a, b) {
-    return a.sid[a.sid.length - 1] - b.sid[b.sid.length - 1]
-  }
-
-  function onbatch () {}
-}
-
-function fallback_module () {
-  const _ = {
-    news_cards: { $: '' }
-  }
-
-  return { _, api: fallback_instance }
-
-  function fallback_instance () {
-    const _ = {
-      news_cards: {
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      }
-    }
-
-    for (let i = 0; i < 30; i++) {
-        _['news_cards'][i] = ''
-    }
-
-    const drive = {
-      'runtime/': {
-        'viewer_data.json': { raw: '{}' }
-      }
-    }
-
-    return { _, drive }
-  }
-}
-
-}).call(this)}).call(this,"/web/node_modules/newsfeed_card_list/index.js")
-},{"STATE":1,"news_cards":6}],8:[function(require,module,exports){
+},{"./graphdb":4,"STATE":1,"menu_sidebar":3,"newsfeed_view/content_parser":6}],6:[function(require,module,exports){
 const STATE = require('STATE')
 
 module.exports = content_parser
@@ -4079,263 +4029,7 @@ async function content_parser (opts, protocol) {
   }
 }
 
-},{"STATE":1}],9:[function(require,module,exports){
-(function (__filename){(function (){
-const STATE = require('STATE')
-const statedb = STATE(__filename)
-
-const { get } = statedb(fallback_module)
-const news_list = require('newsfeed_card_list')
-const shopts = { mode: 'closed' }
-
-module.exports = newsfeed_view
-
-async function newsfeed_view (opts, protocol) {
-  const { sid } = opts
-  const { id, sdb } = await get(sid)
-  const { drive } = sdb
-
-  let send
-  if (protocol) send = protocol(handle_message)
-
-  const element = document.createElement('div')
-  const shadow = element.attachShadow(shopts)
-
-  const layout_sheet = new CSSStyleSheet()
-  const card_sheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [layout_sheet, card_sheet]
-
-  const paths = ['runtime/viewer_data.json', 'theme/layout.css', 'theme/news-card.css']
-  const files = await Promise.all(paths.map(path => drive ? drive.get(path).catch(() => null) : null))
-  const [viewer_file, layout_css, newscard_css] = files
-
-  if (layout_css && layout_css.raw) layout_sheet.replaceSync(layout_css.raw)
-  if (newscard_css && newscard_css.raw) card_sheet.replaceSync(newscard_css.raw)
-
-  const viewer_data = JSON.parse(viewer_file && viewer_file.raw ? viewer_file.raw : '{}')
-  const data = viewer_data.data || {}
-
-  const subs = await sdb.watch(handle_watch)
-
-  if (data.items) {
-    const list_sub = subs && subs.length > 0 ? subs[0] : null
-    if (list_sub) {
-      const list_html = await news_list({
-        sid: list_sub.sid
-      })
-      shadow.innerHTML = list_html
-    }
-  } else if (data.content) {
-    const content_html = data.content
-      .split('\n\n')
-      .map(parse_block)
-      .join('')
-
-    shadow.innerHTML = `
-    <article class="article-container">
-      <header class="article-header">
-        <h1 class="article-title">${data.title || 'Untitled'}</h1>
-        <div class="article-meta">
-          <span>By <strong>${data.author || 'Anonymous'}</strong></span> • <span>${data.date || 'Unknown Date'}</span>
-        </div>
-      </header>
-      <div class="article-body">${content_html}</div>
-    </article>
-    `
-  }
-
-  shadow.addEventListener('click', handle_shadow_click)
-
-  return element
-
-  function handle_shadow_click (e) {
-    const card_target = e.target.closest('.news-card')
-    if (card_target && send && data.items) {
-      const path = data.items.find(match_card, { target: card_target })?.path
-
-      if (path) {
-        send({ type: 'select_node', data: { instance_path: path } })
-      }
-    }
-
-    function match_card (item, index) {
-      const card_el = shadow.querySelectorAll('.news-card')[index]
-      return card_el === this.target
-    }
-  }
-
-  function handle_watch (batch) {
-  }
-
-  function parse_block (block) {
-    block = block.trim()
-    if (!block) return ''
-
-    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
-    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
-    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
-
-    if (block.startsWith('- ')) {
-      const lines = block.split('\n')
-      const items = lines.map(format_list_item).join('')
-      return `<ul>${items}</ul>`
-    }
-
-    let p = block
-
-    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
-    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-
-    return `<p>${p}</p>`
-  }
-
-  function format_list_item (line) {
-    return `<li>${line.replace(/^- /, '')}</li>`
-  }
-
-  function handle_message (msg) {
-  }
-}
-
-function fallback_module () {
-  const _ = {
-    newsfeed_card_list: { $: '' }
-  }
-
-  return { _, api: fallback_instance }
-
-  function fallback_instance () {
-    const _ = {
-      newsfeed_card_list: {
-        0: '',
-        mapping: { runtime: 'runtime', theme: 'theme' }
-      }
-    }
-
-    const drive = {
-      'runtime/': {
-        'viewer_data.json': { raw: '{}' }
-      }
-    }
-
-    return { _, drive }
-  }
-}
-
-}).call(this)}).call(this,"/web/node_modules/newsfeed_view/index.js")
-},{"STATE":1,"newsfeed_card_list":7}],10:[function(require,module,exports){
-(function (__filename){(function (){
-const STATE = require('STATE')
-const statedb = STATE(__filename)
-const { get } = statedb(fallback_module)
-
-module.exports = write_page
-
-async function write_page (opts, protocol) {
-  const { sid } = opts
-  const { sdb } = await get(sid)
-  const { drive } = sdb
-
-  let send
-  if (protocol) send = protocol(handle_message)
-
-  const cfg_file = await drive.get('runtime/write_data.json')
-  const config = JSON.parse(cfg_file && cfg_file.raw ? cfg_file.raw : '{}')
-  const selected_blog = config.selected_blog || 'Main Blog'
-
-  const el = document.createElement('div')
-  
-  const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
-  const options = blogs.map(render_blog_option).join('')
-
-  const tip_data = [
-    { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
-    { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
-    { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
-  ]
-
-  const tips_html = tip_data.map(render_tip).join('')
-
-  el.innerHTML = `
-  <div class="write-page-container">
-    <div class="section-header">
-      <h1>Write a Story</h1>
-      <p>Share your thoughts with the network</p>
-    </div>
-
-    <div class="card">
-      <form class="space-y-8" id="write-story-form">
-        <div class="input-group">
-          <label>Publishing To</label>
-          <select class="blog-select" name="blog">
-            ${options}
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label>Story Title</label>
-          <input type="text" class="input-title" name="title" placeholder="Give your story a captivating title..." required>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="input-group">
-          <label>Your Story</label>
-          <textarea class="input-content" name="content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." required></textarea>
-          <div class="word-count">
-            <span id="word-count-span">0 words</span>
-            <span id="read-time-span">~0 min read</span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="submit" class="btn-publish">Publish Story</button>
-          <p class="action-text">Your story will be stored locally and synced with your network</p>
-        </div>
-      </form>
-    </div>
-
-    <div class="tips">
-      ${tips_html}
-    </div>
-  </div>
-  `
-
-  return el
-
-  function render_blog_option (blog) {
-    return `<option value="${blog}"${blog === selected_blog ? ' selected' : ''}>${blog}</option>`
-  }
-
-  function render_tip (t) {
-    return `
-    <div class="tip">
-      <h3>${t.title}</h3>
-      <p>${t.text}</p>
-    </div>
-  `
-  }
-
-  function handle_message (msg) {}
-}
-
-function fallback_module () {
-  return { api: fallback_instance }
-
-  function fallback_instance () {
-    const drive = {
-      'runtime/': {
-        'write_data.json': { raw: '{}' }
-      }
-    }
-    return { drive }
-  }
-}
-
-
-}).call(this)}).call(this,"/web/node_modules/write_page/index.js")
-},{"STATE":1}],11:[function(require,module,exports){
+},{"STATE":1}],7:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
@@ -4346,38 +4040,32 @@ const { sdb } = statedb(fallback_module)
 
 const news = require('news')
 
-console.log('p2p news app')
-
-const customVault = {
-  init_blog: async ({ username }) => console.log('[customVault] init_blog:', username),
+const custom_vault = {
+  init_blog: async ({ username }) => { },
   get_peer_blogs: async () => new Map(),
   get_my_posts: async () => [],
   get_profile: async (key) => null,
-  on_update: (callback) => console.log('[customVault] on_update registered')
+  on_update: (callback) => { }
 }
 
 async function init () {
-  console.log('[page.js] init started')
   const start = await sdb.watch(handle_watch_batch)
 
   function handle_watch_batch (batch) {
-    console.log('[page.js] sdb watch batch:', batch)
   }
 
   if (!start || start.length === 0) {
-    console.error('[page.js] No active instances found for news')
     return
   }
 
   const { sid } = start[0]
-  console.log('[page.js] Retrieved sid for news:', sid)
 
-  const app = await news({ sid, vault: customVault })
+  const app = await news({ sid, vault: custom_vault })
   document.body.innerHTML = ''
   document.body.append(app)
 }
 
-init().catch(console.error)
+init().catch(() => { })
 
 function fallback_module () {
   return {
@@ -4400,11 +4088,9 @@ function fallback_module () {
           flags: 'flags',
           keybinds: 'keybinds',
           undo: 'undo',
-          'my-blogs-1': 'my-blogs-1',
-          'my-blogs-2': 'my-blogs-2',
-          discover: 'discover',
-          blogs: 'blogs',
-          data: 'data'
+          posts: 'posts',
+          data: 'data',
+          news_cards: 'news_cards'
         }
       }
     },
@@ -4419,14 +4105,12 @@ function fallback_module () {
       'flags/': {},
       'keybinds/': {},
       'undo/': {},
-      'my-blogs-1/': {},
-      'my-blogs-2/': {},
-      'discover/': {},
-      'blogs/': {},
-      'data/': {}
+      'posts/': {},
+      'data/': {},
+      'news_cards/': {}
     }
   }
 }
 
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":5}]},{},[11]);
+},{"STATE":1,"news":5}]},{},[7]);
