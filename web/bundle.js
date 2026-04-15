@@ -3400,9 +3400,14 @@ async function news_app (opts, protocol) {
   let db = null
   let msg_id = 0
   let send_to_sidebar = null
+  let send_to_newsfeed = null
+  let send_to_write = null
 
   let active_path = ''
   let active_tab = 'news'
+
+  let newsfeed_el = null
+  let write_el = null
 
   const el = document.createElement('div')
   const shadow = el.attachShadow({ mode: 'closed' })
@@ -3441,6 +3446,9 @@ async function news_app (opts, protocol) {
     const menu_el = await menu_sidebar({ sid: subs[0].sid }, sidebar_protocol)
     sidebar_el.appendChild(menu_el)
   }
+
+  newsfeed_el = await newsfeed_view({ sid: subs[1].sid }, newsfeed_protocol)
+  write_el = await write_page({ sid: subs[2].sid }, write_protocol_factory)
 
   render_main_view()
 
@@ -3504,7 +3512,8 @@ async function news_app (opts, protocol) {
     }
   }
 
-  function newsfeed_protocol (send) {
+  function newsfeed_protocol (child_handler) {
+    send_to_newsfeed = child_handler
     return on_newsfeed_message
   }
 
@@ -3518,18 +3527,18 @@ async function news_app (opts, protocol) {
     }
   }
 
-  function write_protocol (send) {
-    return on_write_message
+  function write_protocol_factory (child_handler) {
+    send_to_write = child_handler
+    return function on_write_message () {}
   }
-
-  function on_write_message (msg) {}
 
   function handle_shadow_click (e) {
     if (e.target.closest('.news-fab')) {
       render_write_page_view(active_path)
     }
-    if (e.target.classList.contains('tab')) {
-      handle_tab_click(e.target.dataset.tab)
+    const tab_target = e.target.closest('.tab')
+    if (tab_target) {
+      handle_tab_click(tab_target.textContent.trim().toLowerCase())
     }
   }
 
@@ -3627,8 +3636,8 @@ async function news_app (opts, protocol) {
     if (node_type !== 'discover') {
       tabs_html = `
         <div class="view-tabs">
-          <button class="tab ${active_tab === 'news' ? 'active' : ''}" data-tab="news">News</button>
-          <button class="tab ${active_tab === 'blog' ? 'active' : ''}" data-tab="blog">Blog</button>
+          <button class="tab ${active_tab === 'news' ? 'active' : ''}">News</button>
+          <button class="tab ${active_tab === 'blog' ? 'active' : ''}">Blog</button>
         </div>
       `
     }
@@ -3671,9 +3680,9 @@ async function news_app (opts, protocol) {
     }
 
     if (fetched_items.length > 0) {
-      await render_feed_view(fetched_items, node.name, target)
+      render_feed_view({ items: fetched_items, folder_name: node.name, target: target })
     } else {
-      target.innerHTML = `<div class="empty-container"><p>No news to show from subscriptions.</p></div>`
+      target.innerHTML = '<div class="empty-container"><p>No news to show from subscriptions.</p></div>'
     }
   }
 
@@ -3693,25 +3702,23 @@ async function news_app (opts, protocol) {
     }
 
     if (fetched_items.length > 0 || node_type === 'my-blog') {
-      await render_feed_view(fetched_items, node.name, target)
+      render_feed_view({ items: fetched_items, folder_name: node.name, target: target })
       if (node_type === 'my-blog') {
         target.insertAdjacentHTML('beforeend', '<div class="news-fab">+</div>')
       }
     } else {
-      target.innerHTML = `<div class="empty-container"><p>This blog hasn't posted anything yet.</p></div>`
+      target.innerHTML = '<div class="empty-container"><p>This blog has not posted anything yet.</p></div>'
     }
   }
 
-  async function render_feed_view (items, folder_name, target) {
-    const view_data = {
-      items: items,
-      folder_name: folder_name,
-      is_news_feed: true
+  function render_feed_view ({ items, folder_name, target }) {
+    target.appendChild(newsfeed_el)
+    if (send_to_newsfeed) {
+      send_to_newsfeed({
+        type: 'render_feed',
+        data: { items: items, folder_name: folder_name, is_news_feed: true }
+      })
     }
-    const { sdb: feed_sdb } = await get(subs[1].sid)
-    await feed_sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
-    const view_el = await newsfeed_view({ sid: subs[1].sid }, newsfeed_protocol)
-    target.appendChild(view_el)
   }
 
   async function render_article_view (post_path) {
@@ -3720,25 +3727,29 @@ async function news_app (opts, protocol) {
       main_viewer.innerHTML = '<div class="empty-container"><p>Content not available.</p></div>'
       return
     }
-    const view_data = {
-      title: post_data.title,
-      author: post_data.author,
-      date: post_data.date,
-      content: post_data.content
-    }
-    const { sdb: feed_sdb } = await get(subs[1].sid)
-    await feed_sdb.drive.put('runtime/viewer_data.json', JSON.stringify({ data: view_data }))
-    const view_el = await newsfeed_view({ sid: subs[1].sid }, newsfeed_protocol)
     main_viewer.innerHTML = ''
-    main_viewer.appendChild(view_el)
+    main_viewer.appendChild(newsfeed_el)
+    if (send_to_newsfeed) {
+      send_to_newsfeed({
+        type: 'render_article',
+        data: {
+          data: {
+            title: post_data.title,
+            author: post_data.author,
+            date: post_data.date,
+            content: post_data.content
+          }
+        }
+      })
+    }
   }
 
-  async function render_write_page_view (path) {
+  function render_write_page_view (path) {
     const node = db ? db.get(path) : null
     const blog_name = node ? node.name : 'Main Blog'
-    const { sdb: write_sdb } = await get(subs[2].sid)
-    await write_sdb.drive.put('runtime/write_data.json', JSON.stringify({ selected_blog: blog_name }))
-    const write_el = await write_page({ sid: subs[2].sid }, write_protocol)
+    if (send_to_write) {
+      send_to_write({ type: 'provision', data: { selected_blog: blog_name } })
+    }
     main_viewer.innerHTML = ''
     main_viewer.appendChild(write_el)
   }
@@ -3920,39 +3931,56 @@ module.exports = news_cards
 
 async function news_cards (opts, protocol) {
   const { sid } = opts
-  const index = sid[sid.length - 1]
-  const { sdb } = await get(sid)
-  const { drive } = sdb
+  await get(sid)
 
-  const card_file = await drive.get(`runtime/card-${index}.json`)
-  const card_data = JSON.parse(card_file ? card_file.raw : '{}')
-  const data = card_data.data || {}
-  const path = card_data.path || ''
+  const el = document.createElement('div')
+  let current_path = ''
+  let send
 
-  const date = data.date || ''
-  const title = data.title || 'Untitled Story'
-  const author = data.author || 'Anonymous'
-  const description = data.description || ''
-  const tags = Array.isArray(data.tags) ? data.tags : []
-  const tags_html = tags.map(render_tag).join('')
+  function handle_message (msg) {
+    if (msg.type === 'provision') render(msg.data)
+  }
 
-  return `
-    <div class="news-card" data-path="${path}">
-      <div class="news-avatar">${author[0] || 'A'}</div>
-      <div class="news-content">
-        <div class="news-meta-top">
-          <span class="news-author">${author}</span>
-          <span class="news-separator">•</span>
-          <span class="news-date-text">${date}</span>
-        </div>
-        <h3 class="news-title">${title}</h3>
-        <p class="news-description">${description}</p>
-        <div class="news-meta-bottom">
-          <div class="news-tags">${tags_html}</div>
+  if (protocol) send = protocol(handle_message)
+
+  el.addEventListener('click', handle_card_click)
+
+  return el
+
+  function handle_card_click () {
+    if (send && current_path) {
+      send({ type: 'card_clicked', data: { path: current_path } })
+    }
+  }
+
+  function render (card_data) {
+    const data = card_data.data || {}
+    current_path = card_data.path || ''
+    const date = data.date || ''
+    const title = data.title || 'Untitled Story'
+    const author = data.author || 'Anonymous'
+    const description = data.description || ''
+    const tags = Array.isArray(data.tags) ? data.tags : []
+    const tags_html = tags.map(render_tag).join('')
+
+    el.innerHTML = `
+      <div class="news-card">
+        <div class="news-avatar">${author[0] || 'A'}</div>
+        <div class="news-content">
+          <div class="news-meta-top">
+            <span class="news-author">${author}</span>
+            <span class="news-separator">•</span>
+            <span class="news-date-text">${date}</span>
+          </div>
+          <h3 class="news-title">${title}</h3>
+          <p class="news-description">${description}</p>
+          <div class="news-meta-bottom">
+            <div class="news-tags">${tags_html}</div>
+          </div>
         </div>
       </div>
-    </div>
-  `
+    `
+  }
 
   function render_tag (tag) {
     return `<span class="news-tag-pill">${tag}</span>`
@@ -3968,7 +3996,6 @@ function fallback_module () {
         'card-0.json': { raw: '{}' }
       }
     }
-
     return { drive }
   }
 }
@@ -3986,34 +4013,55 @@ module.exports = newsfeed_card_list
 
 async function newsfeed_card_list (opts, protocol) {
   const { sid } = opts
-  const { id, sdb } = await get(sid)
-  const { drive } = sdb
+  const { sdb } = await get(sid)
 
-  const viewer_file = await drive.get('runtime/viewer_data.json')
-  const viewer_data = JSON.parse(viewer_file ? viewer_file.raw : '{}')
-  const data = viewer_data.data || {}
-  const items = data.items || []
+  const el = document.createElement('div')
+  el.className = 'newsfeed-list'
 
-  const max_items = items.slice(0, 30)
+  const card_sends = []
+  const card_els = []
+  let send_to_parent
+
+  function handle_message (msg) {
+    if (msg.type === 'provision') update_cards(msg.data)
+  }
+
+  if (protocol) send_to_parent = protocol(handle_message)
 
   const subs = await sdb.watch(onbatch)
   const card_subs = (subs || []).sort(sort_by_index)
 
-  const items_html = await Promise.all(max_items.map(render_card))
+  for (let i = 0; i < card_subs.length; i++) {
+    const card_el = await news_cards({ sid: card_subs[i].sid }, make_card_protocol(i))
+    card_els.push(card_el)
+  }
 
-  return `
-    <div class="newsfeed-list">
-      ${items_html.join('')}
-    </div>
-  `
+  return el
 
-  async function render_card (item, index) {
-    if (index >= card_subs.length) return ''
-    const card_sub = card_subs[index]
+  function make_card_protocol (idx) {
+    return function card_protocol (child_handler) {
+      card_sends[idx] = child_handler
+      return handle_card_message
+    }
+  }
 
-    await sdb.drive.put(`runtime/card-${index}.json`, JSON.stringify({ data: item.data, path: item.path }))
+  function handle_card_message (msg) {
+    if (msg.type === 'card_clicked' && send_to_parent) {
+      send_to_parent({ type: 'card_clicked', data: msg.data })
+    }
+  }
 
-    return news_cards({ sid: card_sub.sid })
+  function update_cards (payload) {
+    const items = payload.items || []
+
+    while (el.firstChild) el.removeChild(el.firstChild)
+
+    for (let i = 0; i < items.length && i < card_els.length; i++) {
+      if (card_sends[i]) {
+        card_sends[i]({ type: 'provision', data: { data: items[i].data, path: items[i].path } })
+      }
+      el.appendChild(card_els[i])
+    }
   }
 
   function sort_by_index (a, b) {
@@ -4038,7 +4086,7 @@ function fallback_module () {
     }
 
     for (let i = 0; i < 30; i++) {
-      _['news_cards'][i] = ''
+      _.news_cards[i] = ''
     }
 
     const drive = {
@@ -4106,71 +4154,68 @@ module.exports = newsfeed_view
 
 async function newsfeed_view (opts, protocol) {
   const { sid } = opts
-  const { id, sdb } = await get(sid)
-  const { drive } = sdb
+  const { sdb } = await get(sid)
 
-  let send
-  if (protocol) send = protocol(handle_message)
+  let send_to_parent
 
-  const element = document.createElement('div')
-  const shadow = element.attachShadow({ mode: 'closed' })
-
-  const layout_sheet = new CSSStyleSheet()
-  const card_sheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [layout_sheet, card_sheet]
-
-  const css_paths = ['theme/layout.css', 'theme/news-card.css']
-  const css_files = await Promise.all(css_paths.map(load_css_file))
-  const [layout_css, newscard_css] = css_files
-
-  if (layout_css && layout_css.raw) layout_sheet.replaceSync(layout_css.raw)
-  if (newscard_css && newscard_css.raw) card_sheet.replaceSync(newscard_css.raw)
-
-  const viewer_file = await drive.get('runtime/viewer_data.json')
-  console.error('[newsfeed_view] viewer_file:', viewer_file ? 'found' : 'null', viewer_file ? viewer_file.raw?.length : 0)
-  const viewer_data = JSON.parse(viewer_file && viewer_file.raw ? viewer_file.raw : '{}')
-  const data = viewer_data.data || {}
-  console.error('[newsfeed_view] data keys:', Object.keys(data), 'has items:', !!data.items, 'has content:', !!data.content)
-
-  const subs = await sdb.watch(handle_watch)
-  console.error('[newsfeed_view] subs count:', subs ? subs.length : 0)
-
-  if (data.items) {
-    console.error('[newsfeed_view] rendering feed with', data.items.length, 'items')
-    await render_feed(data)
-  } else if (data.content) {
-    console.error('[newsfeed_view] rendering article')
-    render_article(data)
-  } else {
-    console.error('[newsfeed_view] no data to render')
+  function handle_message (msg) {
+    if (msg.type === 'render_feed') show_feed(msg.data)
+    if (msg.type === 'render_article') show_article(msg.data)
   }
 
-  shadow.addEventListener('click', handle_shadow_click)
+  if (protocol) send_to_parent = protocol(handle_message)
+
+  const element = document.createElement('div')
+
+  let list_el = null
+  let send_to_list = null
+
+  const subs = await sdb.watch(handle_watch)
+  const list_sub = subs && subs.length > 0 ? subs[0] : null
+
+  if (list_sub) {
+    list_el = await news_list({ sid: list_sub.sid }, list_protocol)
+  }
+
+  element.addEventListener('click', handle_element_click)
 
   return element
 
-  async function render_feed (feed_data) {
-    const list_sub = subs && subs.length > 0 ? subs[0] : null
-    if (list_sub) {
-      const list_html = await news_list({ sid: list_sub.sid })
-      shadow.innerHTML = list_html
+  function list_protocol (child_handler) {
+    send_to_list = child_handler
+    return handle_list_message
+  }
+
+  function handle_list_message (msg) {
+    if (msg.type === 'card_clicked' && send_to_parent) {
+      send_to_parent({ type: 'select_node', data: { instance_path: msg.data.path } })
     }
   }
 
-  function render_article (article_data) {
-    const content_html = article_data.content
+  function show_feed (data) {
+    clear_element()
+    if (list_el) element.appendChild(list_el)
+    if (send_to_list) {
+      send_to_list({ type: 'provision', data: data })
+    }
+  }
+
+  function show_article (payload) {
+    clear_element()
+    const data = payload.data || payload
+    const content_html = (data.content || '')
       .split('\n\n')
       .map(parse_block)
       .join('')
 
-    shadow.innerHTML = `
+    element.innerHTML = `
       <article class="news-container">
         <button class="back-btn">← Back to feed</button>
         <header class="news-header">
           <div>
-            <h2 class="news-title article-title-main">${article_data.title || 'Untitled'}</h2>
+            <h2 class="news-title article-title-main">${data.title || 'Untitled'}</h2>
             <div class="news-subheader">
-              <span>By <strong>${article_data.author || 'Anonymous'}</strong></span> • <span>${article_data.date || 'Unknown Date'}</span>
+              <span>By <strong>${data.author || 'Anonymous'}</strong></span> • <span>${data.date || 'Unknown Date'}</span>
             </div>
           </div>
         </header>
@@ -4179,37 +4224,21 @@ async function newsfeed_view (opts, protocol) {
     `
   }
 
-  function load_css_file (path) {
-    return drive.get(path).catch(return_null)
+  function clear_element () {
+    while (element.firstChild) element.removeChild(element.firstChild)
   }
 
-  function return_null () {
-    return null
-  }
-
-  function handle_shadow_click (e) {
-    const card_target = e.target.closest('.news-card')
-    if (card_target && send) {
-      handle_card_click(card_target.dataset.path)
-    }
-    if (e.target.closest('.back-btn') && send) {
+  function handle_element_click (e) {
+    if (e.target.closest('.back-btn') && send_to_parent) {
       handle_back_click()
     }
   }
 
-  function handle_card_click (path) {
-    if (path) {
-      send({ type: 'select_node', data: { instance_path: path } })
-    }
-  }
-
   function handle_back_click () {
-    send({ type: 'navigate_back' })
+    send_to_parent({ type: 'navigate_back' })
   }
 
   function handle_watch () {}
-
-  function handle_message (msg) {}
 
   function parse_block (block) {
     block = block.trim()
@@ -4269,61 +4298,69 @@ module.exports = write_page
 
 async function write_page (opts, protocol) {
   const { sid } = opts
-  const { sdb } = await get(sid)
-  const { drive } = sdb
-
-  let send
-  if (protocol) send = protocol(handle_message)
-
-  const cfg_file = await drive.get('runtime/write_data.json')
-  const config = JSON.parse(cfg_file && cfg_file.raw ? cfg_file.raw : '{}')
-  const selected_blog = config.selected_blog || 'Main Blog'
+  await get(sid)
 
   const el = document.createElement('div')
 
-  el.innerHTML = `
-    <div class="write-page-container">
-      <div class="section-header">
-        <h1>Write a Story</h1>
-        <p>Create something amazing for <strong>${selected_blog}</strong></p>
-      </div>
+  function handle_message (msg) {
+    if (msg.type === 'provision') update_form(msg.data)
+  }
 
-      <div class="card space-y-8">
-        <form id="write-story-form">
-          <div class="input-group">
-            <label>Target Blog</label>
-            <input type="text" name="blog" value="${selected_blog}" readonly class="blog-select">
-          </div>
+  if (protocol) protocol(handle_message)
 
-          <div class="input-group">
-            <label>Story Title</label>
-            <input type="text" name="title" placeholder="Enter your story title..." class="input-title" required autofocus>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="input-group">
-            <label>Content</label>
-            <textarea name="content" placeholder="Start writing your story here..." class="input-content" required></textarea>
-          </div>
-
-          <div class="word-count">
-            <span id="word-count-span">0 words</span>
-            <span id="read-time-span">~0 min read</span>
-          </div>
-
-          <div class="actions">
-            <button type="submit" class="btn-publish">Publish Story</button>
-            <span class="action-text">Saved to local draft</span>
-          </div>
-        </form>
-      </div>
-    </div>
-  `
+  render_form('Main Blog')
 
   return el
 
-  function handle_message (msg) {}
+  function render_form (blog_name) {
+    el.innerHTML = `
+      <div class="write-page-container">
+        <div class="section-header">
+          <h1>Write a Story</h1>
+          <p class="write-subtitle">Create something amazing for <strong>${blog_name}</strong></p>
+        </div>
+
+        <div class="card space-y-8">
+          <form id="write-story-form">
+            <div class="input-group">
+              <label>Target Blog</label>
+              <input type="text" name="blog" value="${blog_name}" readonly class="blog-select">
+            </div>
+
+            <div class="input-group">
+              <label>Story Title</label>
+              <input type="text" name="title" placeholder="Enter your story title..." class="input-title" required autofocus>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="input-group">
+              <label>Content</label>
+              <textarea name="content" placeholder="Start writing your story here..." class="input-content" required></textarea>
+            </div>
+
+            <div class="word-count">
+              <span id="word-count-span">0 words</span>
+              <span id="read-time-span">~0 min read</span>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn-publish">Publish Story</button>
+              <span class="action-text">Saved to local draft</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+  }
+
+  function update_form (config) {
+    const blog_name = config.selected_blog || 'Main Blog'
+    const blog_input = el.querySelector('.blog-select')
+    const subtitle = el.querySelector('.write-subtitle')
+    if (blog_input) blog_input.value = blog_name
+    if (subtitle) subtitle.innerHTML = `Create something amazing for <strong>${blog_name}</strong>`
+  }
 }
 
 function fallback_module () {
@@ -4352,11 +4389,11 @@ const { sdb } = statedb(fallback_module)
 const news = require('news')
 
 const custom_vault = {
-  init_blog: async ({ username }) => { },
-  get_peer_blogs: async () => new Map(),
-  get_my_posts: async () => [],
-  get_profile: async (key) => null,
-  on_update: (callback) => { }
+  init_blog: async function init_blog ({ username }) { },
+  get_peer_blogs: async function get_peer_blogs () { return new Map() },
+  get_my_posts: async function get_my_posts () { return [] },
+  get_profile: async function get_profile (key) { return null },
+  on_update: function on_update (callback) { }
 }
 
 async function init () {
@@ -4376,7 +4413,7 @@ async function init () {
   document.body.append(app)
 }
 
-init().catch(() => { })
+init().catch(function handle_init_error () { })
 
 function fallback_module () {
   return {
