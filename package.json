@@ -10,7 +10,17 @@
       "shim.js",
       "bundle.js",
       "docs/"
-    ]
+    ],
+    "rules": {
+      "space-before-function-paren": [
+        "error",
+        "always"
+      ],
+      "func-call-spacing": [
+        "error",
+        "never"
+      ]
+    }
   },
   "eslintConfig": {
     "env": {

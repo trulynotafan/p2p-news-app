@@ -3137,889 +3137,128 @@ function fallback_module () {
 
 }).call(this)}).call(this,"/node_modules/graph-explorer/lib/graph_explorer.js")
 },{"STATE":1}],3:[function(require,module,exports){
-module.exports = function content_parser (raw) {
-  if (!raw) return null
-
-  try {
-    const data = JSON.parse(raw)
-    if (data && typeof data === 'object') return data
-  } catch (e) { }
-
-  const fm_regex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
-  const match = raw.match(fm_regex)
-
-  if (match) {
-    const metadata_str = match[1]
-    const content = match[2]
-    const metadata = {}
-
-    metadata_str.split('\n').forEach(parse_metadata_line)
-
-    function parse_metadata_line (line) {
-      const colon_index = line.indexOf(':')
-      if (colon_index !== -1) {
-        const key = line.slice(0, colon_index).trim()
-        let value = line.slice(colon_index + 1).trim()
-
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-          value = value.slice(1, -1)
-        }
-
-        if (value.startsWith('[') && value.endsWith(']')) {
-          value = value.slice(1, -1).split(',').map(trim_and_unquote)
-        }
-
-        metadata[key] = value
-      }
-    }
-
-    function trim_and_unquote (s) {
-      s = s.trim()
-      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-        return s.slice(1, -1)
-      }
-      return s
-    }
-
-    return { ...metadata, content: content.trim() }
-  }
-
-  return { content: raw }
-}
-
-},{}],4:[function(require,module,exports){
-module.exports = function article_viewer (data) {
-  const content_html = data.content
-    .split('\n\n')
-    .map(parse_block)
-    .join('')
-
-  function parse_block (block) {
-    block = block.trim()
-    if (!block) return ''
-
-    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
-    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
-    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
-
-    if (block.startsWith('- ')) {
-      const items = block.split('\n').map(format_list_item).join('')
-      return `<ul>${items}</ul>`
-    }
-
-    let p = block
-
-    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
-    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-
-    return `<p>${p}</p>`
-  }
-
-  function format_list_item (line) {
-    return `<li>${line.replace(/^- /, '')}</li>`
-  }
-
-  return `
-    <article class="article-container">
-      <header class="article-header">
-        <h1 class="article-title">${data.title}</h1>
-        <div class="article-meta">
-          <span>By <strong>${data.author}</strong></span> • <span>${data.date}</span>
-        </div>
-      </header>
-      <div class="article-body">${content_html}</div>
-    </article>
-  `
-}
-
-module.exports.parser = require('./content_parser')
-
-},{"./content_parser":3}],5:[function(require,module,exports){
-module.exports = function news_card ({ data, is_my_stories }) {
-  const avatar_initial = data.title ? data.title.charAt(0) : '?'
-  const avatar_bg = data.color || '#e5e7eb'
-
-  const meta_top = is_my_stories
-    ? `
-    <div class="news-meta-top">
-      <span class="news-author">${data.author}</span>
-      <span class="news-separator">•</span>
-      <span class="news-date-text">${data.date}</span>
-    </div>`
-    : ''
-
-  const tags_html = (data.tags && Array.isArray(data.tags))
-    ? data.tags.map(render_tag_pill).join('')
-    : ''
-
-  const meta_bottom = !is_my_stories
-    ? `
-    <div class="news-meta-bottom">
-      <span class="news-author-muted">${data.author}</span>
-      <span class="news-separator">•</span>
-      <span class="news-date-text">${data.date}</span>
-      ${tags_html}
-    </div>`
-    : ''
-
-  return `
-    <div class="news-card">
-      <div class="news-avatar" style="--avatar-bg: ${avatar_bg}">
-        ${avatar_initial}
-      </div>
-      <div class="news-content">
-        ${meta_top}
-        <h3 class="news-title">${data.title}</h3>
-        <p class="news-description">${data.description || 'No description available.'}</p>
-        ${meta_bottom}
-      </div>
-    </div>
-  `
-
-  function render_tag_pill (tag) {
-    return `<span class="news-tag-pill">${tag}</span>`
-  }
-}
-
-},{}],6:[function(require,module,exports){
-const news_card = require('news-card')
-
-module.exports = function news_list ({ items, folder_name, is_my_stories }) {
-  const header_html = `
-    <header class="news-header">
-        <div>
-            <h2>${folder_name}</h2>
-            ${is_my_stories ? '<p class="news-subheader">Your published posts</p>' : ''}
-        </div>
-    </header>
-  `
-
-  const list_html = `
-    <div class="news-container">
-        ${header_html}
-        <div class="list-container">
-            ${items.map(render_card_item).join('')}
-        </div>
-        ${is_my_stories ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
-    </div>
-  `
-
-  return list_html
-
-  function render_card_item (item) {
-    return news_card({ data: item.data, is_my_stories })
-  }
-}
-
-},{"news-card":5}],7:[function(require,module,exports){
-module.exports = graphdb
-
-function graphdb (entries) {
-  if (!entries || typeof entries !== 'object') {
-    console.warn('[graphdb] Invalid entries provided, using empty object')
-    entries = {}
-  }
-
-  const api = {
-    get,
-    has,
-    keys,
-    is_empty,
-    root,
-    raw
-  }
-
-  return api
-
-  function get (path) {
-    return entries[path] || null
-  }
-
-  function has (path) {
-    return path in entries
-  }
-
-  function keys () {
-    return Object.keys(entries)
-  }
-
-  function is_empty () {
-    return Object.keys(entries).length === 0
-  }
-
-  function root () {
-    return entries['/'] || null
-  }
-
-  function raw () {
-    return entries
-  }
-}
-
-},{}],8:[function(require,module,exports){
 (function (__filename){(function (){
 const STATE = require('STATE')
 const statedb = STATE(__filename)
-const { get } = statedb(defaults)
-const wrapper = require('./wrapper')
+const { get } = statedb(fallback_module)
 
-module.exports = news_app
+const graph_explorer = require('graph-explorer')
 
-async function news_app (opts = {}) {
-  const { sid, vault } = opts
+module.exports = menu_sidebar
 
-  const container = document.createElement('div')
-  container.className = 'container'
+async function menu_sidebar (opts, protocol) {
+  const { sid } = opts
+  const { sdb } = await get(sid)
 
-  container.innerHTML = `
-    <div class="sidebar"></div>
-    <div class="main"></div>
-  `
+  let send_to_parent = null
+  let send_to_explorer = null
 
-  const sidebar_el = container.querySelector('.sidebar')
-  const main_el = container.querySelector('.main')
+  const el = document.createElement('div')
+  el.className = 'sidebar-container'
 
-  await init({ vault, sidebar_el, main_el, sid, container })
+  if (protocol) {
+    send_to_parent = protocol(on_parent_message)
+  }
 
-  return container
+  const subs = await sdb.watch(onbatch)
+
+  if (subs && subs.length > 0) {
+    const explorer_el = await graph_explorer({ sid: subs[0].sid }, explorer_protocol)
+    el.appendChild(explorer_el)
+  }
+
+  return el
+
+  function onbatch (batch) { }
+
+  function explorer_protocol (send) {
+    send_to_explorer = send
+    return on_explorer_message
+  }
+
+  function on_explorer_message (msg) {
+    if (send_to_parent) send_to_parent(msg)
+  }
+
+  function on_parent_message (msg) {
+    if (send_to_explorer) send_to_explorer(msg)
+  }
 }
 
-async function init ({ vault, sidebar_el, main_el, sid, container }) {
-  const { id, sdb } = await get(sid)
-
-  if (sdb && sdb.drive) {
-    const css_file = await sdb.drive.get('theme/shell.css').catch(() => null)
-    if (css_file && css_file.raw) {
-      const style = document.createElement('style')
-      style.textContent = css_file.raw
-      container.appendChild(style)
-    }
-  }
-
-  const subs = await sdb.watch(handle_watch_batch)
-
-  async function handle_watch_batch (batch) {
-  }
-
-  if (!subs || subs.length === 0) {
-    console.error('[news/index.js] No active instances found for wrapper')
-    return
-  }
-
-  const wrapper_instance = subs[0]
-  const { sid: wrapper_sid } = wrapper_instance
-
-  const sidebar_component = await wrapper({
-    id: 'sidebar',
-    sid: wrapper_sid,
-    ids: { up: id }
-  }, setup_protocol)
-
-  function setup_protocol (send) {
-    return handle_message
-  }
-
-  function handle_message (msg) {
-    console.log('Host received:', msg)
-  }
-
-  sidebar_el.appendChild(sidebar_component)
-}
-
-function defaults (opts) {
+function fallback_module () {
   const _ = {
-    './wrapper': { $: '' }
+    'graph-explorer': { $: '' }
   }
 
-  return { _, api }
+  return { _, api: fallback_instance }
 
-  function api (opts) {
+  function fallback_instance () {
     const _ = {
-      './wrapper': {
-        0: '',
+      'graph-explorer': {
+        0: override_theme,
         mapping: {
-          theme: 'theme',
+          style: 'style',
           entries: 'entries',
           runtime: 'runtime',
           mode: 'mode',
           flags: 'flags',
           keybinds: 'keybinds',
-          undo: 'undo',
-          'my-stories': 'my-stories',
-          feeds: 'feeds',
-          lists: 'lists',
-          discover: 'discover'
+          undo: 'undo'
         }
       }
     }
 
     const drive = {
-      'entries/': {
-        'entries.json': {
-          $ref: 'entries.json'
+      'style/': { 'style.css': { $ref: 'style.css' } },
+      'entries/': { 'entries.json': { $ref: '../news/entries.json' } },
+      'runtime/': {
+        'node_height.json': { raw: '32' },
+        'vertical_scroll_value.json': { raw: '0' },
+        'horizontal_scroll_value.json': { raw: '0' },
+        'selected_instance_paths.json': { raw: '[]' },
+        'confirmed_selected.json': { raw: '[]' },
+        'instance_states.json': { raw: '{}' },
+        'search_entry_states.json': { raw: '{}' },
+        'last_clicked_node.json': { raw: 'null' },
+        'view_order_tracking.json': { raw: '{}' }
+      },
+      'mode/': {
+        'current_mode.json': { raw: '"menubar"' },
+        'previous_mode.json': { raw: '"menubar"' },
+        'search_query.json': { raw: '""' },
+        'multi_select_enabled.json': { raw: 'false' },
+        'select_between_enabled.json': { raw: 'false' }
+      },
+      'flags/': {
+        'hubs.json': { raw: '"default"' },
+        'selection.json': { raw: 'true' },
+        'recursive_collapse.json': { raw: 'true' }
+      },
+      'keybinds/': {
+        'navigation.json': {
+          raw: JSON.stringify({
+            ArrowUp: 'navigate_up_current_node',
+            ArrowDown: 'navigate_down_current_node',
+            'Control+ArrowDown': 'toggle_subs_for_current_node',
+            'Control+ArrowUp': 'toggle_hubs_for_current_node',
+            'Alt+s': 'multiselect_current_node',
+            'Alt+b': 'select_between_current_node',
+            'Control+m': 'toggle_search_mode',
+            'Alt+j': 'jump_to_next_duplicate'
+          })
         }
       },
-      'theme/': {
-        'shell.css': {
-          raw: `
-    body { margin: 0; padding: 0; overflow: hidden; }
-    .container {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    .sidebar {
-      width: 250px;
-      min-width: 250px;
-      border-right: 1px solid #e5e7eb;
-      background: #f9fafb;
-      display: flex;
-      flex-direction: column;
-    }
-    .main {
-      flex: 1;
-      overflow: auto;
-      padding: 2rem;
-      background: #ffffff;
-    }
-                `
-        }
-      },
-      'runtime/': {},
-      'mode/': {},
-      'flags/': {},
-      'keybinds/': {},
-      'undo/': {},
-      'my-stories/': {},
-      'feeds/': {},
-      'lists/': {},
-      'discover/': {}
+      'undo/': { 'stack.json': { raw: '[]' } }
     }
 
     return { _, drive }
   }
-}
 
-}).call(this)}).call(this,"/web/node_modules/news/index.js")
-},{"./wrapper":9,"STATE":1}],9:[function(require,module,exports){
-(function (__filename){(function (){
-const STATE = require('STATE')
-const statedb = STATE(__filename)
-
-const { get } = statedb(fallback_module)
-const graph_explorer = require('graph-explorer')
-const article_viewer = require('article-viewer')
-const content_parser = article_viewer.parser
-const news_card = require('news-card')
-const write_page = require('write-page')
-const news_list = require('news-list')
-const graphdb = require('./graphdb')
-
-module.exports = wrapper
-
-async function wrapper(opts, protocol) {
-  const { id, sdb } = await get(opts.sid)
-  const { drive } = sdb
-
-  const by = id
-  let db = null
-  let mid = 0
-  let send_to_graph_explorer = null
-  let explorer_el = null
-
-  const card_map = new WeakMap()
-  let list_items_data = []
-
-  const el = document.createElement('div')
-  const shadow = el.attachShadow({ mode: 'closed' })
-
-  const layout_sheet = new CSSStyleSheet()
-  drive.get('theme/layout.css').then(file => {
-    layout_sheet.replaceSync(file.raw)
-  }).catch(e => console.error('Failed to load layout.css', e))
-
-  const sheet = new CSSStyleSheet()
-  const news_card_sheet = new CSSStyleSheet()
-  shadow.adoptedStyleSheets = [layout_sheet, sheet]
-
-  const subs = await sdb.watch(onbatch)
-
-  if (subs && subs.length > 0) {
-    if (typeof graph_explorer === 'function') {
-      explorer_el = await graph_explorer(subs[0], graph_explorer_protocol)
-      explorer_el.classList.add('explorer-panel')
-      shadow.appendChild(explorer_el)
-    }
-  }
-
-  render_main_view()
-
-  shadow.onclick = handle_shadow_click
-  shadow.onsubmit = handle_shadow_submit
-  shadow.oninput = handle_shadow_input
-
-  return el
-
-  function handle_shadow_click(e) {
-    const node_el = e.target.closest('.node')
-    if (node_el && !e.target.closest('.name') && !e.target.closest('.prefix')) {
-      const instance_path = node_el.dataset.instance_path
-      if (instance_path && send_to_graph_explorer) {
-        const head = [id, 'graph_explorer', mid++]
-        send_to_graph_explorer({
-          head,
-          type: 'toggle_node',
-          data: { instance_path, toggle_type: 'subs' }
-        })
-      }
-    }
-
-    const card_target = e.target.closest('.news-card')
-    if (card_target) {
-      const path = card_map.get(card_target)
-      if (path && list_items_data) {
-        if (typeof path === 'object' || path.startsWith('local-')) {
-          const item = list_items_data.find(i => i.path === path)
-          if (item) {
-            render_article(item.data)
-            return
-          }
-        }
-        const head = [id, 'graph_explorer', mid++]
-        send_to_graph_explorer({ head, type: 'select_node', data: { instance_path: path } })
-      }
-    }
-
-    if (e.target.closest('.news-fab')) {
-      const folder_name = e.target.closest('.news-fab').dataset.folder
-      render_write_page_view(folder_name)
-    }
-  }
-
-  function handle_shadow_submit(e) {
-    if (e.target.id === 'write-story-form') {
-      e.preventDefault()
-      const create_story_data = {
-        title: e.target.title.value,
-        content: e.target.content.value,
-        blog: e.target.blog.value
-      }
-      handle_publish(create_story_data)
-    }
-  }
-
-  function handle_shadow_input(e) {
-    if (e.target.classList.contains('input-content')) {
-      const val = e.target.value
-      const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length
-      const wc = shadow.getElementById('word-count-span')
-      const rt = shadow.getElementById('read-time-span')
-      if (wc) wc.textContent = `${words} words`
-      if (rt) rt.textContent = `~${Math.ceil(words / 200)} min read`
-    }
-  }
-
-  return el
-
-  function render_html(html_string) {
-    let main_viewer = shadow.querySelector('.main-viewer')
-    if (!main_viewer) {
-      const div = document.createElement('div')
-      div.className = 'main-viewer'
-      shadow.appendChild(div)
-      main_viewer = div
-    }
-    main_viewer.innerHTML = html_string
-  }
-
-  function render_main_view() {
-    render_html(`
-        <div class="empty-container">
-          <h2 class="empty-title">Select an item to read</h2>
-          <p class="empty-hint">← Choose a story or feed from the sidebar</p>
-        </div>
-      `)
-  }
-
-  function render_article(data) {
-    render_html(article_viewer(data))
-  }
-
-  function render_write_page_view(folder_name) {
-    render_html(write_page())
-  }
-
-  function handle_publish(data) {
-    const new_story = {
-      title: data.title,
-      content: data.content,
-      author: 'You',
-      date: new Date().toLocaleDateString(),
-      description: data.content.slice(0, 100) + '...',
-      tags: ['#local', '#' + data.blog.replace(/\s+/g, '')],
-      color: '#6366f1'
-    }
-    save_local_story(new_story)
-    alert('Story published locally!')
-    render_folder_content('my-stories')
-  }
-
-  async function onbatch(batch) {
-    console.log('[Wrapper] onbatch:', batch)
-    for (const { type, paths } of batch) {
-      console.log('[Wrapper] Processing batch type:', type, 'paths:', paths)
-      const data = await Promise.all(paths.map(fetch_path_raw_data))
-      const valid_data = data.filter(d => d !== null)
-      if (valid_data.length > 0) {
-        if (type === 'theme') inject(valid_data)
-        if (type === 'entries') on_entries(valid_data)
-      }
-    }
-
-    function fetch_path_raw_data(path) {
-      return drive.get(path).then(extract_raw_if_exists)
-    }
-
-    function extract_raw_if_exists(file) {
-      return file ? file.raw : null
-    }
-  }
-
-  function inject(data) {
-    if (Array.isArray(data)) {
-      sheet.replaceSync(data.join('\n'))
-    }
-  }
-
-  function on_entries(data) {
-    console.log('[Wrapper] on_entries called with:', data)
-    if (!data || !data[0]) {
-      db = graphdb({})
-      notify_db_initialized({})
-      return
-    }
-    let parsed_data = {}
-    try {
-      if (typeof data[0] === 'string') {
-        parsed_data = content_parser(data[0]) || {}
-      } else {
-        parsed_data = data[0]
-      }
-    } catch (e) { }
-    db = graphdb(parsed_data)
-    notify_db_initialized(parsed_data)
-  }
-
-  function notify_db_initialized(entries) {
-    if (send_to_graph_explorer) {
-      const head = [by, 'graph_explorer', mid++]
-      send_to_graph_explorer({ head, type: 'db_initialized', data: { entries } })
-    }
-  }
-
-  function graph_explorer_protocol(send) {
-    send_to_graph_explorer = send
-    return on_graph_explorer_message
-
-    function on_graph_explorer_message(msg) {
-      const { type, data } = msg
-      if (type === 'selection_changed') {
-        const { selected } = data
-        if (selected && selected.length > 0) render_folder_content(selected[0])
-      }
-      if (type.startsWith('db_')) handle_db_request(msg, send)
-    }
-  }
-
-  async function render_folder_content(path) {
-    let drive_path = path
-    if (drive_path.startsWith('/')) drive_path = drive_path.slice(1)
-    const parts = drive_path.split('/')
-    if (parts.length > 2) drive_path = `${parts[0]}/${parts[parts.length - 1]}`
-
-    const data = await try_get_folder_data(drive_path)
-
-    if (data && data.content) {
-      render_article(data)
-    } else {
-      const { folder_name, subs } = get_folder_details(path)
-
-      if (subs.length > 0) {
-        const handled = await process_folder_items({ path, subs, folder_name })
-        if (handled) return
-      }
-
-      render_empty_folder(folder_name, path)
-    }
-  }
-
-  async function try_get_folder_data(drive_path) {
-    try {
-      const file = await drive.get(drive_path)
-      return content_parser(file.raw)
-    } catch (e) {
-      return null
-    }
-  }
-
-  function get_folder_details(path) {
-    let folder_name = path.split('/').pop() || path
-    let subs = []
-    let db_path = path
-    if (typeof path === 'string' && path.includes('|')) {
-      db_path = path.split('|').pop()
-    }
-
-    if (db) {
-      const entry = db.get(db_path) || db.get(path)
-      if (entry) {
-        if (entry.name) folder_name = entry.name
-        if (entry.subs) subs = entry.subs
-      }
-    }
-    return { folder_name, subs }
-  }
-
-  async function process_folder_items({ path, subs, folder_name }) {
-    const fetched_items = (await Promise.all(subs.map(fetch_sub_item))).filter(item => item && item.data)
-
-    async function fetch_sub_item(sub_path) {
-      let item_data
-      try {
-        let sub_drive_path = sub_path
-        if (sub_drive_path.startsWith('/')) sub_drive_path = sub_drive_path.slice(1)
-        const sub_parts = sub_drive_path.split('/')
-        if (sub_parts.length > 2) {
-          sub_drive_path = `${sub_parts[0]}/${sub_parts[sub_parts.length - 1]}`
-        }
-        const file = await drive.get(sub_drive_path)
-        item_data = content_parser(file.raw)
-      } catch (e) { }
-      if (!item_data) return null
-      return { path: sub_path, data: item_data }
-    }
-
-    if (path.includes('my-stories')) {
-      const local_stories = get_local_stories()
-      local_stories.forEach(push_local_story)
-
-      function push_local_story(story) {
-        fetched_items.push({ path: 'local-' + Date.now() + Math.random(), data: story })
-      }
-    }
-
-    list_items_data = fetched_items
-
-    if (fetched_items.length > 0) {
-      const is_my_stories = path.includes('my-stories') || path.includes('My Stories')
-
-      if (!shadow.adoptedStyleSheets.includes(news_card_sheet)) {
-        drive.get('theme/news-card.css').then(apply_news_card_css).catch(ignore_css_error)
-
-        function apply_news_card_css(css_file) {
-          news_card_sheet.replaceSync(css_file.raw)
-          shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, news_card_sheet]
-        }
-
-        function ignore_css_error() { }
-      }
-
-      const list_html = news_list({ items: fetched_items, folder_name, is_my_stories })
-
-      render_html(list_html)
-
-      const processed_cards = shadow.querySelectorAll('.news-card')
-      processed_cards.forEach(map_card_to_path)
-
-      function map_card_to_path(card_el, index) {
-        if (fetched_items[index]) {
-          card_map.set(card_el, fetched_items[index].path)
-        }
-      }
-
-      return true
-    }
-    return false
-  }
-
-  function render_empty_folder(folder_name, path) {
-    render_html(`
-      <div class="empty-folder-container">
-        <div class="empty-folder-icon">📂</div>
-        <h2 class="empty-folder-title">${folder_name}</h2>
-        <p>Select a file inside to view content.</p>
-        ${(path.includes('my-stories') || folder_name.includes('My Stories')) ? `<div class="news-fab" data-folder="${folder_name}">+</div>` : ''}
-      </div>
-    `)
-  }
-  function get_local_stories() {
-    try {
-      const stories = localStorage.getItem('p2p_stories')
-      return stories ? JSON.parse(stories) : []
-    } catch (e) { return [] }
-  }
-
-  function save_local_story(story) {
-    const stories = get_local_stories()
-    stories.unshift(story)
-    localStorage.setItem('p2p_stories', JSON.stringify(stories))
-  }
-
-  async function handle_db_request(request_msg, send) {
-    const { head: request_head, type: operation, data: params } = request_msg
-    let result
-    if (!db) { send_response(request_head, null); return }
-
-    if (operation === 'db_get') result = db.get(params.path)
-    else if (operation === 'db_has') result = db.has(params.path)
-    else if (operation === 'db_is_empty') result = db.is_empty()
-    else if (operation === 'db_root') result = db.root()
-    else if (operation === 'db_keys') result = db.keys()
-    else if (operation === 'db_raw') result = db.raw()
-    else result = null
-
-    send_response(request_head, result)
-
-    function send_response(request_head, result) {
-      const response_head = [by, 'graph_explorer', mid++]
-      send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
-    }
-  }
-}
-
-function fallback_module() {
-  return {
-    _: {
-      'graph-explorer': { $: '' },
-      './graphdb': { $: '' },
-      'article-viewer': { $: '' },
-      'news-card': { $: '' },
-      'write-page': { $: '' },
-      'news-list': { $: '' }
-    },
-    api: fallback_instance
-  }
-
-  function fallback_instance() {
-    return {
-      _: {
-        'graph-explorer': {
-          0: override_theme,
-          mapping: {
-            style: 'theme',
-            entries: 'entries',
-            runtime: 'runtime',
-            mode: 'mode',
-            flags: 'flags',
-            keybinds: 'keybinds',
-            undo: 'undo'
-          }
-        },
-        './graphdb': { 0: '' },
-        'article-viewer': { 0: '' },
-        'news-card': { 0: '' },
-        'write-page': { 0: '' },
-        'news-list': { 0: '' }
-      },
-      drive: {
-        'entries/': { 'entries.json': { $ref: 'entries.json' } },
-        'theme/': {
-          'layout.css': {
-            $ref: 'layout.css'
-          },
-          'news-card.css': {
-            $ref: '../news-card/news-card.css'
-          }
-        },
-        'runtime/': {
-          'node_height.json': { raw: '32' },
-          'vertical_scroll_value.json': { raw: '0' },
-          'horizontal_scroll_value.json': { raw: '0' },
-          'selected_instance_paths.json': { raw: '[]' },
-          'confirmed_selected.json': { raw: '[]' },
-          'instance_states.json': { raw: '{}' },
-          'search_entry_states.json': { raw: '{}' },
-          'last_clicked_node.json': { raw: 'null' },
-          'view_order_tracking.json': { raw: '{}' }
-        },
-        'flags/': {
-          'hubs.json': { raw: '"default"' },
-          'selection.json': { raw: 'true' },
-          'recursive_collapse.json': { raw: 'true' }
-        },
-        'keybinds/': { 'navigation.json': { raw: '{}' } },
-        'undo/': { 'stack.json': { raw: '[]' } },
-        'my-stories/': {
-          'story-1': {
-            $ref: 'data/story-1.md'
-          },
-          'story-2': {
-            $ref: 'data/story-2.md'
-          },
-          'story-3': {
-            $ref: 'data/story-3.md'
-          },
-          'story-4': {
-            $ref: 'data/story-4.md'
-          }
-        },
-        'feeds/': {},
-        'feeds/hackers-digest/': {
-          'code-coffee': {
-            $ref: 'data/code-coffee.md'
-          },
-          'system-design': {
-            $ref: 'data/system-design.md'
-          }
-        },
-        'feeds/off-the-grid/': {
-          'mesh-network': {
-            $ref: 'data/mesh-network.md'
-          },
-          fediverse: {
-            $ref: 'data/fediverse.md'
-          },
-          'self-hosting': {
-            $ref: 'data/self-hosting.md'
-          }
-        },
-        'feeds/peer-review/': {
-          'network-notes': {
-            $ref: 'data/network-notes.md'
-          }
-        },
-        'feeds/peer-review/security-chronicles/': {
-          'privacy-matters': {
-            $ref: 'data/privacy-matters.md'
-          },
-          'zero-trust': {
-            $ref: 'data/zero-trust.md'
-          }
-        },
-        'lists/': {
-          'best-of-tech': {
-            $ref: 'data/best-of-tech.md'
-          },
-          'morning-read': {
-            $ref: 'data/morning-read.md'
-          }
-        },
-        'discover/': {},
-        'discover/random-peer-99/': {},
-        'discover/satoshi-fan/': {},
-        'discover/rust-evangelist/': {}
-      }
-    }
-  }
-
-  function override_theme() {
+  function override_theme () {
     return {
       _: {
         mapping: {
-          style: 'theme',
+          style: 'style',
           runtime: 'runtime',
           mode: 'mode',
           flags: 'flags',
@@ -4043,12 +3282,8 @@ function fallback_module() {
           'instance_states.json': {
             raw: JSON.stringify({
               '|/': { expanded_subs: true },
-              '|/my-stories': { expanded_subs: true },
-              '|/feeds': { expanded_subs: true },
-              '|/feeds/hackers-digest': { expanded_subs: true },
-              '|/feeds/peer-review': { expanded_subs: true },
-              '|/feeds/peer-review/security-chronicles': { expanded_subs: true },
-              '|/lists': { expanded_subs: true },
+              '|/my-blogs1': { expanded_subs: true },
+              '|/my-blogs2': { expanded_subs: true },
               '|/discover': { expanded_subs: true }
             })
           },
@@ -4090,93 +3325,1111 @@ function fallback_module() {
   }
 }
 
-}).call(this)}).call(this,"/web/node_modules/news/wrapper.js")
-},{"./graphdb":7,"STATE":1,"article-viewer":4,"graph-explorer":2,"news-card":5,"news-list":6,"write-page":10}],10:[function(require,module,exports){
-module.exports = function write_page () {
-  const blogs = ['Main Blog', 'Tech Weekly', 'Cooking Adventures', 'Travel Logs']
-  const options = blogs.map(render_blog_option).join('')
+}).call(this)}).call(this,"/web/node_modules/menu_sidebar/index.js")
+},{"STATE":1,"graph-explorer":2}],4:[function(require,module,exports){
+module.exports = graphdb
 
-  function render_blog_option (blog) {
-    return `<option value="${blog}"${blog === 'Main Blog' ? ' selected' : ''}>${blog}</option>`
+function graphdb (entries) {
+  if (!entries || typeof entries !== 'object') {
+    console.warn('[graphdb] Invalid entries provided, using empty object')
+    entries = {}
   }
 
-  const tip_data = [
-    { title: 'Be Authentic', text: 'Write what you genuinely think and feel, not what algorithms demand' },
-    { title: 'Tell a Story', text: 'Use examples and narratives to engage readers and make ideas stick' },
-    { title: 'Add Value', text: 'Help readers learn something new or see the world differently' }
-  ]
+  const api = {
+    get,
+    has,
+    keys,
+    is_empty,
+    root,
+    raw,
+    type
+  }
 
-  const tips_html = tip_data.map(render_tip).join('')
+  return api
 
-  function render_tip (t) {
-    return `
-    <div class="tip">
-      <h3>${t.title}</h3>
-      <p>${t.text}</p>
+  function type (path) {
+    const entry = entries[path]
+    return entry ? entry.type : null
+  }
+
+  function get (path) {
+    return entries[path] || null
+  }
+
+  function has (path) {
+    return path in entries
+  }
+
+  function keys () {
+    return Object.keys(entries)
+  }
+
+  function is_empty () {
+    return Object.keys(entries).length === 0
+  }
+
+  function root () {
+    return entries['/'] || null
+  }
+
+  function raw () {
+    return entries
+  }
+}
+
+},{}],5:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+
+const { get } = statedb(fallback_module)
+const menu_sidebar = require('menu_sidebar')
+const newsfeed_view = require('newsfeed_view')
+const write_page = require('write_page')
+const content_parser = require('newsfeed_view/content_parser')
+const graphdb = require('./graphdb')
+
+module.exports = news_app
+
+async function news_app (opts, protocol) {
+  const { sid } = opts
+  const { id, sdb } = await get(sid)
+  const { drive } = sdb
+
+  const by = id
+  let db = null
+  let msg_id = 0
+  let send_to_sidebar = null
+  let send_to_newsfeed = null
+  let send_to_write = null
+
+  let active_path = ''
+  let active_tab = 'news'
+
+  let newsfeed_el = null
+  let write_el = null
+
+  const el = document.createElement('div')
+  const shadow = el.attachShadow({ mode: 'closed' })
+
+  shadow.innerHTML = `
+    <div class="container">
+      <div class="sidebar"></div>
+      <div class="main-viewer main"></div>
     </div>
   `
+
+  const sidebar_el = shadow.querySelector('.sidebar')
+  const main_viewer = shadow.querySelector('.main-viewer')
+
+  const shell_sheet = new CSSStyleSheet()
+  const layout_sheet = new CSSStyleSheet()
+  const card_sheet = new CSSStyleSheet()
+  const sheet = new CSSStyleSheet()
+
+  shadow.adoptedStyleSheets = [shell_sheet, layout_sheet, card_sheet, sheet]
+
+  const css_files = await Promise.all([
+    drive.get('theme/shell.css'),
+    drive.get('theme/layout.css'),
+    drive.get('theme/news-card.css')
+  ])
+  const [shell_file, layout_file, card_file] = css_files
+
+  if (shell_file && shell_file.raw) shell_sheet.replaceSync(shell_file.raw)
+  if (layout_file && layout_file.raw) layout_sheet.replaceSync(layout_file.raw)
+  if (card_file && card_file.raw) card_sheet.replaceSync(card_file.raw)
+
+  const subs = await sdb.watch(onbatch)
+
+  if (subs && subs.length > 0) {
+    const menu_el = await menu_sidebar({ sid: subs[0].sid }, sidebar_protocol)
+    sidebar_el.appendChild(menu_el)
   }
 
-  return `
-    <div class="write-page-container">
-      <div class="section-header">
-        <h1>Write a Story</h1>
-        <p>Share your thoughts with the network</p>
+  newsfeed_el = await newsfeed_view({ sid: subs[1].sid }, newsfeed_protocol)
+  write_el = await write_page({ sid: subs[2].sid }, write_protocol_factory)
+
+  render_main_view()
+
+  shadow.addEventListener('click', handle_shadow_click)
+  shadow.addEventListener('submit', handle_shadow_submit)
+  shadow.addEventListener('input', handle_shadow_input)
+
+  return el
+
+  async function onbatch (batch) {
+    for (const { type, paths } of batch) {
+      const data = await Promise.all(paths.map(fetch_path_raw_data))
+      const valid_data = data.filter(filter_valid_data)
+      if (valid_data.length > 0) {
+        if (type === 'theme') inject(valid_data)
+        if (type === 'entries') on_entries(valid_data)
+      }
+    }
+
+    function fetch_path_raw_data (path) {
+      return drive.get(path).then(extract_raw_if_exists)
+    }
+
+    function extract_raw_if_exists (file) {
+      return file ? file.raw : null
+    }
+
+    function filter_valid_data (d) {
+      return d !== null
+    }
+  }
+
+  function inject (data) {
+    if (Array.isArray(data)) {
+      sheet.replaceSync(data.join('\n'))
+    }
+  }
+
+  function sidebar_protocol (send) {
+    send_to_sidebar = send
+    return on_sidebar_message
+  }
+
+  function on_sidebar_message (msg) {
+    const { type, data } = msg
+    if (type === 'selection_changed') {
+      const { selected } = data
+      if (selected && selected.length > 0) {
+        const path = normalize_path(selected[0])
+        if (path !== active_path) {
+          active_path = path
+          const node_type = db ? db.type(path) : null
+          if (node_type === 'subscribed-blog') active_tab = 'blog'
+          else active_tab = 'news'
+          render_content(path)
+        }
+      }
+    }
+    if (type.startsWith('db_')) {
+      handle_db_request(msg, send_to_sidebar)
+    }
+  }
+
+  function newsfeed_protocol (child_handler) {
+    send_to_newsfeed = child_handler
+    return on_newsfeed_message
+  }
+
+  function on_newsfeed_message (msg) {
+    const { type, data } = msg
+    if (type === 'select_node') {
+      render_article_view(data.instance_path)
+    }
+    if (type === 'navigate_back') {
+      render_content(active_path)
+    }
+  }
+
+  function write_protocol_factory (child_handler) {
+    send_to_write = child_handler
+    return function on_write_message () {}
+  }
+
+  function handle_shadow_click (e) {
+    if (e.target.closest('.news-fab')) {
+      render_write_page_view(active_path)
+    }
+    const tab_target = e.target.closest('.tab')
+    if (tab_target) {
+      handle_tab_click(tab_target.textContent.trim().toLowerCase())
+    }
+  }
+
+  function handle_tab_click (tab) {
+    if (tab && tab !== active_tab) {
+      active_tab = tab
+      render_content(active_path)
+    }
+  }
+
+  function handle_shadow_submit (e) {
+    if (e.target.id === 'write-story-form') {
+      e.preventDefault()
+      const create_story_data = {
+        title: e.target.title.value,
+        content: e.target.content.value,
+        blog: e.target.blog.value
+      }
+      handle_publish(create_story_data)
+    }
+  }
+
+  function handle_shadow_input (e) {
+    if (e.target.classList.contains('input-content')) {
+      handle_content_input(e.target.value)
+    }
+  }
+
+  function handle_content_input (val) {
+    const words = val.trim() === '' ? 0 : val.trim().split(/\s+/).length
+    const wc = shadow.getElementById('word-count-span')
+    const rt = shadow.getElementById('read-time-span')
+    if (wc) wc.textContent = `${words} words`
+    if (rt) rt.textContent = `~${Math.ceil(words / 200)} min read`
+  }
+
+  function render_main_view () {
+    main_viewer.innerHTML = `
+      <div class="empty-container">
+        <h2 class="empty-title">Select a blog to start</h2>
+        <p class="empty-hint">← Explore your blogs and subscriptions in the sidebar</p>
       </div>
+    `
+  }
 
-      <div class="card">
-        <form class="space-y-8" id="write-story-form">
-          <div class="input-group">
-            <label>Publishing To</label>
-            <select class="blog-select" name="blog">
-              ${options}
-            </select>
+  function handle_publish (data) {
+    const new_story = {
+      title: data.title,
+      content: data.content,
+      author: 'You',
+      date: new Date().toLocaleDateString(),
+      description: data.content.slice(0, 100) + '...',
+      tags: ['#local', '#' + data.blog.replace(/\s+/g, '')],
+      color: '#6366f1'
+    }
+    save_local_story(new_story)
+    alert('Story published locally!')
+    render_content(active_path)
+  }
+
+  async function on_entries (data) {
+    if (!data || !data[0]) {
+      db = graphdb({})
+      notify_db_initialized({})
+      return
+    }
+    let parsed_data = {}
+    try {
+      if (typeof data[0] === 'string') {
+        parsed_data = JSON.parse(data[0])
+      } else if (data[0].raw && typeof data[0].raw === 'string') {
+        parsed_data = JSON.parse(data[0].raw)
+      } else {
+        parsed_data = data[0]
+      }
+    } catch (e) { }
+    db = graphdb(parsed_data)
+    notify_db_initialized(parsed_data)
+  }
+
+  function notify_db_initialized (entries) {
+    if (send_to_sidebar) {
+      const head = [by, 'menu_sidebar', msg_id++]
+      send_to_sidebar({ head, type: 'db_initialized', data: { entries } })
+    }
+  }
+
+  async function render_content (path) {
+    const node_type = db ? db.type(path) : null
+    const node = db ? db.get(path) : null
+
+    if (!node) return render_main_view()
+
+    let tabs_html = ''
+    if (node_type !== 'discover') {
+      tabs_html = `
+        <div class="view-tabs">
+          <button class="tab ${active_tab === 'news' ? 'active' : ''}">News</button>
+          <button class="tab ${active_tab === 'blog' ? 'active' : ''}">Blog</button>
+        </div>
+      `
+    }
+
+    main_viewer.innerHTML = `
+      <div class="content-container">
+        ${tabs_html}
+        <div class="tab-content"></div>
+      </div>
+    `
+    const content_el = main_viewer.querySelector('.tab-content')
+
+    if (active_tab === 'news') {
+      await render_news_tab(path, content_el)
+    } else {
+      await render_blog_tab(path, content_el)
+    }
+  }
+
+  async function render_news_tab (path, target) {
+    const node = db.get(path)
+    const node_subs = node.subs || []
+    const fetched_items = []
+
+    for (const sub_path of node_subs) {
+      const sub_node = db.get(sub_path)
+      if (sub_node && sub_node.posts) {
+        for (const post_path of sub_node.posts) {
+          const post_data = await fetch_post_data(post_path)
+          if (post_data) fetched_items.push({ path: post_path, data: post_data })
+        }
+      }
+    }
+
+    if (node.posts) {
+      for (const post_path of node.posts) {
+        const post_data = await fetch_post_data(post_path)
+        if (post_data) fetched_items.push({ path: post_path, data: post_data })
+      }
+    }
+
+    if (fetched_items.length > 0) {
+      render_feed_view({ items: fetched_items, folder_name: node.name, target: target })
+    } else {
+      target.innerHTML = '<div class="empty-container"><p>No news to show from subscriptions.</p></div>'
+    }
+  }
+
+  async function render_blog_tab (path, target) {
+    const node = db.get(path)
+    const node_type = db.type(path)
+    let fetched_items = []
+
+    if (node_type === 'my-blog') {
+      const local_stories = get_local_stories()
+      fetched_items = local_stories.map(map_local_story)
+    } else if (node.posts) {
+      for (const post_path of node.posts) {
+        const post_data = await fetch_post_data(post_path)
+        if (post_data) fetched_items.push({ path: post_path, data: post_data })
+      }
+    }
+
+    if (fetched_items.length > 0 || node_type === 'my-blog') {
+      render_feed_view({ items: fetched_items, folder_name: node.name, target: target })
+      if (node_type === 'my-blog') {
+        target.insertAdjacentHTML('beforeend', '<div class="news-fab">+</div>')
+      }
+    } else {
+      target.innerHTML = '<div class="empty-container"><p>This blog has not posted anything yet.</p></div>'
+    }
+  }
+
+  function render_feed_view ({ items, folder_name, target }) {
+    target.appendChild(newsfeed_el)
+    if (send_to_newsfeed) {
+      send_to_newsfeed({
+        type: 'render_feed',
+        data: { items: items, folder_name: folder_name, is_news_feed: true }
+      })
+    }
+  }
+
+  async function render_article_view (post_path) {
+    const post_data = await fetch_post_data(post_path)
+    if (!post_data) {
+      main_viewer.innerHTML = '<div class="empty-container"><p>Content not available.</p></div>'
+      return
+    }
+    main_viewer.innerHTML = ''
+    main_viewer.appendChild(newsfeed_el)
+    if (send_to_newsfeed) {
+      send_to_newsfeed({
+        type: 'render_article',
+        data: {
+          data: {
+            title: post_data.title,
+            author: post_data.author,
+            date: post_data.date,
+            content: post_data.content
+          }
+        }
+      })
+    }
+  }
+
+  function render_write_page_view (path) {
+    const node = db ? db.get(path) : null
+    const blog_name = node ? node.name : 'Main Blog'
+    if (send_to_write) {
+      send_to_write({ type: 'provision', data: { selected_blog: blog_name } })
+    }
+    main_viewer.innerHTML = ''
+    main_viewer.appendChild(write_el)
+  }
+
+  function map_local_story (s) {
+    return { path: `local-${Math.random()}`, data: s }
+  }
+
+  async function fetch_post_data (post_path) {
+    try {
+      const file = await drive.get(post_path)
+      if (file && file.raw) {
+        const parsed = await content_parser({ raw: file.raw })
+        return parsed
+      }
+    } catch (e) { }
+    return null
+  }
+
+  function normalize_path (path) {
+    if (!path) return '/'
+    if (typeof path !== 'string') return '/'
+    return path.split('|').pop() || '/'
+  }
+
+  function get_local_stories () {
+    try {
+      const stories = localStorage.getItem('p2p_stories')
+      return stories ? JSON.parse(stories) : []
+    } catch (e) { return [] }
+  }
+
+  function save_local_story (story) {
+    const stories = get_local_stories()
+    stories.unshift(story)
+    localStorage.setItem('p2p_stories', JSON.stringify(stories))
+  }
+
+  async function handle_db_request (request_msg, send) {
+    const { head: request_head, type: operation, data: params } = request_msg
+    let result
+    if (!db) { send_response(request_head, null); return }
+
+    if (operation === 'db_get') result = db.get(params.path)
+    else if (operation === 'db_has') result = db.has(params.path)
+    else if (operation === 'db_is_empty') result = db.is_empty()
+    else if (operation === 'db_root') result = db.root()
+    else if (operation === 'db_keys') result = db.keys()
+    else if (operation === 'db_raw') result = db.raw()
+    else result = null
+
+    send_response(request_head, result)
+
+    function send_response (request_head, result) {
+      const response_head = [by, 'menu_sidebar', msg_id++]
+      send({ head: response_head, refs: { cause: request_head }, type: 'db_response', data: { result } })
+    }
+  }
+}
+
+function fallback_module () {
+  const _ = {
+    menu_sidebar: { $: '' },
+    newsfeed_view: { $: '' },
+    write_page: { $: '' },
+    './graphdb': { $: '' },
+    'newsfeed_view/content_parser': { $: '' }
+  }
+
+  return { _, api: fallback_instance }
+
+  function fallback_instance (opts) {
+    const _ = {
+      menu_sidebar: {
+        0: '',
+        mapping: {
+          style: 'style',
+          entries: 'entries',
+          runtime: 'runtime',
+          mode: 'mode',
+          flags: 'flags',
+          keybinds: 'keybinds',
+          undo: 'undo',
+          data: 'data'
+        }
+      },
+      newsfeed_view: {
+        0: '',
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      },
+      write_page: {
+        0: '',
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      },
+      './graphdb': { 0: '' },
+      'newsfeed_view/content_parser': { 0: '' }
+    }
+
+    const drive = {
+      'entries/': { 'entries.json': { $ref: 'entries.json' } },
+      'data/': {},
+      'news_cards/': {
+        'news-card.css': { $ref: '../news_cards/news-card.css' }
+      },
+      'theme/': {
+        'shell.css': {
+          raw: `
+    body { margin: 0; padding: 0; overflow: hidden; }
+    .container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .sidebar {
+      width: 250px;
+      min-width: 250px;
+      border-right: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+    }
+    .main {
+      flex: 1;
+      overflow: auto;
+      padding: 0;
+      background: #ffffff;
+    }
+          `
+        },
+        'layout.css': {
+          $ref: 'layout.css'
+        },
+        'news-card.css': {
+          $ref: '../news_cards/news-card.css'
+        }
+      },
+      'style/': {},
+      'runtime/': {
+        'viewer_data.json': { raw: '{}' },
+        'write_data.json': { raw: '{}' }
+      },
+      'mode/': {},
+      'flags/': {},
+      'keybinds/': {},
+      'undo/': {},
+      'posts/': {
+        'tech-thoughts-1': { $ref: 'data/tech-thoughts-1.md' },
+        'tech-thoughts-2': { $ref: 'data/tech-thoughts-2.md' },
+        'p2p-experiments-1': { $ref: 'data/p2p-experiments-1.md' },
+        'p2p-experiments-2': { $ref: 'data/p2p-experiments-2.md' },
+        'security-notes-1': { $ref: 'data/security-notes-1.md' },
+        'hackers-digest-1': { $ref: 'data/hackers-digest-1.md' },
+        'hackers-digest-2': { $ref: 'data/hackers-digest-2.md' },
+        'off-the-grid-1': { $ref: 'data/off-the-grid-1.md' },
+        'off-the-grid-2': { $ref: 'data/off-the-grid-2.md' },
+        'peer-review-1': { $ref: 'data/peer-review-1.md' },
+        'cryptography-weekly-1': { $ref: 'data/cryptography-weekly-1.md' },
+        'random-blog-a-1': { $ref: 'data/random-blog-a-1.md' },
+        'random-blog-b-1': { $ref: 'data/random-blog-b-1.md' },
+        'random-blog-c-1': { $ref: 'data/random-blog-c-1.md' }
+      }
+    }
+
+    return { _, drive }
+  }
+}
+
+}).call(this)}).call(this,"/web/node_modules/news/index.js")
+},{"./graphdb":4,"STATE":1,"menu_sidebar":3,"newsfeed_view":9,"newsfeed_view/content_parser":8,"write_page":10}],6:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+
+const { get } = statedb(fallback_module)
+
+module.exports = news_cards
+
+async function news_cards (opts, protocol) {
+  const { sid } = opts
+  await get(sid)
+
+  const el = document.createElement('div')
+  let current_path = ''
+  let send
+
+  function handle_message (msg) {
+    if (msg.type === 'provision') render(msg.data)
+  }
+
+  if (protocol) send = protocol(handle_message)
+
+  el.addEventListener('click', handle_card_click)
+
+  return el
+
+  function handle_card_click () {
+    if (send && current_path) {
+      send({ type: 'card_clicked', data: { path: current_path } })
+    }
+  }
+
+  function render (card_data) {
+    const data = card_data.data || {}
+    current_path = card_data.path || ''
+    const date = data.date || ''
+    const title = data.title || 'Untitled Story'
+    const author = data.author || 'Anonymous'
+    const description = data.description || ''
+    const tags = Array.isArray(data.tags) ? data.tags : []
+    const tags_html = tags.map(render_tag).join('')
+
+    el.innerHTML = `
+      <div class="news-card">
+        <div class="news-avatar">${author[0] || 'A'}</div>
+        <div class="news-content">
+          <div class="news-meta-top">
+            <span class="news-author">${author}</span>
+            <span class="news-separator">•</span>
+            <span class="news-date-text">${date}</span>
           </div>
-
-          <div class="input-group">
-            <label>Story Title</label>
-            <input type="text" class="input-title" name="title" placeholder="Give your story a captivating title..." required>
+          <h3 class="news-title">${title}</h3>
+          <p class="news-description">${description}</p>
+          <div class="news-meta-bottom">
+            <div class="news-tags">${tags_html}</div>
           </div>
+        </div>
+      </div>
+    `
+  }
 
-          <div class="divider"></div>
+  function render_tag (tag) {
+    return `<span class="news-tag-pill">${tag}</span>`
+  }
+}
 
-          <div class="input-group">
-            <label>Your Story</label>
-            <textarea class="input-content" name="content" placeholder="Write your story here. Share your thoughts, experiences, and insights..." required></textarea>
+function fallback_module () {
+  return { api: fallback_instance }
+
+  function fallback_instance () {
+    const drive = {
+      'runtime/': {
+        'card-0.json': { raw: '{}' }
+      }
+    }
+    return { drive }
+  }
+}
+
+}).call(this)}).call(this,"/web/node_modules/news_cards/index.js")
+},{"STATE":1}],7:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+
+const { get } = statedb(fallback_module)
+const news_cards = require('news_cards')
+
+module.exports = newsfeed_card_list
+
+async function newsfeed_card_list (opts, protocol) {
+  const { sid } = opts
+  const { sdb } = await get(sid)
+
+  const el = document.createElement('div')
+  el.className = 'newsfeed-list'
+
+  const card_sends = []
+  const card_els = []
+  let send_to_parent
+
+  function handle_message (msg) {
+    if (msg.type === 'provision') update_cards(msg.data)
+  }
+
+  if (protocol) send_to_parent = protocol(handle_message)
+
+  const subs = await sdb.watch(onbatch)
+  const card_subs = (subs || []).sort(sort_by_index)
+
+  for (let i = 0; i < card_subs.length; i++) {
+    const card_el = await news_cards({ sid: card_subs[i].sid }, make_card_protocol(i))
+    card_els.push(card_el)
+  }
+
+  return el
+
+  function make_card_protocol (idx) {
+    return function card_protocol (child_handler) {
+      card_sends[idx] = child_handler
+      return handle_card_message
+    }
+  }
+
+  function handle_card_message (msg) {
+    if (msg.type === 'card_clicked' && send_to_parent) {
+      send_to_parent({ type: 'card_clicked', data: msg.data })
+    }
+  }
+
+  function update_cards (payload) {
+    const items = payload.items || []
+
+    while (el.firstChild) el.removeChild(el.firstChild)
+
+    for (let i = 0; i < items.length && i < card_els.length; i++) {
+      if (card_sends[i]) {
+        card_sends[i]({ type: 'provision', data: { data: items[i].data, path: items[i].path } })
+      }
+      el.appendChild(card_els[i])
+    }
+  }
+
+  function sort_by_index (a, b) {
+    return a.sid[a.sid.length - 1] - b.sid[b.sid.length - 1]
+  }
+
+  function onbatch () {}
+}
+
+function fallback_module () {
+  const _ = {
+    news_cards: { $: '' }
+  }
+
+  return { _, api: fallback_instance }
+
+  function fallback_instance () {
+    const _ = {
+      news_cards: {
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      }
+    }
+
+    for (let i = 0; i < 30; i++) {
+      _.news_cards[i] = ''
+    }
+
+    const drive = {
+      'runtime/': {
+        'viewer_data.json': { raw: '{}' }
+      }
+    }
+
+    return { _, drive }
+  }
+}
+
+}).call(this)}).call(this,"/web/node_modules/newsfeed_card_list/index.js")
+},{"STATE":1,"news_cards":6}],8:[function(require,module,exports){
+const STATE = require('STATE')
+
+module.exports = content_parser
+
+async function content_parser (opts, protocol) {
+  const { raw } = opts
+  if (!raw) return null
+
+  const lines = raw.split('\n')
+  const metadata = {}
+  let content = ''
+  let in_frontmatter = false
+
+  for (const line of lines) {
+    if (line.trim() === '---') {
+      in_frontmatter = !in_frontmatter
+      continue
+    }
+
+    if (in_frontmatter) {
+      const { key, value } = parse_metadata_line(line)
+      if (key) metadata[key] = value
+    } else {
+      content += line + '\n'
+    }
+  }
+
+  return {
+    ...metadata,
+    content: content.trim()
+  }
+
+  function parse_metadata_line (line) {
+    const parts = line.split(':')
+    if (parts.length < 2) return {}
+    const key = parts[0].trim()
+    const value = parts.slice(1).join(':').trim()
+    return { key, value }
+  }
+}
+
+},{"STATE":1}],9:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+
+const { get } = statedb(fallback_module)
+const news_list = require('newsfeed_card_list')
+
+module.exports = newsfeed_view
+
+async function newsfeed_view (opts, protocol) {
+  const { sid } = opts
+  const { sdb } = await get(sid)
+
+  let send_to_parent
+
+  function handle_message (msg) {
+    if (msg.type === 'render_feed') show_feed(msg.data)
+    if (msg.type === 'render_article') show_article(msg.data)
+  }
+
+  if (protocol) send_to_parent = protocol(handle_message)
+
+  const element = document.createElement('div')
+
+  let list_el = null
+  let send_to_list = null
+
+  const subs = await sdb.watch(handle_watch)
+  const list_sub = subs && subs.length > 0 ? subs[0] : null
+
+  if (list_sub) {
+    list_el = await news_list({ sid: list_sub.sid }, list_protocol)
+  }
+
+  element.addEventListener('click', handle_element_click)
+
+  return element
+
+  function list_protocol (child_handler) {
+    send_to_list = child_handler
+    return handle_list_message
+  }
+
+  function handle_list_message (msg) {
+    if (msg.type === 'card_clicked' && send_to_parent) {
+      send_to_parent({ type: 'select_node', data: { instance_path: msg.data.path } })
+    }
+  }
+
+  function show_feed (data) {
+    clear_element()
+    if (list_el) element.appendChild(list_el)
+    if (send_to_list) {
+      send_to_list({ type: 'provision', data: data })
+    }
+  }
+
+  function show_article (payload) {
+    clear_element()
+    const data = payload.data || payload
+    const content_html = (data.content || '')
+      .split('\n\n')
+      .map(parse_block)
+      .join('')
+
+    element.innerHTML = `
+      <article class="news-container">
+        <button class="back-btn">← Back to feed</button>
+        <header class="news-header">
+          <div>
+            <h2 class="news-title article-title-main">${data.title || 'Untitled'}</h2>
+            <div class="news-subheader">
+              <span>By <strong>${data.author || 'Anonymous'}</strong></span> • <span>${data.date || 'Unknown Date'}</span>
+            </div>
+          </div>
+        </header>
+        <div class="article-body">${content_html}</div>
+      </article>
+    `
+  }
+
+  function clear_element () {
+    while (element.firstChild) element.removeChild(element.firstChild)
+  }
+
+  function handle_element_click (e) {
+    if (e.target.closest('.back-btn') && send_to_parent) {
+      handle_back_click()
+    }
+  }
+
+  function handle_back_click () {
+    send_to_parent({ type: 'navigate_back' })
+  }
+
+  function handle_watch () {}
+
+  function parse_block (block) {
+    block = block.trim()
+    if (!block) return ''
+    if (block.startsWith('# ')) return `<h1>${block.slice(2)}</h1>`
+    if (block.startsWith('## ')) return `<h2>${block.slice(3)}</h2>`
+    if (block.startsWith('### ')) return `<h3>${block.slice(4)}</h3>`
+    if (block.startsWith('- ')) {
+      const items = block.split('\n').map(format_list_item).join('')
+      return `<ul>${items}</ul>`
+    }
+    let p = block
+    p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    p = p.replace(/\*(.*?)\*/g, '<em>$1</em>')
+    p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+    return `<p>${p}</p>`
+  }
+
+  function format_list_item (line) {
+    return `<li>${line.replace(/^- /, '')}</li>`
+  }
+}
+
+function fallback_module () {
+  const _ = {
+    newsfeed_card_list: { $: '' }
+  }
+
+  return { _, api: fallback_instance }
+
+  function fallback_instance () {
+    const _ = {
+      newsfeed_card_list: {
+        0: '',
+        mapping: { runtime: 'runtime', theme: 'theme' }
+      }
+    }
+
+    const drive = {
+      'runtime/': {
+        'viewer_data.json': { raw: '{}' }
+      }
+    }
+
+    return { _, drive }
+  }
+}
+
+}).call(this)}).call(this,"/web/node_modules/newsfeed_view/index.js")
+},{"STATE":1,"newsfeed_card_list":7}],10:[function(require,module,exports){
+(function (__filename){(function (){
+const STATE = require('STATE')
+const statedb = STATE(__filename)
+const { get } = statedb(fallback_module)
+
+module.exports = write_page
+
+async function write_page (opts, protocol) {
+  const { sid } = opts
+  await get(sid)
+
+  const el = document.createElement('div')
+
+  function handle_message (msg) {
+    if (msg.type === 'provision') update_form(msg.data)
+  }
+
+  if (protocol) protocol(handle_message)
+
+  render_form('Main Blog')
+
+  return el
+
+  function render_form (blog_name) {
+    el.innerHTML = `
+      <div class="write-page-container">
+        <div class="section-header">
+          <h1>Write a Story</h1>
+          <p class="write-subtitle">Create something amazing for <strong>${blog_name}</strong></p>
+        </div>
+
+        <div class="card space-y-8">
+          <form id="write-story-form">
+            <div class="input-group">
+              <label>Target Blog</label>
+              <input type="text" name="blog" value="${blog_name}" readonly class="blog-select">
+            </div>
+
+            <div class="input-group">
+              <label>Story Title</label>
+              <input type="text" name="title" placeholder="Enter your story title..." class="input-title" required autofocus>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="input-group">
+              <label>Content</label>
+              <textarea name="content" placeholder="Start writing your story here..." class="input-content" required></textarea>
+            </div>
+
             <div class="word-count">
               <span id="word-count-span">0 words</span>
               <span id="read-time-span">~0 min read</span>
             </div>
-          </div>
 
-          <div class="actions">
-            <button type="submit" class="btn-publish">Publish Story</button>
-            <p class="action-text">Your story will be stored locally and synced with your network</p>
-          </div>
-        </form>
+            <div class="actions">
+              <button type="submit" class="btn-publish">Publish Story</button>
+              <span class="action-text">Saved to local draft</span>
+            </div>
+          </form>
+        </div>
       </div>
+    `
+  }
 
-      <div class="tips">
-        ${tips_html}
-      </div>
-    </div>
-  `
+  function update_form (config) {
+    const blog_name = config.selected_blog || 'Main Blog'
+    const blog_input = el.querySelector('.blog-select')
+    const subtitle = el.querySelector('.write-subtitle')
+    if (blog_input) blog_input.value = blog_name
+    if (subtitle) subtitle.innerHTML = `Create something amazing for <strong>${blog_name}</strong>`
+  }
 }
 
-},{}],11:[function(require,module,exports){
+function fallback_module () {
+  return { api: fallback_instance }
+
+  function fallback_instance () {
+    const drive = {
+      'runtime/': {
+        'write_data.json': { raw: '{}' }
+      }
+    }
+    return { drive }
+  }
+}
+
+}).call(this)}).call(this,"/web/node_modules/write_page/index.js")
+},{"STATE":1}],11:[function(require,module,exports){
 (function (__filename){(function (){
 localStorage.clear()
 const STATE = require('STATE')
 const statedb = STATE(__filename)
 statedb.admin()
 
+const { sdb } = statedb(fallback_module)
+
+const news = require('news')
+
+const custom_vault = {
+  init_blog: async function init_blog ({ username }) { },
+  get_peer_blogs: async function get_peer_blogs () { return new Map() },
+  get_my_posts: async function get_my_posts () { return [] },
+  get_profile: async function get_profile (key) { return null },
+  on_update: function on_update (callback) { }
+}
+
+async function init () {
+  const start = await sdb.watch(handle_watch_batch)
+
+  function handle_watch_batch (batch) {
+  }
+
+  if (!start || start.length === 0) {
+    return
+  }
+
+  const { sid } = start[0]
+
+  const app = await news({ sid, vault: custom_vault })
+  document.body.innerHTML = ''
+  document.body.append(app)
+}
+
+init().catch(function handle_init_error () { })
+
 function fallback_module () {
   return {
     _: {
       news: {
         $: '',
-        0: '',
+        0: {
+          _: {
+            newsfeed_view: { $: '' },
+            write_page: { $: '' },
+            './graphdb': { $: '' },
+            'newsfeed_view/content_parser': { $: '' }
+          }
+        },
         mapping: {
+          style: 'style',
           entries: 'entries',
           theme: 'theme',
           runtime: 'runtime',
@@ -4184,90 +4437,30 @@ function fallback_module () {
           flags: 'flags',
           keybinds: 'keybinds',
           undo: 'undo',
-          'my-stories': 'my-stories',
-          feeds: 'feeds',
-          lists: 'lists',
-          discover: 'discover'
+          posts: 'posts',
+          data: 'data',
+          news_cards: 'news_cards'
         }
       }
     },
     drive: {
+      'style/': {},
       'entries/': {},
       'theme/': {},
-      'runtime/': {},
+      'runtime/': {
+        'viewer_data.json': { raw: '{}' },
+        'write_data.json': { raw: '{}' }
+      },
       'mode/': {},
       'flags/': {},
       'keybinds/': {},
       'undo/': {},
-      'my-stories/': {},
-      'feeds/': {},
-      'lists/': {},
-      'discover/': {}
+      'posts/': {},
+      'data/': {},
+      'news_cards/': {}
     }
   }
 }
 
-const { sdb } = statedb(fallback_module)
-
-console.log('p2p news app')
-const news = require('news')
-
-const customVault = {
-  init_blog: init_blog,
-  get_peer_blogs: get_peer_blogs,
-  get_my_posts: get_my_posts,
-  get_profile: get_profile,
-  on_update: on_update
-}
-
-async function init_blog ({ username }) {
-  console.log('[customVault] init_blog:', username)
-}
-
-async function get_peer_blogs () {
-  console.log('[customVault] get_peer_blogs')
-  return new Map()
-}
-
-async function get_my_posts () {
-  console.log('[customVault] get_my_posts')
-  return []
-}
-
-async function get_profile (key) {
-  console.log('[customVault] get_profile:', key)
-  return null
-}
-
-function on_update (callback) {
-  console.log('[customVault] on_update registered')
-}
-
-async function init () {
-  console.log('[page.js] init started')
-
-  const start = await sdb.watch(handle_watch_batch)
-
-  async function handle_watch_batch (batch) {
-    console.log('[page.js] sdb watch batch:', batch)
-  }
-
-  console.log('[page.js] Watch returned:', start)
-
-  if (!start || start.length === 0) {
-    console.error('[page.js] No active instances found for news')
-    return
-  }
-
-  const news_instance = start[0]
-  const { sid } = news_instance
-  console.log('[page.js] Retrieved sid for news:', sid)
-
-  const app = await news({ sid, vault: customVault })
-  document.body.append(app)
-}
-
-init().catch(console.error)
-
 }).call(this)}).call(this,"/web/page.js")
-},{"STATE":1,"news":8}]},{},[11]);
+},{"STATE":1,"news":5}]},{},[11]);
