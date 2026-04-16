@@ -8,11 +8,11 @@ const { sdb } = statedb(fallback_module)
 const news = require('news')
 
 const custom_vault = {
-  init_blog: async ({ username }) => { },
-  get_peer_blogs: async () => new Map(),
-  get_my_posts: async () => [],
-  get_profile: async (key) => null,
-  on_update: (callback) => { }
+  init_blog: async function init_blog ({ username }) { },
+  get_peer_blogs: async function get_peer_blogs () { return new Map() },
+  get_my_posts: async function get_my_posts () { return [] },
+  get_profile: async function get_profile (key) { return null },
+  on_update: function on_update (callback) { }
 }
 
 async function init () {
@@ -32,7 +32,7 @@ async function init () {
   document.body.append(app)
 }
 
-init().catch(() => { })
+init().catch(function handle_init_error () { })
 
 function fallback_module () {
   return {
@@ -43,7 +43,8 @@ function fallback_module () {
           _: {
             newsfeed_view: { $: '' },
             write_page: { $: '' },
-            './graphdb': { $: '' }
+            './graphdb': { $: '' },
+            'newsfeed_view/content_parser': { $: '' }
           }
         },
         mapping: {
@@ -66,7 +67,8 @@ function fallback_module () {
       'entries/': {},
       'theme/': {},
       'runtime/': {
-        'viewer_data.json': { raw: '{}' }
+        'viewer_data.json': { raw: '{}' },
+        'write_data.json': { raw: '{}' }
       },
       'mode/': {},
       'flags/': {},
