@@ -475,6 +475,17 @@ INTERNAL FUNCTIONS
     }
   }
 
+  function watch_subscriptions () {
+    const vault_bee = identity.get_vault_bee()
+    if (!vault_bee) return
+    const watcher = vault_bee.watch({ gte: 'p2p-news-app/subscribed_peers', lte: 'p2p-news-app/subscribed_peers' })
+    poll_subscription_watcher(watcher)
+  }
+
+  async function poll_subscription_watcher (watcher) {
+    for await (const _ of watcher) await restore_subscribed_peers()
+  }
+
   // VAULT REGISTRATION - Register app structures with vault on init
   async function register_app_with_vault () {
     // Get structure keys for registration
@@ -560,6 +571,7 @@ INTERNAL FUNCTIONS
     })
     metadata.on('update', () => state.emitter.emit('update'))
     await restore_subscribed_peers()
+    watch_subscriptions()
   }
 
   /***************************************
