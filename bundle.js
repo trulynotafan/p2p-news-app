@@ -4051,6 +4051,37 @@ exports.ipAddress = {
   }
 }
 
+const record = (exports.record = function (keyEncoding, valueEncoding) {
+  return {
+    preencode(state, v) {
+      const keys = Object.keys(v)
+      uint.preencode(state, keys.length)
+      for (const k of keys) {
+        keyEncoding.preencode(state, k)
+        valueEncoding.preencode(state, v[k])
+      }
+    },
+    encode(state, v) {
+      const keys = Object.keys(v)
+      uint.encode(state, keys.length)
+      for (const k of keys) {
+        keyEncoding.encode(state, k)
+        valueEncoding.encode(state, v[k])
+      }
+    },
+    decode(state) {
+      const out = Object.create(null)
+      const keys = uint.decode(state)
+      for (let i = 0; i < keys; i++) {
+        out[keyEncoding.decode(state)] = valueEncoding.decode(state)
+      }
+      return out
+    }
+  }
+})
+
+exports.stringRecord = record(utf8, utf8)
+
 function getType(o) {
   if (o === null || o === undefined) return 0
   if (typeof o === 'boolean') return 1
@@ -4593,7 +4624,20 @@ const MAX_BACKLOG = Infinity // TODO: impl "open" backpressure
 const MAX_BATCH = 8 * 1024 * 1024
 
 class Channel {
-  constructor (mux, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain) {
+  constructor(
+    mux,
+    info,
+    userData,
+    protocol,
+    aliases,
+    id,
+    handshake,
+    messages,
+    onopen,
+    onclose,
+    ondestroy,
+    ondrain
+  ) {
     this.userData = userData
     this.protocol = protocol
     this.aliases = aliases
@@ -4630,31 +4674,33 @@ class Channel {
     for (const m of messages) this.addMessage(m)
   }
 
-  get drained () {
+  get drained() {
     return this._mux.drained
   }
 
-  fullyOpened () {
+  fullyOpened() {
     if (this.opened) return Promise.resolve(true)
     if (this.closed) return Promise.resolve(false)
     if (this._openedPromise) return this._openedPromise
 
-    this._openedPromise = new Promise((resolve) => { this._openedResolve = resolve })
+    this._openedPromise = new Promise((resolve) => {
+      this._openedResolve = resolve
+    })
     return this._openedPromise
   }
 
-  fullyClosed () {
+  fullyClosed() {
     if (this.destroyed) return Promise.resolve()
     if (this._destroyedPromise) return this._destroyedPromise
 
-    this._destroyedPromise = new Promise((resolve) => { this._destroyedResolve = resolve })
+    this._destroyedPromise = new Promise((resolve) => {
+      this._destroyedResolve = resolve
+    })
     return this._destroyedPromise
   }
 
-  open (handshake) {
-    const id = this._mux._free.length > 0
-      ? this._mux._free.pop()
-      : this._mux._local.push(null) - 1
+  open(handshake) {
+    const id = this._mux._free.length > 0 ? this._mux._free.pop() : this._mux._local.push(null) - 1
 
     this._info.opened++
     this._info.lastChannel = this
@@ -4684,62 +4730,72 @@ class Channel {
     this._mux._write0(state.buffer)
   }
 
-  _dec () {
+  _dec() {
     if (--this._active === 0 && this.closed === true) this._destroy()
   }
 
-  _decAndDestroy (err) {
+  _decAndDestroy(err) {
     this._dec()
     this._mux._safeDestroy(err)
   }
 
-  _fullyOpenSoon () {
+  _fullyOpenSoon() {
     this._mux._remote[this._remoteId - 1].session = this
-    queueTick(this._fullyOpen.bind(this))
+    queueTick(this._fullyOpenOrDestroy.bind(this))
   }
 
-  _fullyOpen () {
+  _fullyOpenOrDestroy() {
+    try {
+      this._fullyOpen()
+    } catch (err) {
+      this._mux._safeDestroyBound(err)
+    }
+  }
+
+  _fullyOpen() {
     if (this.opened === true || this.closed === true) return
 
     const remote = this._mux._remote[this._remoteId - 1]
 
-    this.opened = true
     this.handshake = this._handshake ? this._handshake.decode(remote.state) : null
     this._track(this.onopen(this.handshake, this))
 
     remote.session = this
     remote.state = null
     if (remote.pending !== null) this._drain(remote)
+    if (this._mux._destroying === true) return
 
+    this.opened = true
     this._resolveOpen(true)
   }
 
-  _resolveOpen (opened) {
+  _resolveOpen(opened) {
     if (this._openedResolve !== null) {
       this._openedResolve(opened)
       this._openedResolve = this._openedPromise = null
     }
   }
 
-  _resolveDestroyed () {
+  _resolveDestroyed() {
     if (this._destroyedResolve !== null) {
       this._destroyedResolve()
       this._destroyedResolve = this._destroyedPromise = null
     }
   }
 
-  _drain (remote) {
+  _drain(remote) {
     for (let i = 0; i < remote.pending.length; i++) {
       const p = remote.pending[i]
       this._mux._buffered -= byteSize(p.state)
       this._recv(p.type, p.state)
+      if (this._mux._destroying === true) return
     }
 
     remote.pending = null
     this._mux._resumeMaybe()
   }
 
-  _track (p) {
+  _track(p) {
     if (isPromise(p) === true) {
       this._active++
       return p.then(this._decBound, this._decAndDestroyBound)
@@ -4748,7 +4804,7 @@ class Channel {
     return null
   }
 
-  _close (isRemote) {
+  _close(isRemote) {
     if (this.closed === true) return
     this.closed = true
 
@@ -4774,14 +4830,14 @@ class Channel {
     this._resolveOpen(false)
   }
 
-  _destroy () {
+  _destroy() {
     if (this.destroyed === true) return
     this.destroyed = true
     this._track(this.ondestroy(this))
     this._resolveDestroyed()
   }
 
-  _recv (type, state) {
+  _recv(type, state) {
     if (type < this.messages.length) {
       const m = this.messages[type]
       const p = m.recv(state, this)
@@ -4790,15 +4846,15 @@ class Channel {
     return null
   }
 
-  cork () {
+  cork() {
     this._mux.cork()
   }
 
-  uncork () {
+  uncork() {
     this._mux.uncork()
   }
 
-  close () {
+  close() {
     if (this.closed === true) return
 
     const state = { buffer: null, start: 2, end: 2 }
@@ -4815,7 +4871,7 @@ class Channel {
     this._mux._write0(state.buffer)
   }
 
-  addMessage (opts) {
+  addMessage(opts) {
     if (!opts) return this._skipMessage()
 
     const type = this.messages.length
@@ -4831,10 +4887,10 @@ class Channel {
       autoBatch,
       encoding,
       onmessage,
-      recv (state, session) {
+      recv(state, session) {
         return session._track(m.onmessage(encoding.decode(state), session))
       },
-      send (m, session = s) {
+      send(m, session = s) {
         if (session.closed === true) return false
 
         const mux = session._mux
@@ -4871,14 +4927,14 @@ class Channel {
     return m
   }
 
-  _skipMessage () {
+  _skipMessage() {
     const type = this.messages.length
     const m = {
       type,
       encoding: c.raw,
       onmessage: noop,
-      recv (state, session) {},
-      send (m, session) {}
+      recv(state, session) {},
+      send(m, session) {}
     }
 
     this.messages.push(m)
@@ -4887,7 +4943,7 @@ class Channel {
 }
 
 module.exports = class Protomux {
-  constructor (stream, { alloc } = {}) {
+  constructor(stream, { alloc } = {}) {
     if (stream.userData === null) stream.userData = this
 
     this.isProtomux = true
@@ -4895,7 +4951,8 @@ module.exports = class Protomux {
     this.corked = 0
     this.drained = true
 
-    this._alloc = alloc || (typeof stream.alloc === 'function' ? stream.alloc.bind(stream) : b4a.allocUnsafe)
+    this._alloc =
+      alloc || (typeof stream.alloc === 'function' ? stream.alloc.bind(stream) : b4a.allocUnsafe)
     this._safeDestroyBound = this._safeDestroy.bind(this)
     this._uncorkBound = this.uncork.bind(this)
 
@@ -4910,6 +4967,8 @@ module.exports = class Protomux {
 
     this._infos = new Map()
     this._notify = new Map()
+    // stream.destroyed flips asynchronously on streamx-based transports.
+    this._destroying = false
 
     this.stream.on('data', this._ondata.bind(this))
     this.stream.on('drain', this._ondrain.bind(this))
@@ -4918,34 +4977,34 @@ module.exports = class Protomux {
     this.stream.on('close', this._shutdown.bind(this))
   }
 
-  static from (stream, opts) {
+  static from(stream, opts) {
     if (stream.userData && stream.userData.isProtomux) return stream.userData
     if (stream.isProtomux) return stream
     return new this(stream, opts)
   }
 
-  static isProtomux (mux) {
+  static isProtomux(mux) {
     return typeof mux === 'object' && mux.isProtomux === true
   }
 
-  * [Symbol.iterator] () {
+  *[Symbol.iterator]() {
     for (const session of this._local) {
       if (session !== null) yield session
     }
   }
 
-  isIdle () {
+  isIdle() {
     return this._local.length === this._free.length
   }
 
-  cork () {
+  cork() {
     if (++this.corked === 1) {
       this._batch = []
       this._batchState = { buffer: null, start: 0, end: 1 }
     }
   }
 
-  uncork () {
+  uncork() {
     if (--this.corked === 0) {
       this._sendBatch(this._batch, this._batchState)
       this._batch = null
@@ -4953,35 +5012,60 @@ module.exports = class Protomux {
     }
   }
 
-  getLastChannel ({ protocol, id = null }) {
+  getLastChannel({ protocol, id = null }) {
     const key = toKey(protocol, id)
     const info = this._infos.get(key)
     if (info) return info.lastChannel
     return null
   }
 
-  pair ({ protocol, id = null }, notify) {
+  pair({ protocol, id = null }, notify) {
     this._notify.set(toKey(protocol, id), notify)
   }
 
-  unpair ({ protocol, id = null }) {
+  unpair({ protocol, id = null }) {
     this._notify.delete(toKey(protocol, id))
   }
 
-  opened ({ protocol, id = null }) {
+  opened({ protocol, id = null }) {
     const key = toKey(protocol, id)
     const info = this._infos.get(key)
     return info ? info.opened > 0 : false
   }
 
-  createChannel ({ userData = null, protocol, aliases = [], id = null, unique = true, handshake = null, messages = [], onopen = noop, onclose = noop, ondestroy = noop, ondrain = noop }) {
+  createChannel({
+    userData = null,
+    protocol,
+    aliases = [],
+    id = null,
+    unique = true,
+    handshake = null,
+    messages = [],
+    onopen = noop,
+    onclose = noop,
+    ondestroy = noop,
+    ondrain = noop
+  }) {
     if (this.stream.destroyed) return null
 
     const info = this._get(protocol, id, aliases)
     if (unique && info.opened > 0) return null
 
     if (info.incoming.length === 0) {
-      return new Channel(this, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain)
+      return new Channel(
+        this,
+        info,
+        userData,
+        protocol,
+        aliases,
+        id,
+        handshake,
+        messages,
+        onopen,
+        onclose,
+        ondestroy,
+        ondrain
+      )
     }
 
     this._remoteBacklog--
@@ -4990,7 +5074,20 @@ module.exports = class Protomux {
     const r = this._remote[remoteId - 1]
     if (r === null) return null
 
-    const session = new Channel(this, info, userData, protocol, aliases, id, handshake, messages, onopen, onclose, ondestroy, ondrain)
+    const session = new Channel(
+      this,
+      info,
+      userData,
+      protocol,
+      aliases,
+      id,
+      handshake,
+      messages,
+      onopen,
+      onclose,
+      ondestroy,
+      ondrain
+    )
 
     session._remoteId = remoteId
     session._fullyOpenSoon()
@@ -4998,7 +5095,7 @@ module.exports = class Protomux {
     return session
   }
 
-  _pushBatch (localId, buffer) {
+  _pushBatch(localId, buffer) {
     if (this._batchState.end >= MAX_BATCH) {
       this._sendBatch(this._batch, this._batchState)
       this._batch = []
@@ -5013,7 +5110,7 @@ module.exports = class Protomux {
     this._batch.push({ localId, buffer })
   }
 
-  _sendBatch (batch, state) {
+  _sendBatch(batch, state) {
     if (batch.length === 0) return
 
     let prev = batch[0].localId
@@ -5036,13 +5133,23 @@ module.exports = class Protomux {
     this.drained = this.stream.write(state.buffer)
   }
 
-  _get (protocol, id, aliases = []) {
+  _get(protocol, id, aliases = []) {
     const key = toKey(protocol, id)
 
     let info = this._infos.get(key)
     if (info) return info
 
-    info = { key, protocol, aliases: [], id, pairing: 0, opened: 0, incoming: [], outgoing: [], lastChannel: null }
+    info = {
+      key,
+      protocol,
+      aliases: [],
+      id,
+      pairing: 0,
+      opened: 0,
+      incoming: [],
+      outgoing: [],
+      lastChannel: null
+    }
     this._infos.set(key, info)
 
     for (const alias of aliases) {
@@ -5055,7 +5162,7 @@ module.exports = class Protomux {
     return info
   }
 
-  _gc (info) {
+  _gc(info) {
     if (info.opened === 0 && info.outgoing.length === 0 && info.incoming.length === 0) {
       this._infos.delete(info.key)
 
@@ -5063,7 +5170,7 @@ module.exports = class Protomux {
     }
   }
 
-  _ondata (buffer) {
+  _ondata(buffer) {
     if (buffer.byteLength === 0) return // ignore empty frames...
     try {
       const state = { buffer, start: 0, end: buffer.byteLength }
@@ -5073,7 +5180,7 @@ module.exports = class Protomux {
     }
   }
 
-  _ondrain () {
+  _ondrain() {
     this.drained = true
 
     for (const s of this._local) {
@@ -5081,11 +5188,12 @@ module.exports = class Protomux {
     }
   }
 
-  _onend () { // TODO: support half open mode for the users who wants that here
+  _onend() {
+    // TODO: support half open mode for the users who wants that here
     this.stream.end()
   }
 
-  _decode (remoteId, state) {
+  _decode(remoteId, state) {
     const type = c.uint.decode(state)
 
     if (remoteId === 0) {
@@ -5105,7 +5213,7 @@ module.exports = class Protomux {
     return r.session._recv(type, state)
   }
 
-  _oncontrolsession (type, state) {
+  _oncontrolsession(type, state) {
     switch (type) {
       case 0:
         this._onbatch(state)
@@ -5127,26 +5235,26 @@ module.exports = class Protomux {
     return null
   }
 
-  _bufferMessage (r, type, { buffer, start, end }) {
+  _bufferMessage(r, type, { buffer, start, end }) {
     const state = { buffer, start, end } // copy
     r.pending.push({ type, state })
     this._buffered += byteSize(state)
     this._pauseMaybe()
   }
 
-  _pauseMaybe () {
+  _pauseMaybe() {
     if (this._paused === true || this._buffered <= MAX_BUFFERED) return
     this._paused = true
     this.stream.pause()
   }
 
-  _resumeMaybe () {
+  _resumeMaybe() {
     if (this._paused === false || this._buffered > MAX_BUFFERED) return
     this._paused = false
     this.stream.resume()
   }
 
-  _onbatch (state) {
+  _onbatch(state) {
     const end = state.end
     let remoteId = c.uint.decode(state)
 
@@ -5176,7 +5284,7 @@ module.exports = class Protomux {
     }
   }
 
-  _onopensession (state) {
+  _onopensession(state) {
     const remoteId = c.uint.decode(state)
     const protocol = c.string.decode(state)
     const id = unslab(c.buffer.decode(state))
@@ -5204,7 +5312,8 @@ module.exports = class Protomux {
       const localId = info.outgoing.shift()
       const session = this._local[localId - 1]
 
-      if (session === null) { // we already closed the channel - ignore
+      if (session === null) {
+        // we already closed the channel - ignore
         this._free.push(localId - 1)
         return null
       }
@@ -5229,7 +5338,7 @@ module.exports = class Protomux {
     return this._requestSession(protocol, id, info).catch(this._safeDestroyBound)
   }
 
-  _onrejectsession (state) {
+  _onrejectsession(state) {
     const localId = c.uint.decode(state)
 
     // TODO: can be done smarter...
@@ -5251,7 +5360,7 @@ module.exports = class Protomux {
     throw new Error('Invalid reject message')
   }
 
-  _onclosesession (state) {
+  _onclosesession(state) {
     const remoteId = c.uint.decode(state)
 
     if (remoteId === 0) return // ignore
@@ -5264,7 +5373,7 @@ module.exports = class Protomux {
     if (r.session !== null) r.session._close(true)
   }
 
-  async _requestSession (protocol, id, info) {
+  async _requestSession(protocol, id, info) {
     const notify = this._notify.get(toKey(protocol, id)) || this._notify.get(toKey(protocol, null))
 
     if (notify) await notify(id)
@@ -5278,7 +5387,7 @@ module.exports = class Protomux {
     this._gc(info)
   }
 
-  _rejectSession (info, remoteId) {
+  _rejectSession(info, remoteId) {
     if (remoteId > 0) {
       const r = this._remote[remoteId - 1]
 
@@ -5305,7 +5414,7 @@ module.exports = class Protomux {
     this._write0(state.buffer)
   }
 
-  _write0 (buffer) {
+  _write0(buffer) {
     if (this._batch !== null) {
       this._pushBatch(0, buffer.subarray(1))
       return
@@ -5314,37 +5423,40 @@ module.exports = class Protomux {
     this.drained = this.stream.write(buffer)
   }
 
-  destroy (err) {
+  destroy(err) {
+    this._destroying = true
     this.stream.destroy(err)
   }
 
-  _safeDestroy (err) {
+  _safeDestroy(err) {
     safetyCatch(err)
+    this._destroying = true
     this.stream.destroy(err)
   }
 
-  _shutdown () {
+  _shutdown() {
+    this._destroying = true
     for (const s of this._local) {
       if (s !== null) s._close(true)
     }
   }
 }
 
-function noop () {}
+function noop() {}
 
-function toKey (protocol, id) {
+function toKey(protocol, id) {
   return protocol + '##' + (id ? b4a.toString(id, 'hex') : '')
 }
 
-function byteSize (state) {
+function byteSize(state) {
   return 512 + (state.end - state.start)
 }
 
-function isPromise (p) {
+function isPromise(p) {
   return !!(p && typeof p.then === 'function')
 }
 
-function encodingLength (enc, val) {
+function encodingLength(enc, val) {
   const state = { buffer: null, start: 0, end: 0 }
   enc.preencode(state, val)
   return state.end
@@ -5364,7 +5476,8 @@ function isActuallyUncaught (err) {
     err instanceof EvalError ||
     err instanceof RangeError ||
     err instanceof URIError ||
-    err.code === 'ERR_ASSERTION'
+    err.code === 'ERR_ASSERTION' ||
+    err.name === 'AssertionError'
 }
 
 function throwErrorNT (err) {
