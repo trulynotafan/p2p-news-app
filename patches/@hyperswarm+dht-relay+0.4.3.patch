@@ -38,16 +38,31 @@ index c848a14..f8f03ec 100644
    preencode (state, m) {
      state.end++ // Flags
 diff --git a/node_modules/@hyperswarm/dht-relay/lib/protocol.js b/node_modules/@hyperswarm/dht-relay/lib/protocol.js
-index 14d9bb3..54e29cd 100644
+index 14d9bb3..373526d 100644
 --- a/node_modules/@hyperswarm/dht-relay/lib/protocol.js
 +++ b/node_modules/@hyperswarm/dht-relay/lib/protocol.js
 @@ -11,7 +11,8 @@ class Protocol extends EventEmitter {
  
      const muxer = Protomux.from(stream)
-     
+ 
 -    this._stream = muxer.stream.setMaxListeners(0)
 +    this._stream = muxer.stream
 +    this._stream.setMaxListeners(0)
  
      this._heartbeat = null
      this._failsafe = null
+diff --git a/node_modules/@hyperswarm/dht-relay/lib/stream.js b/node_modules/@hyperswarm/dht-relay/lib/stream.js
+index 3895f2c..7a9321f 100644
+--- a/node_modules/@hyperswarm/dht-relay/lib/stream.js
++++ b/node_modules/@hyperswarm/dht-relay/lib/stream.js
+@@ -158,6 +158,10 @@ class Stream extends Duplex {
+   _sendKeepAlive () {
+     this.write(this.alloc(0))
+   }
++
++  sendKeepAlive () {
++    this._sendKeepAlive()
++  }
+ }
+ 
+ module.exports = {

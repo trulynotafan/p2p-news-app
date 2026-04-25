@@ -106,6 +106,7 @@
   },
   "overrides": {
     "hypercore": "10.38.2",
-    "mirror-drive": "1.10.0"
+    "mirror-drive": "1.10.0",
+    "hyperbee": "2.26.5"
   }
 }
