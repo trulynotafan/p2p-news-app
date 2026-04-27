@@ -1209,10 +1209,9 @@ async function network (store, mnemonic_data, relay_url) {
   const swarm = await create_swarm(mnemonic_data, relay_url)
   await swarm.listen()
   console.log('[identity] swarm joined')
-  swarm.on('error', (err) => console.log('[identity] network swarm error:', err.message))
   // for now its replicating the entire store, but this connection is only between our own devices
   swarm.on('connection', function (socket) {
-    console.log('[identity] new connection from:', b4a.toString(socket.remotePublicKey, 'hex'))
+    console.log('[identity] new connection')
     if (!socket.userData) socket.userData = null
     upgrade_connection(socket, function (connection) { store.replicate(connection) })
   })
@@ -1244,6 +1243,7 @@ async function create_app_network (store, relay_url) {
   function replicate (connection) {
     const stream = Hypercore.createProtocolStream(connection, { ondiscoverykey })
     peer_streams.push(stream)
+    // iterate all open cores (so we can replicate cores even after page reload)
     for (const [id, core] of store.cores) {
       if (is_vault_core(id)) continue
       core.replicate(stream, { session: true })
@@ -1530,7 +1530,7 @@ function create_vault_ops (get_state) {
           try { await state.ds_manager.remove_writer(name, writer_key) } catch (err) { console.warn(`Failed to remove writer from ${name}:`, err.message) }
         }
       }
-      // Delete by vault_bee_writer 
+      // Delete by vault_bee_writer
       const del_key = device.vault_bee_writer || device.metadata_writer
       if (del_key) await vault_del(`paired_devices/${del_key}`)
       state.emitter.emit('update')
@@ -1867,6 +1867,8 @@ function identity (config = {}) {
     setup_vault_pairing,
     verify_vault_pairing,
     deny_vault_pairing,
+    restore_pending_invites,
+    cancel_vault_invite,
     // Data structure management
     create_ds_manager,
     // Vault structure initialization (for apps to create vault in seed mode)
@@ -1911,14 +1913,23 @@ function identity (config = {}) {
     network: create_app_network_with_relay,
     // Events
     on_update: handle_update_callback,
-    on_vault_ready,
-    // Session management
-    session_set,
-    session_get,
+    on_vault_ready
+  }
+  // sessio api is system-only used here but never forwarded to apps
+  const session_api = {
+    session_get_username,
+    session_set_username,
+    session_get_auth_mode,
+    session_set_auth_mode,
+    session_get_joined_app,
+    session_set_joined_app,
+    session_get_pending_invite,
+    session_set_pending_invite,
+    session_clear_pending_invite,
     session_clear,
     reset_all_data
   }
-  return vault_api
+  return { ...vault_api, ...session_api }
 
   /***************************************
 INTERNAL FUNCTIONS
@@ -1947,6 +1958,7 @@ INTERNAL FUNCTIONS
             if (on_verification_code) on_verification_code(code)
           }
         })
+        session_clear_pending_invite() // pairing complete, remove stored invite from session
         state.pending_auth = {
           username: result.username || username,
           mode
@@ -1957,20 +1969,13 @@ INTERNAL FUNCTIONS
       // Seed mode
       const mnemonic_data = await user_promise
       state.keypair = mnemonic_data
-      console.log('[identity] auth mode:', mode, '| own noise key:', mnemonic_data.keypair.publicKey.toString('hex'))
       await init_vault_structures({ store, vault_bee_key: null, vault_audit_key: null })
       await store_device_noise_key(mnemonic_data.keypair.publicKey.toString('hex'))
       const relay_url = await get_default_relay()
       const { swarm } = await network(store, mnemonic_data, relay_url)
       // Reconnect to known devices + store new device keys
       const known = await get_other_device_keys(mnemonic_data.keypair.publicKey)
-      console.log('[identity] stored peer keys to rejoin:', known.length, known.map(k => k.toString('hex')))
-      for (const key of known) {
-        console.log('[identity] calling joinPeer:', key.toString('hex'))
-        swarm.joinPeer(key)
-      }
-      swarm.on('error', (err) => console.log('[identity] swarm error:', err.message))
-      swarm.on('close', () => console.log('[identity] swarm closed'))
+      for (const key of known) swarm.joinPeer(key)
       swarm.on('connection', (socket) => store_device_noise_key(b4a.toString(socket.remotePublicKey, 'hex')))
       state.store = store
       state.swarm = swarm
@@ -1979,7 +1984,7 @@ INTERNAL FUNCTIONS
         state.emitter.emit('vault_ready', state.pending_auth)
         return
       }
-      if (user_resolve) user_resolve({ ...vault_api, username, mode, authenticated: true })
+      if (user_resolve) user_resolve(make_app_vault(username, mode))
     } catch (err) {
       console.error('[identity] Authentication error:', err)
       if (user_reject) user_reject(err)
@@ -1988,13 +1993,7 @@ INTERNAL FUNCTIONS
 
   function complete_authentication () {
     if (!state.pending_auth) return
-    const authenticated_vault = {
-      ...vault_api,
-      username: state.pending_auth.username,
-      mode: state.pending_auth.mode,
-      authenticated: true
-    }
-    if (user_resolve) user_resolve(authenticated_vault)
+    if (user_resolve) user_resolve(make_app_vault(state.pending_auth.username, state.pending_auth.mode))
     state.pending_auth = null
   }
 
@@ -2076,13 +2075,16 @@ VAULT PAIRING
     const vault_audit_key = b4a.toString(state.vault_audit.key, 'hex')
     const invite_obj = get_pairing_manager().create_invite(state.vault_bee.key)
     const invite_data = { vault_bee_key, vault_audit_key, blind_invite: b4a.toString(invite_obj.invite, 'base64'), vault_only: true }
+    const invite_code = b4a.toString(b4a.from(JSON.stringify(invite_data)), 'base64')
     await state.vault_audit.append({ type: 'invite_created', data: {} })
-    return {
-      invite_code: b4a.toString(b4a.from(JSON.stringify(invite_data)), 'base64'),
-      invite: invite_obj,
-      vault_bee_key,
-      vault_audit_key
-    }
+    // Persist invite so we can rejoin the topic after a refresh (removed on verify or deny)
+    await state.vault_bee.put('pending_invites/active', {
+      invite_code,
+      seed_hex: b4a.toString(invite_obj.seed, 'hex'),
+      public_key_hex: b4a.toString(invite_obj.publicKey, 'hex'),
+      created_at: Date.now()
+    })
+    return { invite_code, invite: invite_obj, vault_bee_key, vault_audit_key }
   }
 
   async function setup_vault_pairing (config) {
@@ -2093,12 +2095,50 @@ VAULT PAIRING
 
   async function verify_vault_pairing (entered_code) {
     if (!state.pairing_manager) throw new Error('Pairing not setup')
-    return state.pairing_manager.verify_and_complete_pairing({ entered_verification_code: entered_code, vault_bee: state.vault_bee, vault_audit: state.vault_audit })
+    const result = await state.pairing_manager.verify_and_complete_pairing({ entered_verification_code: entered_code, vault_bee: state.vault_bee, vault_audit: state.vault_audit })
+    await state.vault_bee.del('pending_invites/active')
+    return result
   }
 
   function deny_vault_pairing () {
     if (!state.pairing_manager) throw new Error('Pairing not setup')
     state.pairing_manager.deny_pairing()
+    state.vault_bee.del('pending_invites/active').catch(function (err) { console.warn('[identity] failed to clear pending invite:', err) })
+  }
+
+  /***************************************
+  RESTORE PENDING INVITES
+  reads stored invite from vault, reconstructs the invite_obj
+  ***************************************/
+  async function restore_pending_invites (config) {
+    if (!state.vault_bee) { return null }
+    const entry = await state.vault_bee.get('pending_invites/active')
+    const stored = entry?.value
+    if (!stored) { return null }
+    console.log('[identity] restore_pending_invites: found stored invite, created_at:', new Date(stored.created_at).toLocaleString())
+    const parsed = parse_vault_invite(stored.invite_code)
+    const invite_obj = {
+      invite: b4a.from(parsed.blind_invite, 'base64'),
+      seed: b4a.from(stored.seed_hex, 'hex'),
+      publicKey: b4a.from(stored.public_key_hex, 'hex')
+    }
+    await setup_vault_pairing({ ...config, invite: invite_obj })
+    return stored
+  }
+
+  /***************************************
+  CANCEL INVITE
+  stops the pairing member, clears all
+  pending requests and removes the stored invite from vault
+  ***************************************/
+  async function cancel_vault_invite () {
+    if (state.pairing_manager) {
+      await state.pairing_manager.close()
+      state.pairing_manager = null
+    }
+    if (state.vault_bee) {
+      await state.vault_bee.del('pending_invites/active').catch(function (err) { console.warn('[identity] cancel_vault_invite: failed to delete pending invite:', err) })
+    }
   }
 
   /***************************************
@@ -2139,11 +2179,22 @@ EVENT EMITTER
   function on_vault_ready (cb) { return state.emitter.on('vault_ready', cb) }
 
   /***************************************
-  SESSION MANAGEMENT - only vault accesses localStorage direcly
+  SESSION MANAGEMENT, used for times when localstorage usage is mandatory
   ***************************************/
-  function session_set (key, value) { localStorage.setItem(key, value) }
-  function session_get (key) { return localStorage.getItem(key) }
+  function session_get_username () { return localStorage.getItem('username') }
+  function session_set_username (v) { localStorage.setItem('username', v) }
+  function session_get_auth_mode () { return localStorage.getItem('auth_mode') || 'seed' }
+  function session_set_auth_mode (v) { localStorage.setItem('auth_mode', v) }
+  function session_get_joined_app () { return localStorage.getItem('joined_app') || '' }
+  function session_set_joined_app (v) { localStorage.setItem('joined_app', v) }
+  function session_get_pending_invite () { return localStorage.getItem('pending_invite_code') || null }
+  function session_set_pending_invite (v) { localStorage.setItem('pending_invite_code', v) }
+  function session_clear_pending_invite () { localStorage.removeItem('pending_invite_code') }
   function session_clear () { localStorage.clear() }
+  // Apps get vault_api only.. no session methods, no localstorage access
+  function make_app_vault (username, mode) {
+    return { ...vault_api, username, mode, authenticated: true }
+  }
   async function reset_all_data () {
     localStorage.clear()
     if (is_cli) return reset_cli_data()
@@ -52278,7 +52329,6 @@ module.exports = class WebStream extends Duplex {
   }
 
   setKeepAlive () {} // TODO
-  sendKeepAlive () {}
 }
 
 function onopen () {

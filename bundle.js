@@ -475,6 +475,8 @@ INTERNAL FUNCTIONS
     }
   }
 
+  // syncing the subscriptions between similar devices.
+
   function watch_subscriptions () {
     const vault_bee = identity.get_vault_bee()
     if (!vault_bee) return
