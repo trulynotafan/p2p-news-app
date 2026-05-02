@@ -44,7 +44,8 @@ function fallback_module () {
             newsfeed_view: { $: '' },
             write_page: { $: '' },
             './graphdb': { $: '' },
-            'newsfeed_view/content_parser': { $: '' }
+            'newsfeed_view/content_parser': { $: '' },
+            net_helper: { $: '' }
           }
         },
         mapping: {
